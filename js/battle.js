@@ -1,0 +1,452 @@
+// =============================================================
+// MonsterQuest — turn-based battle engine (Gen-1 style rules)
+// =============================================================
+"use strict";
+
+const STRUGGLE = { name: "Struggle", type: "Normal", kind: "phys", power: 50, acc: 100, pp: Infinity };
+
+function stageMult(stage) {
+  return Math.max(2, 2 + stage) / Math.max(2, 2 - stage);
+}
+
+class Battle {
+  // opts: { mode:"wild"|"trainer", enemyParty:[monster], trainer?, game }
+  constructor(game, opts) {
+    this.game = game;
+    this.mode = opts.mode;
+    this.trainer = opts.trainer || null;
+    this.enemyParty = opts.enemyParty;
+    this.enemyIndex = 0;
+    this.playerIndex = game.party.findIndex((m) => m.hp > 0);
+    this.queue = [];         // [{text, apply}]
+    this.phase = "msg";      // msg | menu | moves | party | bag | ended
+    this.afterQueue = "menu";
+    this.result = null;      // "win" | "lose" | "caught" | "ran"
+    this.runAttempts = 0;
+    this.playerStages = { atk: 0, def: 0, spd: 0 };
+    this.enemyStages = { atk: 0, def: 0, spd: 0 };
+    this.hitFlash = null;    // "player" | "enemy"
+    this.expEarned = new Map();
+
+    const enemy = this.enemy;
+    game.markSeen(enemy.species);
+    if (this.mode === "wild") {
+      this.say(`Wild ${SPECIES[enemy.species].name} appeared!`);
+    } else {
+      this.say(`${this.trainer.name} wants to battle!`);
+      this.say(`${this.trainer.name} sent out ${SPECIES[enemy.species].name}!`);
+    }
+    this.say(`Go! ${this.player.nickname}!`);
+  }
+
+  get player() { return this.game.party[this.playerIndex]; }
+  get enemy() { return this.enemyParty[this.enemyIndex]; }
+
+  say(text, apply) { this.queue.push({ text, apply }); }
+
+  // ---- queue pump (UI calls on A press) -------------------------
+  advance() {
+    if (this.queue.length > 0) {
+      const item = this.queue.shift();
+      if (item.apply) item.apply();
+      return item.text;
+    }
+    return null;
+  }
+
+  queueDone() { return this.queue.length === 0; }
+
+  // ---- stat helpers ---------------------------------------------
+  effStat(mon, stages, stat) {
+    let v = mon.stats[stat] * stageMult(stages[stat]);
+    if (stat === "atk" && mon.status === "brn") v = Math.floor(v / 2);
+    if (stat === "spd" && mon.status === "par") v = Math.floor(v / 4);
+    return Math.max(1, Math.floor(v));
+  }
+
+  // ---- damage ---------------------------------------------------
+  computeDamage(attacker, defender, atkStages, defStages, move) {
+    const sp = SPECIES[attacker.species];
+    const baseSpd = sp.base[3];
+    let critChance = baseSpd / 512;
+    if (move.highCrit) critChance = Math.min(0.9, critChance * 8);
+    const crit = Math.random() < critChance;
+
+    let a, d;
+    if (move.kind === "phys") {
+      a = crit ? attacker.stats.atk : this.effStat(attacker, atkStages, "atk");
+      d = crit ? defender.stats.def : this.effStat(defender, defStages, "def");
+    } else {
+      a = attacker.stats.spc;
+      d = defender.stats.spc;
+    }
+    const L = crit ? attacker.level * 2 : attacker.level;
+    let dmg = Math.floor(Math.floor((Math.floor((2 * L) / 5 + 2) * move.power * a) / d) / 50) + 2;
+    if (sp.types.includes(move.type)) dmg = Math.floor(dmg * 1.5);
+    const typeMult = typeMultiplier(move.type, SPECIES[defender.species].types);
+    dmg = Math.floor(dmg * typeMult);
+    dmg = Math.floor((dmg * (217 + Math.floor(Math.random() * 39))) / 255);
+    if (typeMult > 0) dmg = Math.max(1, dmg);
+    return { dmg, crit, typeMult };
+  }
+
+  // ---- one side uses a move -------------------------------------
+  useMove(who, moveSlot) {
+    const isPlayer = who === "player";
+    const attacker = isPlayer ? this.player : this.enemy;
+    const defender = isPlayer ? this.enemy : this.player;
+    const atkStages = isPlayer ? this.playerStages : this.enemyStages;
+    const defStages = isPlayer ? this.enemyStages : this.playerStages;
+    const attackerName = isPlayer ? attacker.nickname : `Enemy ${SPECIES[attacker.species].name}`;
+    const defenderName = isPlayer ? `Enemy ${SPECIES[defender.species].name}` : defender.nickname;
+
+    // sleep / paralysis checks
+    if (attacker.status === "slp") {
+      if (attacker.sleepTurns > 0) {
+        this.say(`${attackerName} is fast asleep!`, () => { attacker.sleepTurns--; });
+        return;
+      }
+      this.say(`${attackerName} woke up!`, () => { attacker.status = null; });
+    }
+    if (attacker.status === "par" && Math.random() < 0.25) {
+      this.say(`${attackerName} is fully paralyzed!`);
+      return;
+    }
+
+    const move = moveSlot === "struggle" ? STRUGGLE : MOVES[moveSlot.id];
+    if (moveSlot !== "struggle") moveSlot.pp = Math.max(0, moveSlot.pp - 1);
+    this.say(`${attackerName} used ${move.name}!`);
+
+    // accuracy
+    if (move.acc < 999 && Math.random() * 100 >= move.acc) {
+      this.say(`But it missed!`);
+      return;
+    }
+
+    if (move.kind === "status") {
+      if (move.stat) {
+        const target = move.stat.who === "self" ? attacker : defender;
+        const targetStages = move.stat.who === "self" ? atkStages : defStages;
+        const targetName = move.stat.who === "self" ? attackerName : defenderName;
+        const s = move.stat.stat;
+        const before = targetStages[s];
+        const after = Math.max(-6, Math.min(6, before + move.stat.delta));
+        if (before === after) {
+          this.say(`But nothing happened!`);
+        } else {
+          const statNames = { atk: "ATTACK", def: "DEFENSE", spd: "SPEED" };
+          const verb = move.stat.delta > 0 ? "rose" : "fell";
+          this.say(`${targetName}'s ${statNames[s]} ${verb}!`, () => { targetStages[s] = after; });
+        }
+      } else if (move.effect) {
+        this.applyStatus(defender, defenderName, move.effect, true);
+      }
+      return;
+    }
+
+    // damaging move
+    const { dmg, crit, typeMult } = this.computeDamage(attacker, defender, atkStages, defStages, move);
+    if (typeMult === 0) {
+      this.say(`It doesn't affect ${defenderName}...`);
+      return;
+    }
+    const flashTarget = isPlayer ? "enemy" : "player";
+    const notes = [];
+    if (crit) notes.push("A critical hit!");
+    if (typeMult > 1) notes.push("It's super effective!");
+    if (typeMult < 1) notes.push("It's not very effective...");
+
+    this.queue.push({
+      text: null, // silent damage application with flash
+      apply: () => {
+        defender.hp = Math.max(0, defender.hp - dmg);
+        this.hitFlash = flashTarget;
+        setTimeout(() => { this.hitFlash = null; }, 260);
+      },
+    });
+    for (const n of notes) this.say(n);
+    if (move.effect && defender.hp > 0) {
+      this.applyStatus(defender, defenderName, move.effect, false);
+    }
+  }
+
+  applyStatus(target, targetName, effect, announceFail) {
+    if (Math.random() * 100 >= effect.chance) return;
+    if (target.status) {
+      if (announceFail) this.say(`But it failed!`);
+      return;
+    }
+    const texts = {
+      psn: `${targetName} was poisoned!`,
+      par: `${targetName} is paralyzed! It may not attack!`,
+      brn: `${targetName} was burned!`,
+      slp: `${targetName} fell asleep!`,
+    };
+    this.say(texts[effect.status], () => {
+      target.status = effect.status;
+      if (effect.status === "slp") target.sleepTurns = 1 + Math.floor(Math.random() * 3);
+    });
+  }
+
+  endOfTurnStatus(mon, name) {
+    if (mon.hp <= 0) return;
+    if (mon.status === "psn" || mon.status === "brn") {
+      const chip = Math.max(1, Math.floor(mon.stats.hp / 16));
+      const label = mon.status === "psn" ? "poison" : "its burn";
+      this.say(`${name} is hurt by ${label}!`, () => {
+        mon.hp = Math.max(0, mon.hp - chip);
+      });
+    }
+  }
+
+  // ---- turn resolution ------------------------------------------
+  enemyPickMove() {
+    const usable = this.enemy.moves.filter((m) => m.pp > 0);
+    if (usable.length === 0) return "struggle";
+    return usable[Math.floor(Math.random() * usable.length)];
+  }
+
+  playerTurn(action) {
+    // action: {type:"move", slot} | {type:"switch", index} | {type:"item", id} | {type:"run"}
+    this.phase = "msg";
+    this.afterQueue = "menu";
+
+    if (action.type === "run") {
+      if (this.mode === "trainer") {
+        this.say(`No! There's no running from a trainer battle!`);
+        return;
+      }
+      this.runAttempts++;
+      const pSpd = this.effStat(this.player, this.playerStages, "spd");
+      const eSpd = Math.max(1, this.effStat(this.enemy, this.enemyStages, "spd"));
+      const odds = pSpd >= eSpd ? 1 : pSpd / eSpd * 0.7 + this.runAttempts * 0.15;
+      if (Math.random() < odds) {
+        this.say(`Got away safely!`, () => { this.result = "ran"; });
+        this.afterQueue = "end";
+        return;
+      }
+      this.say(`Can't escape!`);
+      this.enemyAct();
+      this.endTurn();
+      return;
+    }
+
+    if (action.type === "switch") {
+      const incoming = this.game.party[action.index];
+      this.say(`${this.player.nickname}, come back!`);
+      this.say(`Go! ${incoming.nickname}!`, () => {
+        this.playerIndex = action.index;
+        this.playerStages = { atk: 0, def: 0, spd: 0 };
+      });
+      this.enemyAct();
+      this.endTurn();
+      return;
+    }
+
+    if (action.type === "item") {
+      this.useItemInBattle(action.id, action.target);
+      if (this.result) { this.afterQueue = "end"; return; }
+      this.enemyAct();
+      this.endTurn();
+      return;
+    }
+
+    // move vs move: order by priority then speed
+    const pMove = action.slot === "struggle" ? STRUGGLE : MOVES[action.slot.id];
+    const ePick = this.enemyPickMove();
+    const eMove = ePick === "struggle" ? STRUGGLE : MOVES[ePick.id];
+    const pSpd = this.effStat(this.player, this.playerStages, "spd");
+    const eSpd = this.effStat(this.enemy, this.enemyStages, "spd");
+    const pPrio = pMove.priority || 0;
+    const ePrio = eMove.priority || 0;
+    let playerFirst;
+    if (pPrio !== ePrio) playerFirst = pPrio > ePrio;
+    else if (pSpd !== eSpd) playerFirst = pSpd > eSpd;
+    else playerFirst = Math.random() < 0.5;
+
+    if (playerFirst) {
+      this.useMove("player", action.slot);
+      this.checkEnemyFaint();
+      if (!this.result && this.enemy.hp > 0) {
+        this.useMove("enemy", ePick);
+        this.checkPlayerFaint();
+      }
+    } else {
+      this.useMove("enemy", ePick);
+      this.checkPlayerFaint();
+      if (!this.result && this.player.hp > 0) {
+        this.useMove("player", action.slot);
+        this.checkEnemyFaint();
+      }
+    }
+    this.endTurn();
+  }
+
+  enemyAct() {
+    if (this.enemy.hp <= 0) return;
+    const pick = this.enemyPickMove();
+    this.useMove("enemy", pick);
+    this.checkPlayerFaint();
+  }
+
+  endTurn() {
+    if (this.result) { this.afterQueue = "end"; return; }
+    // end-of-turn chip damage (skip if battle already decided)
+    const pName = this.player.nickname;
+    const eName = `Enemy ${SPECIES[this.enemy.species].name}`;
+    if (this.player.hp > 0 && this.enemy.hp > 0) {
+      this.endOfTurnStatus(this.player, pName);
+      this.checkPlayerFaint();
+      if (!this.result) {
+        this.endOfTurnStatus(this.enemy, eName);
+        this.checkEnemyFaint();
+      }
+    }
+    if (!this.result && this.afterQueue !== "forceSwitch") this.afterQueue = this.afterQueue === "end" ? "end" : "menu";
+  }
+
+  // ---- faint handling -------------------------------------------
+  checkEnemyFaint() {
+    const enemy = this.enemy;
+    if (enemy.hp > 0 || enemy.fainted) return;
+    enemy.fainted = true;
+    this.say(`Enemy ${SPECIES[enemy.species].name} fainted!`);
+    this.grantExp(enemy);
+    const next = this.enemyParty.findIndex((m) => m.hp > 0);
+    if (next === -1) {
+      if (this.mode === "trainer") {
+        this.say(`${this.game.playerName} defeated ${this.trainer.name}!`);
+        for (const line of this.trainer.winMsg) this.say(`${this.trainer.name}: ${line}`);
+        this.say(`${this.game.playerName} got $${this.trainer.payout} for winning!`, () => {
+          this.game.money += this.trainer.payout;
+        });
+      }
+      this.result = "win";
+      this.afterQueue = "end";
+    } else if (this.mode === "trainer") {
+      this.say(`${this.trainer.name} sent out ${SPECIES[this.enemyParty[next].species].name}!`, () => {
+        this.enemyIndex = next;
+        this.enemyStages = { atk: 0, def: 0, spd: 0 };
+        this.game.markSeen(this.enemyParty[next].species);
+      });
+    }
+  }
+
+  checkPlayerFaint() {
+    const mon = this.player;
+    if (mon.hp > 0 || mon.faintedShown) return;
+    mon.faintedShown = true;
+    this.say(`${mon.nickname} fainted!`);
+    const hasMore = this.game.party.some((m) => m.hp > 0);
+    if (!hasMore) {
+      this.say(`${this.game.playerName} is out of usable monsters!`);
+      this.say(`${this.game.playerName} whited out!`, () => { this.result = "lose"; });
+      this.afterQueue = "end";
+    } else {
+      this.afterQueue = "forceSwitch";
+    }
+  }
+
+  forceSwitch(index) {
+    const incoming = this.game.party[index];
+    delete incoming.faintedShown;
+    this.phase = "msg";
+    this.afterQueue = "menu";
+    this.say(`Go! ${incoming.nickname}!`, () => {
+      this.playerIndex = index;
+      this.playerStages = { atk: 0, def: 0, spd: 0 };
+    });
+  }
+
+  // ---- experience / leveling ------------------------------------
+  grantExp(defeated) {
+    const mon = this.player;
+    if (mon.hp <= 0) return;
+    const gain = Math.max(1, Math.floor((SPECIES[defeated.species].baseExp * defeated.level) / 7));
+    this.say(`${mon.nickname} gained ${gain} EXP!`, () => { mon.exp += gain; });
+    // level-up messages computed at display time via apply chain
+    const sim = { level: mon.level, exp: mon.exp + gain };
+    while (sim.level < 100 && sim.exp >= expForLevel(sim.level + 1)) {
+      sim.level++;
+      const newLevel = sim.level;
+      this.say(`${mon.nickname} grew to level ${newLevel}!`, () => {
+        const oldMax = mon.stats.hp;
+        mon.level = newLevel;
+        mon.stats = statsAtLevel(mon.species, newLevel);
+        mon.hp = Math.min(mon.stats.hp, mon.hp + (mon.stats.hp - oldMax));
+        // new moves at this level
+        for (const [lvl, moveId] of SPECIES[mon.species].learnset) {
+          if (lvl === newLevel && !mon.moves.some((m) => m.id === moveId)) {
+            this.game.pendingLearns.push({ mon, moveId });
+          }
+        }
+        const sp = SPECIES[mon.species];
+        if (sp.evolvesTo && newLevel >= sp.evolveLevel) {
+          if (!this.game.pendingEvos.some((e) => e.mon === mon)) {
+            this.game.pendingEvos.push({ mon, to: sp.evolvesTo });
+          }
+        }
+      });
+    }
+  }
+
+  // ---- items in battle ------------------------------------------
+  useItemInBattle(itemId, targetIndex) {
+    const item = ITEMS[itemId];
+    if (item.kind === "ball") {
+      if (this.mode === "trainer") {
+        this.say(`The trainer blocked the CAPSULE!`, () => { this.game.addItem(itemId, 1); });
+        this.game.removeItem(itemId, 1);
+        return;
+      }
+      this.game.removeItem(itemId, 1);
+      this.throwBall(item);
+      return;
+    }
+    const target = this.game.party[targetIndex !== undefined ? targetIndex : this.playerIndex];
+    if (item.kind === "heal") {
+      const healed = Math.min(item.amount, target.stats.hp - target.hp);
+      this.game.removeItem(itemId, 1);
+      this.say(`${this.game.playerName} used ${item.name}!`);
+      this.say(`${target.nickname} recovered ${healed} HP!`, () => {
+        target.hp = Math.min(target.stats.hp, target.hp + item.amount);
+      });
+    } else if (item.kind === "cure") {
+      this.game.removeItem(itemId, 1);
+      this.say(`${this.game.playerName} used ${item.name}!`);
+      this.say(`${target.nickname} feels much better!`, () => {
+        if (item.cures.includes(target.status)) { target.status = null; target.sleepTurns = 0; }
+      });
+    }
+  }
+
+  throwBall(item) {
+    const enemy = this.enemy;
+    this.say(`${this.game.playerName} threw a ${item.name}!`);
+    const M = enemy.stats.hp, H = enemy.hp;
+    const rate = SPECIES[enemy.species].catchRate;
+    let a = ((3 * M - 2 * H) * rate * item.bonus) / (3 * M);
+    if (enemy.status === "slp") a *= 2;
+    else if (enemy.status) a *= 1.5;
+    const caught = Math.random() * 255 < a;
+    const shakes = caught ? 3 : Math.min(2, Math.floor((a / 255) * 4 * Math.random()));
+    for (let i = 0; i < shakes; i++) this.say(`...it shook!`);
+    if (caught) {
+      this.say(`Gotcha! ${SPECIES[enemy.species].name} was caught!`, () => {
+        this.game.markCaught(enemy.species);
+        enemy.fainted = false;
+        delete enemy.faintedShown;
+        if (this.game.party.length < 6) {
+          this.game.party.push(enemy);
+        }
+      });
+      if (this.game.party.length >= 6) {
+        this.say(`It was sent to the STORAGE BOX.`, () => { this.game.box.push(enemy); });
+      }
+      this.result = "caught";
+      this.afterQueue = "end";
+    } else {
+      this.say(`Oh no! It broke free!`);
+    }
+  }
+}
