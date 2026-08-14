@@ -103,10 +103,12 @@ class Battle {
     // sleep / paralysis checks
     if (attacker.status === "slp") {
       if (attacker.sleepTurns > 0) {
-        this.say(`${attackerName} is fast asleep!`, () => { attacker.sleepTurns--; });
+        attacker.sleepTurns--;
+        this.say(`${attackerName} is fast asleep!`);
         return;
       }
-      this.say(`${attackerName} woke up!`, () => { attacker.status = null; });
+      attacker.status = null;
+      this.say(`${attackerName} woke up!`);
     }
     if (attacker.status === "par" && Math.random() < 0.25) {
       this.say(`${attackerName} is fully paralyzed!`);
@@ -124,6 +126,15 @@ class Battle {
     }
 
     if (move.kind === "status") {
+      if (move.heal) {
+        const amount = Math.min(attacker.stats.hp - attacker.hp, Math.floor(attacker.stats.hp * move.heal));
+        if (amount <= 0) this.say(`But it failed!`);
+        else {
+          attacker.hp = Math.min(attacker.stats.hp, attacker.hp + amount);
+          this.say(`${attackerName} regained health!`);
+        }
+        return;
+      }
       if (move.stat) {
         const target = move.stat.who === "self" ? attacker : defender;
         const targetStages = move.stat.who === "self" ? atkStages : defStages;
@@ -134,9 +145,11 @@ class Battle {
         if (before === after) {
           this.say(`But nothing happened!`);
         } else {
+          targetStages[s] = after;
           const statNames = { atk: "ATTACK", def: "DEFENSE", spd: "SPEED" };
           const verb = move.stat.delta > 0 ? "rose" : "fell";
-          this.say(`${targetName}'s ${statNames[s]} ${verb}!`, () => { targetStages[s] = after; });
+          const adverb = Math.abs(move.stat.delta) > 1 ? " sharply" : "";
+          this.say(`${targetName}'s ${statNames[s]}${adverb} ${verb}!`);
         }
       } else if (move.effect) {
         this.applyStatus(defender, defenderName, move.effect, true);
@@ -151,20 +164,17 @@ class Battle {
       return;
     }
     const flashTarget = isPlayer ? "enemy" : "player";
-    const notes = [];
-    if (crit) notes.push("A critical hit!");
-    if (typeMult > 1) notes.push("It's super effective!");
-    if (typeMult < 1) notes.push("It's not very effective...");
-
+    defender.hp = Math.max(0, defender.hp - dmg);
     this.queue.push({
-      text: null, // silent damage application with flash
+      text: null, // silent entry: trigger the hit flash when the attack lands on screen
       apply: () => {
-        defender.hp = Math.max(0, defender.hp - dmg);
         this.hitFlash = flashTarget;
         setTimeout(() => { this.hitFlash = null; }, 260);
       },
     });
-    for (const n of notes) this.say(n);
+    if (crit) this.say("A critical hit!");
+    if (typeMult > 1) this.say("It's super effective!");
+    if (typeMult < 1) this.say("It's not very effective...");
     if (move.effect && defender.hp > 0) {
       this.applyStatus(defender, defenderName, move.effect, false);
     }
@@ -182,10 +192,9 @@ class Battle {
       brn: `${targetName} was burned!`,
       slp: `${targetName} fell asleep!`,
     };
-    this.say(texts[effect.status], () => {
-      target.status = effect.status;
-      if (effect.status === "slp") target.sleepTurns = 1 + Math.floor(Math.random() * 3);
-    });
+    target.status = effect.status;
+    if (effect.status === "slp") target.sleepTurns = 1 + Math.floor(Math.random() * 3);
+    this.say(texts[effect.status]);
   }
 
   endOfTurnStatus(mon, name) {
@@ -193,9 +202,8 @@ class Battle {
     if (mon.status === "psn" || mon.status === "brn") {
       const chip = Math.max(1, Math.floor(mon.stats.hp / 16));
       const label = mon.status === "psn" ? "poison" : "its burn";
-      this.say(`${name} is hurt by ${label}!`, () => {
-        mon.hp = Math.max(0, mon.hp - chip);
-      });
+      mon.hp = Math.max(0, mon.hp - chip);
+      this.say(`${name} is hurt by ${label}!`);
     }
   }
 
@@ -234,10 +242,9 @@ class Battle {
     if (action.type === "switch") {
       const incoming = this.game.party[action.index];
       this.say(`${this.player.nickname}, come back!`);
-      this.say(`Go! ${incoming.nickname}!`, () => {
-        this.playerIndex = action.index;
-        this.playerStages = { atk: 0, def: 0, spd: 0 };
-      });
+      this.playerIndex = action.index;
+      this.playerStages = { atk: 0, def: 0, spd: 0 };
+      this.say(`Go! ${incoming.nickname}!`);
       this.enemyAct();
       this.endTurn();
       return;
@@ -352,10 +359,9 @@ class Battle {
     delete incoming.faintedShown;
     this.phase = "msg";
     this.afterQueue = "menu";
-    this.say(`Go! ${incoming.nickname}!`, () => {
-      this.playerIndex = index;
-      this.playerStages = { atk: 0, def: 0, spd: 0 };
-    });
+    this.playerIndex = index;
+    this.playerStages = { atk: 0, def: 0, spd: 0 };
+    this.say(`Go! ${incoming.nickname}!`);
   }
 
   // ---- experience / leveling ------------------------------------
@@ -363,30 +369,25 @@ class Battle {
     const mon = this.player;
     if (mon.hp <= 0) return;
     const gain = Math.max(1, Math.floor((SPECIES[defeated.species].baseExp * defeated.level) / 7));
-    this.say(`${mon.nickname} gained ${gain} EXP!`, () => { mon.exp += gain; });
-    // level-up messages computed at display time via apply chain
-    const sim = { level: mon.level, exp: mon.exp + gain };
-    while (sim.level < 100 && sim.exp >= expForLevel(sim.level + 1)) {
-      sim.level++;
-      const newLevel = sim.level;
-      this.say(`${mon.nickname} grew to level ${newLevel}!`, () => {
-        const oldMax = mon.stats.hp;
-        mon.level = newLevel;
-        mon.stats = statsAtLevel(mon.species, newLevel);
-        mon.hp = Math.min(mon.stats.hp, mon.hp + (mon.stats.hp - oldMax));
-        // new moves at this level
-        for (const [lvl, moveId] of SPECIES[mon.species].learnset) {
-          if (lvl === newLevel && !mon.moves.some((m) => m.id === moveId)) {
-            this.game.pendingLearns.push({ mon, moveId });
-          }
+    mon.exp += gain;
+    this.say(`${mon.nickname} gained ${gain} EXP!`);
+    while (mon.level < 100 && mon.exp >= expForLevel(mon.level + 1)) {
+      mon.level++;
+      const oldMax = mon.stats.hp;
+      mon.stats = statsAtLevel(mon.species, mon.level);
+      mon.hp = Math.min(mon.stats.hp, mon.hp + (mon.stats.hp - oldMax));
+      this.say(`${mon.nickname} grew to level ${mon.level}!`);
+      for (const [lvl, moveId] of SPECIES[mon.species].learnset) {
+        if (lvl === mon.level && !mon.moves.some((m) => m.id === moveId)) {
+          this.game.pendingLearns.push({ mon, moveId });
         }
-        const sp = SPECIES[mon.species];
-        if (sp.evolvesTo && newLevel >= sp.evolveLevel) {
-          if (!this.game.pendingEvos.some((e) => e.mon === mon)) {
-            this.game.pendingEvos.push({ mon, to: sp.evolvesTo });
-          }
+      }
+      const sp = SPECIES[mon.species];
+      if (sp.evolvesTo && mon.level >= sp.evolveLevel) {
+        if (!this.game.pendingEvos.some((e) => e.mon === mon)) {
+          this.game.pendingEvos.push({ mon, to: sp.evolvesTo });
         }
-      });
+      }
     }
   }
 
@@ -395,8 +396,8 @@ class Battle {
     const item = ITEMS[itemId];
     if (item.kind === "ball") {
       if (this.mode === "trainer") {
-        this.say(`The trainer blocked the CAPSULE!`, () => { this.game.addItem(itemId, 1); });
-        this.game.removeItem(itemId, 1);
+        this.say(`The trainer blocked the CAPSULE!`, );
+        this.say(`Don't be a thief!`);
         return;
       }
       this.game.removeItem(itemId, 1);
@@ -407,16 +408,14 @@ class Battle {
     if (item.kind === "heal") {
       const healed = Math.min(item.amount, target.stats.hp - target.hp);
       this.game.removeItem(itemId, 1);
+      target.hp = Math.min(target.stats.hp, target.hp + item.amount);
       this.say(`${this.game.playerName} used ${item.name}!`);
-      this.say(`${target.nickname} recovered ${healed} HP!`, () => {
-        target.hp = Math.min(target.stats.hp, target.hp + item.amount);
-      });
+      this.say(`${target.nickname} recovered ${healed} HP!`);
     } else if (item.kind === "cure") {
       this.game.removeItem(itemId, 1);
+      if (item.cures.includes(target.status)) { target.status = null; target.sleepTurns = 0; }
       this.say(`${this.game.playerName} used ${item.name}!`);
-      this.say(`${target.nickname} feels much better!`, () => {
-        if (item.cures.includes(target.status)) { target.status = null; target.sleepTurns = 0; }
-      });
+      this.say(`${target.nickname} feels much better!`);
     }
   }
 

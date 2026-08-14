@@ -107,6 +107,9 @@ const PEOPLE_PALETTES = {
   boy:       { o: "#1a1a2a", H: "#2a2a2a", S: "#f0c8a0", k: "#1a1a1a", J: "#4a9a3a", P: "#5a4a3a" },
   oldman:    { o: "#1a1a2a", H: "#c8c8c8", S: "#e8c098", k: "#1a1a1a", J: "#8a6a4a", P: "#4a4a4a" },
   leader:    { o: "#1a1a2a", H: "#2a2a2a", S: "#e0b890", k: "#1a1a1a", J: "#e07a2a", P: "#6a5a4a" },
+  fisher:    { o: "#1a1a2a", H: "#c8c8c8", S: "#e0b890", k: "#1a1a1a", J: "#2a6ac8", P: "#3a5a2a" },
+  guard:     { o: "#1a1a2a", H: "#3a3a3a", S: "#f0c8a0", k: "#1a1a1a", J: "#b82828", P: "#2a2a3a" },
+  elite:     { o: "#1a1a2a", H: "#6a2aa8", S: "#f0c8a0", k: "#1a1a1a", J: "#38205a", P: "#1a1a2a" },
 };
 
 const personCache = new Map();
@@ -268,9 +271,34 @@ function buildTiles() {
   TILE_CANVAS["X"] = makeTile((g) => {
     px(g, 0, 0, 16, 16, "#101018");
   });
+  TILE_CANVAS["b"] = makeTile((g) => {
+    g.drawImage(TILE_CANVAS["."], 0, 0);
+    px(g, 2, 4, 12, 10, "#2e7d32");
+    px(g, 4, 2, 8, 4, "#2e7d32");
+    px(g, 3, 5, 4, 3, "#43a047");
+    px(g, 9, 8, 4, 3, "#43a047");
+    px(g, 5, 7, 3, 3, "#c62828");
+    px(g, 10, 4, 3, 3, "#c62828");
+    px(g, 6, 11, 3, 3, "#c62828");
+  });
+  TILE_CANVAS["G"] = makeTile((g) => {
+    px(g, 0, 0, 16, 16, "#2a2430");
+    px(g, 1, 3, 14, 12, "#6a6278");
+    px(g, 3, 1, 10, 4, "#6a6278");
+    px(g, 3, 4, 5, 4, "#8a8298");
+    px(g, 9, 7, 4, 3, "#8a8298");
+    px(g, 2, 10, 4, 3, "#4a4458");
+    px(g, 10, 11, 4, 3, "#4a4458");
+  });
+  TILE_CANVAS["c"] = makeTile((g) => {
+    px(g, 0, 0, 16, 16, "#4a4054");
+    px(g, 2, 3, 2, 1, "#5a5068"); px(g, 9, 6, 2, 1, "#5a5068");
+    px(g, 5, 11, 2, 1, "#5a5068"); px(g, 12, 13, 2, 1, "#3a3444");
+    px(g, 3, 8, 1, 1, "#3a3444"); px(g, 13, 2, 1, 1, "#3a3444");
+  });
 }
 
-const SOLID_TILES = new Set(["T", "~", "F", "S", "R", "B", "W", "C", "K", "M", "t", "X"]);
+const SOLID_TILES = new Set(["T", "~", "F", "S", "R", "B", "W", "C", "K", "M", "t", "X", "b", "G"]);
 const GRASS_TILE = "w";
 
 function tileAt(map, x, y) {
