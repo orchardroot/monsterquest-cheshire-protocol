@@ -21,6 +21,44 @@ python3 -m http.server 8000
 | X / Backspace | Cancel (B) |
 | Esc | Open pause menu |
 
+On phones and tablets an on-screen D-pad, A/B buttons and a MENU button
+appear automatically — no keyboard needed.
+
+## Play on Android (or iPhone)
+
+MonsterQuest is a **PWA** (Progressive Web App): installable, fullscreen,
+and playable offline.
+
+1. **Host it over HTTPS.** This repo ships a GitHub Pages workflow
+   (`.github/workflows/pages.yml`) that publishes the game on every push —
+   if the run reports Pages isn't enabled yet, flip it on once under
+   *Settings → Pages → Source: GitHub Actions*. Any static host
+   (Netlify, Vercel, `python3 -m http.server` on your LAN) works too.
+2. **Open the URL in Chrome on Android** and tap **⋮ → Add to Home
+   screen / Install app**. (Safari on iOS: Share → Add to Home Screen.)
+3. Launch it from the home screen: it runs fullscreen with touch
+   controls, keeps your save in local storage, and works with no
+   network thanks to the service worker cache.
+
+### Want a real APK?
+
+The installed PWA already behaves like a native app, but if you need an
+actual `.apk`/`.aab` for the Play Store, wrap the hosted URL:
+
+```bash
+# Option A — Trusted Web Activity via Bubblewrap
+npm i -g @bubblewrap/cli
+bubblewrap init --manifest https://<your-pages-url>/manifest.webmanifest
+bubblewrap build            # produces app-release-signed.apk
+
+# Option B — Capacitor WebView wrapper (bundles the files offline)
+npm i @capacitor/core @capacitor/cli @capacitor/android
+npx cap init MonsterQuest com.example.monsterquest --web-dir .
+npx cap add android && npx cap open android   # build in Android Studio
+```
+
+Both consume the game exactly as-is — no code changes required.
+
 ## The adventure
 
 1. Wake up at home in **Maplewood Town** and pick your starter at

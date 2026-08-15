@@ -2,8 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>MonsterQuest</title>
+<meta name="theme-color" content="#181820">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MonsterQuest">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <style>
   html, body {
     margin: 0;
@@ -15,6 +23,11 @@
     justify-content: center;
     flex-direction: column;
     font-family: "Courier New", monospace;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
   #screen {
     image-rendering: pixelated;
@@ -35,6 +48,53 @@
     line-height: 1.5;
   }
   #help b { color: #d0d0e0; }
+
+  /* ---- touch controls (shown on coarse-pointer devices) ---- */
+  #touch { display: none; }
+  .tbtn {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(90, 90, 120, 0.35);
+    border: 2px solid rgba(200, 200, 230, 0.35);
+    color: rgba(240, 240, 255, 0.85);
+    border-radius: 14px;
+    font-family: "Courier New", monospace;
+    font-weight: bold;
+    z-index: 10;
+    touch-action: none;
+  }
+  .tbtn:active, .tbtn.pressed { background: rgba(150, 150, 200, 0.55); }
+  /* d-pad, bottom-left */
+  #t-up, #t-down, #t-left, #t-right { width: 58px; height: 58px; font-size: 24px; }
+  #t-up    { left: 76px;  bottom: 140px; }
+  #t-down  { left: 76px;  bottom: 20px; }
+  #t-left  { left: 14px;  bottom: 80px; }
+  #t-right { left: 138px; bottom: 80px; }
+  /* A / B, bottom-right */
+  #t-a, #t-b { width: 72px; height: 72px; border-radius: 50%; font-size: 26px; }
+  #t-a { right: 16px;  bottom: 110px; background: rgba(198, 40, 40, 0.4); }
+  #t-b { right: 104px; bottom: 40px; background: rgba(42, 79, 168, 0.4); }
+  /* menu, lower-center */
+  #t-menu { left: 40%; transform: translateX(-50%); bottom: 16px; width: 84px; height: 38px; font-size: 14px; }
+
+  @media (pointer: coarse) {
+    body { justify-content: flex-start; padding-top: max(10px, env(safe-area-inset-top)); }
+    #help { display: none; }
+    #touch { display: block; }
+    #screen {
+      width: min(100vw, 66vh);
+      border-left: none;
+      border-right: none;
+      border-radius: 0;
+    }
+    /* landscape: game left of controls is unnecessary; keep centered, controls overlay */
+    @media (orientation: landscape) {
+      body { justify-content: center; padding-top: 0; }
+      #screen { max-height: 100vh; width: auto; height: min(96vh, 60vw); }
+    }
+  }
 </style>
 </head>
 <body>
@@ -43,10 +103,27 @@
     <b>Arrows / WASD</b> move &nbsp;•&nbsp; <b>Z / Enter</b> confirm (A) &nbsp;•&nbsp;
     <b>X / Backspace</b> cancel (B) &nbsp;•&nbsp; <b>Esc</b> menu
   </div>
+  <div id="touch">
+    <div class="tbtn" id="t-up" data-btn="up">&#9650;</div>
+    <div class="tbtn" id="t-left" data-btn="left">&#9664;</div>
+    <div class="tbtn" id="t-right" data-btn="right">&#9654;</div>
+    <div class="tbtn" id="t-down" data-btn="down">&#9660;</div>
+    <div class="tbtn" id="t-a" data-btn="a">A</div>
+    <div class="tbtn" id="t-b" data-btn="b">B</div>
+    <div class="tbtn" id="t-menu" data-btn="start">MENU</div>
+  </div>
   <script src="js/data.js"></script>
   <script src="js/maps.js"></script>
   <script src="js/sprites.js"></script>
   <script src="js/battle.js"></script>
   <script src="js/game.js"></script>
+  <script>
+    // Register the service worker for offline / installed play (needs http(s))
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

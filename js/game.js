@@ -1861,4 +1861,32 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 
+// ---- touch controls ---------------------------------------------
+// On-screen buttons mirror the keyboard: d-pad presses go into `held`
+// (so hold-to-walk works) and also fire onPress for menu navigation.
+(function initTouchControls() {
+  const container = document.getElementById("touch");
+  if (!container) return;
+  const DIRS = new Set(["up", "down", "left", "right"]);
+  for (const el of container.querySelectorAll(".tbtn")) {
+    const btn = el.dataset.btn;
+    const activate = (e) => {
+      e.preventDefault();
+      el.classList.add("pressed");
+      onPress(btn);
+      if (DIRS.has(btn)) held.add(btn);
+    };
+    const release = (e) => {
+      if (e) e.preventDefault();
+      el.classList.remove("pressed");
+      if (DIRS.has(btn)) held.delete(btn);
+    };
+    el.addEventListener("pointerdown", activate);
+    el.addEventListener("pointerup", release);
+    el.addEventListener("pointercancel", release);
+    el.addEventListener("pointerleave", release);
+    el.addEventListener("contextmenu", (e) => e.preventDefault());
+  }
+})();
+
 requestAnimationFrame((t) => { lastTime = t; requestAnimationFrame(loop); });
