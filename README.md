@@ -40,24 +40,36 @@ and playable offline.
    controls, keeps your save in local storage, and works with no
    network thanks to the service worker cache.
 
-### Want a real APK?
+### Sideloadable APK
 
-The installed PWA already behaves like a native app, but if you need an
-actual `.apk`/`.aab` for the Play Store, wrap the hosted URL:
+Every push builds a signed, fully offline `monsterquest.apk` via GitHub
+Actions (`.github/workflows/apk.yml`) and publishes it to the repo's
+**Releases** page under the rolling tag **`apk-latest`**.
 
-```bash
-# Option A — Trusted Web Activity via Bubblewrap
-npm i -g @bubblewrap/cli
-bubblewrap init --manifest https://<your-pages-url>/manifest.webmanifest
-bubblewrap build            # produces app-release-signed.apk
+To install on your phone:
 
-# Option B — Capacitor WebView wrapper (bundles the files offline)
-npm i @capacitor/core @capacitor/cli @capacitor/android
-npx cap init MonsterQuest com.example.monsterquest --web-dir .
-npx cap add android && npx cap open android   # build in Android Studio
-```
+1. Open the repo's **Releases** on your phone and download
+   `monsterquest.apk` (or grab the `monsterquest-apk` artifact from any
+   Actions run).
+2. Open the downloaded file and confirm the *install unknown apps*
+   prompt. No Play Store, no account, no network permission — the whole
+   game ships inside the APK and your save lives on the device.
+3. The hardware back button acts as the game's B (cancel) button.
 
-Both consume the game exactly as-is — no code changes required.
+Builds are signed with a fresh throwaway key by default, so Android
+treats each build as a different publisher: **uninstall the previous
+build before installing a newer one**. For seamless upgrades, add two
+repo secrets and every build will share one identity:
+
+- `ANDROID_KEYSTORE_B64` — base64 of a keystore containing alias
+  `monsterquest` (e.g. `keytool -genkeypair -keystore mq.keystore -alias
+  monsterquest -keyalg RSA -validity 10000` then `base64 -w0 mq.keystore`)
+- `ANDROID_KEYSTORE_PASS` — its store/key password
+
+The wrapper itself is a ~90-line Android project in `android/` — a
+fullscreen WebView served from APK assets via `WebViewAssetLoader`. It
+can also be built locally with Android Studio or
+`gradle -p android assembleDebug`.
 
 ## The adventure
 

@@ -1,0 +1,54 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.monsterquest.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.monsterquest.app"
+        minSdk 24
+        targetSdk 34
+        versionCode (project.hasProperty('versionCode') ? project.property('versionCode').toInteger() : 1)
+        versionName (project.hasProperty('versionName') ? project.property('versionName') : "1.0")
+    }
+
+    signingConfigs {
+        release {
+            if (project.hasProperty('storeFile')) {
+                storeFile file(project.property('storeFile'))
+                storePassword project.property('storePassword')
+                keyAlias project.property('keyAlias')
+                keyPassword project.property('keyPassword')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (project.hasProperty('storeFile')) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.8.0'
+}
+
+// Bundle the web game into the APK's assets before every build.
+tasks.register('copyWebAssets', Copy) {
+    from(rootProject.projectDir.parentFile) {
+        include 'index.html', 'manifest.webmanifest', 'sw.js', 'js/**', 'icons/**'
+    }
+    into layout.projectDirectory.dir('src/main/assets/www')
+}
+preBuild.dependsOn copyWebAssets

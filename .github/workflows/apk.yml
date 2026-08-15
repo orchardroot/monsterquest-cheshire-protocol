@@ -1,0 +1,76 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: ["main", "master", "claude/pokemon-style-game-q728v6"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: Prepare signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            # Stable identity: repo secret keystore (base64 of a JKS/PKCS12 file,
+            # alias "monsterquest", store+key password in ANDROID_KEYSTORE_PASS)
+            echo "$KEYSTORE_B64" | base64 -d > "$GITHUB_WORKSPACE/mq.keystore"
+            echo "KS_PASS=${{ secrets.ANDROID_KEYSTORE_PASS }}" >> "$GITHUB_ENV"
+          else
+            # No secret configured: generate a throwaway self-signed key.
+            # (Each build gets a new signature — uninstall the old app before
+            # installing a newer build, or set the secret for stable upgrades.)
+            keytool -genkeypair -v -keystore "$GITHUB_WORKSPACE/mq.keystore" \
+              -alias monsterquest -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass monsterquest -keypass monsterquest \
+              -dname "CN=MonsterQuest, OU=Games, O=MonsterQuest, C=US"
+            echo "KS_PASS=monsterquest" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build signed release APK
+        run: |
+          gradle -p android assembleRelease \
+            -PstoreFile="$GITHUB_WORKSPACE/mq.keystore" \
+            -PstorePassword="$KS_PASS" \
+            -PkeyAlias=monsterquest \
+            -PkeyPassword="$KS_PASS" \
+            -PversionCode=${{ github.run_number }} \
+            -PversionName="1.${{ github.run_number }}"
+          cp android/app/build/outputs/apk/release/app-release.apk monsterquest.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: monsterquest-apk
+          path: monsterquest.apk
+
+      - name: Publish APK to rolling release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-latest
+          name: MonsterQuest APK (latest build)
+          body: |
+            Sideloadable Android build of MonsterQuest — download `monsterquest.apk`
+            on your phone, open it, and allow "install from unknown sources" when
+            prompted. Fully offline; your save lives on the device.
+
+            Note: unless the repo has a stable signing key configured
+            (`ANDROID_KEYSTORE_B64` secret), each build is signed with a fresh
+            throwaway key — uninstall the previous build before installing a new one.
+          files: monsterquest.apk
