@@ -66,10 +66,10 @@ repo secrets and every build will share one identity:
   monsterquest -keyalg RSA -validity 10000` then `base64 -w0 mq.keystore`)
 - `ANDROID_KEYSTORE_PASS` — its store/key password
 
-The wrapper itself is a ~90-line Android project in `android/` — a
-fullscreen WebView served from APK assets via `WebViewAssetLoader`. It
-can also be built locally with Android Studio or
-`gradle -p android assembleDebug`.
+The wrapper itself is a ~90-line, zero-dependency Android project in
+`android/` — a fullscreen WebView loading the game straight from APK
+assets (`file:///android_asset/`). It can also be built locally with
+Android Studio or `gradle -p android assembleDebug`.
 
 ## The adventure
 

@@ -5,17 +5,15 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import androidx.webkit.WebViewAssetLoader;
-
 /**
  * Thin fullscreen WebView shell around the bundled MonsterQuest web game.
- * Assets are served from inside the APK via WebViewAssetLoader, so the app
- * is fully playable offline; localStorage keeps the save file.
+ * The game is loaded directly from APK assets over the file:// scheme —
+ * the same approach Cordova apps have used for years, and the most widely
+ * compatible across WebView versions. The game makes no network requests,
+ * so no permissions are needed; localStorage keeps the save file.
  */
 public class MainActivity extends Activity {
 
@@ -30,21 +28,14 @@ public class MainActivity extends Activity {
         webView = new WebView(this);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
+        webView.getSettings().setAllowFileAccess(true);
         webView.setBackgroundColor(0xFF181820);
-
-        final WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
-                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
-                .build();
-        webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                return loader.shouldInterceptRequest(request.getUrl());
-            }
-        });
+        // Keep all navigation inside the WebView.
+        webView.setWebViewClient(new WebViewClient());
 
         setContentView(webView);
         hideSystemUi();
-        webView.loadUrl("https://appassets.androidx.dev/assets/www/index.html");
+        webView.loadUrl("file:///android_asset/www/index.html");
     }
 
     private void hideSystemUi() {
