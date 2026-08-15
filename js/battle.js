@@ -166,9 +166,10 @@ class Battle {
     const flashTarget = isPlayer ? "enemy" : "player";
     defender.hp = Math.max(0, defender.hp - dmg);
     this.queue.push({
-      text: null, // silent entry: trigger the hit flash when the attack lands on screen
+      text: null, // silent entry: flash + thud when the attack lands on screen
       apply: () => {
         this.hitFlash = flashTarget;
+        if (typeof Sound !== "undefined") Sound.sfx(typeMult > 1 ? "hit2" : "hit");
         setTimeout(() => { this.hitFlash = null; }, 260);
       },
     });
@@ -317,7 +318,9 @@ class Battle {
     const enemy = this.enemy;
     if (enemy.hp > 0 || enemy.fainted) return;
     enemy.fainted = true;
-    this.say(`Enemy ${SPECIES[enemy.species].name} fainted!`);
+    this.say(`Enemy ${SPECIES[enemy.species].name} fainted!`, () => {
+      if (typeof Sound !== "undefined") Sound.sfx("faint");
+    });
     this.grantExp(enemy);
     const next = this.enemyParty.findIndex((m) => m.hp > 0);
     if (next === -1) {
@@ -343,7 +346,9 @@ class Battle {
     const mon = this.player;
     if (mon.hp > 0 || mon.faintedShown) return;
     mon.faintedShown = true;
-    this.say(`${mon.nickname} fainted!`);
+    this.say(`${mon.nickname} fainted!`, () => {
+      if (typeof Sound !== "undefined") Sound.sfx("faint");
+    });
     const hasMore = this.game.party.some((m) => m.hp > 0);
     if (!hasMore) {
       this.say(`${this.game.playerName} is out of usable monsters!`);
@@ -376,7 +381,9 @@ class Battle {
       const oldMax = mon.stats.hp;
       mon.stats = statsAtLevel(mon.species, mon.level);
       mon.hp = Math.min(mon.stats.hp, mon.hp + (mon.stats.hp - oldMax));
-      this.say(`${mon.nickname} grew to level ${mon.level}!`);
+      this.say(`${mon.nickname} grew to level ${mon.level}!`, () => {
+        if (typeof Sound !== "undefined") Sound.sfx("levelup");
+      });
       for (const [lvl, moveId] of SPECIES[mon.species].learnset) {
         if (lvl === mon.level && !mon.moves.some((m) => m.id === moveId)) {
           this.game.pendingLearns.push({ mon, moveId });
@@ -421,7 +428,9 @@ class Battle {
 
   throwBall(item) {
     const enemy = this.enemy;
-    this.say(`${this.game.playerName} threw a ${item.name}!`);
+    this.say(`${this.game.playerName} threw a ${item.name}!`, () => {
+      if (typeof Sound !== "undefined") Sound.sfx("throw");
+    });
     const M = enemy.stats.hp, H = enemy.hp;
     const rate = SPECIES[enemy.species].catchRate;
     let a = ((3 * M - 2 * H) * rate * item.bonus) / (3 * M);
@@ -429,9 +438,12 @@ class Battle {
     else if (enemy.status) a *= 1.5;
     const caught = Math.random() * 255 < a;
     const shakes = caught ? 3 : Math.min(2, Math.floor((a / 255) * 4 * Math.random()));
-    for (let i = 0; i < shakes; i++) this.say(`...it shook!`);
+    for (let i = 0; i < shakes; i++) this.say(`...it shook!`, () => {
+      if (typeof Sound !== "undefined") Sound.sfx("shake");
+    });
     if (caught) {
       this.say(`Gotcha! ${SPECIES[enemy.species].name} was caught!`, () => {
+        if (typeof Sound !== "undefined") Sound.sfx("catch");
         this.game.markCaught(enemy.species);
         enemy.fainted = false;
         delete enemy.faintedShown;

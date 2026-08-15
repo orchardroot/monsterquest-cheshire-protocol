@@ -1,17 +1,78 @@
-# MonsterQuest
+# MonsterQuest: The Cheshire Protocol
 
-A retro monster-catching RPG in the spirit of the classic Game Boy games —
-built entirely with vanilla JavaScript and HTML5 canvas. No dependencies,
-no build step: open `index.html` in any modern browser and play.
+A retro monster-catching RPG set across the real towns and villages of
+**Cheshire, England** — with a cybersecurity twist. Built entirely with
+vanilla JavaScript and HTML5 canvas: no dependencies, no build step, no
+audio files (the chiptune soundtrack is synthesized live in WebAudio).
 
-All creatures, names, sprites, maps and art are original.
+All creatures, names, sprites, maps, music and art are original.
+
+## The story
+
+You are **JIM**, a junior security researcher from Macclesfield. The
+hacker collective **DARKBYTE** has hijacked the great radio telescope at
+**Jodrell Bank** and is broadcasting a rogue signal that agitates the
+region's monsters. Dr. Alder of Alder Labs hands you a partner monster
+and a mission: audit every gym in Cheshire, collect all **8 access
+badges**, shut down DARKBYTE's broadcast, and take on the league behind
+Chester's ancient walls — **THE FIREWALL** — where your rival, the
+insufferable hacker **VEX**, sits as Champion.
+
+## The region
+
+**18 towns and villages**, all real Cheshire places:
+
+Macclesfield (start) · Bollington · Prestbury · Wilmslow · Alderley Edge ·
+Knutsford · Holmes Chapel · Congleton · Sandbach · Crewe · Nantwich ·
+Middlewich · Northwich · Frodsham · Runcorn · Warrington · Tarporley ·
+Chester
+
+Plus landmark sites: the **Edge Caverns** under Alderley (home of
+MERLYNX, the Wizard's cat), the **Northwich Salt Mine** (DARKBYTE's
+sub-hideout and TERRATAUR's lair), **Delamere Forest**, **Beeston
+Castle** (ZEPHYRION's ruin), and **Jodrell Bank Observatory** — the
+story's climax, where GLITCHRA waits in the static.
+
+### The 8 gyms
+
+| Town | Leader | Type | Badge |
+|------|--------|------|-------|
+| Wilmslow | Sysadmin Ada | Electric | PACKET |
+| Knutsford | Madam Gaskell | Psychic | CIPHER |
+| Congleton | Bearward Otis | Normal/Ground | BEAR |
+| Crewe | Stoker Di | Fire | KERNEL |
+| Nantwich | Brine Nell | Water | TOKEN |
+| Northwich | Foreman Jack | Rock | DAEMON |
+| Runcorn | Chemist Ria | Poison | PROXY |
+| Warrington | Netrunner Mo | **Cyber** | ADMIN |
+
+Then the **WHITE HATS** (Sue, Raj, Kim, Doc) and **Champion VEX** at
+Chester — gated behind all 8 badges *and* defeating ROOT at Jodrell Bank.
+
+## Features
+
+- **103 original monsters** across 13 types, including the new **Cyber
+  type**, three-stage starter lines, the grinning **GRINMALKIN** of
+  Cheshire-cat legend, silk moths for Macclesfield, salt golems for
+  Northwich, a steam locomotive for Crewe, and DARKBYTE's digital
+  constructs (Trojanox, Phishfin, Botnetle, Wormhack...)
+- **4 catchable legendaries**: Merlynx, Terrataur, Zephyrion, Glitchra —
+  one-shot encounters
+- **Chiptune soundtrack + SFX**, all synthesized in WebAudio: title,
+  town, route, cave, battle, league, and villain themes, plus victory
+  jingles, hit/faint/catch/level-up effects. Toggle in the pause menu.
+- **Rail fast travel** between Macclesfield, Wilmslow, Crewe, Warrington
+  and Chester — unlocked per station as you visit on foot
+- Gen-1-style battle engine: STAB, full type chart, crits, stat stages,
+  priority, status conditions, catching (4 capsule tiers), day care,
+  fishing, berry bushes, brine-pool healing, arcade slots, quiz master,
+  in-game trade, whiteout/respawn, Monster Dex, 8-badge trainer card
+- **Save/Load** via localStorage
 
 ## How to play
 
 ```bash
-# any static server works; or just double-click index.html
-python3 -m http.server 8000
-# then open http://localhost:8000
+python3 -m http.server 8000   # or just open index.html
 ```
 
 | Key | Action |
@@ -19,136 +80,32 @@ python3 -m http.server 8000
 | Arrow keys / WASD | Move |
 | Z / Enter / Space | Confirm (A) |
 | X / Backspace | Cancel (B) |
-| Esc | Open pause menu |
+| Esc | Pause menu |
 
-On phones and tablets an on-screen D-pad, A/B buttons and a MENU button
-appear automatically — no keyboard needed.
+On phones an on-screen D-pad, A/B and MENU buttons appear automatically.
 
-## Play on Android (or iPhone)
+## Play on Android
 
-MonsterQuest is a **PWA** (Progressive Web App): installable, fullscreen,
-and playable offline.
-
-1. **Host it over HTTPS.** This repo ships a GitHub Pages workflow
-   (`.github/workflows/pages.yml`) that publishes the game on every push —
-   if the run reports Pages isn't enabled yet, flip it on once under
-   *Settings → Pages → Source: GitHub Actions*. Any static host
-   (Netlify, Vercel, `python3 -m http.server` on your LAN) works too.
-2. **Open the URL in Chrome on Android** and tap **⋮ → Add to Home
-   screen / Install app**. (Safari on iOS: Share → Add to Home Screen.)
-3. Launch it from the home screen: it runs fullscreen with touch
-   controls, keeps your save in local storage, and works with no
-   network thanks to the service worker cache.
-
-### Sideloadable APK
-
-Every push builds a signed, fully offline `monsterquest.apk` via GitHub
-Actions (`.github/workflows/apk.yml`) and publishes it to the repo's
-**Releases** page under the rolling tag **`apk-latest`**.
-
-To install on your phone:
-
-1. Open the repo's **Releases** on your phone and download
-   `monsterquest.apk` (or grab the `monsterquest-apk` artifact from any
-   Actions run).
-2. Open the downloaded file and confirm the *install unknown apps*
-   prompt. No Play Store, no account, no network permission — the whole
-   game ships inside the APK and your save lives on the device.
-3. The hardware back button acts as the game's B (cancel) button.
-
-Builds are signed with a fresh throwaway key by default, so Android
-treats each build as a different publisher: **uninstall the previous
-build before installing a newer one**. For seamless upgrades, add two
-repo secrets and every build will share one identity:
-
-- `ANDROID_KEYSTORE_B64` — base64 of a keystore containing alias
-  `monsterquest` (e.g. `keytool -genkeypair -keystore mq.keystore -alias
-  monsterquest -keyalg RSA -validity 10000` then `base64 -w0 mq.keystore`)
-- `ANDROID_KEYSTORE_PASS` — its store/key password
-
-The wrapper itself is a ~90-line, zero-dependency Android project in
-`android/` — a fullscreen WebView loading the game straight from APK
-assets (`file:///android_asset/`). It can also be built locally with
-Android Studio or `gradle -p android assembleDebug`.
-
-## The adventure
-
-1. Wake up at home in **Maplewood Town** and pick your starter at
-   **Prof. Maple's lab** — **Sproutle** (Grass), **Cindercub** (Fire) or
-   **Aquafin** (Water) — then beat your rival **Axel**.
-2. Travel north through **Route 1** to **Oakridge City** and beat
-   **Leader Slate** (Rock) for the **Quarry Badge**.
-3. Head east along **Route 2** — past a rival ambush — to **Seabreeze
-   Port**: get the **Old Rod**, trade for a rare monster, and beat
-   **Leader Marina** (Water) for the **Tide Badge**.
-4. Climb **Route 3** (drop a monster at the **Day Care**!) and brave the
-   winding **Echo Cave**, where wild monsters strike anywhere and an
-   ancient guardian sleeps in the depths...
-5. Emerge in **Emberfall Village**: soak your team in the free **hot
-   spring** and take the **Cinder Badge** from **Leader Blaze** (Fire).
-6. Follow **Route 4** to lakeside **Willowmere City**: play the
-   **Arcade slots** for coin prizes, ace the **Quiz Master**'s challenge,
-   and earn the **Mind Badge** from **Leader Fae** (Psychic).
-7. With all 4 badges, climb **Route 5** to **Crown Plateau**: face the
-   storm-bird shrine, run the **Elite gauntlet**, and take the title from
-   the **Champion** to enter the **Hall of Fame**.
-
-## World
-
-**5 towns/cities** (Maplewood, Oakridge, Seabreeze, Emberfall, Willowmere),
-**5 routes**, a multi-level **cave dungeon**, and the **Crown Plateau**
-league — 29 maps in all, fully connected and walkable.
-
-## Activities
-
-- **Fishing** — get the Old Rod in Seabreeze; face any fishable water,
-  cast, and strike when the `!` bites. Different waters hide different
-  fish (ponds, harbor, lake).
-- **Arcade** — buy coins, play the 3-reel slot machines, and trade
-  winnings for prizes including the digital monster **Pixelit**.
-- **Day Care** — leave a monster on Route 3; it gains experience for
-  every step you take, for a modest fee.
-- **In-game trade** — a collector in Seabreeze will swap his **Chompkin**
-  for a Buzzler.
-- **Berry bushes** — pick free healing berries along the routes; they
-  regrow after enough steps.
-- **Hot spring** — Emberfall's spring fully heals your team, free.
-- **Quiz Master** — answer all of Willowmere's quiz questions for cash
-  and capsules.
-- **Legendaries** — one-shot encounters with **Terrataur** (Echo Cave
-  depths) and **Zephyrion** (Crown Plateau shrine). Catch them or lose
-  them forever.
-- **Rival battles** — Axel fights you three times, ending as League
-  Champion with a full team.
-
-## Features
-
-- **34 original monsters** with hand-drawn pixel sprites, 12 elemental
-  types, evolution lines, and per-species level-up learnsets
-- **Authentic Gen-1-style battle engine**: physical/special split, STAB,
-  full type chart, speed-based critical hits, stat stages, priority
-  moves, healing moves, accuracy checks
-- **Status conditions** (poison, burn, paralysis, sleep) with in-battle
-  and end-of-turn effects
-- **Catching** with HP/status/ball-modified formula, 4 capsule tiers,
-  party of 6 + storage box
-- **Experience & leveling** (medium-fast curve), move learning with
-  forget-a-move prompts, post-battle evolutions
-- **4 gym leaders + Elite gauntlet + Champion**, 20+ trainers, dynamic
-  rival team based on your starter choice
-- **Items & economy**: potions (4 tiers), status cures, berries,
-  capsules, arcade coins; per-city marts with escalating stock
-- **Care Centers in every city**, whiteout/respawn, Monster Dex
-  (seen/caught), trainer card with badge case, party reordering
-- **Save/Load** via `localStorage`
+- **Sideload APK**: every push builds a signed, fully offline
+  `monsterquest.apk` and publishes it to the repo's Releases under the
+  rolling tag **`apk-latest`**. Download it on your phone, open it, allow
+  "install unknown apps". The hardware back button acts as B. (Builds use
+  a throwaway signing key by default — uninstall the previous build
+  before installing a new one, or set the `ANDROID_KEYSTORE_B64` /
+  `ANDROID_KEYSTORE_PASS` repo secrets for stable upgrades.)
+- **PWA**: host over HTTPS (a GitHub Pages workflow is included — enable
+  Pages once under *Settings → Pages → Source: GitHub Actions*), open in
+  Chrome, and *Add to Home screen* for a fullscreen offline install.
 
 ## Project layout
 
 ```
-index.html      canvas + shell
-js/data.js      type chart, moves, species (stats, learnsets, pixel art), items
-js/maps.js      maps, warps, NPCs, trainers, encounters, quiz data
-js/sprites.js   procedural tile renderer + character/monster sprite cache
-js/battle.js    turn-based battle engine (damage, status, catching, exp)
-js/game.js      overworld, UI screens, activities, story scripting, main loop
+index.html      canvas + touch controls + PWA shell
+js/audio.js     WebAudio chiptune sequencer + SFX
+js/data.js      types, moves, 103 species (stats, learnsets, art), items
+js/maps.js      the Cheshire world: town/route/cave factories, trainers
+js/sprites.js   tile renderer, character art, procedural monster sprites
+js/battle.js    turn-based battle engine
+js/game.js      overworld, UI, story scripting, activities, main loop
+android/        WebView wrapper project (built by CI into the APK)
 ```

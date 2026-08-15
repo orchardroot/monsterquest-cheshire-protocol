@@ -76,8 +76,8 @@
   #t-a, #t-b { width: 72px; height: 72px; border-radius: 50%; font-size: 26px; }
   #t-a { right: 16px;  bottom: 110px; background: rgba(198, 40, 40, 0.4); }
   #t-b { right: 104px; bottom: 40px; background: rgba(42, 79, 168, 0.4); }
-  /* menu, lower-center */
-  #t-menu { left: 40%; transform: translateX(-50%); bottom: 16px; width: 84px; height: 38px; font-size: 14px; }
+  /* menu, right column above A — clear of the d-pad */
+  #t-menu { right: 20px; bottom: 202px; width: 76px; height: 38px; font-size: 14px; }
 
   @media (pointer: coarse) {
     body { justify-content: flex-start; padding-top: max(10px, env(safe-area-inset-top)); }
@@ -112,6 +112,7 @@
     <div class="tbtn" id="t-b" data-btn="b">B</div>
     <div class="tbtn" id="t-menu" data-btn="start">MENU</div>
   </div>
+  <script src="js/audio.js"></script>
   <script src="js/data.js"></script>
   <script src="js/maps.js"></script>
   <script src="js/sprites.js"></script>

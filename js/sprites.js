@@ -26,12 +26,169 @@ function renderArt(art, pal, scale, flipX) {
   return c;
 }
 
+
+// ---- procedural monster sprite compositor -----------------------
+// Species without hand-drawn `art` provide `gen: {body, size, feats}`
+// and get a deterministic 16x16 sprite composed here.
+function hash32(s) {
+  let h = 2166136261;
+  for (const c of s) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  return h >>> 0;
+}
+function mulberry(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const TYPE_GEN_COLORS = {
+  Normal:   ["#c8b088", "#8a7a5a", "#f0e0c0"],
+  Fire:     ["#e8763a", "#a83c14", "#f8c84a"],
+  Water:    ["#4a8ad8", "#25538f", "#9fd3f8"],
+  Grass:    ["#5aab46", "#2e6d22", "#a5d6a7"],
+  Electric: ["#f0c830", "#a8821a", "#f8ec90"],
+  Flying:   ["#9a8ade", "#5a4a9e", "#d8d0f8"],
+  Bug:      ["#a8b830", "#6a7a1a", "#d8e070"],
+  Poison:   ["#9a4aaa", "#5c2468", "#d090e0"],
+  Rock:     ["#a89468", "#6a5c3a", "#e0d4b8"],
+  Ground:   ["#d0a050", "#8a6428", "#ecd09a"],
+  Psychic:  ["#e8709a", "#98325a", "#f8c0d8"],
+  Ghost:    ["#7a5aa8", "#41306a", "#c0aae8"],
+  Cyber:    ["#28c8a0", "#0e7a62", "#a0f8e0"],
+};
+
+function shade(hex, f) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.min(255, Math.max(0, Math.round(((n >> 16) & 255) * f)));
+  const g = Math.min(255, Math.max(0, Math.round(((n >> 8) & 255) * f)));
+  const b = Math.min(255, Math.max(0, Math.round((n & 255) * f)));
+  return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, "0");
+}
+
+function genMonsterArt(id, sp) {
+  const rnd = mulberry(hash32(id));
+  const g = sp.gen || {};
+  const size = g.size === undefined ? 1 : g.size;   // 0 small, 1 mid, 2 big
+  const grid = Array.from({ length: 16 }, () => Array(16).fill("."));
+  const half = 8;
+  const set = (x, y, ch) => {
+    if (x >= 0 && x < 16 && y >= 0 && y < 16 && grid[y]) grid[y][x] = ch;
+  };
+  const fillEllipseHalf = (cx, cy, rx, ry, ch) => {
+    for (let y = 0; y < 16; y++) for (let x = 0; x < half; x++) {
+      const dx = (x - cx) / rx, dy = (y - cy) / ry;
+      if (dx * dx + dy * dy <= 1) grid[y][x] = ch;
+    }
+  };
+  const body = g.body || ["blob", "tall", "quad", "orb"][Math.floor(rnd() * 4)];
+  const S = size * 0.9;
+  let eyeY = 7, mouthY = 9, topY = 4;
+  if (body === "blob") {
+    fillEllipseHalf(7.5, 9, 4.4 + S, 4.4 + S * 0.8, "A");
+    eyeY = 8 - size; mouthY = 10; topY = 9 - Math.round(4.4 + S * 0.8);
+  } else if (body === "orb") {
+    fillEllipseHalf(7.5, 8, 4.6 + S, 4.6 + S, "A");
+    eyeY = 7 - size; mouthY = 9; topY = 8 - Math.round(4.6 + S);
+  } else if (body === "tall") {
+    fillEllipseHalf(7.5, 9, 3.4 + S * 0.6, 5.4 + S, "A");
+    fillEllipseHalf(7.5, 5, 3 + S * 0.5, 2.6, "A");
+    eyeY = 5; mouthY = 7; topY = 2;
+  } else if (body === "quad") {
+    fillEllipseHalf(7.5, 8.6, 4.8 + S, 3.4 + S * 0.6, "A");
+    fillEllipseHalf(7.5, 5, 2.8 + S * 0.4, 2.4, "A");
+    for (const lx of [4 - Math.round(S), 6]) {
+      for (let y = 11; y <= 13 + Math.min(1, size); y++) { set(lx, y, "A"); set(lx + 1, y, "A"); }
+    }
+    eyeY = 4; mouthY = 6; topY = 2;
+  } else if (body === "fish") {
+    fillEllipseHalf(7.5, 8, 5 + S, 3.4 + S * 0.6, "A");
+    for (let y = 4; y <= 6; y++) set(7, y - Math.min(1, size), "C");
+    set(6, 5 - Math.min(1, size), "C");
+    eyeY = 7; mouthY = 9; topY = 4;
+  } else if (body === "serpent") {
+    fillEllipseHalf(7.5, 4.5, 3, 2.6, "A");
+    fillEllipseHalf(6.5, 8.5, 2.6, 2.4, "A");
+    fillEllipseHalf(7.5, 12, 3.2, 2.4, "A");
+    eyeY = 4; mouthY = 6; topY = 2;
+  } else if (body === "winged") {
+    fillEllipseHalf(7.5, 8, 3.2 + S * 0.6, 3.6 + S * 0.6, "A");
+    for (let i = 0; i < 4 + size; i++) {
+      for (let x = 0; x <= i; x++) set(3 - Math.min(1, size) - x, 5 + i, "C");
+    }
+    eyeY = 6; mouthY = 8; topY = 4;
+  }
+  // mirror left half to right
+  for (let y = 0; y < 16; y++) for (let x = 0; x < half; x++) {
+    if (grid[y][x] !== ".") grid[y][15 - x] = grid[y][x];
+  }
+  // features
+  const feats = g.feats || [];
+  const topRow = Math.max(0, topY);
+  const has = (f) => feats.includes(f);
+  if (has("ears"))   { set(5, topRow, "A"); set(5, topRow - 1, "A"); set(10, topRow, "A"); set(10, topRow - 1, "A"); }
+  if (has("horns"))  { set(4, topRow, "C"); set(4, topRow - 1, "C"); set(11, topRow, "C"); set(11, topRow - 1, "C"); }
+  if (has("antennae")) { set(5, topRow - 1, "o"); set(5, topRow - 2, "C"); set(10, topRow - 1, "o"); set(10, topRow - 2, "C"); }
+  if (has("flame"))  { for (const [dx, dy] of [[6, -1], [7, -2], [8, -1], [7, -3], [9, -2]]) set(dx, topRow + dy, "C"); }
+  if (has("leaf"))   { set(7, topRow - 1, "B"); set(8, topRow - 1, "B"); set(7, topRow - 2, "B"); set(6, topRow - 2, "B"); set(9, topRow - 2, "B"); }
+  if (has("fins"))   { for (let y = eyeY; y < eyeY + 3; y++) { set(1, y, "C"); set(14, y, "C"); } }
+  if (has("gem"))    { set(7, eyeY + 1, "C"); set(8, eyeY + 1, "C"); }
+  if (has("bolt"))   { set(3, eyeY + 1, "C"); set(12, eyeY + 1, "C"); set(2, eyeY + 2, "C"); set(13, eyeY + 2, "C"); }
+  if (has("rocks"))  { for (let i = 0; i < 5; i++) { const x = 3 + Math.floor(rnd() * 5); const y = mouthY + 1 + Math.floor(rnd() * 3); if (grid[y] && grid[y][x] === "A") { grid[y][x] = "B"; grid[y][15 - x] = "B"; } } }
+  if (has("pixel"))  { for (let y = mouthY + 1; y < 15; y++) for (let x = 3; x < 13; x++) { if (grid[y][x] === "A" && (x + y) % 2 === 0) grid[y][x] = "B"; } }
+  if (has("stripes")) { for (let y = mouthY + 1; y < 15; y += 2) for (let x = 3; x < 13; x++) { if (grid[y][x] === "A") grid[y][x] = "B"; } }
+  if (has("wisp"))   { for (let x = 2; x < 14; x++) { for (let y = 15; y > 11; y--) { if (grid[y][x] !== "." && (x % 2 === 0)) { grid[y][x] = "."; break; } } } }
+  if (has("tail"))   { set(13, 12, "A"); set(14, 11, "A"); set(14, 10, "C"); }
+  if (has("shell"))  { for (let y = mouthY; y < 14; y++) for (let x = 4; x < 12; x++) { if (grid[y][x] === "A" && ((x - y) % 3 === 0)) grid[y][x] = "B"; } }
+  if (has("screen")) { for (let y = eyeY - 1; y <= mouthY; y++) for (let x = 5; x <= 10; x++) { if (grid[y][x] !== ".") grid[y][x] = "m"; } }
+  // eyes + mouth
+  const eyeLX = 5, eyeRX = 10;
+  if (has("screen")) {
+    set(eyeLX + 1, eyeY, "C"); set(eyeRX - 1, eyeY, "C");
+  } else {
+    set(eyeLX, eyeY, "w"); set(eyeLX + 1, eyeY, "k");
+    set(eyeRX, eyeY, "k"); set(eyeRX + 1, eyeY, "w");
+    if (has("grin")) { for (let x = 5; x <= 10; x++) set(x, mouthY, "m"); set(4, mouthY - 1, "m"); set(11, mouthY - 1, "m"); }
+    else { set(7, mouthY, "m"); set(8, mouthY, "m"); }
+  }
+  // outline pass
+  const out = Array.from({ length: 16 }, () => Array(16).fill("."));
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+    if (grid[y][x] !== ".") { out[y][x] = grid[y][x]; continue; }
+    const near = [[0, 1], [0, -1], [1, 0], [-1, 0]].some(([dx, dy]) => {
+      const c = grid[y + dy] && grid[y + dy][x + dx];
+      return c && c !== "." && c !== "o";
+    });
+    if (near) out[y][x] = "o";
+  }
+  // palette from types with per-species jitter
+  const t1 = TYPE_GEN_COLORS[sp.types[0]] || TYPE_GEN_COLORS.Normal;
+  const t2 = TYPE_GEN_COLORS[sp.types[1] || sp.types[0]] || t1;
+  const jit = 0.9 + rnd() * 0.25;
+  const A = shade(t1[0], jit);
+  return {
+    art: out.map((row) => row.join("")),
+    pal: {
+      o: shade(t1[1], 0.42), A, B: shade(t1[1], jit), C: shade(t2[2] || t2[0], 1),
+      w: "#ffffff", k: "#181818", m: shade(t1[1], 0.6),
+    },
+  };
+}
+
 const spriteCache = new Map();
 function monsterSprite(speciesId, scale, flipX) {
   const key = `${speciesId}:${scale}:${!!flipX}`;
   if (!spriteCache.has(key)) {
     const sp = SPECIES[speciesId];
-    spriteCache.set(key, renderArt(sp.art, sp.pal, scale, flipX));
+    let art = sp.art, pal = sp.pal;
+    if (!art) {
+      const gen = genMonsterArt(speciesId, sp);
+      art = gen.art; pal = gen.pal;
+    }
+    spriteCache.set(key, renderArt(art, pal, scale, flipX));
   }
   return spriteCache.get(key);
 }
@@ -109,7 +266,10 @@ const PEOPLE_PALETTES = {
   leader:    { o: "#1a1a2a", H: "#2a2a2a", S: "#e0b890", k: "#1a1a1a", J: "#e07a2a", P: "#6a5a4a" },
   fisher:    { o: "#1a1a2a", H: "#c8c8c8", S: "#e0b890", k: "#1a1a1a", J: "#2a6ac8", P: "#3a5a2a" },
   guard:     { o: "#1a1a2a", H: "#3a3a3a", S: "#f0c8a0", k: "#1a1a1a", J: "#b82828", P: "#2a2a3a" },
-  elite:     { o: "#1a1a2a", H: "#6a2aa8", S: "#f0c8a0", k: "#1a1a1a", J: "#38205a", P: "#1a1a2a" },
+  elite:     { o: "#1a1a2a", H: "#f0f0f0", S: "#f0c8a0", k: "#1a1a1a", J: "#f8f8f8", P: "#c8c8d8" },
+  grunt:     { o: "#0a1a12", H: "#101014", S: "#d8b890", k: "#1a1a1a", J: "#103028", P: "#0a0a0a" },
+  boss:      { o: "#0a1a12", H: "#28c8a0", S: "#e0c098", k: "#1a1a1a", J: "#101418", P: "#28322e" },
+  wizard:    { o: "#1a1a2a", H: "#e8e8e8", S: "#e8c098", k: "#1a1a1a", J: "#3a2a7a", P: "#28205a" },
 };
 
 const personCache = new Map();

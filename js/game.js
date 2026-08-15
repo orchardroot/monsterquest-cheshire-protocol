@@ -41,7 +41,7 @@ window.addEventListener("blur", () => held.clear());
 // ---- game state -------------------------------------------------
 const G = {
   mode: "title",         // title | overworld | dialog | menu | party | summary | bag | dex | trainercard | shop | battle | transition
-  playerName: "RILEY",
+  playerName: "JIM",
   map: "home", x: 2, y: 5, dir: "down",
   moving: false, moveProgress: 0, moveFrom: null,
   turnLock: 0,
@@ -65,6 +65,13 @@ const G = {
 };
 
 function currentMap() { return MAPS[G.map]; }
+
+function updateMusic() {
+  if (G.mode === "title") { Sound.playSong("title"); return; }
+  const map = currentMap();
+  const song = (map && map.music) || (map && map.outdoor ? "route" : "town");
+  Sound.playSong(song);
+}
 function hasSave() { try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; } }
 
 function newGame() {
@@ -75,10 +82,13 @@ function newGame() {
   G.map = "home"; G.x = 2; G.y = 5; G.dir = "down";
   G.healPoint = { map: "home", x: 4, y: 6, dir: "up" };
   G.mode = "overworld";
+  G.flags.visited_macclesfield = true;
+  updateMusic();
   showDialog([
-    "MOM: Oh, " + G.playerName + "! Prof. MAPLE from the LAB was looking for you.",
-    "MOM: Something about choosing your very first monster... How exciting!",
-    "MOM: The LAB is the big building on the right side of town.",
+    "MUM: Jim, love! DR. ALDER rang from ALDER LABS.",
+    "MUM: Something about that horrid DARKBYTE business on the news...",
+    "MUM: She says she needs a junior security researcher. That's you, apparently!",
+    "MUM: The lab's just along the street. Take your coat!",
   ]);
 }
 
@@ -86,6 +96,7 @@ function saveGame() {
   const data = {
     playerName: G.playerName, party: G.party, box: G.box, bag: G.bag,
     money: G.money, coins: G.coins, steps: G.steps, daycareMon: G.daycareMon,
+    soundOn: Sound.enabled,
     flags: G.flags, seen: G.seen, caught: G.caught,
     map: G.map, x: G.x, y: G.y, dir: G.dir, healPoint: G.healPoint,
   };
@@ -107,7 +118,15 @@ function loadGame() {
       map: data.map, x: data.x, y: data.y, dir: data.dir,
       healPoint: data.healPoint,
     });
+    Sound.setEnabled(data.soundOn !== false);
+    if (!MAPS[G.map]) {
+      // save from an older world layout — return home safely
+      G.map = "home"; G.x = 4; G.y = 5; G.dir = "down";
+      G.healPoint = { map: "home", x: 4, y: 6, dir: "up" };
+    }
+    if (!MAPS[G.healPoint.map]) G.healPoint = { map: "home", x: 4, y: 6, dir: "up" };
     G.mode = "overworld";
+    updateMusic();
     return true;
   } catch (e) { return false; }
 }
@@ -187,7 +206,9 @@ function npcHidden(npc) {
   if (npc.hideIfFlag && G.flags[npc.hideIfFlag]) return true;
   if (npc.showIfFlag && !G.flags[npc.showIfFlag]) return true;
   if (npc.type === "legendary" && G.flags[npc.flag]) return true;
-  if (npc.needBadges && badgeCount() >= npc.needBadges) return true;
+  if (npc.needBadges && badgeCount() >= npc.needBadges &&
+      (!npc.needFlag || G.flags[npc.needFlag])) return true;
+  if (npc.type === "guard8" && badgeCount() >= 8) return true;
   return false;
 }
 
@@ -199,7 +220,8 @@ function npcPos(npc) {
 }
 
 const BADGES = [
-  ["badge", "QUARRY"], ["badge2", "TIDE"], ["badge3", "CINDER"], ["badge4", "MIND"],
+  ["badge", "PACKET"], ["badge2", "CIPHER"], ["badge3", "BEAR"], ["badge4", "KERNEL"],
+  ["badge5", "TOKEN"], ["badge6", "DAEMON"], ["badge7", "PROXY"], ["badge8", "ADMIN"],
 ];
 function badgeCount() {
   return BADGES.filter(([f]) => G.flags[f]).length;
@@ -243,9 +265,12 @@ function arriveAtTile() {
   G.steps++;
   const warp = map.warps[`${G.x},${G.y}`];
   if (warp) {
+    Sound.sfx("warp");
     startTransition(() => {
       G.map = warp.map; G.x = warp.x; G.y = warp.y; G.dir = warp.dir;
+      G.flags["visited_" + warp.map] = true;
       G.mode = "overworld";
+      updateMusic();
     });
     return;
   }
@@ -338,19 +363,35 @@ function talkToNpc(npc) {
       break;
     case "rival2":
       showDialog([
-        "AXEL: Well, well. Look who crawled out of MAPLEWOOD.",
-        "AXEL: I've been training NONSTOP since the lab.",
-        "AXEL: Time to prove I'm the better trainer!",
+        "VEX: Ping received. Look who finally routed this far west.",
+        "VEX: I've patched every bug you exploited at the lab.",
+        "VEX: Version 2.0. Deployed. Fight me.",
       ], { onDone: () => startTrainerBattle("rival2", rival2Trainer()) });
+      break;
+    case "guard8":
+      showDialog(npc.pages);
+      break;
+    case "darkboss":
+      handleDarkBoss(npc);
+      break;
+    case "station":
+      handleStation(npc);
       break;
     case "champion":
       handleChampion();
       break;
     case "guard":
-      showDialog([
-        "GUARD: Halt! Beyond this point lies the LEAGUE gauntlet.",
-        `GUARD: Only trainers holding all 4 badges may pass. You have ${badgeCount()}.`,
-      ]);
+      if (badgeCount() < 8) {
+        showDialog([
+          "GUARD: Halt! Beyond this point lie the WHITE HATS.",
+          `GUARD: Entry requires all 8 access badges. You hold ${badgeCount()}.`,
+        ]);
+      } else {
+        showDialog([
+          "GUARD: Eight badges... but the region is still under attack!",
+          "GUARD: No league business while DARKBYTE squats in JODRELL BANK. Deal with them first!",
+        ]);
+      }
       break;
     case "fisher":
       if (!G.bag.oldrod) {
@@ -647,43 +688,82 @@ function slotsPress(btn) {
 function rival2Trainer() {
   const opp = RIVAL_COUNTER[G.flags.starter] || "cindercub";
   return {
-    name: "RIVAL AXEL",
-    party: [[opp, 14], ["nibbit", 12], ["flitchick", 12]],
+    name: "RIVAL VEX",
+    party: [[opp, 14], ["squeakwing", 12], ["grinkit", 13]],
     payout: 900,
     intro: [],
-    winMsg: ["Tch! You got lucky AGAIN!", "Next time. NEXT TIME."],
+    winMsg: ["Unhandled exception!?", "Fine. Iterating. AGAIN."],
     after: [],
   };
 }
 
+function handleDarkBoss(npc) {
+  const tr = TRAINERS[npc.trainerId];
+  if (G.flags.darkbyteDefeated) {
+    showDialog(tr.after.map((l) => "ROOT: " + l));
+    return;
+  }
+  showDialog(tr.intro.map((l) => "ROOT: " + l), {
+    onDone: () => startTrainerBattle(npc.trainerId, tr),
+  });
+}
+
+function handleStation(npc) {
+  const here = G.map;
+  const dests = Object.keys(STATIONS).filter((t) => t !== here && G.flags["visited_" + t]);
+  if (dests.length === 0) {
+    showDialog(["STATION MASTER: Trains run to every station you've visited on foot.",
+      "Come back once you've seen a bit more of Cheshire!"]);
+    return;
+  }
+  showDialog(["STATION MASTER: All aboard! Where to?"], {
+    choices: dests.map((t) => STATIONS[t].label).concat(["CANCEL"]),
+    choiceCancel: false,
+    onChoice: (i) => {
+      if (i < 0 || i >= dests.length) return;
+      const t = dests[i];
+      Sound.sfx("warp");
+      startTransition(() => {
+        G.map = t; G.x = STATIONS[t].x; G.y = STATIONS[t].y; G.dir = "down";
+        G.flags["visited_" + t] = true;
+        G.mode = "overworld";
+        updateMusic();
+        showDialog(["The train rattles across Cheshire...", `Welcome to ${STATIONS[t].label}!`]);
+      });
+    },
+  });
+}
+
 function championTrainer() {
   const base = RIVAL_COUNTER[G.flags.starter] || "cindercub";
-  const evo = SPECIES[base].evolvesTo || base;
+  const stage2 = SPECIES[base].evolvesTo || base;
+  const stage3 = SPECIES[stage2].evolvesTo || stage2;
   return {
-    name: "CHAMPION AXEL",
-    party: [["gnawlord", 30], ["galewing", 30], ["fulgurcat", 31], [evo, 33]],
-    payout: 6000,
+    name: "CHAMPION VEX",
+    party: [["grinmalkin", 46], ["datadrake", 46], ["wyverm", 47], ["gigamite", 47], [stage3, 50]],
+    payout: 12000,
     intro: [],
-    winMsg: ["No... my perfect team...", "You really are the better trainer."],
+    winMsg: ["Stack overflow...", "You out-executed me. Fair and square."],
     after: [],
   };
 }
 
 function handleChampion() {
   if (G.flags.champion) {
-    showDialog(["AXEL: The title's yours, champ. For now.",
-      "AXEL: I'll train until I take it back!"]);
+    showDialog(["VEX: The title's yours, root user. For now.",
+      "VEX: I'm rewriting my whole stack. Rematch someday."]);
     return;
   }
   showDialog([
-    "AXEL: ...I knew it would be you climbing that corridor.",
-    "AXEL: While you collected badges, I beat the ELITE and became CHAMPION.",
-    "AXEL: This is it. Everything since the lab comes down to this battle.",
-    "AXEL: No excuses. No luck. Show me everything!",
+    "VEX: ...I watched your logs all the way up that corridor.",
+    "VEX: While you were collecting badges, I compromised the WHITE HATS' whole ladder. Legitimately! Mostly.",
+    "VEX: I'm the CHAMPION, Jim. The FIREWALL is mine.",
+    "VEX: Everything since ALDER's lab comes down to this. Push to production!",
   ], { onDone: () => startTrainerBattle("champion", championTrainer()) });
 }
 
 function healParty() {
+  Sound.sfx("heal");
   for (const m of G.party) {
     m.hp = m.stats.hp;
     m.status = null;
@@ -711,33 +791,41 @@ function handleTrainerNpc(npc) {
 function rivalTrainer() {
   const opp = RIVAL_COUNTER[G.flags.starter] || "cindercub";
   return {
-    name: "RIVAL AXEL",
+    name: "RIVAL VEX",
     party: [[opp, 5]],
     payout: 280,
     intro: [],
-    winMsg: ["Hmph! I must have picked the wrong monster!"],
-    after: ["Next time I'll crush you.", "I'm off to train. Later, loser!"],
+    winMsg: ["Segfault!? Must be a hardware issue."],
+    after: ["I'm off to grind XP. Watch the leaderboards, Jim."],
   };
 }
 
 function handleProfessor() {
   if (!G.flags.starter) {
     showDialog([
-      "MAPLE: Ah, " + G.playerName + "! Welcome to my lab!",
-      "MAPLE: I study monsters — amazing creatures that live all around us.",
-      "MAPLE: You're old enough for your first partner now. Go on, choose one!",
+      "ALDER: Jim! Good — you got my message.",
+      "ALDER: You've heard about DARKBYTE. Hacker collective. They've been broadcasting a rogue signal across Cheshire.",
+      "ALDER: Monsters are drawn to it. Agitated by it. Some are... changing.",
+      "ALDER: I need field data from every town — gyms, routes, all of it. A proper penetration test of the whole region.",
+      "ALDER: You'll need a partner monster. Take your pick — they're the lab's finest.",
     ], { onDone: chooseStarter });
-  } else if (!G.flags.badge) {
+  } else if (!G.flags.badge8) {
     const starterName = SPECIES[G.flags.starter].name;
     showDialog([
-      "MAPLE: How is " + starterName + " doing?",
-      "MAPLE: Head north through ROUTE 1 to reach OAKRIDGE CITY.",
-      "MAPLE: Beat Leader SLATE at the gym and earn the QUARRY BADGE!",
+      "ALDER: How's " + starterName + " holding up?",
+      "ALDER: Gym badges are access credentials, Jim. Eight of them unlock the league at CHESTER.",
+      "ALDER: And keep an ear out for DARKBYTE. Their signal is getting stronger.",
+    ]);
+  } else if (!G.flags.darkbyteDefeated) {
+    showDialog([
+      "ALDER: Eight badges! You're carrying half of Cheshire's trust in your pocket.",
+      "ALDER: Jim — DARKBYTE has taken JODRELL BANK. The dish is broadcasting their control signal at full power.",
+      "ALDER: You're the only trainer with the access to walk in there. Shut it down.",
     ]);
   } else {
     showDialog([
-      "MAPLE: The QUARRY BADGE! Incredible work, " + G.playerName + "!",
-      "MAPLE: You've taken your first step toward becoming a champion.",
+      "ALDER: You cracked DARKBYTE's whole operation. Extraordinary.",
+      "ALDER: The FIREWALL at CHESTER is all that's left. Go be champion, Jim.",
     ]);
   }
 }
@@ -750,12 +838,12 @@ function chooseStarter() {
     cindercub: "the FIRE-type ember cub",
     aquafin: "the WATER-type pond hopper",
   };
-  showDialog(["MAPLE: Which monster will you choose?"], {
+  showDialog(["ALDER: Which monster will you take?"], {
     choices: options,
     choiceCancel: false,
     onChoice: (i) => {
       const id = ids[i];
-      showDialog([`MAPLE: ${SPECIES[id].name}, ${blurbs[id]}. Is this the one?`], {
+      showDialog([`ALDER: ${SPECIES[id].name}, ${blurbs[id]}. Is this the one?`], {
         choices: ["YES", "NO"],
         choiceCancel: false,
         onChoice: (yes) => {
@@ -766,8 +854,8 @@ function chooseStarter() {
           G.addItem("capsule", 5);
           showDialog([
             `${G.playerName} received ${SPECIES[id].name}!`,
-            "MAPLE: Here — take these 5 CAPSULES too. Throw one at a weakened wild monster to catch it!",
-            "MAPLE: Fill the DEX for me, won't you?",
+            "ALDER: Take these 5 CAPSULES too — weaken a wild monster and throw one to catch it.",
+            "ALDER: Every species you log is data against DARKBYTE. Fill that DEX.",
           ], { onDone: rivalAmbush });
         },
       });
@@ -777,21 +865,22 @@ function chooseStarter() {
 
 function rivalAmbush() {
   showDialog([
-    "AXEL: Hold it right there, " + G.playerName + "!",
-    "AXEL: Grandpa gave ME a monster too — and mine's way better!",
-    "AXEL: Let's battle, right here, right now!",
+    "???: Hold it right there.",
+    "VEX: Name's VEX. Best junior pentester in Cheshire. That contract should've been MINE.",
+    "VEX: ALDER gave you a monster? She gave me one too — the one that beats yours.",
+    "VEX: Let's benchmark, right here, right now!",
   ], { onDone: () => startTrainerBattle("rival", rivalTrainer()) });
 }
 
 function handleRival() {
   if (!G.flags.starter) {
-    showDialog(["AXEL: I'm getting MY monster first!", "AXEL: Out of the way!"]);
+    showDialog(["VEX: I'm negotiating my signing bonus.", "VEX: Queue's behind me."]);
   } else if (!G.flags.rivalBeaten) {
-    showDialog(["AXEL: Ready for a rematch already?"], {
+    showDialog(["VEX: Ready for a re-run? Same result incoming."], {
       onDone: () => startTrainerBattle("rival", rivalTrainer()),
     });
   } else {
-    showDialog(["AXEL: Next time I'll crush you.", "AXEL: I'm off to train. Later, loser!"]);
+    showDialog(["VEX: Enjoy the win. I've already patched that weakness.", "VEX: See you on ROUTE 5."]);
   }
 }
 
@@ -814,6 +903,7 @@ function startTrainerBattle(trainerKey, trainerData) {
 
 function beginBattle(opts) {
   G.mode = "battle";
+  Sound.playSong("battle");
   G.battle = new Battle(G, opts);
   battleUi.menuIdx = 0; battleUi.moveIdx = 0; battleUi.bagIdx = 0;
   battleUi.dispHpP = G.battle.player.hp;
@@ -837,10 +927,14 @@ function battlePump() {
 }
 
 const BADGE_HINTS = {
-  badge:  "Head east to SEABREEZE PORT — Leader MARINA awaits!",
-  badge2: "ECHO CAVE, north of OAKRIDGE, tunnels through to EMBERFALL VILLAGE.",
-  badge3: "Follow ROUTE 4 west to WILLOWMERE CITY for your final badge!",
-  badge4: "All 4 badges! The LEAGUE at CROWN PLATEAU awaits, champion-to-be!",
+  badge:  "South of WILMSLOW lies ALDERLEY EDGE — then west to KNUTSFORD.",
+  badge2: "Head south past HOLMES CHAPEL to CONGLETON, the bear town.",
+  badge3: "West to SANDBACH, then ride the rails south to CREWE.",
+  badge4: "CREWE STATION can now fast-track you across Cheshire! NANTWICH is west.",
+  badge5: "Follow the salt north: MIDDLEWICH, then NORTHWICH.",
+  badge6: "West through DELAMERE FOREST to FRODSHAM, then north to RUNCORN.",
+  badge7: "One left! NETRUNNER MO guards WARRINGTON, the wire town.",
+  badge8: "DARKBYTE has seized JODRELL BANK, east of HOLMES CHAPEL. End the broadcast — then take on THE FIREWALL at CHESTER!",
 };
 
 function endBattle() {
@@ -859,6 +953,14 @@ function endBattle() {
     G.flags[legendFlag] = true;
   }
 
+  if (res === "win" || res === "caught") {
+    const map = currentMap();
+    const mapSong = (map && map.music) || (map && map.outdoor ? "route" : "town");
+    Sound.jingle("victory", mapSong);
+  } else {
+    updateMusic();
+  }
+
   if (res === "lose") {
     G.pendingLearns = []; G.pendingEvos = [];
     whiteout();
@@ -868,12 +970,22 @@ function endBattle() {
     G.flags["defeated_" + trainerKey] = true;
     if (trainerKey === "rival") G.flags.rivalBeaten = true;
     if (trainerKey === "rival2") G.flags.rival2Beaten = true;
+    if (trainerKey === "rootboss") {
+      showDialog([
+        "The great dish powers down. Across Cheshire, the rogue signal dies.",
+        "Monsters everywhere shake their heads and calm down.",
+        "JIM shut down the DARKBYTE broadcast!",
+        "ROOT: ...heh. You'll want to look at the dish, kid.",
+        "ROOT: Our signal woke something INSIDE the array. It's all yours now.",
+      ], { onDone: () => { G.flags.darkbyteDefeated = true; processPending(); } });
+      return;
+    }
     if (trainerKey === "champion") {
       showDialog([
-        "AXEL: I can't believe it. I threw everything at you...",
-        "AXEL: The LEAGUE has a new CHAMPION.",
-        G.playerName + " became the MONSTERQUEST CHAMPION!",
-      ], { onDone: () => { G.flags.champion = true; G.mode = "fame"; } });
+        "VEX: Merge it. The title's yours.",
+        "VEX: Cheshire has a new CHAMPION — and DARKBYTE never stood a chance.",
+        G.playerName + " became the CHAMPION of CHESHIRE!",
+      ], { onDone: () => { G.flags.champion = true; G.mode = "fame"; Sound.playSong("fame"); } });
       return;
     }
     if (badge && !G.flags[badge.flag]) {
@@ -893,9 +1005,10 @@ function whiteout() {
   healParty();
   const hp = G.healPoint;
   G.map = hp.map; G.x = hp.x; G.y = hp.y; G.dir = hp.dir;
+  updateMusic();
   showDialog([
-    G.playerName + " blacked out and rushed to safety...",
-    "The monsters were fully healed.",
+    G.playerName + " blacked out and rebooted somewhere safe...",
+    "The team was fully restored.",
   ]);
 }
 
@@ -946,7 +1059,7 @@ function processPending() {
 }
 
 // ---- menus ------------------------------------------------------
-const MENU_ITEMS = ["MONSTERS", "BAG", "DEX", "TRAINER", "SAVE", "CLOSE"];
+const MENU_ITEMS = ["MONSTERS", "BAG", "DEX", "TRAINER", "SOUND", "SAVE", "CLOSE"];
 
 function openMenu() {
   G.mode = "menu";
@@ -966,6 +1079,11 @@ function menuPress(btn) {
     } else if (sel === "BAG") openBag("overworld");
     else if (sel === "DEX") { G.mode = "dex"; G.dexUi = { top: 0 }; }
     else if (sel === "TRAINER") G.mode = "trainercard";
+    else if (sel === "SOUND") {
+      Sound.setEnabled(!Sound.enabled);
+      if (Sound.enabled) { updateMusic(); Sound.sfx("confirm"); }
+      flashMsg("Sound " + (Sound.enabled ? "ON" : "OFF"));
+    }
     else if (sel === "SAVE") {
       const ok = saveGame();
       showDialog([ok ? G.playerName + " saved the game!" : "Save failed! (storage unavailable)"]);
@@ -1184,6 +1302,10 @@ function battlePress(btn) {
 
 // ---- central input dispatch -------------------------------------
 function onPress(btn) {
+  Sound.unlock();
+  if (btn === "a" && G.mode !== "overworld") Sound.sfx("confirm");
+  else if (btn === "b" && G.mode !== "overworld") Sound.sfx("cancel");
+  else if ((btn === "up" || btn === "down") && G.mode !== "overworld") Sound.sfx("blip");
   switch (G.mode) {
     case "title": titlePress(btn); break;
     case "overworld":
@@ -1206,7 +1328,7 @@ function onPress(btn) {
     case "fishing": fishingPress(btn); break;
     case "slots": slotsPress(btn); break;
     case "fame":
-      if (btn === "a" || btn === "b") { G.mode = "overworld"; processPending(); }
+      if (btn === "a" || btn === "b") { G.mode = "overworld"; updateMusic(); processPending(); }
       break;
   }
 }
@@ -1216,6 +1338,7 @@ function titlePress(btn) {
   if (btn === "up") G.titleIdx = (G.titleIdx + options.length - 1) % options.length;
   else if (btn === "down") G.titleIdx = (G.titleIdx + 1) % options.length;
   else if (btn === "a") {
+    Sound.sfx("confirm");
     if (options[G.titleIdx] === "CONTINUE") {
       if (!loadGame()) newGame();
     } else newGame();
@@ -1602,24 +1725,24 @@ function drawTrainerCard() {
   const ids = Object.keys(SPECIES);
   drawText("DEX", 80, 180, "#606070", 14);
   drawText(`${ids.filter((id) => G.caught[id]).length} caught / ${ids.filter((id) => G.seen[id]).length} seen`, 180, 180);
-  drawText("BADGES", 80, 212, "#606070", 14);
-  const badgeColors = ["#b8a038", "#4a90d8", "#d84a3a", "#e07ab8"];
+  drawText("BADGES", 80, 206, "#606070", 14);
+  const badgeColors = ["#e8c020", "#7a4ae0", "#8a5a2a", "#d84a3a", "#2a9ad8", "#b8a038", "#8a48b0", "#20b898"];
   BADGES.forEach(([flag, name], i) => {
-    const bx = 96 + i * 82, by = 248;
+    const bx = 100 + (i % 4) * 82, by = 238 + Math.floor(i / 4) * 44;
     if (G.flags[flag]) {
       ctx.fillStyle = badgeColors[i];
-      ctx.beginPath(); ctx.arc(bx, by, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(bx, by, 10, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = "#f8f0d8";
-      ctx.beginPath(); ctx.arc(bx, by, 6, 0, Math.PI * 2); ctx.fill();
-      drawText(name, bx - 24, by + 18, "#404050", 11);
+      ctx.beginPath(); ctx.arc(bx, by, 5, 0, Math.PI * 2); ctx.fill();
+      drawText(name, bx - 26, by + 13, "#404050", 10);
     } else {
       ctx.strokeStyle = "#a0a0b0";
       ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(bx, by, 12, 0, Math.PI * 2); ctx.stroke();
-      drawText("----", bx - 16, by + 18, "#a0a0b0", 11);
+      ctx.beginPath(); ctx.arc(bx, by, 10, 0, Math.PI * 2); ctx.stroke();
+      drawText("----", bx - 14, by + 13, "#a0a0b0", 10);
     }
   });
-  drawText("Z/X: back", 80, 310, "#606070", 13);
+  drawText("Z/X: back", 80, 312, "#606070", 13);
 }
 
 function drawUnderlay() {
@@ -1635,12 +1758,12 @@ function drawMenu() {
   drawBox(bx, by, w, h);
   MENU_ITEMS.forEach((o, i) => {
     if (i === G.menu.idx) drawText(">", bx + 14, by + 14 + i * 30, "#c62828");
-    drawText(o, bx + 34, by + 14 + i * 30);
+    drawText(o === "SOUND" ? "SOUND " + (Sound.enabled ? "ON" : "OFF") : o, bx + 34, by + 14 + i * 30);
   });
 }
 
 // ---- title ------------------------------------------------------
-const TITLE_MONS = ["pyroursa", "tidalfin", "bloomurk", "gnawlord", "sparkit", "mistwisp"];
+const TITLE_MONS = ["grinmalkin", "glitchra", "ursablaze", "merlynx", "steamloco", "tidalord", "wyverm", "loomoth"];
 function drawTitle() {
   const grad = ctx.createLinearGradient(0, 0, 0, SCREEN_H);
   grad.addColorStop(0, "#182848");
@@ -1663,7 +1786,7 @@ function drawTitle() {
   ctx.fillText("MONSTERQUEST", SCREEN_W / 2, 92);
   ctx.font = 'bold 15px "Courier New", monospace';
   ctx.fillStyle = "#c8d8f0";
-  ctx.fillText("A retro monster-catching adventure", SCREEN_W / 2, 134);
+  ctx.fillText("THE CHESHIRE PROTOCOL", SCREEN_W / 2, 134);
   ctx.textAlign = "left";
 
   const mon = TITLE_MONS[Math.floor(waterTick / 1800) % TITLE_MONS.length];
@@ -1888,5 +2011,7 @@ function loop(now) {
     el.addEventListener("contextmenu", (e) => e.preventDefault());
   }
 })();
+
+Sound.playSong("title");  // queued until the first input unlocks audio
 
 requestAnimationFrame((t) => { lastTime = t; requestAnimationFrame(loop); });
