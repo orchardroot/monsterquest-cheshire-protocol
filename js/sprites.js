@@ -455,6 +455,168 @@ function buildTiles() {
   TILE_CANVAS["X"] = makeTile((g) => {
     px(g, 0, 0, 16, 16, "#101018");
   });
+  // ---- Cheshire character tiles ---------------------------------
+  TILE_CANVAS["k"] = makeTile((g) => {           // cobbles
+    px(g, 0, 0, 16, 16, "#b0a898");
+    for (let ry = 0; ry < 4; ry++) for (let rx = 0; rx < 4; rx++) {
+      const ox = rx * 4 + (ry % 2) * 2;
+      px(g, (ox) % 16, ry * 4, 3, 3, (rx + ry) % 2 ? "#c4bcac" : "#a89f8e");
+    }
+  });
+  TILE_CANVAS["z"] = makeTile((g) => {           // formal garden bed
+    px(g, 0, 0, 16, 16, "#5a4632");
+    px(g, 1, 1, 14, 14, "#6a5238");
+    const cols = ["#e04868", "#f0d048", "#e88ad0", "#f8f8f0"];
+    for (let i = 0; i < 8; i++) px(g, 2 + (i % 4) * 4, 2 + Math.floor(i / 4) * 7, 2, 2, cols[i % 4]);
+    px(g, 4, 11, 2, 2, "#78c850"); px(g, 10, 4, 2, 2, "#78c850");
+  });
+  TILE_CANVAS["y"] = makeTile((g) => {           // railway track
+    px(g, 0, 0, 16, 16, "#8a8478");
+    for (let i = 0; i < 4; i++) px(g, i * 4, 3, 3, 10, "#6a5a42");
+    px(g, 0, 4, 16, 2, "#c8ccd4"); px(g, 0, 10, 16, 2, "#c8ccd4");
+    px(g, 0, 5, 16, 1, "#8a8e98"); px(g, 0, 11, 16, 1, "#8a8e98");
+  });
+  TILE_CANVAS["j"] = makeTile((g) => {           // bridge deck
+    px(g, 0, 0, 16, 16, "#a8845c");
+    px(g, 0, 0, 16, 2, "#7a5e3e"); px(g, 0, 14, 16, 2, "#7a5e3e");
+    for (let i = 0; i < 4; i++) px(g, i * 4 + 3, 2, 1, 12, "#8a6c48");
+    px(g, 0, 7, 16, 1, "#96774e");
+  });
+  TILE_CANVAS["p"] = makeTile((g) => {           // wall-walk paving
+    px(g, 0, 0, 16, 16, "#c8b090");
+    px(g, 0, 7, 16, 1, "#a89070"); px(g, 7, 0, 1, 8, "#a89070");
+    px(g, 11, 8, 1, 8, "#a89070"); px(g, 3, 3, 1, 1, "#d8c4a4");
+  });
+  TILE_CANVAS["P"] = makeTile((g) => {           // parapet (crenellated)
+    px(g, 0, 0, 16, 16, "#b89c78");
+    px(g, 0, 0, 4, 5, "#8a7050"); px(g, 6, 0, 4, 5, "#8a7050"); px(g, 12, 0, 4, 5, "#8a7050");
+    px(g, 0, 8, 16, 1, "#8a7050"); px(g, 0, 12, 16, 1, "#8a7050");
+    px(g, 8, 9, 1, 3, "#8a7050"); px(g, 3, 13, 1, 3, "#8a7050");
+  });
+  TILE_CANVAS["e"] = makeTile((g) => {           // clipped hedge
+    px(g, 0, 0, 16, 16, "#2e6d22");
+    px(g, 1, 1, 14, 3, "#43a047");
+    px(g, 2, 4, 3, 2, "#43a047"); px(g, 9, 5, 4, 2, "#43a047");
+    px(g, 0, 14, 16, 2, "#1b4a14");
+  });
+  TILE_CANVAS["q"] = makeTile((g) => {           // sandstone cliff
+    px(g, 0, 0, 16, 16, "#b06a48");
+    px(g, 0, 3, 16, 2, "#c47e58"); px(g, 0, 8, 16, 2, "#98583a");
+    px(g, 0, 13, 16, 2, "#c47e58");
+    px(g, 4, 1, 1, 14, "#7e4630"); px(g, 11, 0, 1, 15, "#7e4630");
+  });
+  TILE_CANVAS["u"] = makeTile((g) => {           // monument / statue
+    g.drawImage(TILE_CANVAS["k"], 0, 0);
+    px(g, 4, 12, 8, 3, "#8a8478");
+    px(g, 5, 4, 6, 8, "#d8d4c8");
+    px(g, 6, 1, 4, 4, "#e8e4d8");
+    px(g, 7, 0, 2, 2, "#e8e4d8");
+    px(g, 5, 5, 1, 7, "#b8b4a8");
+  });
+  TILE_CANVAS["v"] = makeTile((g) => {           // market stall
+    px(g, 0, 0, 16, 16, "#b0a898");
+    for (let i = 0; i < 4; i++) px(g, i * 4, 0, 2, 6, "#d84a3a");
+    for (let i = 0; i < 4; i++) px(g, i * 4 + 2, 0, 2, 6, "#f0ece0");
+    px(g, 1, 6, 14, 6, "#a8783c");
+    px(g, 2, 7, 4, 2, "#e0c040"); px(g, 8, 7, 3, 2, "#68b03c"); px(g, 12, 9, 2, 2, "#d84a3a");
+    px(g, 2, 12, 2, 4, "#7a5230"); px(g, 12, 12, 2, 4, "#7a5230");
+  });
+  TILE_CANVAS["n"] = makeTile((g) => {           // narrowboat on water
+    px(g, 0, 0, 16, 16, "#3a6ea8");
+    px(g, 1, 5, 14, 7, "#28401e");
+    px(g, 2, 4, 12, 3, "#c03028");
+    px(g, 3, 6, 3, 2, "#f0d048"); px(g, 8, 6, 3, 2, "#f0d048");
+    px(g, 1, 11, 14, 1, "#1a2c12");
+    px(g, 12, 2, 1, 3, "#1a1a1a");
+  });
+  TILE_CANVAS["Y"] = makeTile((g) => {           // steam locomotive
+    px(g, 0, 0, 16, 16, "#8a8478");
+    px(g, 1, 4, 14, 8, "#1e5c34");
+    px(g, 1, 3, 6, 2, "#143c22");
+    px(g, 2, 1, 3, 3, "#2a2a2a");
+    px(g, 8, 5, 3, 3, "#f0d048");
+    px(g, 2, 12, 3, 3, "#1a1a1a"); px(g, 7, 12, 3, 3, "#1a1a1a"); px(g, 12, 12, 3, 3, "#1a1a1a");
+    px(g, 1, 11, 14, 1, "#c03028");
+  });
+  TILE_CANVAS["H"] = makeTile((g) => {           // church tower
+    px(g, 0, 0, 16, 16, "#9a9284");
+    px(g, 0, 0, 3, 4, "#6e675c"); px(g, 6, 0, 4, 4, "#6e675c"); px(g, 13, 0, 3, 4, "#6e675c");
+    px(g, 5, 6, 6, 8, "#4a4438");
+    px(g, 6, 7, 4, 6, "#2a2a3a");
+    px(g, 7, 5, 2, 2, "#4a4438");
+    px(g, 2, 6, 1, 1, "#b8b0a0"); px(g, 12, 9, 1, 1, "#b8b0a0");
+  });
+  TILE_CANVAS["h"] = makeTile((g) => {           // church nave wall
+    px(g, 0, 0, 16, 16, "#9a9284");
+    px(g, 0, 0, 16, 2, "#6e675c");
+    px(g, 4, 4, 3, 9, "#2a2a3a"); px(g, 9, 4, 3, 9, "#2a2a3a");
+    px(g, 4, 3, 3, 2, "#4a4438"); px(g, 9, 3, 3, 2, "#4a4438");
+    px(g, 5, 6, 1, 6, "#5a68a8"); px(g, 10, 6, 1, 6, "#a85a68");
+    px(g, 0, 15, 16, 1, "#6e675c");
+  });
+  TILE_CANVAS["m"] = makeTile((g) => {           // Tudor timber-frame
+    px(g, 0, 0, 16, 16, "#f0ece0");
+    px(g, 0, 0, 16, 2, "#1c1814"); px(g, 0, 14, 16, 2, "#1c1814");
+    px(g, 0, 2, 2, 12, "#1c1814"); px(g, 14, 2, 2, 12, "#1c1814");
+    px(g, 7, 2, 2, 12, "#1c1814");
+    for (let i = 0; i < 5; i++) { px(g, 2 + i, 3 + i * 2, 2, 2, "#1c1814"); px(g, 12 - i, 3 + i * 2, 2, 2, "#1c1814"); }
+  });
+  TILE_CANVAS["g"] = makeTile((g) => {           // glass office
+    px(g, 0, 0, 16, 16, "#2c3e50");
+    for (let ry = 0; ry < 4; ry++) for (let rx = 0; rx < 4; rx++) {
+      px(g, rx * 4 + 1, ry * 4 + 1, 3, 3, (rx + ry) % 2 ? "#7fb8d8" : "#5a94b8");
+    }
+    px(g, 1, 1, 2, 1, "#b8e0f0");
+  });
+  TILE_CANVAS["i"] = makeTile((g) => {           // industrial brick
+    px(g, 0, 0, 16, 16, "#7e3c2e");
+    for (let ry = 0; ry < 4; ry++) {
+      px(g, 0, ry * 4 + 3, 16, 1, "#5c2a20");
+      for (let rx = 0; rx < 4; rx++) px(g, rx * 4 + (ry % 2) * 2, ry * 4, 1, 3, "#5c2a20");
+    }
+    px(g, 2, 1, 2, 1, "#96503c"); px(g, 10, 9, 3, 1, "#96503c");
+  });
+  TILE_CANVAS["I"] = makeTile((g) => {           // mill chimney
+    px(g, 0, 0, 16, 16, "#7e3c2e");
+    px(g, 4, 0, 8, 16, "#8a4634");
+    px(g, 3, 0, 10, 3, "#5c2a20");
+    px(g, 5, 4, 1, 12, "#5c2a20"); px(g, 10, 4, 1, 12, "#5c2a20");
+    px(g, 6, 6, 4, 1, "#5c2a20"); px(g, 6, 11, 4, 1, "#5c2a20");
+  });
+  TILE_CANVAS["O"] = makeTile((g) => {           // water wheel
+    px(g, 0, 0, 16, 16, "#3a6ea8");
+    px(g, 2, 2, 12, 12, "#5a3c22");
+    px(g, 4, 4, 8, 8, "#7a5230");
+    px(g, 7, 2, 2, 12, "#3c2814"); px(g, 2, 7, 12, 2, "#3c2814");
+    px(g, 4, 4, 2, 2, "#3c2814"); px(g, 10, 4, 2, 2, "#3c2814");
+    px(g, 4, 10, 2, 2, "#3c2814"); px(g, 10, 10, 2, 2, "#3c2814");
+    px(g, 7, 7, 2, 2, "#c8a878");
+  });
+  TILE_CANVAS["Q"] = makeTile((g) => {           // slate roof
+    px(g, 0, 0, 16, 16, "#5a6470");
+    px(g, 0, 3, 16, 1, "#3e4854"); px(g, 0, 8, 16, 1, "#3e4854"); px(g, 0, 13, 16, 1, "#3e4854");
+    for (let i = 0; i < 4; i++) { px(g, i * 4 + 2, 0, 1, 3, "#3e4854"); px(g, i * 4, 4, 1, 4, "#3e4854"); px(g, i * 4 + 2, 9, 1, 4, "#3e4854"); }
+    px(g, 0, 0, 16, 1, "#7a8490");
+  });
+  TILE_CANVAS["a"] = makeTile((g) => {           // dark Tudor roof
+    px(g, 0, 0, 16, 16, "#2e2620");
+    px(g, 0, 4, 16, 1, "#1c1610"); px(g, 0, 9, 16, 1, "#1c1610"); px(g, 0, 14, 16, 1, "#1c1610");
+    px(g, 0, 0, 16, 1, "#4a3e32");
+    px(g, 5, 5, 1, 4, "#1c1610"); px(g, 11, 10, 1, 4, "#1c1610");
+  });
+  TILE_CANVAS["l"] = [                            // canal water (calm, dark)
+    makeTile((g) => {
+      px(g, 0, 0, 16, 16, "#3a6ea8");
+      px(g, 2, 4, 6, 1, "#5a8ec4"); px(g, 10, 10, 5, 1, "#5a8ec4");
+      px(g, 6, 13, 4, 1, "#2a5488");
+    }),
+    makeTile((g) => {
+      px(g, 0, 0, 16, 16, "#3a6ea8");
+      px(g, 4, 6, 6, 1, "#5a8ec4"); px(g, 9, 12, 5, 1, "#5a8ec4");
+      px(g, 2, 2, 4, 1, "#2a5488");
+    }),
+  ];
+
   TILE_CANVAS["b"] = makeTile((g) => {
     g.drawImage(TILE_CANVAS["."][0], 0, 0);
     px(g, 2, 4, 12, 10, "#2e7d32");
@@ -482,7 +644,8 @@ function buildTiles() {
   });
 }
 
-const SOLID_TILES = new Set(["T", "~", "F", "S", "R", "B", "W", "C", "K", "M", "t", "X", "b", "G"]);
+const SOLID_TILES = new Set(["T", "~", "F", "S", "R", "B", "W", "C", "K", "M", "t", "X", "b", "G",
+  "e", "q", "u", "v", "n", "Y", "H", "h", "m", "g", "i", "I", "O", "Q", "a", "P", "l"]);
 const GRASS_TILE = "w";
 
 function tileAt(map, x, y) {

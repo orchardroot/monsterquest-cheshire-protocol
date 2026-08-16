@@ -309,13 +309,17 @@ function interact() {
   const sign = map.signs && map.signs[`${tx},${ty}`];
   if (sign) { showDialog(sign); return; }
   const t = tileAt(map, tx, ty);
+  if (t === "u" && !(map.signs && map.signs[`${tx},${ty}`])) {
+    showDialog(["A monument. The plaque has weathered beyond reading."]);
+    return;
+  }
   if (t === "K") showDialog(["Shelves stuffed with monster research journals."]);
   else if (t === "M") {
     if (map.slotsOnMachines) openSlots();
     else showDialog(["Complicated machinery. Better not touch it."]);
   } else if (t === "b") {
     pickBerry(tx, ty);
-  } else if (t === "~") {
+  } else if (t === "~" || t === "l") {
     if (map.hotSpring) {
       showDialog(["You dip your team into the steaming spring...", "Ahhh. Everyone is fully rested!"], {
         onDone: () => {
@@ -1619,7 +1623,7 @@ function drawTile(ch, sx, sy, tx, ty) {
   let tile = TILE_CANVAS[ch];
   if (!tile) tile = TILE_CANVAS["."];
   if (Array.isArray(tile)) {
-    if (ch === "~") tile = tile[Math.floor(waterTick / 600) % tile.length];
+    if (ch === "~" || ch === "l") tile = tile[Math.floor(waterTick / 600) % tile.length];
     else tile = tile[((tx || 0) * 7 + (ty || 0) * 13) % tile.length];
   }
   ctx.drawImage(tile, sx, sy, TILE, TILE);

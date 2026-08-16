@@ -1,5 +1,5 @@
 // MonsterQuest service worker — precache everything for offline play.
-const CACHE = "monsterquest-v3";
+const CACHE = "monsterquest-v4";
 const ASSETS = [
   ".",
   "index.html",
@@ -7,6 +7,7 @@ const ASSETS = [
   "js/audio.js",
   "js/data.js",
   "js/maps.js",
+  "js/towns.js",
   "js/sprites.js",
   "js/battle.js",
   "js/game.js",
