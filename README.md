@@ -38,7 +38,11 @@ follow you across the region from an old friend in Georgia.
 ## The region
 
 **26 towns, villages and landmarks**, all real Cheshire places (plus one
-Welsh orchard):
+Welsh orchard) — every one hand-designed around its real landmarks:
+Chester's walkable wall circuit and Eastgate Clock, the Anderton Boat
+Lift, Crewe's rail yard, the Sandbach Saxon crosses, Quarry Bank Mill's
+water wheel, the Lovell Telescope, Beeston's crag-top castle, the
+Nantwich brine lido, White Nancy above Bollington, and more:
 
 Macclesfield (start) · Bollington · Poynton · Prestbury · Wilmslow ·
 Styal & Quarry Bank Mill · Alderley Edge · Knutsford · Tatton Park ·
