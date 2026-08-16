@@ -99,6 +99,10 @@ const MOVES = {
   glitchburst:  { name: "Glitch Burst", type: "Cyber",    kind: "phys", power: 85, acc: 90,  pp: 10 },
   ddos:         { name: "DDoS",         type: "Cyber",    kind: "status", acc: 90, pp: 20, stat: { who: "foe", stat: "spd", delta: -2 } },
   encrypt:      { name: "Encrypt",      type: "Cyber",    kind: "status", acc: 999, pp: 20, stat: { who: "self", stat: "def", delta: 2 } },
+  threathunt:   { name: "Threat Hunt",  type: "Cyber",    kind: "spec", power: 70, acc: 999, pp: 15 },
+  rtrdeploy:    { name: "RTR Deploy",   type: "Cyber",    kind: "spec", power: 90, acc: 100, pp: 5 },
+  honeytoken:   { name: "Honeytoken",   type: "Cyber",    kind: "status", acc: 100, pp: 15, stat: { who: "foe", stat: "def", delta: -2 } },
+  pixeltripwire:{ name: "Pixel Tripwire", type: "Cyber",  kind: "status", acc: 90, pp: 10, effect: { status: "par", chance: 100 } },
 };
 
 // ---- Species ----------------------------------------------------
@@ -1380,6 +1384,105 @@ Object.assign(SPECIES, {
   },
 });
 
+Object.assign(SPECIES, {
+  meadow: {
+    name: "MEADOW", types: ["Normal"], base: [58, 66, 52, 132, 70],
+    catchRate: 0, baseExp: 120,
+    learnset: [[1, "quickattack"], [1, "growl"], [10, "bite"], [16, "honeytoken"], [22, "agility"], [28, "threathunt"], [34, "slam"]],
+    pal: { o: "#0a0a0e", A: "#1c1c24", B: "#101018", C: "#3a3a48", w: "#f0f0d8", k: "#101010", m: "#0a0a0a" },
+    art: [
+      "..oo........oo..",
+      ".oAAo......oAAo.",
+      ".oACAo....oACAo.",
+      "..oAAooooooAAo..",
+      "...oAAAAAAAAo...",
+      "..oAAwkAAwkAAo..",
+      "..oAAwwAAwwAAo..",
+      "..oAAAAAAAAAAo..",
+      "...oAAAmmAAAo...",
+      "...oAAAAAAAAo...",
+      "..oAAAAAAAAAoo..",
+      "..oAAAAAAAAoCCo.",
+      "..oAAAAAAAAoCo..",
+      "...oAAooAAAo....",
+      "..oAo....oAo....",
+      "................",
+    ],
+  },
+  bigboy: {
+    name: "BIGBOY", types: ["Normal"], base: [150, 92, 118, 46, 60],
+    catchRate: 0, baseExp: 150, brink: true,
+    learnset: [[1, "tackle"], [1, "growl"], [10, "slam"], [16, "encrypt"], [24, "threathunt"], [30, "rtrdeploy"], [36, "hyperfang"]],
+    pal: { o: "#0a0a0e", A: "#16161e", B: "#f0f0ec", C: "#2e2e3a", w: "#f0e8c8", k: "#101010", m: "#0a0a0a" },
+    art: [
+      ".oo..........oo.",
+      "oAAo........oAAo",
+      "oACAo......oACAo",
+      "oAAAooooooooAAAo",
+      ".oAAAAAAAAAAAAo.",
+      "oAAwkAAAAAAwkAAo",
+      "oAAwwAAAAAAwwAAo",
+      "oAAABBBBBBAAAAo.",
+      "oAABBBBBBBBAAAo.",
+      "oAABBBBBBBBAAAoo",
+      "oAABBBBBBBBAAoCo",
+      "oAABBBBBBBBAAoCo",
+      "oAAABBBBBBAAAoo.",
+      ".oAAABBBBAAAAo..",
+      ".oAAo.....oAAo..",
+      "................",
+    ],
+  },
+  puppetacct: {
+    name: "PUPPETACCT", types: ["Cyber"], base: [30, 42, 28, 55, 42],
+    catchRate: 255, baseExp: 40,
+    learnset: [[1, "bitblast"], [1, "growl"], [10, "ddos"]],
+    gen: { body: "orb", size: 0, feats: ["screen"] },
+  },
+  amoslurk: {
+    name: "AMOSLURK", types: ["Cyber", "Ghost"], base: [62, 78, 58, 88, 84],
+    catchRate: 30, baseExp: 150,
+    learnset: [[1, "lick"], [1, "bitblast"], [15, "shadebolt"], [22, "hackslash"], [30, "nightpulse"]],
+    gen: { body: "tall", size: 1, feats: ["screen", "wisp", "pixel"] },
+  },
+  trumbark: {
+    name: "TRUMBARK", types: ["Ground"], base: [110, 96, 92, 40, 58],
+    catchRate: 45, baseExp: 160,
+    learnset: [[1, "tackle"], [10, "mudshot"], [20, "slam"], [30, "quake"]],
+    gen: { body: "quad", size: 2, feats: ["horns", "ears"] },
+  },
+  girafflor: {
+    name: "GIRAFFLOR", types: ["Normal", "Grass"], base: [88, 72, 62, 78, 84],
+    catchRate: 60, baseExp: 145,
+    learnset: [[1, "tackle"], [10, "vinewhip"], [18, "stringshot"], [26, "razorleaf"], [34, "petalstorm"]],
+    gen: { body: "tall", size: 2, feats: ["horns", "stripes", "leaf"] },
+  },
+  pengwyn: {
+    name: "PENGWYN", types: ["Water", "Flying"], base: [78, 68, 70, 82, 76],
+    catchRate: 60, baseExp: 140,
+    learnset: [[1, "peck"], [10, "aquajet"], [18, "bubblebeam"], [28, "skydive"], [34, "hydroblast"]],
+    gen: { body: "tall", size: 1, feats: ["fins"] },
+  },
+  pandember: {
+    name: "PANDEMBER", types: ["Fire"], base: [80, 76, 66, 84, 78],
+    catchRate: 60, baseExp: 142,
+    learnset: [[1, "scratch"], [10, "ember"], [18, "bite"], [26, "flameburst"], [34, "flamelash"]],
+    gen: { body: "quad", size: 1, feats: ["ears", "stripes", "tail"] },
+  },
+  shardmind: {
+    name: "SHARDMIND", types: ["Cyber", "Psychic"], base: [82, 70, 76, 96, 128],
+    catchRate: 0, baseExp: 200,
+    learnset: [[1, "bitblast"], [1, "confusion"], [20, "datastream"], [30, "mindblast"], [40, "zeroday"]],
+    gen: { body: "orb", size: 1, feats: ["screen", "gem", "pixel"] },
+  },
+  oraclecore: {
+    name: "ORACLE CORE", types: ["Cyber", "Psychic"], base: [140, 92, 104, 88, 150],
+    catchRate: 0, baseExp: 255,
+    learnset: [[1, "zeroday"], [1, "mindblast"], [1, "encrypt"], [1, "glitchburst"]],
+    gen: { body: "orb", size: 2, feats: ["screen", "gem", "pixel", "horns", "wisp"] },
+  },
+});
+
 // ---- Experience curve (medium-fast) -----------------------------
 function expForLevel(level) { return level * level * level; }
 
@@ -1425,6 +1528,19 @@ const ITEMS = {
   hyperpotion:  { name: "Hyper Potion",  price: 1500, kind: "heal", amount: 120, desc: "Restores 120 HP." },
   berry:        { name: "Berry",         price: 150,  kind: "heal", amount: 30, desc: "A sweet berry. Restores 30 HP." },
   oldrod:       { name: "Old Rod",       price: 0,    kind: "key",  desc: "Face water and press Z to fish!" },
+  perry:        { name: "Orchard Perry", price: 0,    kind: "heal", amount: 80, desc: "Pressed on the family elm press. Restores 80 HP." },
+  stout:        { name: "Homebrew Stout", price: 0,   kind: "cure", cures: ["psn", "brn", "par", "slp"], desc: "Dark, fortifying, cures any ailment." },
+  boombox:      { name: "CFS-B11 Boombox", price: 0,  kind: "boombox", desc: "A modded Sony boombox. Choose the soundtrack." },
+  piward:       { name: "PI Ward",       price: 0,    kind: "ward", desc: "Prompt-injection ward. Blocks all status ailments on your team for one battle." },
+  sleet:        { name: "Agent: SLEET",  price: 0,    kind: "agent", desc: "L1 triage agent. Reveals the foe and slows it hard. Once per battle." },
+  vigil:        { name: "Agent: VIGIL",  price: 0,    kind: "agent", desc: "Escalation reasoner. Cures your side's ailments and restores HP. Once per battle." },
+  arbiter:      { name: "Agent: ARBITER", price: 0,   kind: "agent", desc: "The adjudicator. Resets ALL stat changes on both sides. Once per battle." },
+  amber:        { name: "Amber Shard",   price: 0,    kind: "key", desc: "Baltic amber from a friend in Riga. Warm to the touch." },
+  teaset:       { name: "Tatar Tea Set", price: 0,    kind: "key", desc: "A gift carried from Georgia. Smells of black tea and home." },
+  letter1:      { name: "Letter from Alsu", price: 0, kind: "key", desc: "\"The mountains here would suit you. Walk far, drink tea. — A.\"" },
+  letter2:      { name: "Letter from Alsu (2)", price: 0, kind: "key", desc: "\"I taught my neighbour your bad Tatar joke. She laughed. — A.\"" },
+  letter3:      { name: "Letter from Alsu (3)", price: 0, kind: "key", desc: "\"Send a photo of the orchard when the perry is ready. — A.\"" },
+  charm:        { name: "Wizard's Charm", price: 0,   kind: "key", desc: "A pale token from beneath the Edge. Hums faintly." },
 };
 
 const STATUS_NAMES = { psn: "PSN", par: "PAR", brn: "BRN", slp: "SLP" };

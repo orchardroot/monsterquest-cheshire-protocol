@@ -272,13 +272,24 @@ const PEOPLE_PALETTES = {
   wizard:    { o: "#1a1a2a", H: "#e8e8e8", S: "#e8c098", k: "#1a1a1a", J: "#3a2a7a", P: "#28205a" },
 };
 
+const WALK_LEGS = {
+  down: ["..oPPPPPPo......", "..oPP..oPPo.....", "..oo....oo......"],
+  up:   ["..oPPPPPPo......", "..oPP..oPPo.....", "..oo....oo......"],
+  left: ["....oPPPPo......", ".....oPPo.......", ".....oo.oo......"],
+};
+
 const personCache = new Map();
-function personSprite(kind, dir, scale) {
+function personSprite(kind, dir, scale, frame) {
   const flip = dir === "right";
   const artDir = dir === "right" ? "left" : dir;
-  const key = `${kind}:${artDir}:${flip}:${scale}`;
+  const f = frame ? 1 : 0;
+  const key = `${kind}:${artDir}:${flip}:${scale}:${f}`;
   if (!personCache.has(key)) {
-    personCache.set(key, renderArt(PERSON_ART[artDir], PEOPLE_PALETTES[kind] || PEOPLE_PALETTES.boy, scale, flip));
+    let art = PERSON_ART[artDir];
+    if (f === 1) {
+      art = art.slice(0, 12).concat(WALK_LEGS[artDir]);
+    }
+    personCache.set(key, renderArt(art, PEOPLE_PALETTES[kind] || PEOPLE_PALETTES.boy, scale, flip));
   }
   return personCache.get(key);
 }
@@ -302,15 +313,28 @@ function px(g, x, y, w, h, color) {
 const TILE_CANVAS = {};
 
 function buildTiles() {
-  TILE_CANVAS["."] = makeTile((g) => {
-    px(g, 0, 0, 16, 16, "#7ec850");
-    px(g, 2, 3, 1, 1, "#68b03c"); px(g, 6, 7, 1, 1, "#68b03c");
-    px(g, 11, 4, 1, 1, "#68b03c"); px(g, 13, 12, 1, 1, "#68b03c");
-    px(g, 4, 13, 1, 1, "#68b03c"); px(g, 9, 10, 1, 1, "#8fd862");
-    px(g, 14, 8, 1, 1, "#8fd862"); px(g, 1, 9, 1, 1, "#8fd862");
-  });
+  TILE_CANVAS["."] = [
+    makeTile((g) => {
+      px(g, 0, 0, 16, 16, "#7ec850");
+      px(g, 2, 3, 1, 1, "#68b03c"); px(g, 6, 7, 1, 1, "#68b03c");
+      px(g, 11, 4, 1, 1, "#68b03c"); px(g, 13, 12, 1, 1, "#68b03c");
+      px(g, 4, 13, 1, 1, "#68b03c"); px(g, 9, 10, 1, 1, "#8fd862");
+      px(g, 14, 8, 1, 1, "#8fd862"); px(g, 1, 9, 1, 1, "#8fd862");
+    }),
+    makeTile((g) => {
+      px(g, 0, 0, 16, 16, "#78c24a");
+      px(g, 3, 5, 1, 2, "#64aa38"); px(g, 9, 2, 1, 2, "#64aa38");
+      px(g, 12, 9, 1, 2, "#64aa38"); px(g, 6, 12, 1, 2, "#8fd862");
+      px(g, 1, 3, 1, 1, "#8fd862"); px(g, 14, 14, 1, 1, "#68b03c");
+    }),
+    makeTile((g) => {
+      px(g, 0, 0, 16, 16, "#7ec850");
+      px(g, 5, 4, 2, 1, "#94d868"); px(g, 10, 11, 2, 1, "#94d868");
+      px(g, 2, 12, 1, 1, "#68b03c"); px(g, 13, 5, 1, 1, "#68b03c");
+    }),
+  ];
   TILE_CANVAS[","] = makeTile((g) => {
-    g.drawImage(TILE_CANVAS["."], 0, 0);
+    g.drawImage(TILE_CANVAS["."][0], 0, 0);
     px(g, 3, 3, 2, 2, "#f06292"); px(g, 4, 4, 1, 1, "#fff176");
     px(g, 10, 9, 2, 2, "#f06292"); px(g, 11, 10, 1, 1, "#fff176");
     px(g, 12, 3, 2, 2, "#fff176"); px(g, 5, 11, 2, 2, "#fff176");
@@ -352,13 +376,13 @@ function buildTiles() {
     }),
   ];
   TILE_CANVAS["F"] = makeTile((g) => {
-    g.drawImage(TILE_CANVAS["."], 0, 0);
+    g.drawImage(TILE_CANVAS["."][0], 0, 0);
     px(g, 1, 4, 14, 3, "#a8783c");
     px(g, 1, 9, 14, 2, "#a8783c");
     px(g, 2, 3, 2, 10, "#8a5c2a"); px(g, 12, 3, 2, 10, "#8a5c2a");
   });
   TILE_CANVAS["S"] = makeTile((g) => {
-    g.drawImage(TILE_CANVAS["."], 0, 0);
+    g.drawImage(TILE_CANVAS["."][0], 0, 0);
     px(g, 7, 9, 2, 6, "#7a5230");
     px(g, 2, 2, 12, 8, "#a8783c");
     px(g, 3, 3, 10, 6, "#d8b478");
@@ -432,7 +456,7 @@ function buildTiles() {
     px(g, 0, 0, 16, 16, "#101018");
   });
   TILE_CANVAS["b"] = makeTile((g) => {
-    g.drawImage(TILE_CANVAS["."], 0, 0);
+    g.drawImage(TILE_CANVAS["."][0], 0, 0);
     px(g, 2, 4, 12, 10, "#2e7d32");
     px(g, 4, 2, 8, 4, "#2e7d32");
     px(g, 3, 5, 4, 3, "#43a047");

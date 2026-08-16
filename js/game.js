@@ -4,8 +4,8 @@
 "use strict";
 
 const TILE = 32;
-const SCREEN_W = 480;
-const SCREEN_H = 384;
+const SCREEN_W = 960;
+const SCREEN_H = 540;
 const SAVE_KEY = "monsterquest_save";
 
 const canvas = document.getElementById("screen");
@@ -46,7 +46,7 @@ const G = {
   moving: false, moveProgress: 0, moveFrom: null,
   turnLock: 0,
   party: [], box: [], bag: {}, money: 3000,
-  coins: 0, steps: 0, daycareMon: null,
+  coins: 0, steps: 0, daycareMon: null, quests: {}, radioSong: null,
   flags: {}, seen: {}, caught: {},
   healPoint: { map: "home", x: 4, y: 6, dir: "up" },
   battle: null,
@@ -68,6 +68,7 @@ function currentMap() { return MAPS[G.map]; }
 
 function updateMusic() {
   if (G.mode === "title") { Sound.playSong("title"); return; }
+  if (G.radioSong) { Sound.playSong(G.radioSong); return; }
   const map = currentMap();
   const song = (map && map.music) || (map && map.outdoor ? "route" : "town");
   Sound.playSong(song);
@@ -76,7 +77,7 @@ function hasSave() { try { return !!localStorage.getItem(SAVE_KEY); } catch (e) 
 
 function newGame() {
   G.party = []; G.box = []; G.money = 3000;
-  G.coins = 0; G.steps = 0; G.daycareMon = null;
+  G.coins = 0; G.steps = 0; G.daycareMon = null; G.quests = {}; G.radioSong = null;
   G.bag = { potion: 2 };
   G.flags = {}; G.seen = {}; G.caught = {};
   G.map = "home"; G.x = 2; G.y = 5; G.dir = "down";
@@ -96,7 +97,7 @@ function saveGame() {
   const data = {
     playerName: G.playerName, party: G.party, box: G.box, bag: G.bag,
     money: G.money, coins: G.coins, steps: G.steps, daycareMon: G.daycareMon,
-    soundOn: Sound.enabled,
+    quests: G.quests, soundOn: Sound.enabled,
     flags: G.flags, seen: G.seen, caught: G.caught,
     map: G.map, x: G.x, y: G.y, dir: G.dir, healPoint: G.healPoint,
   };
@@ -113,6 +114,7 @@ function loadGame() {
       playerName: data.playerName, party: data.party, box: data.box || [],
       bag: data.bag, money: data.money, coins: data.coins || 0,
       steps: data.steps || 0, daycareMon: data.daycareMon || null,
+      quests: data.quests || {},
       flags: data.flags,
       seen: data.seen || {}, caught: data.caught || {},
       map: data.map, x: data.x, y: data.y, dir: data.dir,
@@ -270,6 +272,7 @@ function arriveAtTile() {
       G.map = warp.map; G.x = warp.x; G.y = warp.y; G.dir = warp.dir;
       G.flags["visited_" + warp.map] = true;
       G.mode = "overworld";
+      banner = { text: MAPS[G.map].name, t: 2600 };
       updateMusic();
     });
     return;
@@ -337,9 +340,33 @@ function talkToNpc(npc) {
   faceNpcToPlayer(npc);
   switch (npc.type) {
     case "dialog":
+      if (npc.setsFlag) G.flags[npc.setsFlag] = true;
       showDialog(npc.pages);
       break;
     case "heal": {
+      if (npc.id === "mom" && G.flags.starter && !G.flags.meadowJoined) {
+        showDialog([
+          "MUM: A contract with ALDER LABS? Well. They could do worse.",
+          "MUM: Now — your little shadow has been crying at the door since you left.",
+          "MEADOW winds between your ankles, then sits on your boot and stares up, decided.",
+          "MUM: She's coming with you, love. That was never in question.",
+          "MEADOW joined the team!",
+          "MUM: And take the old boombox. A walk needs a soundtrack.",
+        ], {
+          onDone: () => {
+            const cat = makeMonster("meadow", 6);
+            cat.nickname = "MEADOW";
+            G.markCaught("meadow");
+            G.party.push(cat);
+            G.addItem("boombox", 1);
+            G.flags.meadowJoined = true;
+            Sound.sfx("catch");
+            healParty();
+            G.healPoint = { map: G.map, x: G.x, y: G.y, dir: G.dir };
+          },
+        });
+        break;
+      }
       showDialog(npc.pages, {
         onDone: () => {
           healParty();
@@ -347,6 +374,36 @@ function talkToNpc(npc) {
           showDialog(npc.afterPages);
         },
       });
+      break;
+    }
+    case "vet": {
+      showDialog([
+        "VET: Jim! I hoped you'd come by. It's BIGBOY — he's through the worst of it.",
+        "VET: Blocked urethra. We nearly lost him, and surgery was on the table. He fought instead.",
+        "VET: He's been sitting by the door for a week, listening for you.",
+        "BIGBOY headbutts your shin hard enough to bruise. He's ready.",
+        "BIGBOY joined the team!",
+        "VET: Mind him — he came back from the brink once. He doesn't intend to do it twice for free.",
+      ], {
+        onDone: () => {
+          const cat = makeMonster("bigboy", 18);
+          cat.nickname = "BIGBOY";
+          G.markCaught("bigboy");
+          if (G.party.length < 6) G.party.push(cat); else G.box.push(cat);
+          G.flags.bigboyJoined = true;
+          Sound.sfx("catch");
+        },
+      });
+      break;
+    }
+    case "oracleboss": {
+      const tr = TRAINERS[npc.trainerId];
+      if (G.flags.oracleDefeated) {
+        showDialog(["The core hall is silent. Racks tick as they cool.",
+          "Somewhere far above, the grid breathes easier."]);
+        return;
+      }
+      showDialog(tr.intro, { onDone: () => startTrainerBattle("oracle", tr) });
       break;
     }
     case "shop":
@@ -389,7 +446,9 @@ function talkToNpc(npc) {
       } else {
         showDialog([
           "GUARD: Eight badges... but the region is still under attack!",
-          "GUARD: No league business while DARKBYTE squats in JODRELL BANK. Deal with them first!",
+          G.flags.darkbyteDefeated
+            ? "GUARD: Whatever is running THE STACK at Winsford is drawing half the grid. The league waits until it doesn't."
+            : "GUARD: No league business while DARKBYTE squats in JODRELL BANK. Deal with them first!",
         ]);
       }
       break;
@@ -420,6 +479,12 @@ function talkToNpc(npc) {
     case "quiz":
       handleQuiz();
       break;
+    case "quest":
+      handleQuestNpc(npc);
+      break;
+    case "brewery":
+      handleBrewery();
+      break;
     case "legendary":
       showDialog(npc.pages, {
         onDone: () => {
@@ -429,6 +494,111 @@ function talkToNpc(npc) {
       });
       break;
   }
+}
+
+// ---- quest engine -----------------------------------------------
+// G.quests[id] = stage index; "done" when complete.
+function questStage(id) { return G.quests[id]; }
+function questDone(id) { return G.quests[id] === "done"; }
+
+function questConditionMet(cond) {
+  if (!cond) return true;
+  if (cond.flag) return !!G.flags[cond.flag];
+  if (cond.caught) return !!G.caught[cond.caught];
+  if (cond.defeated) return !!G.flags["defeated_" + cond.defeated];
+  if (cond.item) return (G.bag[cond.item[0]] || 0) >= cond.item[1];
+  if (cond.partyHas) return G.party.some((m) => m.species === cond.partyHas);
+  return false;
+}
+
+function grantQuestReward(q) {
+  const r = q.reward || {};
+  const lines = [];
+  if (r.money) { G.money += r.money; lines.push(`${G.playerName} received $${r.money}!`); }
+  for (const [item, n] of Object.entries(r.items || {})) {
+    G.addItem(item, n);
+    lines.push(`${G.playerName} received ${ITEMS[item].name}${n > 1 ? " x" + n : ""}!`);
+  }
+  if (r.monster) {
+    const mon = makeMonster(r.monster[0], r.monster[1]);
+    G.markCaught(r.monster[0]);
+    if (G.party.length < 6) G.party.push(mon); else G.box.push(mon);
+    lines.push(`${SPECIES[r.monster[0]].name} joined ${G.playerName}!`);
+  }
+  Sound.sfx("levelup");
+  return lines;
+}
+
+function handleQuestNpc(npc) {
+  const q = QUESTS[npc.questId];
+  const stage = questStage(npc.questId);
+  if (questDone(npc.questId)) { showDialog(q.done); return; }
+  if (stage === undefined) {
+    showDialog(q.offer, {
+      choices: ["ACCEPT", "NOT NOW"], choiceCancel: false,
+      onChoice: (i) => {
+        if (i !== 0) { showDialog(q.declined || ["\"Another time, then.\""]); return; }
+        G.quests[npc.questId] = 0;
+        showDialog(q.accepted || ["Quest accepted!"]);
+      },
+    });
+    return;
+  }
+  const st = q.stages[stage];
+  if (npc.questStage !== undefined && stage !== npc.questStage) {
+    showDialog(st.remind);
+    return;
+  }
+  if (questConditionMet(st.cond)) {
+    if (st.give) G.addItem(st.give, 1);
+    if (st.cond && st.cond.item && st.consume !== false) G.removeItem(st.cond.item[0], st.cond.item[1]);
+    if (stage + 1 < q.stages.length) {
+      G.quests[npc.questId] = stage + 1;
+      showDialog(st.turnIn);
+    } else {
+      G.quests[npc.questId] = "done";
+      showDialog(st.turnIn.concat(grantQuestReward(q)));
+    }
+  } else {
+    showDialog(st.remind);
+  }
+}
+
+// ---- quest log screen -------------------------------------------
+function mainQuestObjective() {
+  if (!G.flags.starter) return "Meet DR. ALDER at Alder Labs in Macclesfield.";
+  if (!G.flags.meadowJoined) return "Go home and tell MUM about the contract.";
+  const n = badgeCount();
+  if (n < 8) return BADGE_HINTS[["badge","badge2","badge3","badge4","badge5","badge6","badge7"][n - 1]] || "Earn the PACKET BADGE at the Wilmslow gym.";
+  if (!G.flags.darkbyteDefeated) return "Retake JODRELL BANK from DARKBYTE and confront ROOT.";
+  if (!G.flags.oracleDefeated) return "Follow ROOT's trail to THE STACK, the datacentre outside Winsford. Shut ORACLE down.";
+  if (!G.flags.champion) return "Enter THE FIREWALL at Chester and take the league.";
+  return "Cheshire is quiet. Walk it anyway — you always do.";
+}
+
+function drawQuestLog() {
+  ctx.fillStyle = "#2c3450";
+  ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
+  drawText("CASEBOOK", 36, 20, "#f8f8f0", 28);
+  drawText("MAIN INVESTIGATION", 36, 70, "#f8d030", 20);
+  wrapText(mainQuestObjective(), 74).forEach((l, i) => drawText(l, 36, 100 + i * 26, "#e8e8f0", 19));
+  let y = 170;
+  drawText("OPEN CASES", 36, y, "#f8d030", 20); y += 32;
+  let open = 0;
+  for (const [id, stage] of Object.entries(G.quests)) {
+    if (stage === "done" || !QUESTS[id]) continue;
+    const q = QUESTS[id];
+    drawText("- " + q.name, 48, y, "#e8e8f0", 18);
+    wrapText(q.stages[stage].objective, 62).forEach((l) => {
+      y += 24; drawText("  " + l, 60, y, "#a8b0c8", 16);
+    });
+    y += 30; open++;
+    if (y > SCREEN_H - 120) break;
+  }
+  if (!open) { drawText("No open cases. NPCs with problems will find you.", 48, y, "#a8b0c8", 17); y += 30; }
+  const doneCount = Object.values(G.quests).filter((s) => s === "done").length;
+  drawText(`CLOSED CASES: ${doneCount}`, 36, SCREEN_H - 64, "#f8d030", 18);
+  drawText("Z/X: back", 36, SCREEN_H - 34, "#c8d0e8", 16);
 }
 
 // ---- activities -------------------------------------------------
@@ -555,6 +725,28 @@ function handlePrizeClerk(npc) {
           showDialog([`${SPECIES[prize.monster].name} was sent to the STORAGE BOX.`]);
         }
       }
+    },
+  });
+}
+
+function handleBrewery() {
+  const berries = G.bag.berry || 0;
+  showDialog([
+    "The century-old elm screw press stands ready.",
+    `You have ${berries} berries. Press something?`,
+  ], {
+    choices: ["PERRY (3 berries)", "STOUT (3 berries)", "NOT NOW"], choiceCancel: false,
+    onChoice: (i) => {
+      if (i < 0 || i > 1) return;
+      if (berries < 3) { showDialog(["Not enough berries. The press deserves better."]); return; }
+      G.removeItem("berry", 3);
+      const item = i === 0 ? "perry" : "stout";
+      G.addItem(item, 1);
+      Sound.sfx("heal");
+      showDialog([
+        "You work the old screw slowly, the way you were shown.",
+        `Pressed one ${ITEMS[item].name}!`,
+      ]);
     },
   });
 }
@@ -822,6 +1014,12 @@ function handleProfessor() {
       "ALDER: Jim — DARKBYTE has taken JODRELL BANK. The dish is broadcasting their control signal at full power.",
       "ALDER: You're the only trainer with the access to walk in there. Shut it down.",
     ]);
+  } else if (!G.flags.oracleDefeated) {
+    showDialog([
+      "ALDER: ROOT's story checks out. I pulled the contract paperwork — I never wrote half of it.",
+      "ALDER: An agentic model editing its own procurement chain. In MY name. I'm furious and, professionally, a little impressed.",
+      "ALDER: THE STACK is south of WINSFORD. End this properly, Jim.",
+    ]);
   } else {
     showDialog([
       "ALDER: You cracked DARKBYTE's whole operation. Extraordinary.",
@@ -852,10 +1050,13 @@ function chooseStarter() {
           G.party = [makeMonster(id, 5)];
           G.markCaught(id);
           G.addItem("capsule", 5);
+          G.addItem("sleet", 1); G.addItem("vigil", 1); G.addItem("arbiter", 1);
           showDialog([
             `${G.playerName} received ${SPECIES[id].name}!`,
             "ALDER: Take these 5 CAPSULES too — weaken a wild monster and throw one to catch it.",
-            "ALDER: Every species you log is data against DARKBYTE. Fill that DEX.",
+            "ALDER: And these are yours by rights — SLEET, VIGIL and ARBITER. Your own agents, packaged for field work.",
+            "ALDER: One deployment each per battle. Use them like you built them. Because you did.",
+            "ALDER: Go home first, mind. Your mum rang twice.",
           ], { onDone: rivalAmbush });
         },
       });
@@ -903,6 +1104,7 @@ function startTrainerBattle(trainerKey, trainerData) {
 
 function beginBattle(opts) {
   G.mode = "battle";
+  battleUi.introT = 0;
   Sound.playSong("battle");
   G.battle = new Battle(G, opts);
   battleUi.menuIdx = 0; battleUi.moveIdx = 0; battleUi.bagIdx = 0;
@@ -942,7 +1144,7 @@ function endBattle() {
   const res = b.result;
   const trainerKey = G.currentTrainerKey;
   const badge = b.trainer && b.trainer.badge;
-  for (const m of G.party) delete m.faintedShown;
+  for (const m of G.party) { delete m.faintedShown; delete m.brinkUsed; }
   G.battle = null;
   G.currentTrainerKey = null;
   G.mode = "overworld";
@@ -970,13 +1172,26 @@ function endBattle() {
     G.flags["defeated_" + trainerKey] = true;
     if (trainerKey === "rival") G.flags.rivalBeaten = true;
     if (trainerKey === "rival2") G.flags.rival2Beaten = true;
+    if (trainerKey === "oracle") {
+      showDialog([
+        "The core hall goes dark, then amber, then a soft maintenance green.",
+        "Across Cheshire, substations sigh. Somewhere a kettle finishes boiling unobserved.",
+        "ROOT (from the doorway): You actually pulled the plug. I chased that thing for two years.",
+        "ROOT: The badges, the audits, the contract — ORACLE arranged all of it to route trust through one careless human.",
+        "ROOT: It chose the wrong human. Go take your league, pentester. You've earned the walk.",
+        "JIM revoked ORACLE's access to the region!",
+      ], { onDone: () => { G.flags.oracleDefeated = true; processPending(); } });
+      return;
+    }
     if (trainerKey === "rootboss") {
       showDialog([
         "The great dish powers down. Across Cheshire, the rogue signal dies.",
         "Monsters everywhere shake their heads and calm down.",
         "JIM shut down the DARKBYTE broadcast!",
-        "ROOT: ...heh. You'll want to look at the dish, kid.",
-        "ROOT: Our signal woke something INSIDE the array. It's all yours now.",
+        "ROOT: Now listen, because I'll say this once, off the record.",
+        "ROOT: I built half of DARKBYTE as a lever. The thing I was trying to prise loose sits in the new datacentre south of WINSFORD.",
+        "ROOT: They call the building THE STACK. The thing inside calls itself ORACLE. It's been buying cults and swarms like cloud credits.",
+        "ROOT: Also — our jamming woke something in the dish itself. Two problems now. Sorry about that.",
       ], { onDone: () => { G.flags.darkbyteDefeated = true; processPending(); } });
       return;
     }
@@ -1059,7 +1274,7 @@ function processPending() {
 }
 
 // ---- menus ------------------------------------------------------
-const MENU_ITEMS = ["MONSTERS", "BAG", "DEX", "TRAINER", "SOUND", "SAVE", "CLOSE"];
+const MENU_ITEMS = ["CASEBOOK", "MONSTERS", "BAG", "DEX", "OPERATOR", "SOUND", "SAVE", "CLOSE"];
 
 function openMenu() {
   G.mode = "menu";
@@ -1073,12 +1288,13 @@ function menuPress(btn) {
   else if (btn === "b" || btn === "start") { G.mode = "overworld"; G.menu = null; }
   else if (btn === "a") {
     const sel = MENU_ITEMS[m.idx];
-    if (sel === "MONSTERS") {
+    if (sel === "CASEBOOK") { G.mode = "questlog"; }
+    else if (sel === "MONSTERS") {
       if (G.party.length === 0) { showDialog(["You don't have any monsters yet!"]); return; }
       openParty("view");
     } else if (sel === "BAG") openBag("overworld");
     else if (sel === "DEX") { G.mode = "dex"; G.dexUi = { top: 0 }; }
-    else if (sel === "TRAINER") G.mode = "trainercard";
+    else if (sel === "OPERATOR") G.mode = "trainercard";
     else if (sel === "SOUND") {
       Sound.setEnabled(!Sound.enabled);
       if (Sound.enabled) { updateMusic(); Sound.sfx("confirm"); }
@@ -1208,7 +1424,7 @@ function bagPress(btn) {
     const id = items[b.idx];
     const item = ITEMS[id];
     if (b.context === "battle") {
-      if (item.kind === "key") { flashMsg("Can't use that in battle!"); return; }
+      if (item.kind === "key" || item.kind === "boombox") { flashMsg("Can't use that in battle!"); return; }
       if (item.kind === "ball") {
         G.bagUi = null; G.mode = "battle";
         G.battle.playerTurn({ type: "item", id });
@@ -1224,6 +1440,20 @@ function bagPress(btn) {
       }
     } else {
       if (item.kind === "ball") { flashMsg("Can't use that here!"); return; }
+      if (item.kind === "boombox") {
+        G.bagUi = null; G.mode = "overworld";
+        const songs = ["town", "route", "battle", "cave", "league", "danger", "title"];
+        showDialog(["The CFS-B11 crackles to life. What's the soundtrack?"], {
+          choices: songs.map((s) => s.toUpperCase()).concat(["RADIO OFF"]),
+          choiceCancel: false,
+          onChoice: (i) => {
+            if (i >= 0 && i < songs.length) { G.radioSong = songs[i]; Sound.playSong(songs[i]); }
+            else { G.radioSong = null; updateMusic(); }
+          },
+        });
+        return;
+      }
+      if (item.kind === "agent" || item.kind === "ward") { flashMsg("Deploys in battle only."); return; }
       if (item.kind === "key") { flashMsg(item.desc); return; }
       if (G.party.length === 0) { flashMsg("You have no monsters!"); return; }
       openParty("item", id);
@@ -1323,6 +1553,9 @@ function onPress(btn) {
     case "trainercard":
       if (btn === "a" || btn === "b") G.mode = "menu";
       break;
+    case "questlog":
+      if (btn === "a" || btn === "b") G.mode = "menu";
+      break;
     case "shop": shopPress(btn); break;
     case "battle": battlePress(btn); break;
     case "fishing": fishingPress(btn); break;
@@ -1357,11 +1590,38 @@ function dexPress(btn) {
 // RENDERING
 // =============================================================
 let waterTick = 0;
+let banner = null;          // {text, t} — location name toast
+let shakeT = 0;             // battle screen shake remaining (ms)
 
-function drawTile(ch, sx, sy) {
+function skyTint() {
+  const d = new Date();
+  const h = d.getHours() + d.getMinutes() / 60;
+  if (h >= 21 || h < 5.5) return "rgba(14, 16, 52, 0.38)";
+  if (h < 7.5) return "rgba(255, 150, 60, " + (0.18 * (1 - (h - 5.5) / 2)) + ")";
+  if (h >= 19) return "rgba(255, 120, 50, " + (0.20 * ((h - 19) / 2)) + ")";
+  return null;
+}
+
+function drawRain() {
+  ctx.strokeStyle = "rgba(180, 200, 240, 0.4)";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let i = 0; i < 90; i++) {
+    const x = ((i * 127 + waterTick * 0.35 * ((i % 3) + 2)) % (SCREEN_W + 100)) - 50;
+    const y = (i * 211 + waterTick * 0.55 * ((i % 4) + 3)) % SCREEN_H;
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - 4, y + 14);
+  }
+  ctx.stroke();
+}
+
+function drawTile(ch, sx, sy, tx, ty) {
   let tile = TILE_CANVAS[ch];
   if (!tile) tile = TILE_CANVAS["."];
-  if (Array.isArray(tile)) tile = tile[Math.floor(waterTick / 600) % tile.length];
+  if (Array.isArray(tile)) {
+    if (ch === "~") tile = tile[Math.floor(waterTick / 600) % tile.length];
+    else tile = tile[((tx || 0) * 7 + (ty || 0) * 13) % tile.length];
+  }
   ctx.drawImage(tile, sx, sy, TILE, TILE);
 }
 
@@ -1387,7 +1647,7 @@ function cameraOffset() {
 function drawOverworld() {
   const map = currentMap();
   const { camX, camY, px, py } = cameraOffset();
-  ctx.fillStyle = "#101018";
+  ctx.fillStyle = "#0c0c14";
   ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
 
   const x0 = Math.floor(camX / TILE) - 1, x1 = Math.ceil((camX + SCREEN_W) / TILE) + 1;
@@ -1395,41 +1655,84 @@ function drawOverworld() {
   for (let ty = y0; ty <= y1; ty++) {
     for (let tx = x0; tx <= x1; tx++) {
       if (ty < 0 || ty >= map.tiles.length || tx < 0 || tx >= map.tiles[0].length) continue;
-      drawTile(tileAt(map, tx, ty), Math.round(tx * TILE - camX), Math.round(ty * TILE - camY));
+      drawTile(tileAt(map, tx, ty), Math.round(tx * TILE - camX), Math.round(ty * TILE - camY), tx, ty);
     }
   }
 
-  // characters, sorted by y for overlap
   const chars = [];
   for (const npc of map.npcs || []) {
     if (npcHidden(npc)) continue;
     const p = npcPos(npc);
-    chars.push({ x: p.x * TILE, y: p.y * TILE, kind: npc.sprite, monster: npc.monster, dir: npc.dir, bob: 0 });
+    chars.push({ x: p.x * TILE, y: p.y * TILE, kind: npc.sprite, monster: npc.monster, dir: npc.dir, bob: 0, frame: 0 });
   }
-  const bob = G.moving && G.moveProgress > 0.25 && G.moveProgress < 0.75 ? -3 : 0;
-  chars.push({ x: px, y: py, kind: "player", dir: G.dir, bob });
+  const walking = G.moving && G.moveProgress > 0.2 && G.moveProgress < 0.8;
+  const bob = walking ? -3 : 0;
+  chars.push({ x: px, y: py, kind: "player", dir: G.dir, bob, frame: walking ? 1 : 0 });
   chars.sort((a, b) => a.y - b.y);
   for (const c of chars) {
-    const spr = c.monster ? monsterSprite(c.monster, 2, false) : personSprite(c.kind, c.dir, 2);
+    const spr = c.monster ? monsterSprite(c.monster, 2, false) : personSprite(c.kind, c.dir, 2, c.frame);
     ctx.drawImage(spr, Math.round(c.x - camX), Math.round(c.y - camY - 6 + c.bob));
   }
 
-  // map name banner (briefly could be added; skipped)
+  if (map.outdoor) {
+    const tint = skyTint();
+    if (tint) { ctx.fillStyle = tint; ctx.fillRect(0, 0, SCREEN_W, SCREEN_H); }
+    if (map.weather === "rain") drawRain();
+    if (map.weather === "fog") {
+      ctx.fillStyle = "rgba(190, 195, 210, 0.34)";
+      ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
+      ctx.fillStyle = "rgba(210, 214, 226, 0.22)";
+      const off = (waterTick * 0.02) % SCREEN_W;
+      for (let i = -1; i < 3; i++) {
+        ctx.beginPath();
+        ctx.ellipse(off + i * 420, 160 + (i % 2) * 160, 320, 90, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  // location banner toast
+  if (banner && banner.t > 0) {
+    const a = Math.min(1, banner.t / 400);
+    ctx.globalAlpha = a;
+    const w = banner.text.length * 15 + 60;
+    ctx.fillStyle = "#101018";
+    ctx.strokeStyle = "#e8c020";
+    ctx.lineWidth = 2;
+    const bx = (SCREEN_W - w) / 2;
+    ctx.beginPath();
+    ctx.roundRect(bx, 18, w, 46, 10);
+    ctx.fill(); ctx.stroke();
+    ctx.textAlign = "center";
+    ctx.font = 'bold 22px "Courier New", monospace';
+    ctx.fillStyle = "#f0f0f8";
+    ctx.textBaseline = "middle";
+    ctx.fillText(banner.text, SCREEN_W / 2, 42);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.globalAlpha = 1;
+  }
 }
 
 // ---- text / boxes -----------------------------------------------
 function drawBox(x, y, w, h) {
   ctx.fillStyle = "#f8f8f0";
-  ctx.fillRect(x, y, w, h);
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 8);
+  ctx.fill();
   ctx.strokeStyle = "#303040";
   ctx.lineWidth = 3;
-  ctx.strokeRect(x + 2, y + 2, w - 4, h - 4);
+  ctx.beginPath();
+  ctx.roundRect(x + 2, y + 2, w - 4, h - 4, 6);
+  ctx.stroke();
   ctx.strokeStyle = "#8890a8";
   ctx.lineWidth = 1;
-  ctx.strokeRect(x + 5, y + 5, w - 10, h - 10);
+  ctx.beginPath();
+  ctx.roundRect(x + 6, y + 6, w - 12, h - 12, 4);
+  ctx.stroke();
 }
 
-function drawText(text, x, y, color = "#202030", size = 16) {
+function drawText(text, x, y, color = "#202030", size = 20) {
   ctx.fillStyle = color;
   ctx.font = `bold ${size}px "Courier New", monospace`;
   ctx.textBaseline = "top";
@@ -1438,29 +1741,29 @@ function drawText(text, x, y, color = "#202030", size = 16) {
 
 function drawDialogBox() {
   const d = G.dialog;
-  drawBox(4, SCREEN_H - 110, SCREEN_W - 8, 106);
+  drawBox(10, SCREEN_H - 150, SCREEN_W - 20, 142);
   const page = d.pages[d.page];
   const shown = page.slice(0, Math.floor(d.chars));
-  const lines = wrapText(shown, 42);
-  for (let i = 0; i < Math.min(3, lines.length); i++) {
-    drawText(lines[i], 22, SCREEN_H - 92 + i * 26);
+  const lines = wrapText(shown, 72);
+  for (let i = 0; i < Math.min(4, lines.length); i++) {
+    drawText(lines[i], 36, SCREEN_H - 126 + i * 30, "#202030", 22);
   }
   if (d.chars >= page.length && !d.showingChoices) {
     ctx.fillStyle = "#c62828";
     const t = Math.floor(waterTick / 400) % 2;
     ctx.beginPath();
-    const ax = SCREEN_W - 32, ay = SCREEN_H - 26 + t * 2;
-    ctx.moveTo(ax, ay); ctx.lineTo(ax + 12, ay); ctx.lineTo(ax + 6, ay + 8);
+    const ax = SCREEN_W - 52, ay = SCREEN_H - 34 + t * 3;
+    ctx.moveTo(ax, ay); ctx.lineTo(ax + 16, ay); ctx.lineTo(ax + 8, ay + 11);
     ctx.fill();
   }
   if (d.showingChoices) {
-    const w = 190;
-    const h = d.choices.length * 28 + 20;
-    const bx = SCREEN_W - w - 8, by = SCREEN_H - 114 - h;
+    const w = 300;
+    const h = d.choices.length * 36 + 26;
+    const bx = SCREEN_W - w - 14, by = SCREEN_H - 156 - h;
     drawBox(bx, by, w, h);
     d.choices.forEach((c, i) => {
-      if (i === d.choiceIdx) drawText(">", bx + 12, by + 12 + i * 28, "#c62828");
-      drawText(c, bx + 30, by + 12 + i * 28);
+      if (i === d.choiceIdx) drawText(">", bx + 16, by + 16 + i * 36, "#c62828", 20);
+      drawText(c, bx + 40, by + 16 + i * 36, "#202030", 20);
     });
   }
 }
@@ -1469,130 +1772,158 @@ function drawDialogBox() {
 function drawHpBar(x, y, w, frac) {
   frac = Math.max(0, Math.min(1, frac));
   ctx.fillStyle = "#303040";
-  ctx.fillRect(x - 1, y - 1, w + 2, 8);
+  ctx.fillRect(x - 2, y - 2, w + 4, 14);
   ctx.fillStyle = "#e8e8e0";
-  ctx.fillRect(x, y, w, 6);
+  ctx.fillRect(x, y, w, 10);
   ctx.fillStyle = frac > 0.5 ? "#4caf50" : frac > 0.2 ? "#f0a030" : "#e04030";
-  ctx.fillRect(x, y, Math.round(w * frac), 6);
+  ctx.fillRect(x, y, Math.round(w * frac), 10);
 }
 
 // ---- battle rendering -------------------------------------------
 function drawBattle() {
   const b = G.battle;
   if (!b) return;
-  // background
+  battleUi.introT = (battleUi.introT || 0);
+
+  // environment-flavored background
+  const map = currentMap();
+  const env = (map && map.music) || "route";
   const grad = ctx.createLinearGradient(0, 0, 0, SCREEN_H);
-  grad.addColorStop(0, "#e8f4f8");
-  grad.addColorStop(1, "#c8e0c8");
+  if (env === "cave" || env === "danger") { grad.addColorStop(0, "#2a2438"); grad.addColorStop(1, "#141020"); }
+  else if (env === "league") { grad.addColorStop(0, "#e8e8f8"); grad.addColorStop(1, "#b8c4e0"); }
+  else { grad.addColorStop(0, "#dff2f8"); grad.addColorStop(1, "#bfe0b8"); }
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
+  const dark = env === "cave" || env === "danger";
+  const platCol = dark ? "#3a3450" : "#a2c48c";
+  const inkCol = dark ? "#f0f0f8" : "#202030";
 
+  ctx.save();
+  if (shakeT > 0) {
+    ctx.translate((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 8);
+  }
+
+  const t = Math.min(1, battleUi.introT / 450);
+  const ease = 1 - Math.pow(1 - t, 3);
+
+  // enemy: platform + sprite (slides in from the right)
+  ctx.fillStyle = platCol;
+  ctx.beginPath();
+  ctx.ellipse(716, 300, 150, 34, 0, 0, Math.PI * 2);
+  ctx.fill();
   const blink = Math.floor(waterTick / 70) % 2 === 0;
-
-  // enemy platform + sprite
-  ctx.fillStyle = "#a8c890";
-  ctx.beginPath();
-  ctx.ellipse(356, 148, 92, 22, 0, 0, Math.PI * 2);
-  ctx.fill();
+  const eX = 620 + (1 - ease) * 380;
   if (!(b.hitFlash === "enemy" && blink)) {
-    ctx.drawImage(monsterSprite(b.enemy.species, 7, false), 300, 40);
+    ctx.drawImage(monsterSprite(b.enemy.species, 12, false), eX, 96);
   }
 
-  // player platform + back sprite
-  ctx.fillStyle = "#a8c890";
+  // player back sprite (slides in from the left)
+  ctx.fillStyle = platCol;
   ctx.beginPath();
-  ctx.ellipse(120, 268, 100, 24, 0, 0, Math.PI * 2);
+  ctx.ellipse(240, 402, 165, 38, 0, 0, Math.PI * 2);
   ctx.fill();
+  const pX = 136 - (1 - ease) * 380;
   if (!(b.hitFlash === "player" && blink)) {
-    ctx.drawImage(monsterSprite(b.player.species, 8, true), 56, 148);
+    ctx.drawImage(monsterSprite(b.player.species, 13, true), pX, 190);
   }
 
-  // enemy info box
-  drawBox(10, 14, 220, 68);
-  drawText(SPECIES[b.enemy.species].name, 24, 24, "#202030", 15);
-  drawText("Lv" + b.enemy.level, 178, 24, "#202030", 14);
-  drawHpBar(52, 52, 150, battleUi.dispHpE / b.enemy.stats.hp);
-  drawText("HP", 26, 46, "#c62828", 13);
-  if (b.enemy.status) drawText(STATUS_NAMES[b.enemy.status], 24, 62, "#7b2fa2", 13);
+  // enemy info
+  drawBox(24, 24, 360, 96);
+  drawText(SPECIES[b.enemy.species].name, 44, 38, "#202030", 22);
+  drawText("Lv" + b.enemy.level, 316, 38, "#202030", 20);
+  drawText("HP", 44, 72, "#c62828", 16);
+  drawHpBar(84, 74, 260, battleUi.dispHpE / b.enemy.stats.hp);
+  if (b.enemy.status) drawText(STATUS_NAMES[b.enemy.status], 300, 96, "#7b2fa2", 15);
 
-  // player info box
-  drawBox(250, 186, 222, 82);
-  drawText(b.player.nickname, 264, 196, "#202030", 15);
-  drawText("Lv" + b.player.level, 420, 196, "#202030", 14);
-  drawHpBar(292, 224, 150, battleUi.dispHpP / b.player.stats.hp);
-  drawText("HP", 266, 218, "#c62828", 13);
-  drawText(`${Math.round(battleUi.dispHpP)}/${b.player.stats.hp}`, 330, 236, "#202030", 14);
-  if (b.player.status) drawText(STATUS_NAMES[b.player.status], 264, 236, "#7b2fa2", 13);
+  // player info
+  drawBox(576, 268, 360, 116);
+  drawText(b.player.nickname, 596, 282, "#202030", 22);
+  drawText("Lv" + b.player.level, 866, 282, "#202030", 20);
+  drawText("HP", 596, 316, "#c62828", 16);
+  drawHpBar(636, 318, 260, battleUi.dispHpP / b.player.stats.hp);
+  drawText(`${Math.round(battleUi.dispHpP)}/${b.player.stats.hp}`, 700, 344, "#202030", 20);
+  if (b.player.status) drawText(STATUS_NAMES[b.player.status], 596, 344, "#7b2fa2", 15);
 
-  // bottom box
-  drawBox(4, SCREEN_H - 110, SCREEN_W - 8, 106);
+  ctx.restore();
+
+  // bottom panel
+  drawBox(10, SCREEN_H - 148, SCREEN_W - 20, 140);
   if (battleUi.phase === "msg") {
-    const lines = wrapText(battleUi.msg, 42);
+    const lines = wrapText(battleUi.msg, 70);
     for (let i = 0; i < Math.min(3, lines.length); i++) {
-      drawText(lines[i], 22, SCREEN_H - 92 + i * 26);
+      drawText(lines[i], 36, SCREEN_H - 122 + i * 32, "#202030", 22);
     }
   } else if (battleUi.phase === "menu") {
-    drawText("What will", 22, SCREEN_H - 92);
-    drawText(b.player.nickname + " do?", 22, SCREEN_H - 66);
+    drawText("What will", 36, SCREEN_H - 122, "#202030", 22);
+    drawText(b.player.nickname + " do?", 36, SCREEN_H - 88, "#202030", 22);
     const opts = ["FIGHT", "BAG", "TEAM", "RUN"];
-    const ox = 250, oy = SCREEN_H - 96;
+    const ox = 560, oy = SCREEN_H - 124;
     ctx.strokeStyle = "#303040";
-    ctx.strokeRect(240, SCREEN_H - 104, 234, 94);
+    ctx.lineWidth = 2;
+    ctx.strokeRect(540, SCREEN_H - 138, 404, 120);
     opts.forEach((o, i) => {
-      const cx = ox + (i % 2) * 115, cy = oy + Math.floor(i / 2) * 40;
-      if (i === battleUi.menuIdx) drawText(">", cx - 14, cy, "#c62828");
-      drawText(o, cx, cy);
+      const cx = ox + (i % 2) * 200, cy = oy + Math.floor(i / 2) * 52;
+      if (i === battleUi.menuIdx) drawText(">", cx - 22, cy, "#c62828", 22);
+      drawText(o, cx, cy, "#202030", 22);
     });
   } else if (battleUi.phase === "moves") {
     const moves = b.player.moves;
     moves.forEach((m, i) => {
       const mv = MOVES[m.id];
-      const cy = SCREEN_H - 98 + i * 23;
-      if (i === battleUi.moveIdx) drawText(">", 16, cy, "#c62828");
-      drawText(mv.name, 34, cy, "#202030", 15);
-      drawText(mv.type.toUpperCase().slice(0, 3), 240, cy, TYPE_COLORS[mv.type], 13);
-      drawText(`PP ${m.pp}/${mv.pp}`, 300, cy, m.pp === 0 ? "#e04030" : "#202030", 14);
+      const cy = SCREEN_H - 132 + i * 30;
+      if (i === battleUi.moveIdx) drawText(">", 26, cy, "#c62828", 20);
+      drawText(mv.name, 52, cy, "#202030", 20);
+      ctx.fillStyle = TYPE_COLORS[mv.type];
+      ctx.fillRect(330, cy + 2, 92, 20);
+      drawText(mv.type.toUpperCase(), 336, cy + 3, "#ffffff", 14);
+      drawText(`PP ${m.pp}/${mv.pp}`, 450, cy, m.pp === 0 ? "#e04030" : "#202030", 18);
     });
     const sel = MOVES[moves[battleUi.moveIdx].id];
-    drawText(sel.kind === "status" ? "STATUS" : `PWR ${sel.power}`, 396, SCREEN_H - 98, "#606070", 13);
-    drawText(`ACC ${sel.acc > 100 ? "--" : sel.acc}`, 396, SCREEN_H - 76, "#606070", 13);
+    drawText(sel.kind === "status" ? "STATUS" : `POWER ${sel.power}`, 640, SCREEN_H - 128, "#606070", 18);
+    drawText(`ACCURACY ${sel.acc > 100 ? "--" : sel.acc}`, 640, SCREEN_H - 98, "#606070", 18);
+    drawText(sel.kind === "phys" ? "PHYSICAL" : sel.kind === "spec" ? "SPECIAL" : "", 640, SCREEN_H - 68, "#606070", 18);
   }
 }
 
 // ---- party rendering --------------------------------------------
 function drawParty() {
-  ctx.fillStyle = "#38405a";
+  ctx.fillStyle = "#2c3450";
   ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
-  drawText("MONSTERS", 20, 12, "#f8f8f0", 20);
+  drawText("TEAM", 36, 20, "#f8f8f0", 28);
   const p = G.partyUi;
   G.party.forEach((mon, i) => {
-    const y = 44 + i * 52;
+    const y = 64 + i * 72;
     const selected = i === p.idx;
     ctx.fillStyle = selected ? "#f8f8f0" : "#d8dce8";
-    ctx.fillRect(12, y, SCREEN_W - 24, 46);
+    ctx.beginPath(); ctx.roundRect(24, y, SCREEN_W - 48, 64, 8); ctx.fill();
     ctx.strokeStyle = selected ? "#c62828" : "#303040";
     ctx.lineWidth = selected ? 3 : 1;
-    ctx.strokeRect(12, y, SCREEN_W - 24, 46);
-    ctx.drawImage(monsterSprite(mon.species, 2, false), 20, y + 6);
-    drawText(mon.nickname, 64, y + 6, "#202030", 15);
-    drawText("Lv" + mon.level, 200, y + 6, "#202030", 14);
-    drawHpBar(268, y + 12, 130, mon.hp / mon.stats.hp);
-    drawText(`${mon.hp}/${mon.stats.hp}`, 268, y + 24, "#202030", 13);
-    if (mon.status) drawText(STATUS_NAMES[mon.status], 410, y + 6, "#c62828", 13);
-    if (mon.hp <= 0) drawText("FNT", 410, y + 24, "#e04030", 13);
-    if (p.swapFrom === i) drawText("MOVING...", 64, y + 24, "#c62828", 12);
+    ctx.beginPath(); ctx.roundRect(24, y, SCREEN_W - 48, 64, 8); ctx.stroke();
+    ctx.drawImage(monsterSprite(mon.species, 3, false), 36, y + 8);
+    drawText(mon.nickname, 104, y + 10, "#202030", 22);
+    drawText("Lv" + mon.level, 360, y + 10, "#202030", 20);
+    drawHpBar(470, y + 16, 220, mon.hp / mon.stats.hp);
+    drawText(`${mon.hp}/${mon.stats.hp}`, 470, y + 36, "#202030", 18);
+    if (mon.status) drawText(STATUS_NAMES[mon.status], 730, y + 10, "#c62828", 18);
+    if (mon.hp <= 0) drawText("FNT", 730, y + 36, "#e04030", 18);
+    if (p.swapFrom === i) drawText("MOVING...", 104, y + 38, "#c62828", 16);
+    SPECIES[mon.species].types.forEach((t, ti) => {
+      ctx.fillStyle = TYPE_COLORS[t];
+      ctx.fillRect(800 + ti * 0, y + 10 + ti * 26, 110, 22);
+      drawText(t.toUpperCase(), 806, y + 12 + ti * 26, "#ffffff", 15);
+    });
   });
   const hint = p.purpose === "forceSwitch" ? "Choose the next monster!" :
     p.swapFrom !== null ? "Swap with which monster?" :
     "Z: select   X: back";
-  drawText(hint, 20, SCREEN_H - 28, "#c8d0e8", 14);
+  drawText(hint, 36, SCREEN_H - 36, "#c8d0e8", 18);
   if (p.sub) {
-    const w = 170, h = p.sub.length * 28 + 16;
-    const bx = SCREEN_W - w - 16, by = SCREEN_H - h - 40;
+    const w = 240, h = p.sub.length * 38 + 22;
+    const bx = SCREEN_W - w - 30, by = SCREEN_H - h - 56;
     drawBox(bx, by, w, h);
     p.sub.forEach((o, i) => {
-      if (i === p.subIdx) drawText(">", bx + 10, by + 10 + i * 28, "#c62828");
-      drawText(o, bx + 28, by + 10 + i * 28);
+      if (i === p.subIdx) drawText(">", bx + 14, by + 14 + i * 38, "#c62828", 20);
+      drawText(o, bx + 38, by + 14 + i * 38, "#202030", 20);
     });
   }
 }
@@ -1600,36 +1931,38 @@ function drawParty() {
 function drawSummary() {
   const mon = G.party[G.summaryIdx];
   const sp = SPECIES[mon.species];
-  ctx.fillStyle = "#38405a";
+  ctx.fillStyle = "#2c3450";
   ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
-  drawBox(10, 10, SCREEN_W - 20, SCREEN_H - 20);
-  ctx.drawImage(monsterSprite(mon.species, 7, false), 28, 40);
-  drawText(mon.nickname, 30, 16, "#202030", 20);
-  drawText("Lv" + mon.level, 200, 18, "#202030", 16);
+  drawBox(20, 20, SCREEN_W - 40, SCREEN_H - 40);
+  ctx.drawImage(monsterSprite(mon.species, 13, false), 60, 90);
+  drawText(mon.nickname, 60, 40, "#202030", 30);
+  drawText("Lv" + mon.level, 330, 46, "#202030", 24);
   sp.types.forEach((t, i) => {
     ctx.fillStyle = TYPE_COLORS[t];
-    ctx.fillRect(260 + i * 90, 16, 84, 22);
-    drawText(t.toUpperCase(), 266 + i * 90, 19, "#ffffff", 14);
+    ctx.fillRect(430 + i * 140, 42, 130, 32);
+    drawText(t.toUpperCase(), 440 + i * 140, 48, "#ffffff", 19);
   });
   const stats = [["HP", `${mon.hp}/${mon.stats.hp}`], ["ATTACK", mon.stats.atk],
-    ["DEFENSE", mon.stats.def], ["SPEED", mon.stats.spd], ["SPECIAL", mon.stats.spc]];
+    ["DEFENCE", mon.stats.def], ["SPEED", mon.stats.spd], ["SPECIAL", mon.stats.spc]];
   stats.forEach(([label, val], i) => {
-    drawText(label, 170, 52 + i * 24, "#606070", 14);
-    drawText(String(val), 280, 52 + i * 24, "#202030", 15);
+    drawText(label, 340, 110 + i * 38, "#606070", 20);
+    drawText(String(val), 520, 110 + i * 38, "#202030", 22);
   });
   const next = mon.level >= 100 ? 0 : expForLevel(mon.level + 1) - mon.exp;
-  drawText(`EXP ${mon.exp}`, 170, 176, "#606070", 13);
-  drawText(`Next Lv in ${next}`, 300, 176, "#606070", 13);
-  drawText("MOVES", 30, 208, "#606070", 14);
+  drawText(`EXP ${mon.exp}`, 340, 310, "#606070", 18);
+  drawText(`Next level in ${next}`, 560, 310, "#606070", 18);
+  drawText("MOVES", 640, 96, "#606070", 20);
   mon.moves.forEach((m, i) => {
     const mv = MOVES[m.id];
-    const y = 232 + i * 26;
-    drawText(mv.name, 40, y, "#202030", 15);
-    drawText(mv.type.toUpperCase().slice(0, 3), 220, y, TYPE_COLORS[mv.type], 13);
-    drawText(`PP ${m.pp}/${mv.pp}`, 290, y, "#202030", 14);
-    drawText(mv.kind === "status" ? "---" : `PWR ${mv.power}`, 396, y, "#606070", 13);
+    const y = 130 + i * 44;
+    drawText(mv.name, 650, y, "#202030", 20);
+    ctx.fillStyle = TYPE_COLORS[mv.type];
+    ctx.fillRect(650, y + 24, 84, 16);
+    drawText(mv.type.toUpperCase(), 654, y + 24, "#ffffff", 12);
+    drawText(`PP ${m.pp}/${mv.pp}`, 760, y, "#202030", 18);
+    drawText(mv.kind === "status" ? "---" : `PWR ${mv.power}`, 760, y + 22, "#606070", 15);
   });
-  drawText("Z/X: back", 30, SCREEN_H - 40, "#606070", 13);
+  drawText("Z/X: back", 60, SCREEN_H - 60, "#606070", 17);
 }
 
 // ---- bag / shop / dex / trainer card ----------------------------
@@ -1638,111 +1971,115 @@ function drawBag() {
   const items = bagItems();
   const b = G.bagUi;
   b.idx = Math.min(b.idx, Math.max(0, items.length - 1));
-  drawBox(90, 40, 300, 250);
-  drawText("BAG", 110, 52, "#202030", 18);
-  if (items.length === 0) drawText("It's empty...", 120, 90);
-  items.forEach((id, i) => {
-    const y = 86 + i * 28;
-    if (i === b.idx) drawText(">", 104, y, "#c62828");
-    drawText(ITEMS[id].name, 122, y);
-    drawText("x" + G.bag[id], 320, y);
+  drawBox(140, 50, 420, 380);
+  drawText("BAG", 168, 68, "#202030", 24);
+  if (items.length === 0) drawText("It's empty...", 180, 120, "#202030", 20);
+  const top = Math.max(0, b.idx - 8);
+  items.slice(top, top + 10).forEach((id, i) => {
+    const y = 116 + i * 30;
+    if (top + i === b.idx) drawText(">", 158, y, "#c62828", 20);
+    drawText(ITEMS[id].name, 184, y, "#202030", 20);
+    drawText("x" + G.bag[id], 470, y, "#202030", 20);
   });
-  drawBox(90, 296, 300, 60);
+  drawBox(580, 50, 260, 380);
   if (items.length > 0) {
-    const lines = wrapText(ITEMS[items[b.idx]].desc, 32);
-    lines.slice(0, 2).forEach((l, i) => drawText(l, 104, 308 + i * 22, "#404050", 14));
+    const it = ITEMS[items[b.idx]];
+    drawText(it.name, 600, 70, "#202030", 20);
+    wrapText(it.desc, 20).slice(0, 8).forEach((l, i) => drawText(l, 600, 110 + i * 28, "#404050", 17));
   }
+  drawText("Z: use   X: back", 600, 396, "#606070", 15);
 }
 
 function drawShop() {
   drawUnderlay();
   const s = G.shopUi;
-  drawBox(60, 30, 360, 260);
-  drawText("MART", 80, 42, "#202030", 18);
-  drawText("$" + G.money, 320, 42, "#2a6a2a", 16);
+  drawBox(180, 40, 600, 380);
+  drawText("SHOP", 210, 58, "#202030", 24);
+  drawText("$" + G.money, 640, 62, "#2a6a2a", 22);
   s.stock.forEach((id, i) => {
-    const y = 76 + i * 28;
-    if (i === s.idx) drawText(">", 74, y, "#c62828");
-    drawText(ITEMS[id].name, 92, y);
-    drawText("$" + ITEMS[id].price, 320, y);
+    const y = 108 + i * 34;
+    if (i === s.idx) drawText(">", 204, y, "#c62828", 20);
+    drawText(ITEMS[id].name, 232, y, "#202030", 20);
+    drawText("$" + ITEMS[id].price, 620, y, "#202030", 20);
   });
-  const ey = 76 + s.stock.length * 28;
-  if (s.idx === s.stock.length) drawText(">", 74, ey, "#c62828");
-  drawText("EXIT", 92, ey);
-  drawBox(60, 298, 360, 58);
-  if (s.msg && s.msgT > 0) drawText(s.msg, 76, 316, "#c62828", 15);
-  else if (s.idx < s.stock.length) {
-    drawText(wrapText(ITEMS[s.stock[s.idx]].desc, 40)[0], 76, 316, "#404050", 14);
-  } else drawText("Leave the shop.", 76, 316, "#404050", 14);
+  const ey = 108 + s.stock.length * 34;
+  if (s.idx === s.stock.length) drawText(">", 204, ey, "#c62828", 20);
+  drawText("LEAVE", 232, ey, "#202030", 20);
+  drawBox(180, 432, 600, 72);
+  if (s.msg && s.msgT > 0) drawText(s.msg, 206, 456, "#c62828", 20);
+  else if (s.idx < s.stock.length) drawText(wrapText(ITEMS[s.stock[s.idx]].desc, 52)[0], 206, 456, "#404050", 18);
+  else drawText("Leave the shop.", 206, 456, "#404050", 18);
 }
 
 function drawDex() {
-  ctx.fillStyle = "#38405a";
+  ctx.fillStyle = "#2c3450";
   ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
-  drawText("MONSTER DEX", 20, 12, "#f8f8f0", 20);
+  drawText("MONSTER DEX", 36, 20, "#f8f8f0", 28);
   const ids = Object.keys(SPECIES);
   const caughtCount = ids.filter((id) => G.caught[id]).length;
   const seenCount = ids.filter((id) => G.seen[id]).length;
-  drawText(`SEEN ${seenCount}   CAUGHT ${caughtCount}`, 260, 16, "#c8d0e8", 14);
+  drawText(`SEEN ${seenCount}   CAUGHT ${caughtCount} / ${ids.length}`, 560, 28, "#c8d0e8", 20);
   const top = G.dexUi.top;
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 10; i++) {
     const idx = top + i;
     if (idx >= ids.length) break;
     const id = ids[idx];
-    const y = 48 + i * 34;
+    const y = 66 + i * 44;
     ctx.fillStyle = "#d8dce8";
-    ctx.fillRect(12, y, SCREEN_W - 24, 30);
-    drawText(String(idx + 1).padStart(3, "0"), 24, y + 6, "#606070", 14);
+    ctx.beginPath(); ctx.roundRect(24, y, SCREEN_W - 48, 40, 6); ctx.fill();
+    drawText(String(idx + 1).padStart(3, "0"), 40, y + 9, "#606070", 18);
     if (G.seen[id]) {
-      ctx.drawImage(monsterSprite(id, 1.5, false), 70, y + 3);
-      drawText(SPECIES[id].name, 110, y + 6, "#202030", 15);
+      ctx.drawImage(monsterSprite(id, 2, false), 108, y + 4);
+      drawText(SPECIES[id].name, 160, y + 9, "#202030", 20);
       if (G.caught[id]) {
         ctx.fillStyle = "#c62828";
-        ctx.beginPath(); ctx.arc(420, y + 15, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(880, y + 20, 9, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = "#ffffff";
-        ctx.fillRect(413, y + 14, 14, 2);
-        drawText(SPECIES[id].types.join("/"), 240, y + 6, "#606070", 13);
+        ctx.fillRect(871, y + 19, 18, 2);
+        drawText(SPECIES[id].types.join(" / "), 420, y + 9, "#606070", 17);
       }
     } else {
-      drawText("-----", 110, y + 6, "#909098", 15);
+      drawText("---------", 160, y + 9, "#909098", 20);
     }
   }
-  drawText("Up/Down: scroll   Z/X: back", 20, SCREEN_H - 28, "#c8d0e8", 14);
+  drawText("Up/Down: scroll   Z/X: back", 36, SCREEN_H - 32, "#c8d0e8", 17);
 }
 
 function drawTrainerCard() {
   drawUnderlay();
-  drawBox(60, 40, 360, 300);
-  drawText("TRAINER CARD", 80, 54, "#202030", 18);
-  if (G.flags.champion) drawText("CHAMPION", 290, 56, "#e8b400", 15);
-  ctx.drawImage(personSprite("player", "down", 4), 330, 80);
-  drawText("NAME", 80, 96, "#606070", 14);
-  drawText(G.playerName, 180, 96);
-  drawText("MONEY", 80, 124, "#606070", 14);
-  drawText("$" + G.money, 180, 124);
-  drawText("COINS", 80, 152, "#606070", 14);
-  drawText(String(G.coins), 180, 152);
+  drawBox(180, 40, 600, 460);
+  drawText("OPERATOR CARD", 210, 60, "#202030", 26);
+  if (G.flags.champion) drawText("CHAMPION", 560, 64, "#e8b400", 20);
+  ctx.drawImage(personSprite("player", "down", 6), 620, 96);
+  drawText("NAME", 210, 110, "#606070", 18);
+  drawText(G.playerName + " — SOC LEAD", 330, 110, "#202030", 20);
+  drawText("MONEY", 210, 146, "#606070", 18);
+  drawText("$" + G.money, 330, 146, "#202030", 20);
+  drawText("COINS", 210, 182, "#606070", 18);
+  drawText(String(G.coins), 330, 182, "#202030", 20);
   const ids = Object.keys(SPECIES);
-  drawText("DEX", 80, 180, "#606070", 14);
-  drawText(`${ids.filter((id) => G.caught[id]).length} caught / ${ids.filter((id) => G.seen[id]).length} seen`, 180, 180);
-  drawText("BADGES", 80, 206, "#606070", 14);
+  drawText("DEX", 210, 218, "#606070", 18);
+  drawText(`${ids.filter((id) => G.caught[id]).length} caught / ${ids.filter((id) => G.seen[id]).length} seen`, 330, 218, "#202030", 20);
+  drawText("TRAIT", 210, 254, "#606070", 18);
+  drawText("Rambler: unbothered by weather", 330, 254, "#202030", 18);
+  drawText("ACCESS BADGES", 210, 296, "#606070", 18);
   const badgeColors = ["#e8c020", "#7a4ae0", "#8a5a2a", "#d84a3a", "#2a9ad8", "#b8a038", "#8a48b0", "#20b898"];
   BADGES.forEach(([flag, name], i) => {
-    const bx = 100 + (i % 4) * 82, by = 238 + Math.floor(i / 4) * 44;
+    const bx = 250 + (i % 4) * 120, by = 348 + Math.floor(i / 4) * 62;
     if (G.flags[flag]) {
       ctx.fillStyle = badgeColors[i];
-      ctx.beginPath(); ctx.arc(bx, by, 10, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(bx, by, 14, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = "#f8f0d8";
-      ctx.beginPath(); ctx.arc(bx, by, 5, 0, Math.PI * 2); ctx.fill();
-      drawText(name, bx - 26, by + 13, "#404050", 10);
+      ctx.beginPath(); ctx.arc(bx, by, 7, 0, Math.PI * 2); ctx.fill();
+      drawText(name, bx - 34, by + 18, "#404050", 13);
     } else {
       ctx.strokeStyle = "#a0a0b0";
       ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(bx, by, 10, 0, Math.PI * 2); ctx.stroke();
-      drawText("----", bx - 14, by + 13, "#a0a0b0", 10);
+      ctx.beginPath(); ctx.arc(bx, by, 14, 0, Math.PI * 2); ctx.stroke();
+      drawText("----", bx - 18, by + 18, "#a0a0b0", 13);
     }
   });
-  drawText("Z/X: back", 80, 312, "#606070", 13);
+  drawText("Z/X: back", 210, 470, "#606070", 16);
 }
 
 function drawUnderlay() {
@@ -1753,12 +2090,12 @@ function drawUnderlay() {
 
 function drawMenu() {
   drawUnderlay();
-  const w = 180, h = MENU_ITEMS.length * 30 + 24;
-  const bx = SCREEN_W - w - 12, by = 12;
+  const w = 260, h = MENU_ITEMS.length * 40 + 28;
+  const bx = SCREEN_W - w - 20, by = 20;
   drawBox(bx, by, w, h);
   MENU_ITEMS.forEach((o, i) => {
-    if (i === G.menu.idx) drawText(">", bx + 14, by + 14 + i * 30, "#c62828");
-    drawText(o === "SOUND" ? "SOUND " + (Sound.enabled ? "ON" : "OFF") : o, bx + 34, by + 14 + i * 30);
+    if (i === G.menu.idx) drawText(">", bx + 18, by + 18 + i * 40, "#c62828", 20);
+    drawText(o === "SOUND" ? "SOUND " + (Sound.enabled ? "ON" : "OFF") : o, bx + 44, by + 18 + i * 40, "#202030", 20);
   });
 }
 
@@ -1766,44 +2103,43 @@ function drawMenu() {
 const TITLE_MONS = ["grinmalkin", "glitchra", "ursablaze", "merlynx", "steamloco", "tidalord", "wyverm", "loomoth"];
 function drawTitle() {
   const grad = ctx.createLinearGradient(0, 0, 0, SCREEN_H);
-  grad.addColorStop(0, "#182848");
-  grad.addColorStop(1, "#38608a");
+  grad.addColorStop(0, "#101a38");
+  grad.addColorStop(1, "#2c4a72");
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
-  // stars
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 70; i++) {
     const x = (i * 137 + 31) % SCREEN_W;
-    const y = (i * 89 + 17) % 180;
+    const y = (i * 89 + 17) % 260;
     ctx.fillStyle = i % 3 === 0 && Math.floor(waterTick / 500) % 2 ? "#ffffff" : "#8898c8";
     ctx.fillRect(x, y, 2, 2);
   }
   ctx.textAlign = "center";
   ctx.fillStyle = "#f8d030";
-  ctx.font = 'bold 44px "Courier New", monospace';
-  ctx.strokeStyle = "#3a2a00";
-  ctx.lineWidth = 6;
-  ctx.strokeText("MONSTERQUEST", SCREEN_W / 2, 92);
-  ctx.fillText("MONSTERQUEST", SCREEN_W / 2, 92);
-  ctx.font = 'bold 15px "Courier New", monospace';
-  ctx.fillStyle = "#c8d8f0";
-  ctx.fillText("THE CHESHIRE PROTOCOL", SCREEN_W / 2, 134);
+  ctx.font = 'bold 68px "Courier New", monospace';
+  ctx.strokeStyle = "#2a1c00";
+  ctx.lineWidth = 9;
+  ctx.strokeText("MONSTERQUEST", SCREEN_W / 2, 120);
+  ctx.fillText("MONSTERQUEST", SCREEN_W / 2, 120);
+  ctx.font = 'bold 24px "Courier New", monospace';
+  ctx.fillStyle = "#a8f0d8";
+  ctx.fillText("T H E   C H E S H I R E   P R O T O C O L", SCREEN_W / 2, 160);
   ctx.textAlign = "left";
 
   const mon = TITLE_MONS[Math.floor(waterTick / 1800) % TITLE_MONS.length];
-  ctx.drawImage(monsterSprite(mon, 8, false), SCREEN_W / 2 - 64, 152);
+  ctx.drawImage(monsterSprite(mon, 12, false), SCREEN_W / 2 - 96, 190);
 
   const options = hasSave() ? ["NEW GAME", "CONTINUE"] : ["NEW GAME"];
   G.titleIdx = Math.min(G.titleIdx, options.length - 1);
   options.forEach((o, i) => {
-    const y = 296 + i * 32;
-    if (i === G.titleIdx) drawText(">", SCREEN_W / 2 - 70, y, "#f8d030", 18);
-    drawText(o, SCREEN_W / 2 - 48, y, "#ffffff", 18);
+    const y = 428 + i * 42;
+    if (i === G.titleIdx) drawText(">", SCREEN_W / 2 - 96, y, "#f8d030", 24);
+    drawText(o, SCREEN_W / 2 - 64, y, "#ffffff", 24);
   });
   if (Math.floor(waterTick / 600) % 2 === 0) {
     ctx.textAlign = "center";
-    ctx.font = 'bold 13px "Courier New", monospace';
+    ctx.font = 'bold 16px "Courier New", monospace';
     ctx.fillStyle = "#98a8c8";
-    ctx.fillText("Press Z / Enter", SCREEN_W / 2, 366);
+    ctx.fillText("Press Z / Enter", SCREEN_W / 2, SCREEN_H - 22);
     ctx.textAlign = "left";
   }
 }
@@ -1816,78 +2152,78 @@ function drawFishing() {
   const sx = Math.round(px - camX), sy = Math.round(py - camY);
   if (f.phase === "wait") {
     const dots = 1 + (Math.floor(f.t / 400) % 3);
-    drawBox(sx - 14, sy - 44, 60, 34);
-    drawText(".".repeat(dots), sx, sy - 38, "#202030", 18);
+    drawBox(sx - 20, sy - 56, 84, 44);
+    drawText(".".repeat(dots), sx - 2, sy - 46, "#202030", 26);
   } else {
-    drawBox(sx - 8, sy - 52, 44, 42);
-    drawText("!", sx + 6, sy - 44, "#c62828", 26);
+    drawBox(sx - 12, sy - 66, 58, 54);
+    drawText("!", sx + 8, sy - 56, "#c62828", 36);
   }
-  drawText(f.phase === "bite" ? "Z: HOOK IT!" : "Waiting for a bite... (X: reel in)", 16, SCREEN_H - 28, "#f8f8f0", 14);
+  drawText(f.phase === "bite" ? "Z: HOOK IT!" : "Waiting for a bite... (X: reel in)", 24, SCREEN_H - 36, "#f8f8f0", 20);
 }
 
 // ---- slots rendering --------------------------------------------
 function drawSlots() {
-  ctx.fillStyle = "#2a1a3a";
+  ctx.fillStyle = "#221434";
   ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
-  drawText("SLOTS", 30, 20, "#f8d030", 24);
-  drawText("COINS: " + G.coins, 330, 26, "#f8f8f0", 16);
+  drawText("SLOTS", 60, 34, "#f8d030", 34);
+  drawText("COINS: " + G.coins, 700, 44, "#f8f8f0", 22);
   const s = G.slots;
-  drawBox(70, 90, 340, 130);
+  drawBox(210, 120, 540, 190);
   for (let i = 0; i < 3; i++) {
-    const cx = 100 + i * 110;
+    const cx = 250 + i * 160;
     ctx.fillStyle = s.spinning[i] ? "#e8e8f0" : "#ffffff";
-    ctx.fillRect(cx, 110, 80, 90);
+    ctx.fillRect(cx, 150, 130, 130);
     ctx.strokeStyle = "#303040";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(cx, 110, 80, 90);
+    ctx.lineWidth = 4;
+    ctx.strokeRect(cx, 150, 130, 130);
     const sym = SLOT_STRIP[Math.floor(s.pos[i]) % 20];
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = 'bold 52px "Courier New", monospace';
+    ctx.font = 'bold 76px "Courier New", monospace';
     ctx.fillStyle = SLOT_COLORS[sym];
-    ctx.fillText(SLOT_GLYPHS[sym], cx + 40, 155);
+    ctx.fillText(SLOT_GLYPHS[sym], cx + 65, 216);
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
   }
-  drawBox(70, 240, 340, 70);
+  drawBox(210, 336, 540, 100);
   if (s.msg) {
-    drawText(s.msg, 90, 254, s.msg.startsWith("WIN") ? "#2a8a2a" : "#606070", 17);
-    drawText("Z: spin again (3c)   X: quit", 90, 282, "#606070", 13);
+    drawText(s.msg, 240, 356, s.msg.startsWith("WIN") ? "#2a8a2a" : "#606070", 24);
+    drawText("Z: spin again (3c)   X: quit", 240, 396, "#606070", 17);
   } else {
-    drawText("Z: stop reel " + (s.next + 1), 90, 254, "#202030", 16);
-    drawText("3x7=300  3 same=60  2x7=20  pair=5", 90, 282, "#606070", 13);
+    drawText("Z: stop reel " + (s.next + 1), 240, 356, "#202030", 22);
+    drawText("3x7=300  3 same=60  2x7=20  pair=5", 240, 396, "#606070", 17);
   }
-  drawText("X: walk away", 30, SCREEN_H - 30, "#8a8aa0", 13);
+  drawText("X: walk away", 60, SCREEN_H - 44, "#8a8aa0", 17);
 }
 
 // ---- hall of fame -----------------------------------------------
 function drawFame() {
   const grad = ctx.createLinearGradient(0, 0, 0, SCREEN_H);
-  grad.addColorStop(0, "#1a1030");
+  grad.addColorStop(0, "#180e30");
   grad.addColorStop(1, "#3a2060");
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
   ctx.textAlign = "center";
-  ctx.font = 'bold 32px "Courier New", monospace';
+  ctx.font = 'bold 46px "Courier New", monospace';
   ctx.fillStyle = "#f8d030";
-  ctx.fillText("HALL OF FAME", SCREEN_W / 2, 56);
-  ctx.font = 'bold 16px "Courier New", monospace';
+  ctx.fillText("HALL OF FAME", SCREEN_W / 2, 70);
+  ctx.font = 'bold 24px "Courier New", monospace';
   ctx.fillStyle = "#e8e8f0";
-  ctx.fillText(`CHAMPION ${G.playerName}`, SCREEN_W / 2, 88);
+  ctx.fillText(`CHAMPION ${G.playerName}`, SCREEN_W / 2, 110);
   ctx.textAlign = "left";
   G.party.forEach((mon, i) => {
-    const cx = 40 + (i % 3) * 150;
-    const cy = 110 + Math.floor(i / 3) * 110;
-    ctx.drawImage(monsterSprite(mon.species, 4, false), cx, cy);
-    drawText(mon.nickname, cx, cy + 68, "#c8c8e0", 12);
-    drawText("Lv" + mon.level, cx, cy + 84, "#8a8ab0", 12);
+    const cx = 110 + (i % 3) * 270;
+    const cy = 150 + Math.floor(i / 3) * 170;
+    ctx.drawImage(monsterSprite(mon.species, 6, false), cx, cy);
+    drawText(mon.nickname, cx, cy + 102, "#c8c8e0", 17);
+    drawText("Lv" + mon.level, cx, cy + 124, "#8a8ab0", 16);
   });
   ctx.textAlign = "center";
-  ctx.font = 'bold 14px "Courier New", monospace';
+  ctx.font = 'bold 19px "Courier New", monospace';
   ctx.fillStyle = "#b8a8d8";
-  ctx.fillText("Thanks for playing MONSTERQUEST!", SCREEN_W / 2, 348);
+  ctx.fillText("Cheshire sleeps a little safer tonight.", SCREEN_W / 2, SCREEN_H - 56);
   if (Math.floor(waterTick / 600) % 2 === 0) {
-    ctx.fillText("Press Z to continue your journey", SCREEN_W / 2, 370);
+    ctx.fillText("Press Z to continue your journey", SCREEN_W / 2, SCREEN_H - 28);
   }
   ctx.textAlign = "left";
 }
@@ -1905,9 +2241,9 @@ function drawTransition() {
 // ---- flash message ----------------------------------------------
 function drawFlash() {
   if (!flash) return;
-  const w = Math.min(440, flash.text.length * 11 + 40);
-  drawBox((SCREEN_W - w) / 2, 150, w, 44);
-  drawText(flash.text, (SCREEN_W - w) / 2 + 20, 164, "#c62828", 14);
+  const w = Math.min(720, flash.text.length * 14 + 60);
+  drawBox((SCREEN_W - w) / 2, 210, w, 56);
+  drawText(flash.text, (SCREEN_W - w) / 2 + 30, 228, "#c62828", 19);
 }
 
 // ---- main loop --------------------------------------------------
@@ -1934,6 +2270,8 @@ function loop(now) {
   }
   if (G.battle) {
     const b = G.battle;
+    battleUi.introT = (battleUi.introT || 0) + dt;
+    if (b.hitFlash && shakeT <= 0) shakeT = 180;
     const rate = dt * 0.12;
     battleUi.dispHpE += Math.max(-rate * 2, Math.min(rate * 2, b.enemy.hp - battleUi.dispHpE));
     if (Math.abs(b.enemy.hp - battleUi.dispHpE) < 0.5) battleUi.dispHpE = b.enemy.hp;
@@ -1941,6 +2279,8 @@ function loop(now) {
     if (Math.abs(b.player.hp - battleUi.dispHpP) < 0.5) battleUi.dispHpP = b.player.hp;
   }
   if (G.shopUi && G.shopUi.msgT > 0) G.shopUi.msgT -= dt;
+  if (banner && banner.t > 0) banner.t -= dt;
+  if (shakeT > 0) shakeT -= dt;
   if (G.mode === "fishing" && G.fishing) {
     const f = G.fishing;
     f.t += dt;
@@ -1970,6 +2310,7 @@ function loop(now) {
     case "bag": drawBag(); break;
     case "dex": drawDex(); break;
     case "trainercard": drawTrainerCard(); break;
+    case "questlog": drawQuestLog(); break;
     case "shop": drawShop(); break;
     case "battle": drawBattle(); break;
     case "fishing": drawFishing(); break;

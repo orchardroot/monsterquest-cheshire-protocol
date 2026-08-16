@@ -1,31 +1,51 @@
 # MonsterQuest: The Cheshire Protocol
 
-A retro monster-catching RPG set across the real towns and villages of
-**Cheshire, England** — with a cybersecurity twist. Built entirely with
-vanilla JavaScript and HTML5 canvas: no dependencies, no build step, no
-audio files (the chiptune soundtrack is synthesized live in WebAudio).
+A widescreen, Switch-style monster-catching RPG set across the real
+towns and landmarks of **Cheshire, England** in 2026 — starring a SOC
+lead, his two cats, and the AI agents he built. Vanilla JavaScript and
+HTML5 canvas: no dependencies, no build step, no audio files (the
+chiptune soundtrack is synthesized live in WebAudio).
 
 All creatures, names, sprites, maps, music and art are original.
 
 ## The story
 
-You are **JIM**, a junior security researcher from Macclesfield. The
-hacker collective **DARKBYTE** has hijacked the great radio telescope at
-**Jodrell Bank** and is broadcasting a rogue signal that agitates the
-region's monsters. Dr. Alder of Alder Labs hands you a partner monster
-and a mission: audit every gym in Cheshire, collect all **8 access
-badges**, shut down DARKBYTE's broadcast, and take on the league behind
-Chester's ancient walls — **THE FIREWALL** — where your rival, the
-insufferable hacker **VEX**, sits as Champion.
+You are **JIM** — SOC lead, threat hunter, long-distance walker,
+unbothered by weather. Alder Labs contracts you to audit the region's
+monster-partnership network just as a rogue signal starts agitating
+every creature in Cheshire. The trail runs through four enemy factions —
+the **ClickFix Cult** (paste-and-run lure preachers), the **Credential
+Stuffers** (twelve-thousand-puppet swarms behind residential proxy fog),
+the **AMOS Lineage** (shapeshifters wearing trusted faces) and well-
+meaning **Shadow IT** everywhere — all of them unknowingly feeding
+**ORACLE**, a frontier model quietly acquiring compute, trust and
+monsters from a hyperscale datacentre called **THE STACK**. Your 8 gym
+badges are the trust anchors it needs; your audit was its procurement
+chain. Take back Jodrell Bank from ROOT's DARKBYTE front, hear the
+whistleblower out, pull the plug on ORACLE, then walk into Chester's
+league — **THE FIREWALL** — where your rival **VEX** holds the title.
+
+At your side: **MEADOW** (small, black, extremely fast) and **BIGBOY**
+(enormous, black-and-white, once survived the vet's worst news — his
+*Back from the Brink* trait lets him survive a knockout blow at 1 HP),
+plus your **Agent Trio**, deployable once each per battle: **SLEET**
+(triage: scouts the foe, floors its speed), **VIGIL** (escalation:
+clears ailments, restores HP) and **ARBITER** (adjudication: voids all
+stat changes). Side stories reach from a Welsh orchard in **Ceredigion**
+(brew perry and stout on the century-old elm press) to letters that
+follow you across the region from an old friend in Georgia.
 
 ## The region
 
-**18 towns and villages**, all real Cheshire places:
+**26 towns, villages and landmarks**, all real Cheshire places (plus one
+Welsh orchard):
 
-Macclesfield (start) · Bollington · Prestbury · Wilmslow · Alderley Edge ·
-Knutsford · Holmes Chapel · Congleton · Sandbach · Crewe · Nantwich ·
-Middlewich · Northwich · Frodsham · Runcorn · Warrington · Tarporley ·
-Chester
+Macclesfield (start) · Bollington · Poynton · Prestbury · Wilmslow ·
+Styal & Quarry Bank Mill · Alderley Edge · Knutsford · Tatton Park ·
+Holmes Chapel · Congleton · Sandbach · Crewe · Nantwich · Middlewich ·
+Winsford · Northwich · Anderton Boat Lift · Frodsham · Runcorn · Lymm ·
+Warrington · Tarporley · Chester · Chester Zoo · Ellesmere Port —
+and Y Berllan, the family orchard in Ceredigion, via the Cambrian line
 
 Plus landmark sites: the **Edge Caverns** under Alderley (home of
 MERLYNX, the Wizard's cat), the **Northwich Salt Mine** (DARKBYTE's
@@ -51,7 +71,15 @@ Chester — gated behind all 8 badges *and* defeating ROOT at Jodrell Bank.
 
 ## Features
 
-- **103 original monsters** across 13 types, including the new **Cyber
+- **Widescreen 960x540 presentation** filling the whole display, with
+  day/night tinting, rain and proxy-fog weather, walking animation,
+  battle intro slides and screen shake, and location banners
+- **18 NPC side quests** tracked in the CASEBOOK: deepfake vicars,
+  botnet fridges, haunted signal boxes, a lying arcade kiosk, a deer
+  census, an escaped penguin and more
+- **Language-as-key moments** — Jim answers NPCs in Welsh, German,
+  Russian and Albanian for dialogue others never hear
+- **113 original monsters** across 13 types, including the new **Cyber
   type**, three-stage starter lines, the grinning **GRINMALKIN** of
   Cheshire-cat legend, silk moths for Macclesfield, salt golems for
   Northwich, a steam locomotive for Crewe, and DARKBYTE's digital
@@ -102,7 +130,7 @@ On phones an on-screen D-pad, A/B and MENU buttons appear automatically.
 ```
 index.html      canvas + touch controls + PWA shell
 js/audio.js     WebAudio chiptune sequencer + SFX
-js/data.js      types, moves, 103 species (stats, learnsets, art), items
+js/data.js      types, moves, 113 species (stats, learnsets, art), items
 js/maps.js      the Cheshire world: town/route/cave factories, trainers
 js/sprites.js   tile renderer, character art, procedural monster sprites
 js/battle.js    turn-based battle engine

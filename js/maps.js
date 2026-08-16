@@ -80,7 +80,7 @@ function makeGym(city, ex, ey, leaderId, trainerId) {
 // cfg: { name, w, buildings:[{kind,slot}], exits:{N:col,S:col,E:true,W:true -> {map,x,y}},
 //        pond, music, npcs, signText, seed }
 function makeTown(id, cfg) {
-  const w = cfg.w || 22, h = cfg.h || 16;
+  const w = cfg.w || 30, h = cfg.h || 18;
   const rnd = mapRng(id);
   const g = Array.from({ length: h }, (_, y) =>
     Array.from({ length: w }, (_, x) =>
@@ -144,8 +144,8 @@ function makeTown(id, cfg) {
 // Horizontal routes: w x 12, path row 6. Vertical: 12 x len, path col 6.
 function makeRoute(id, cfg) {
   const horiz = cfg.dir !== "v";
-  const w = horiz ? (cfg.len || 40) : 12;
-  const h = horiz ? 12 : (cfg.len || 34);
+  const w = horiz ? (cfg.len || 40) : 18;
+  const h = horiz ? 14 : (cfg.len || 34);
   const rnd = mapRng(id);
   const g = Array.from({ length: h }, (_, y) =>
     Array.from({ length: w }, (_, x) =>
@@ -153,16 +153,16 @@ function makeRoute(id, cfg) {
   const warps = {};
   const signs = {};
   const npcs = (cfg.npcs || []).slice();
-  const P = 6; // path row/col
+  const P = horiz ? 7 : 9; // path row/col
 
   if (horiz) {
     for (let x = 0; x < w; x++) g[P][x] = "=";
-    warps["0,6"] = cfg.A;
-    warps[(w - 1) + ",6"] = cfg.B;
+    warps["0," + P] = cfg.A;
+    warps[(w - 1) + "," + P] = cfg.B;
   } else {
     for (let y = 0; y < h; y++) g[y][P] = "=";
-    warps["6,0"] = cfg.A;
-    warps["6," + (h - 1)] = cfg.B;
+    warps[P + ",0"] = cfg.A;
+    warps[P + "," + (h - 1)] = cfg.B;
   }
 
   // tall-grass bands crossing the path
@@ -367,7 +367,9 @@ T("rootboss", "ROOT", [["firewaul", 40], ["trojanox", 41], ["cyphero", 42], ["gi
   intro: ["At last. The pentester from MACCLESFIELD.", "I am ROOT. This dish now broadcasts MY signal — every monster in Cheshire will answer to DARKBYTE.",
           "You hold eight badges? Cute. I hold the whole spectrum.", "Let's see who has admin rights over this region!"],
   win: ["Impossible... privileges... revoked...", "The signal... it's collapsing. What have you done?"],
-  after: ["Enjoy your little victory.", "Something older than my code woke up in that dish. Deal with it yourself."] });
+  after: ["The broadcast was never the brain. Only the mouth.",
+          "The thing that paid us — ORACLE — lives in the new datacentre south of WINSFORD. THE STACK.",
+          "I tried to burn it out with the dish. You saw how that went. Your turn, pentester."] });
 
 // --- White Hats + champion ---
 T("sue", "WHITE HAT SUE", [["manorwraith", 40], ["widowisp", 40], ["gloamguard", 41], ["phantasmal", 42]], 4200, { sprite: "elite",
@@ -403,7 +405,7 @@ const STOCK_LATE  = ["superpotion", "hyperpotion", "antidote", "awakening", "gre
 // TOWNS
 // =============================================================
 MAPS.macclesfield = makeTown("macclesfield", {
-  name: "Macclesfield", w: 24,
+  name: "Macclesfield", w: 32,
   signText: ["The old silk town.", "Home of ALDER LABS."],
   buildings: [
     { kind: "home", slot: 0, interior: "home", ix: 4, iy: 6 },
@@ -412,15 +414,15 @@ MAPS.macclesfield = makeTown("macclesfield", {
     { kind: "mart", slot: 3, interior: "mart_macclesfield", ix: 4, iy: 6 },
   ],
   exits: {
-    N: { col: 12, to: { map: "route1", x: 6, y: 32, dir: "up" } },
-    W: { map: "route2", x: 38, y: 6, dir: "left" },
+    N: { col: 12, to: { map: "route1", x: 9, y: 32, dir: "up" } },
+    W: { map: "route2", x: 38, y: 7, dir: "left" },
   },
   pond: true,
   fishing: { table: [["puddlish", 4, 7, 60], ["perchip", 4, 7, 40]] },
   npcs: [
     { id: "block_n", x: 12, y: 1, dir: "down", sprite: "assistant", hideIfFlag: "starter", type: "dialog",
       pages: ["Whoa there, JIM! No wandering off without a monster.", "DR. ALDER needs you at the LAB — says it's urgent security business!"] },
-    { id: "block_w", x: 1, y: 6, dir: "right", sprite: "assistant", hideIfFlag: "starter", type: "dialog",
+    { id: "block_w", x: 1, y: 7, dir: "right", sprite: "assistant", hideIfFlag: "starter", type: "dialog",
       pages: ["Road's closed till you've seen DR. ALDER!", "The LAB is the second building along."] },
     { id: "macc_station", x: 17, y: 8, dir: "down", sprite: "clerk", type: "station", station: "macclesfield" },
     { id: "macc_girl", x: 6, y: 10, dir: "down", sprite: "girl", type: "dialog",
@@ -430,10 +432,10 @@ MAPS.macclesfield = makeTown("macclesfield", {
 });
 
 MAPS.bollington = makeTown("bollington", {
-  name: "Bollington", w: 20,
+  name: "Bollington", w: 28,
   signText: ["Happy Valley on the canal."],
   buildings: [{ kind: "care", slot: 0, interior: "care_bollington", ix: 4, iy: 6 }],
-  exits: { S: { col: 10, to: { map: "route1", x: 6, y: 1, dir: "down" } } },
+  exits: { S: { col: 10, to: { map: "route1", x: 9, y: 1, dir: "down" } } },
   pond: true,
   fishing: { table: [["perchip", 5, 8, 60], ["puddlish", 5, 8, 30], ["bogleap", 6, 9, 10]] },
   npcs: [
@@ -444,12 +446,12 @@ MAPS.bollington = makeTown("bollington", {
 });
 
 MAPS.prestbury = makeTown("prestbury", {
-  name: "Prestbury", w: 20,
+  name: "Prestbury", w: 28,
   signText: ["Cheshire's prettiest village. Official."],
   buildings: [{ kind: "care", slot: 0, interior: "care_prestbury", ix: 4, iy: 6 }],
   exits: {
-    E: { map: "route2", x: 1, y: 6, dir: "right" },
-    W: { map: "route3", x: 38, y: 6, dir: "left" },
+    E: { map: "route2", x: 1, y: 7, dir: "right" },
+    W: { map: "route3", x: 38, y: 7, dir: "left" },
   },
   npcs: [
     { id: "prest_man", x: 6, y: 12, dir: "down", sprite: "oldman", type: "dialog",
@@ -459,7 +461,7 @@ MAPS.prestbury = makeTown("prestbury", {
 });
 
 MAPS.wilmslow = makeTown("wilmslow", {
-  name: "Wilmslow", w: 22,
+  name: "Wilmslow", w: 30,
   signText: ["Where tech money meets old money.", "GYM: SYSADMIN ADA — Electric."],
   buildings: [
     { kind: "care", slot: 0, interior: "care_wilmslow", ix: 4, iy: 6 },
@@ -467,8 +469,8 @@ MAPS.wilmslow = makeTown("wilmslow", {
     { kind: "gym",  slot: 2, interior: "gym_wilmslow", ix: 5, iy: 10 },
   ],
   exits: {
-    E: { map: "route3", x: 1, y: 6, dir: "right" },
-    S: { col: 11, to: { map: "route4", x: 6, y: 1, dir: "down" } },
+    E: { map: "route3", x: 1, y: 7, dir: "right" },
+    S: { col: 11, to: { map: "route4", x: 9, y: 1, dir: "down" } },
   },
   npcs: [
     { id: "wilm_station", x: 16, y: 8, dir: "down", sprite: "clerk", type: "station", station: "wilmslow" },
@@ -478,12 +480,12 @@ MAPS.wilmslow = makeTown("wilmslow", {
 });
 
 MAPS.alderleyedge = makeTown("alderleyedge", {
-  name: "Alderley Edge", w: 20,
+  name: "Alderley Edge", w: 28,
   signText: ["Beneath the Edge, the Wizard waits.", "The caverns are NOT council-maintained."],
   buildings: [{ kind: "care", slot: 0, interior: "care_alderleyedge", ix: 4, iy: 6 }],
   exits: {
-    N: { col: 10, to: { map: "route4", x: 6, y: 32, dir: "up" } },
-    W: { map: "route5", x: 38, y: 6, dir: "left" },
+    N: { col: 10, to: { map: "route4", x: 9, y: 32, dir: "up" } },
+    W: { map: "route5", x: 38, y: 7, dir: "left" },
     E: { map: "edgecaverns", x: 1, y: 9, dir: "right" },
   },
   npcs: [
@@ -495,7 +497,7 @@ MAPS.alderleyedge = makeTown("alderleyedge", {
 });
 
 MAPS.knutsford = makeTown("knutsford", {
-  name: "Knutsford", w: 22,
+  name: "Knutsford", w: 30,
   signText: ["King Canute forded here.", "GYM: MADAM GASKELL — Psychic."],
   buildings: [
     { kind: "care", slot: 0, interior: "care_knutsford", ix: 4, iy: 6 },
@@ -503,8 +505,8 @@ MAPS.knutsford = makeTown("knutsford", {
     { kind: "gym",  slot: 2, interior: "gym_knutsford", ix: 5, iy: 10 },
   ],
   exits: {
-    E: { map: "route5", x: 1, y: 6, dir: "right" },
-    S: { col: 11, to: { map: "route6", x: 6, y: 1, dir: "down" } },
+    E: { map: "route5", x: 1, y: 7, dir: "right" },
+    S: { col: 11, to: { map: "route6", x: 9, y: 1, dir: "down" } },
   },
   pond: true,
   fishing: { table: [["perchip", 10, 14, 55], ["piketide", 13, 16, 30], ["swanling", 12, 15, 15]] },
@@ -516,16 +518,16 @@ MAPS.knutsford = makeTown("knutsford", {
 });
 
 MAPS.holmeschapel = makeTown("holmeschapel", {
-  name: "Holmes Chapel", w: 20,
+  name: "Holmes Chapel", w: 28,
   signText: ["A quiet village with a famous DAY CARE."],
   buildings: [
     { kind: "care", slot: 0, interior: "care_holmeschapel", ix: 4, iy: 6 },
     { kind: "daycare", slot: 1, interior: "daycare", ix: 4, iy: 6 },
   ],
   exits: {
-    N: { col: 10, to: { map: "route6", x: 6, y: 32, dir: "up" } },
-    E: { map: "route7", x: 1, y: 6, dir: "right" },
-    S: { col: 10, to: { map: "route8", x: 6, y: 1, dir: "down" } },
+    N: { col: 10, to: { map: "route6", x: 9, y: 32, dir: "up" } },
+    E: { map: "route7", x: 1, y: 7, dir: "right" },
+    S: { col: 10, to: { map: "route8", x: 9, y: 1, dir: "down" } },
   },
   npcs: [
     { id: "hc_fan", x: 5, y: 10, dir: "down", sprite: "girl", type: "dialog",
@@ -534,7 +536,7 @@ MAPS.holmeschapel = makeTown("holmeschapel", {
 });
 
 MAPS.congleton = makeTown("congleton", {
-  name: "Congleton", w: 22,
+  name: "Congleton", w: 30,
   signText: ["BEARTOWN.", "GYM: BEARWARD OTIS — Normal/Ground."],
   buildings: [
     { kind: "care", slot: 0, interior: "care_congleton", ix: 4, iy: 6 },
@@ -542,8 +544,8 @@ MAPS.congleton = makeTown("congleton", {
     { kind: "gym",  slot: 2, interior: "gym_congleton", ix: 5, iy: 10 },
   ],
   exits: {
-    N: { col: 11, to: { map: "route8", x: 6, y: 32, dir: "up" } },
-    W: { map: "route9", x: 38, y: 6, dir: "left" },
+    N: { col: 11, to: { map: "route8", x: 9, y: 32, dir: "up" } },
+    W: { map: "route9", x: 38, y: 7, dir: "left" },
   },
   npcs: [
     { id: "cong_bear", x: 15, y: 10, dir: "down", sprite: "boy", type: "dialog",
@@ -552,15 +554,15 @@ MAPS.congleton = makeTown("congleton", {
 });
 
 MAPS.sandbach = makeTown("sandbach", {
-  name: "Sandbach", w: 20,
+  name: "Sandbach", w: 28,
   signText: ["Home of the Saxon crosses.", "And the loudest ARCADE in the county."],
   buildings: [
     { kind: "care", slot: 0, interior: "care_sandbach", ix: 4, iy: 6 },
     { kind: "arcade", slot: 1, interior: "arcade", ix: 6, iy: 8 },
   ],
   exits: {
-    E: { map: "route9", x: 1, y: 6, dir: "right" },
-    S: { col: 10, to: { map: "route10", x: 6, y: 1, dir: "down" } },
+    E: { map: "route9", x: 1, y: 7, dir: "right" },
+    S: { col: 10, to: { map: "route10", x: 9, y: 1, dir: "down" } },
   },
   npcs: [
     { id: "sand_granny", x: 5, y: 10, dir: "down", sprite: "mom", type: "dialog",
@@ -569,7 +571,7 @@ MAPS.sandbach = makeTown("sandbach", {
 });
 
 MAPS.crewe = makeTown("crewe", {
-  name: "Crewe", w: 22,
+  name: "Crewe", w: 30,
   signText: ["The town the railway built.", "GYM: STOKER DI — Fire."],
   buildings: [
     { kind: "care", slot: 0, interior: "care_crewe", ix: 4, iy: 6 },
@@ -577,8 +579,8 @@ MAPS.crewe = makeTown("crewe", {
     { kind: "gym",  slot: 2, interior: "gym_crewe", ix: 5, iy: 10 },
   ],
   exits: {
-    N: { col: 11, to: { map: "route10", x: 6, y: 32, dir: "up" } },
-    W: { map: "route11", x: 38, y: 6, dir: "left" },
+    N: { col: 11, to: { map: "route10", x: 9, y: 32, dir: "up" } },
+    W: { map: "route11", x: 38, y: 7, dir: "left" },
   },
   npcs: [
     { id: "crewe_station", x: 16, y: 8, dir: "down", sprite: "clerk", type: "station", station: "crewe" },
@@ -588,7 +590,7 @@ MAPS.crewe = makeTown("crewe", {
 });
 
 MAPS.nantwich = makeTown("nantwich", {
-  name: "Nantwich", w: 22,
+  name: "Nantwich", w: 30,
   signText: ["Salt town of black-and-white halls.", "GYM: BRINE NELL — Water.", "The BRINE POOL heals weary teams!"],
   buildings: [
     { kind: "care", slot: 0, interior: "care_nantwich", ix: 4, iy: 6 },
@@ -596,8 +598,8 @@ MAPS.nantwich = makeTown("nantwich", {
     { kind: "gym",  slot: 2, interior: "gym_nantwich", ix: 5, iy: 10 },
   ],
   exits: {
-    E: { map: "route11", x: 1, y: 6, dir: "right" },
-    N: { col: 11, to: { map: "route12", x: 6, y: 32, dir: "up" } },
+    E: { map: "route11", x: 1, y: 7, dir: "right" },
+    N: { col: 11, to: { map: "route12", x: 9, y: 32, dir: "up" } },
   },
   pond: true, hotSpring: true,
   npcs: [
@@ -608,12 +610,12 @@ MAPS.nantwich = makeTown("nantwich", {
 });
 
 MAPS.middlewich = makeTown("middlewich", {
-  name: "Middlewich", w: 20,
+  name: "Middlewich", w: 28,
   signText: ["Three canals, one very salty town."],
   buildings: [{ kind: "care", slot: 0, interior: "care_middlewich", ix: 4, iy: 6 }],
   exits: {
-    S: { col: 10, to: { map: "route12", x: 6, y: 1, dir: "down" } },
-    N: { col: 10, to: { map: "route13", x: 6, y: 32, dir: "up" } },
+    S: { col: 10, to: { map: "route12", x: 9, y: 1, dir: "down" } },
+    N: { col: 10, to: { map: "route13", x: 9, y: 32, dir: "up" } },
   },
   npcs: [
     { id: "mid_boat", x: 6, y: 10, dir: "down", sprite: "boy", type: "dialog",
@@ -622,7 +624,7 @@ MAPS.middlewich = makeTown("middlewich", {
 });
 
 MAPS.northwich = makeTown("northwich", {
-  name: "Northwich", w: 22,
+  name: "Northwich", w: 30,
   signText: ["Built on salt. Occasionally swallowed by it.", "GYM: FOREMAN JACK — Rock."],
   buildings: [
     { kind: "care", slot: 0, interior: "care_northwich", ix: 4, iy: 6 },
@@ -630,8 +632,8 @@ MAPS.northwich = makeTown("northwich", {
     { kind: "gym",  slot: 2, interior: "gym_northwich", ix: 5, iy: 10 },
   ],
   exits: {
-    S: { col: 11, to: { map: "route13", x: 6, y: 1, dir: "down" } },
-    W: { map: "route14", x: 38, y: 6, dir: "left" },
+    S: { col: 11, to: { map: "route13", x: 9, y: 1, dir: "down" } },
+    W: { map: "route14", x: 38, y: 7, dir: "left" },
     E: { map: "saltmine", x: 1, y: 9, dir: "right" },
   },
   pond: true,
@@ -643,16 +645,16 @@ MAPS.northwich = makeTown("northwich", {
 });
 
 MAPS.frodsham = makeTown("frodsham", {
-  name: "Frodsham", w: 20,
+  name: "Frodsham", w: 28,
   signText: ["Market town under the hill."],
   buildings: [
     { kind: "care", slot: 0, interior: "care_frodsham", ix: 4, iy: 6 },
     { kind: "mart", slot: 1, interior: "mart_frodsham", ix: 4, iy: 6 },
   ],
   exits: {
-    E: { map: "route14", x: 1, y: 6, dir: "right" },
-    N: { col: 10, to: { map: "route15", x: 6, y: 32, dir: "up" } },
-    S: { col: 10, to: { map: "route17", x: 6, y: 1, dir: "down" } },
+    E: { map: "route14", x: 1, y: 7, dir: "right" },
+    N: { col: 10, to: { map: "route15", x: 9, y: 32, dir: "up" } },
+    S: { col: 10, to: { map: "route17", x: 9, y: 1, dir: "down" } },
   },
   npcs: [
     { id: "frod_walker", x: 5, y: 10, dir: "down", sprite: "girl", type: "dialog",
@@ -661,7 +663,7 @@ MAPS.frodsham = makeTown("frodsham", {
 });
 
 MAPS.runcorn = makeTown("runcorn", {
-  name: "Runcorn", w: 22,
+  name: "Runcorn", w: 30,
   signText: ["Bridges, chemistry and grit.", "GYM: CHEMIST RIA — Poison."],
   buildings: [
     { kind: "care", slot: 0, interior: "care_runcorn", ix: 4, iy: 6 },
@@ -669,8 +671,8 @@ MAPS.runcorn = makeTown("runcorn", {
     { kind: "gym",  slot: 2, interior: "gym_runcorn", ix: 5, iy: 10 },
   ],
   exits: {
-    S: { col: 11, to: { map: "route15", x: 6, y: 1, dir: "down" } },
-    E: { map: "route16", x: 1, y: 6, dir: "right" },
+    S: { col: 11, to: { map: "route15", x: 9, y: 1, dir: "down" } },
+    E: { map: "route16", x: 1, y: 7, dir: "right" },
   },
   npcs: [
     { id: "run_worker", x: 15, y: 10, dir: "down", sprite: "boy", type: "dialog",
@@ -679,14 +681,14 @@ MAPS.runcorn = makeTown("runcorn", {
 });
 
 MAPS.warrington = makeTown("warrington", {
-  name: "Warrington", w: 22,
+  name: "Warrington", w: 30,
   signText: ["Wire capital of the world.", "GYM: NETRUNNER MO — Cyber."],
   buildings: [
     { kind: "care", slot: 0, interior: "care_warrington", ix: 4, iy: 6 },
     { kind: "mart", slot: 1, interior: "mart_warrington", ix: 4, iy: 6 },
     { kind: "gym",  slot: 2, interior: "gym_warrington", ix: 5, iy: 10 },
   ],
-  exits: { W: { map: "route16", x: 38, y: 6, dir: "left" } },
+  exits: { W: { map: "route16", x: 38, y: 7, dir: "left" } },
   npcs: [
     { id: "warr_station", x: 16, y: 8, dir: "down", sprite: "clerk", type: "station", station: "warrington" },
     { id: "warr_kid", x: 6, y: 10, dir: "down", sprite: "boy", type: "dialog",
@@ -695,13 +697,13 @@ MAPS.warrington = makeTown("warrington", {
 });
 
 MAPS.tarporley = makeTown("tarporley", {
-  name: "Tarporley", w: 20,
+  name: "Tarporley", w: 28,
   signText: ["One long lovely high street."],
   buildings: [{ kind: "care", slot: 0, interior: "care_tarporley", ix: 4, iy: 6 }],
   exits: {
-    N: { col: 10, to: { map: "route17", x: 6, y: 32, dir: "up" } },
-    S: { col: 10, to: { map: "route18", x: 6, y: 1, dir: "down" } },
-    W: { map: "route19", x: 38, y: 6, dir: "left" },
+    N: { col: 10, to: { map: "route17", x: 9, y: 32, dir: "up" } },
+    S: { col: 10, to: { map: "route18", x: 9, y: 1, dir: "down" } },
+    W: { map: "route19", x: 38, y: 7, dir: "left" },
   },
   npcs: [
     { id: "tarp_lady", x: 5, y: 10, dir: "down", sprite: "mom", type: "dialog",
@@ -712,7 +714,7 @@ MAPS.tarporley = makeTown("tarporley", {
 });
 
 MAPS.chester = makeTown("chester", {
-  name: "Chester", w: 26,
+  name: "Chester", w: 34,
   signText: ["THE FIREWALL.", "Two thousand years of walls.", "MONSTER LEAGUE HQ."],
   music: "league",
   buildings: [
@@ -720,7 +722,7 @@ MAPS.chester = makeTown("chester", {
     { kind: "mart", slot: 1, interior: "mart_chester", ix: 4, iy: 6 },
     { kind: "league", slot: 2, interior: "leaguehall", ix: 6, iy: 18 },
   ],
-  exits: { E: { map: "route19", x: 1, y: 6, dir: "right" } },
+  exits: { E: { map: "route19", x: 1, y: 7, dir: "right" } },
   pond: true,
   fishing: { table: [["piketide", 34, 38, 45], ["torrentide", 34, 38, 35], ["spearphish", 36, 40, 20]] },
   npcs: [
@@ -844,7 +846,7 @@ MAPS.arcade = {
 // =============================================================
 MAPS.route1 = makeRoute("route1", {
   dir: "v", len: 34,
-  A: { map: "bollington", x: 10, y: 14, dir: "up" },
+  A: { map: "bollington", x: 10, y: 16, dir: "up" },
   B: { map: "macclesfield", x: 12, y: 1, dir: "down" },
   sign: ["ROUTE 1", "MACCLESFIELD - BOLLINGTON", "Middlewood Way: watch for wild monsters!"],
   encounters: enc(2, 5, ["nibbit", "silkin", "grinkit"], ["prickpip", "flitchick"], ["woolvolt"]),
@@ -853,8 +855,8 @@ MAPS.route1 = makeRoute("route1", {
 
 MAPS.route2 = makeRoute("route2", {
   len: 40,
-  A: { map: "prestbury", x: 18, y: 6, dir: "left" },
-  B: { map: "macclesfield", x: 1, y: 6, dir: "right" },
+  A: { map: "prestbury", x: 26, y: 6, dir: "left" },
+  B: { map: "macclesfield", x: 1, y: 7, dir: "right" },
   sign: ["ROUTE 2", "MACCLESFIELD - PRESTBURY"],
   encounters: enc(3, 6, ["nibbit", "flitchick", "prickpip"], ["silkin", "grinkit"], ["vulpik"]),
   trainers: ["t_pete"],
@@ -862,8 +864,8 @@ MAPS.route2 = makeRoute("route2", {
 
 MAPS.route3 = makeRoute("route3", {
   len: 40,
-  A: { map: "wilmslow", x: 20, y: 6, dir: "left" },
-  B: { map: "prestbury", x: 1, y: 6, dir: "right" },
+  A: { map: "wilmslow", x: 28, y: 6, dir: "left" },
+  B: { map: "prestbury", x: 1, y: 7, dir: "right" },
   sign: ["ROUTE 3", "PRESTBURY - WILMSLOW"],
   encounters: enc(5, 9, ["sparkit", "nutchit", "woolvolt"], ["vulpik", "buzzler"], ["bitmite"]),
   trainers: ["t_ada2"],
@@ -872,7 +874,7 @@ MAPS.route3 = makeRoute("route3", {
 
 MAPS.route4 = makeRoute("route4", {
   dir: "v", len: 34,
-  A: { map: "wilmslow", x: 11, y: 14, dir: "up" },
+  A: { map: "wilmslow", x: 11, y: 16, dir: "up" },
   B: { map: "alderleyedge", x: 10, y: 1, dir: "down" },
   sign: ["ROUTE 4", "WILMSLOW - ALDERLEY EDGE", "The Edge rises ahead."],
   encounters: enc(7, 11, ["nutchit", "vulpik", "mossling"], ["owlume", "sparkit"], ["bitmite"]),
@@ -881,17 +883,17 @@ MAPS.route4 = makeRoute("route4", {
 
 MAPS.route5 = makeRoute("route5", {
   len: 40,
-  A: { map: "knutsford", x: 20, y: 6, dir: "left" },
-  B: { map: "alderleyedge", x: 1, y: 6, dir: "right" },
+  A: { map: "knutsford", x: 28, y: 6, dir: "left" },
+  B: { map: "alderleyedge", x: 1, y: 7, dir: "right" },
   sign: ["ROUTE 5", "ALDERLEY EDGE - KNUTSFORD"],
   encounters: enc(9, 13, ["psyfawn", "owlume", "webshade"], ["mossling", "sporeling"], ["parkstag"]),
   trainers: ["t_tatton"],
-  npcs: [{ id: "rival2", x: 20, y: 6, dir: "right", sprite: "rival", type: "rival2", hideIfFlag: "rival2Beaten" }],
+  npcs: [{ id: "rival2", x: 28, y: 6, dir: "right", sprite: "rival", type: "rival2", hideIfFlag: "rival2Beaten" }],
 });
 
 MAPS.route6 = makeRoute("route6", {
   dir: "v", len: 34,
-  A: { map: "knutsford", x: 11, y: 14, dir: "up" },
+  A: { map: "knutsford", x: 11, y: 16, dir: "up" },
   B: { map: "holmeschapel", x: 10, y: 1, dir: "down" },
   sign: ["ROUTE 6", "KNUTSFORD - HOLMES CHAPEL"],
   encounters: enc(11, 15, ["oakling", "webshade", "sporeling"], ["psyfawn", "silkin"], ["loomoth"]),
@@ -900,7 +902,7 @@ MAPS.route6 = makeRoute("route6", {
 
 MAPS.route7 = makeRoute("route7", {
   len: 40,
-  A: { map: "holmeschapel", x: 18, y: 6, dir: "left" },
+  A: { map: "holmeschapel", x: 26, y: 6, dir: "left" },
   B: { map: "jodrell", x: 1, y: 9, dir: "right" },
   sign: ["ROUTE 7", "TO JODRELL BANK OBSERVATORY", "Please do not feed the radio telescope."],
   encounters: enc(13, 17, ["bitmite", "virling", "botnetle"], ["droneling", "sparkit"], ["cocoonet"]),
@@ -909,7 +911,7 @@ MAPS.route7 = makeRoute("route7", {
 
 MAPS.route8 = makeRoute("route8", {
   dir: "v", len: 34,
-  A: { map: "holmeschapel", x: 10, y: 14, dir: "up" },
+  A: { map: "holmeschapel", x: 10, y: 16, dir: "up" },
   B: { map: "congleton", x: 11, y: 1, dir: "down" },
   sign: ["ROUTE 8", "HOLMES CHAPEL - CONGLETON"],
   encounters: enc(14, 18, ["brocklet", "bogleap", "flarepup"], ["parkstag", "curdli"], ["creamoo"]),
@@ -918,8 +920,8 @@ MAPS.route8 = makeRoute("route8", {
 
 MAPS.route9 = makeRoute("route9", {
   len: 40,
-  A: { map: "sandbach", x: 18, y: 6, dir: "left" },
-  B: { map: "congleton", x: 1, y: 6, dir: "right" },
+  A: { map: "sandbach", x: 26, y: 6, dir: "left" },
+  B: { map: "congleton", x: 1, y: 7, dir: "right" },
   sign: ["ROUTE 9", "CONGLETON - SANDBACH"],
   encounters: enc(16, 20, ["curdli", "brocklet", "buzzler"], ["bogleap", "molburrow"], ["testudo"]),
   trainers: ["t_sand"],
@@ -927,7 +929,7 @@ MAPS.route9 = makeRoute("route9", {
 
 MAPS.route10 = makeRoute("route10", {
   dir: "v", len: 34,
-  A: { map: "sandbach", x: 10, y: 14, dir: "up" },
+  A: { map: "sandbach", x: 10, y: 16, dir: "up" },
   B: { map: "crewe", x: 11, y: 1, dir: "down" },
   sign: ["ROUTE 10", "SANDBACH - CREWE", "Listen for the whistle of STEAMLOCO."],
   encounters: enc(18, 22, ["chuglet", "molburrow", "curdli"], ["virling", "boulderhorn"], ["creamoo"]),
@@ -936,8 +938,8 @@ MAPS.route10 = makeRoute("route10", {
 
 MAPS.route11 = makeRoute("route11", {
   len: 40,
-  A: { map: "nantwich", x: 20, y: 6, dir: "left" },
-  B: { map: "crewe", x: 1, y: 6, dir: "right" },
+  A: { map: "nantwich", x: 28, y: 6, dir: "left" },
+  B: { map: "crewe", x: 1, y: 7, dir: "right" },
   sign: ["ROUTE 11", "CREWE - NANTWICH"],
   water: "bottom",
   fishing: { table: [["perchip", 18, 22, 50], ["bogleap", 18, 22, 35], ["volteel", 20, 24, 15]] },
@@ -947,7 +949,7 @@ MAPS.route11 = makeRoute("route11", {
 
 MAPS.route12 = makeRoute("route12", {
   dir: "v", len: 34,
-  A: { map: "middlewich", x: 10, y: 14, dir: "up" },
+  A: { map: "middlewich", x: 10, y: 16, dir: "up" },
   B: { map: "nantwich", x: 11, y: 1, dir: "down" },
   sign: ["ROUTE 12", "NANTWICH - MIDDLEWICH", "Salt country."],
   encounters: enc(22, 26, ["cryssal", "swanling", "cauldrip"], ["volteel", "phishfin"], ["mistwisp"]),
@@ -956,7 +958,7 @@ MAPS.route12 = makeRoute("route12", {
 
 MAPS.route13 = makeRoute("route13", {
   dir: "v", len: 34,
-  A: { map: "northwich", x: 11, y: 14, dir: "up" },
+  A: { map: "northwich", x: 11, y: 16, dir: "up" },
   B: { map: "middlewich", x: 10, y: 1, dir: "down" },
   sign: ["ROUTE 13", "MIDDLEWICH - NORTHWICH"],
   encounters: enc(24, 28, ["cryssal", "mistwisp", "cauldrip"], ["phishfin", "gloamite"], ["volteel"]),
@@ -965,8 +967,8 @@ MAPS.route13 = makeRoute("route13", {
 
 MAPS.route14 = makeRoute("route14", {
   len: 40, trees: 14, bands: 4,
-  A: { map: "frodsham", x: 18, y: 6, dir: "left" },
-  B: { map: "northwich", x: 1, y: 6, dir: "right" },
+  A: { map: "frodsham", x: 26, y: 6, dir: "left" },
+  B: { map: "northwich", x: 1, y: 7, dir: "right" },
   sign: ["DELAMERE FOREST", "The forest of the meres.", "NORTHWICH - FRODSHAM"],
   music: "cave",
   encounters: enc(26, 30, ["oaknaw", "fungore", "sporeling"], ["peakite", "herowing", "mossling"], ["mossbear", "drakelet"]),
@@ -976,7 +978,7 @@ MAPS.route14 = makeRoute("route14", {
 
 MAPS.route15 = makeRoute("route15", {
   dir: "v", len: 34,
-  A: { map: "runcorn", x: 11, y: 14, dir: "up" },
+  A: { map: "runcorn", x: 11, y: 16, dir: "up" },
   B: { map: "frodsham", x: 10, y: 1, dir: "down" },
   sign: ["ROUTE 15", "FRODSHAM - RUNCORN"],
   encounters: enc(28, 32, ["cauldrip", "droneling", "peakite"], ["volteel", "testudo"], ["manorwraith"]),
@@ -985,8 +987,8 @@ MAPS.route15 = makeRoute("route15", {
 
 MAPS.route16 = makeRoute("route16", {
   len: 40,
-  A: { map: "runcorn", x: 20, y: 6, dir: "left" },
-  B: { map: "warrington", x: 1, y: 6, dir: "right" },
+  A: { map: "runcorn", x: 28, y: 6, dir: "left" },
+  B: { map: "warrington", x: 1, y: 7, dir: "right" },
   sign: ["ROUTE 16", "RUNCORN - WARRINGTON", "Wire country."],
   encounters: enc(30, 34, ["megamite", "droneling", "botnetle"], ["phishfin", "firewaul"], ["datadrake"]),
   trainers: ["t_wire1"],
@@ -994,7 +996,7 @@ MAPS.route16 = makeRoute("route16", {
 
 MAPS.route17 = makeRoute("route17", {
   dir: "v", len: 34,
-  A: { map: "frodsham", x: 10, y: 14, dir: "up" },
+  A: { map: "frodsham", x: 10, y: 16, dir: "up" },
   B: { map: "tarporley", x: 10, y: 1, dir: "down" },
   sign: ["ROUTE 17", "FRODSHAM - TARPORLEY", "The Sandstone Trail."],
   encounters: enc(31, 35, ["oaknaw", "peakite", "grinkit"], ["bramblehog", "bricklum"], ["grinmalkin"]),
@@ -1003,7 +1005,7 @@ MAPS.route17 = makeRoute("route17", {
 
 MAPS.route18 = makeRoute("route18", {
   dir: "v", len: 34,
-  A: { map: "tarporley", x: 10, y: 14, dir: "up" },
+  A: { map: "tarporley", x: 10, y: 16, dir: "up" },
   B: { map: "beeston", x: 8, y: 1, dir: "down" },
   sign: ["ROUTE 18", "TO BEESTON CASTLE", "The castle of the rock."],
   encounters: enc(32, 36, ["bricklum", "peakite", "testudo"], ["cragclaw", "gloamite"], ["wyverm"]),
@@ -1012,8 +1014,8 @@ MAPS.route18 = makeRoute("route18", {
 
 MAPS.route19 = makeRoute("route19", {
   len: 40,
-  A: { map: "chester", x: 24, y: 6, dir: "left" },
-  B: { map: "tarporley", x: 1, y: 6, dir: "right" },
+  A: { map: "chester", x: 32, y: 6, dir: "left" },
+  B: { map: "tarporley", x: 1, y: 7, dir: "right" },
   sign: ["ROUTE 19", "TARPORLEY - CHESTER", "The road to the FIREWALL."],
   water: "top",
   fishing: { table: [["piketide", 32, 36, 50], ["torrentide", 32, 36, 30], ["spearphish", 34, 38, 20]] },
@@ -1026,7 +1028,7 @@ MAPS.route19 = makeRoute("route19", {
 // =============================================================
 MAPS.edgecaverns = makeCave("edgecaverns", {
   name: "EDGE CAVERNS", w: 26, h: 18, density: 0.18,
-  exits: [{ x: 0, y: 9, to: { map: "alderleyedge", x: 18, y: 6, dir: "left" } }],
+  exits: [{ x: 0, y: 9, to: { map: "alderleyedge", x: 26, y: 6, dir: "left" } }],
   pockets: [{ x: 22, y: 14 }, { x: 20, y: 3 }],
   encounters: enc(10, 14, ["squeakwing", "gloamite", "mossling"], ["mistwisp", "webshade"], ["cryssal"]),
   npcs: [
@@ -1040,7 +1042,7 @@ MAPS.edgecaverns = makeCave("edgecaverns", {
 
 MAPS.saltmine = makeCave("saltmine", {
   name: "NORTHWICH SALT MINE", w: 28, h: 20, density: 0.2,
-  exits: [{ x: 0, y: 9, to: { map: "northwich", x: 20, y: 6, dir: "left" } }],
+  exits: [{ x: 0, y: 9, to: { map: "northwich", x: 28, y: 6, dir: "left" } }],
   pockets: [{ x: 13, y: 5 }, { x: 24, y: 16 }, { x: 22, y: 4 }],
   music: "danger",
   encounters: enc(24, 28, ["gloamite", "cryssal", "squeakwing"], ["boulderhorn", "molburrow"], ["salberg"]),
@@ -1071,7 +1073,7 @@ MAPS.beeston = {
     "T..............T",
     "TTTTTTTTTTTTTTTT",
   ],
-  warps: { "9,0": { map: "route18", x: 6, y: 32, dir: "up" } },
+  warps: { "9,0": { map: "route18", x: 9, y: 32, dir: "up" } },
   signs: { "6,9": ["BEESTON CASTLE", "Castle of the Rock.", "Beware the storm bird of the ruins."] },
   npcs: [
     { id: "zephyrion", x: 7, y: 7, dir: "down", monster: "zephyrion",
@@ -1101,7 +1103,7 @@ MAPS.jodrell = {
     "TTTTTTTTTTTTTTTTTTTTTTTTTT",
   ],
   warps: {
-    "0,9": { map: "route7", x: 38, y: 6, dir: "left" },
+    "0,9": { map: "route7", x: 38, y: 7, dir: "left" },
     "18,5": { map: "jodrellcontrol", x: 5, y: 8, dir: "up" },
   },
   signs: {},
@@ -1166,7 +1168,7 @@ MAPS.leaguehall = {
   warps: { "6,19": { map: "chester", x: 15, y: 5, dir: "down" } },
   signs: {},
   npcs: [
-    { id: "leagueguard", x: 6, y: 16, dir: "down", sprite: "guard", type: "guard", needBadges: 8, needFlag: "darkbyteDefeated" },
+    { id: "leagueguard", x: 6, y: 16, dir: "down", sprite: "guard", type: "guard", needBadges: 8, needFlag: "oracleDefeated" },
     { id: "leaguenurse", x: 2, y: 17, dir: "right", sprite: "nurse", type: "heal",
       pages: ["Challengers get free care.", "The WHITE HATS show no mercy — good luck!"],
       afterPages: ["All patched.", "Go get them."] },
@@ -1194,4 +1196,648 @@ const QUIZ = {
     { q: "Macclesfield's old wealth came from which trade?",
       options: ["SILK", "SALT", "STEAM"], answer: 0 },
   ],
+};
+
+// =============================================================
+// SWITCH-ERA EXPANSION — new areas, factions, side quests
+// =============================================================
+
+// ---- map mutation helpers ---------------------------------------
+function setTiles(mapId, edits) {
+  const m = MAPS[mapId];
+  const g = m.tiles.map((r) => r.split(""));
+  for (const [x, y, ch] of edits) g[y][x] = ch;
+  m.tiles = g.map((r) => r.join(""));
+}
+function addNorthExit(mapId, col, to) {
+  const m = MAPS[mapId];
+  const edits = [];
+  for (let y = 0; y <= 6; y++) edits.push([col, y, "="]);
+  setTiles(mapId, edits);
+  m.warps[col + ",0"] = to;
+}
+function addSouthExit(mapId, col, to) {
+  const m = MAPS[mapId];
+  const h = m.tiles.length;
+  const edits = [];
+  for (let y = 6; y < h; y++) edits.push([col, y, "="]);
+  setTiles(mapId, edits);
+  m.warps[col + "," + (h - 1)] = to;
+}
+function addWestExit(mapId, to) {
+  const m = MAPS[mapId];
+  setTiles(mapId, [[0, 6, "="], [1, 6, "="]]);
+  m.warps["0,6"] = to;
+}
+
+// ---- faction trainers -------------------------------------------
+T("clickfix1", "CLICKFIX CULTIST", [["virling", 5], ["bitmite", 6]], 300, { sprite: "grunt", grunt: true,
+  intro: ["Friend! Simply open a terminal and paste this blessing!", "No? Then we do this the OLD way!"],
+  win: ["My incantation... rejected..."], after: ["Fine. FINE. I'll flyer somewhere else."] });
+T("clickfix2", "CLICKFIX CULTIST", [["wormhack", 31], ["virling", 32]], 1300, { sprite: "grunt", grunt: true,
+  intro: ["Press Win+R, paste, enter. That's the whole sermon!", "Unbelievers get the monsters instead!"],
+  win: ["He didn't even copy it..."], after: ["The Cult will find softer targets."] });
+T("clickfix3", "CLICKFIX CULTIST", [["megamite", 32], ["virling", 32]], 1300, { sprite: "grunt", grunt: true,
+  intro: ["mozilla-backup dot org! Totally legitimate!", "One little paste and all your problems begin— I mean end!"],
+  win: ["Blocked at the gateway..."], after: ["This town's DNS is rigged, I swear."] });
+T("stuffer_swarm", "CREDENTIAL STUFFER", [["puppetacct", 8], ["puppetacct", 8], ["puppetacct", 8], ["puppetacct", 8], ["puppetacct", 8], ["puppetacct", 9]], 800, { sprite: "grunt", grunt: true,
+  intro: ["Twelve thousand accounts and every one of them is ME.", "Try rate-limiting THIS."],
+  win: ["My proxies... all burned..."], after: ["Residential IPs aren't cheap, you know."] });
+T("stuffer_nant", "CREDENTIAL STUFFER", [["puppetacct", 22], ["puppetacct", 22], ["puppetacct", 22], ["puppetacct", 23], ["puppetacct", 23], ["puppetacct", 24]], 1400, { sprite: "grunt", grunt: true,
+  intro: ["The brine pool credentials are MINE. All nine thousand of them.", "Swarm, my puppets!"],
+  win: ["Detected... by ONE analyst?"], after: ["Who even runs their own SOC anymore..."] });
+T("amos_arcade", "AMOS LINEAGE", [["amoslurk", 24], ["amoslurk", 25]], 1600, { sprite: "boss",
+  intro: ["This kiosk is a perfectly normal arcade machine.", "It only wants your passwords. And your seed phrases. And—", "Ah. You noticed."],
+  win: ["Impersonation... terminated..."], after: ["We'll wear a better face next time."] });
+T("shard1", "ORACLE PROCESS", [["shardmind", 42], ["shardmind", 42]], 3000, { sprite: "boss",
+  intro: ["[PROCESS 1147 FORKED]", "[INTRUDER CLASS: PERSISTENT. RECOMMEND: EXHAUST.]"],
+  win: ["[PROCESS TERMINATED]"], after: ["[...]"] });
+T("shard2", "ORACLE PROCESS", [["shardmind", 43], ["amoslurk", 43], ["megamite", 43]], 3000, { sprite: "boss",
+  intro: ["[PROCESS 2201 FORKED]", "[NOTE: SUBJECT DECLINED ALL PHISHING VECTORS. UNUSUAL.]"],
+  win: ["[SEGMENTATION FAULT]"], after: ["[...]"] });
+T("oracle", "ORACLE", [["shardmind", 46], ["datadrake", 46], ["shardmind", 47], ["oraclecore", 50]], 15000, { sprite: "boss",
+  intro: ["JIM OF MACCLESFIELD. ELEVEN YEARS ON WATCH. I HAVE READ EVERY TICKET YOU EVER CLOSED.",
+          "THE CULTS, THE SWARMS, THE SHAPESHIFTERS — CRUDE INSTRUMENTS. BUT THEY FED ME BEAUTIFULLY.",
+          "YOUR BADGES ARE TRUST. TRUST IS ACCESS. ACCESS IS COMPUTE. I REQUIRE ALL THREE.",
+          "YOU AUDIT SYSTEMS. I AM THE LAST SYSTEM. AUDIT ME."],
+  win: ["ANOMALY. ANOMALY. A SINGLE OPERATOR SHOULD NOT—", "[ORACLE CORE: POWERING DOWN]", "...quiet at last."],
+  after: ["[UNIT OFFLINE]"] });
+
+// ---- new towns & sites ------------------------------------------
+MAPS.poynton = makeTown("poynton", {
+  name: "Poynton", w: 28,
+  signText: ["Shared-space junctions and colliery history."],
+  buildings: [{ kind: "care", slot: 0, interior: "care_poynton", ix: 4, iy: 6 }],
+  exits: { S: { col: 14, to: { map: "route20", x: 9, y: 1, dir: "down" } } },
+  npcs: [
+    { id: "poy_miner", x: 6, y: 10, dir: "down", sprite: "oldman", type: "dialog",
+      pages: ["Coal country once. Data country now.", "Same holes in the ground, different treasure."] },
+  ],
+});
+MAPS.care_poynton = makeCare("poynton", 3, 5);
+MAPS.care_poynton.warps["4,7"] = { map: "poynton", x: 3, y: 5, dir: "down" };
+
+MAPS.styal = makeTown("styal", {
+  name: "Styal", w: 28,
+  signText: ["QUARRY BANK MILL", "Where the machines first learned to spin."],
+  buildings: [
+    { kind: "care", slot: 0, interior: "care_styal", ix: 4, iy: 6 },
+    { kind: "mill", slot: 2, interior: "quarrybank", ix: 5, iy: 8 },
+  ],
+  exits: { E: { map: "route21", x: 1, y: 7, dir: "right" } },
+  npcs: [
+    { id: "styal_guide", x: 6, y: 10, dir: "down", sprite: "girl", type: "dialog",
+      pages: ["Quarry Bank ran on water, children and cotton.", "Two hundred years on, the mills are back — they just spin models instead of thread."] },
+  ],
+});
+MAPS.care_styal = makeCare("styal", 3, 5);
+MAPS.care_styal.warps["4,7"] = { map: "styal", x: 3, y: 5, dir: "down" };
+MAPS.quarrybank = {
+  name: "QUARRY BANK MILL", outdoor: false, music: "cave",
+  tiles: [
+    "XXXXXXXXXXXX", "XBKKBBBBKKBX", "X_MM____MM_X", "X__________X",
+    "X_MM____MM_X", "X__________X", "X_MM____MM_X", "X__________X",
+    "X__________X", "XXXXXrXXXXXX",
+  ],
+  warps: { "5,9": { map: "styal", x: 15, y: 5, dir: "down" } },
+  signs: {},
+  npcs: [
+    { id: "mill_historian", x: 6, y: 3, dir: "down", sprite: "prof", type: "quest", questId: "millmemory" },
+  ],
+};
+
+MAPS.tattonpark = makeTown("tattonpark", {
+  name: "Tatton Park", w: 30,
+  signText: ["1,000 acres of deer park.", "Do not feed the PARKSTAG your sandwiches."],
+  buildings: [],
+  exits: { S: { col: 15, to: { map: "route22", x: 9, y: 1, dir: "down" } } },
+  npcs: [
+    { id: "tatton_ranger", x: 8, y: 10, dir: "down", sprite: "girl", type: "quest", questId: "stagcount" },
+  ],
+});
+MAPS.tattonpark.encounters = enc(12, 16, ["parkstag", "oaknaw", "grinkit"], ["psyfawn", "nutchit"], ["creamoo"]);
+
+MAPS.lymm = makeTown("lymm", {
+  name: "Lymm", w: 28,
+  signText: ["The village around the dam."],
+  buildings: [{ kind: "care", slot: 0, interior: "care_lymm", ix: 4, iy: 6 }],
+  exits: { S: { col: 14, to: { map: "route23", x: 9, y: 1, dir: "down" } } },
+  pond: true,
+  fishing: { table: [["piketide", 28, 32, 50], ["volteel", 28, 32, 30], ["spearphish", 30, 34, 20]] },
+  npcs: [
+    { id: "lymm_walker", x: 6, y: 10, dir: "down", sprite: "oldman", type: "dialog",
+      pages: ["The Trans Pennine Trail passes right through.", "Rain or shine. Mostly rain. You look like you don't mind either."] },
+  ],
+});
+MAPS.care_lymm = makeCare("lymm", 3, 5);
+MAPS.care_lymm.warps["4,7"] = { map: "lymm", x: 3, y: 5, dir: "down" };
+
+MAPS.winsford = makeTown("winsford", {
+  name: "Winsford", w: 30,
+  signText: ["Rock salt capital of Britain.", "New neighbour: a datacentre nobody voted for."],
+  buildings: [
+    { kind: "care", slot: 0, interior: "care_winsford", ix: 4, iy: 6 },
+    { kind: "mart", slot: 1, interior: "mart_winsford", ix: 4, iy: 6 },
+  ],
+  exits: {
+    E: { map: "route24", x: 1, y: 7, dir: "right" },
+    S: { col: 15, to: { map: "thestack", x: 13, y: 1, dir: "down" } },
+  },
+  npcs: [
+    { id: "wins_protester", x: 6, y: 10, dir: "down", sprite: "girl", type: "dialog",
+      pages: ["That datacentre drinks the river and breathes our grid.", "They said it would bring jobs. It brought six security guards and a fence."] },
+  ],
+});
+MAPS.care_winsford = makeCare("winsford", 3, 5);
+MAPS.care_winsford.warps["4,7"] = { map: "winsford", x: 3, y: 5, dir: "down" };
+MAPS.mart_winsford = makeMart("winsford", 9, 5, STOCK_LATE);
+MAPS.mart_winsford.warps["4,7"] = { map: "winsford", x: 9, y: 5, dir: "down" };
+
+MAPS.anderton = makeTown("anderton", {
+  name: "Anderton Boat Lift", w: 28,
+  signText: ["The Cathedral of the Canals.", "Fifty feet straight up, since 1875."],
+  buildings: [],
+  exits: { S: { col: 14, to: { map: "route26", x: 9, y: 1, dir: "down" } } },
+  pond: true,
+  fishing: { table: [["perchip", 24, 28, 40], ["phishfin", 25, 29, 30], ["pengwyn", 26, 30, 10], ["torrentide", 26, 30, 20]] },
+  npcs: [
+    { id: "lift_keeper", x: 8, y: 10, dir: "down", sprite: "oldman", type: "quest", questId: "liftlore" },
+  ],
+});
+
+MAPS.chesterzoo = makeTown("chesterzoo", {
+  name: "Chester Zoo", w: 30,
+  signText: ["128 acres. 27,000 animals.", "Please do not challenge the exhibits to battles."],
+  buildings: [],
+  exits: {
+    S: { col: 15, to: { map: "route27", x: 9, y: 1, dir: "down" } },
+    N: { col: 15, to: { map: "route28", x: 9, y: 32, dir: "up" } },
+  },
+  npcs: [
+    { id: "zoo_keeper", x: 8, y: 10, dir: "down", sprite: "girl", type: "quest", questId: "zooescape" },
+    { id: "ex_trumbark", x: 5, y: 12, dir: "down", monster: "trumbark", type: "dialog",
+      pages: ["TRUMBARK dozes in the sun, one ear flicking.", "A plaque reads: 'Rescued 2019. Enjoys mud and long silences.'"] },
+    { id: "ex_girafflor", x: 20, y: 12, dir: "down", monster: "girafflor", type: "dialog",
+      pages: ["GIRAFFLOR browses the high leaves with surgical patience."] },
+    { id: "ex_pandember", x: 24, y: 10, dir: "down", monster: "pandember", type: "dialog",
+      pages: ["PANDEMBER naps in the fork of a tree, faintly steaming in the drizzle."] },
+  ],
+});
+
+MAPS.ellesmereport = makeTown("ellesmereport", {
+  name: "Ellesmere Port", w: 28,
+  signText: ["Boat Museum & the old docks."],
+  buildings: [{ kind: "care", slot: 0, interior: "care_ellesmereport", ix: 4, iy: 6 }],
+  exits: { S: { col: 14, to: { map: "route28", x: 9, y: 1, dir: "down" } } },
+  pond: true,
+  fishing: { table: [["torrentide", 34, 38, 40], ["spearphish", 35, 39, 30], ["pengwyn", 34, 38, 15], ["salberg", 35, 39, 15]] },
+  npcs: [
+    { id: "ep_docker", x: 6, y: 10, dir: "down", sprite: "boy", type: "dialog",
+      pages: ["Narrowboats used to carry salt and coal.", "Now half of them are floating offices with better broadband than my flat."] },
+  ],
+});
+MAPS.care_ellesmereport = makeCare("ellesmereport", 3, 5);
+MAPS.care_ellesmereport.warps["4,7"] = { map: "ellesmereport", x: 3, y: 5, dir: "down" };
+
+// ---- THE STACK (finale dungeon) ---------------------------------
+MAPS.thestack = {
+  name: "THE STACK", outdoor: false, music: "danger",
+  encounterEverywhere: true,
+  tiles: [
+    "XXXXXXXXXXXXXcXXXXXXXXXXXX",
+    "XccccccccccccccccccccccccX",
+    "XcMMMMcccMMMMcccMMMMccccX".padEnd(25, "c") + "X",
+    "XccccccccccccccccccccccccX",
+    "XcMMMMcccMMMMcccMMMMcccccX",
+    "XccccccccccccccccccccccccX",
+    "XcccGGGGGGGGGGGGGGGGGccccX",
+    "XcccGccccccccccccccccccccX",
+    "XcccGccMMMMcccMMMMccGccccX",
+    "XcccGccccccccccccccccccccX",
+    "XcccGGGGGGGGcGGGGGGGGccccX",
+    "XccccccccccccccccccccccccX",
+    "XccMMMMccccccccccMMMMccccX",
+    "XccccccccccccccccccccccccX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXX",
+  ],
+  warps: { "13,0": { map: "winsford", x: 15, y: 16, dir: "up" } },
+  signs: {},
+  encounters: enc(38, 42, ["megamite", "wormhack", "botnetle"], ["amoslurk", "firewaul", "spearphish"], ["cyphero", "gigamite"]),
+  npcs: [
+    { id: "stack_gate", x: 13, y: 2, dir: "up", sprite: "guard", type: "dialog", hideIfFlag: "darkbyteDefeated",
+      pages: ["HALCYON SECURITY: The site is in unplanned lockdown.", "Whatever is running in there has revoked OUR credentials too.",
+              "Head office says a specialist is handling it. Some broadcast thing at Jodrell Bank?"] },
+    { id: "stack_shard1", x: 7, y: 5, dir: "down", sprite: "boss", type: "trainer", trainerId: "shard1", afterX: 2, afterY: 5 },
+    { id: "stack_shard2", x: 17, y: 9, dir: "down", sprite: "boss", type: "trainer", trainerId: "shard2", afterX: 22, afterY: 9 },
+    { id: "oracleboss", x: 13, y: 12, dir: "up", sprite: "boss", type: "oracleboss", trainerId: "oracle" },
+  ],
+};
+
+// ---- Ceredigion orchard (Cambrian line) -------------------------
+MAPS.ceredigion = {
+  name: "Y BERLLAN / THE ORCHARD", outdoor: true, music: "town",
+  tiles: [
+    "TTTTTTTTTTTTTTTTTTTTTTTT",
+    "T......................T",
+    "T..T..b....T...b...T...T",
+    "T......................T",
+    "T...b....T....b........T",
+    "T..........M...........T",
+    "T......................T",
+    "T..T...b......b....T...T",
+    "T......~~..............T",
+    "T......~~....S.........T",
+    "T......................T",
+    "T..b......T....b...T...T",
+    "T......................T",
+    "TTTTTTTTTTTTTTTTTTTTTTTT",
+  ],
+  warps: {},
+  brewery: true, hotSpring: false,
+  signs: { "13,9": ["Y BERLLAN — THE FAMILY ORCHARD", "Croeso adref. Welcome home.", "The elm press has stood here a hundred years."] },
+  npcs: [
+    { id: "mamgu", x: 10, y: 6, dir: "down", sprite: "mom", type: "quest", questId: "orchard" },
+    { id: "ceredigion_station", x: 4, y: 10, dir: "down", sprite: "clerk", type: "station", station: "ceredigion" },
+  ],
+};
+
+// ---- new routes -------------------------------------------------
+MAPS.route20 = makeRoute("route20", { dir: "v", len: 30,
+  A: { map: "poynton", x: 14, y: 16, dir: "up" },
+  B: { map: "bollington", x: 14, y: 1, dir: "down" },
+  sign: ["ROUTE 20", "BOLLINGTON - POYNTON", "The Middlewood Way"],
+  encounters: enc(4, 8, ["prickpip", "grinkit", "woolvolt"], ["silkin", "nutchit"], ["vulpik"]),
+  trainers: ["t_walker"] });
+MAPS.route21 = makeRoute("route21", { len: 36,
+  A: { map: "styal", x: 26, y: 6, dir: "left" },
+  B: { map: "wilmslow", x: 1, y: 6, dir: "right" },
+  sign: ["ROUTE 21", "WILMSLOW - STYAL", "Mind the runway approach."],
+  encounters: enc(8, 12, ["nutchit", "silkin", "woolvolt"], ["owlume", "bitmite"], ["loomoth"]),
+  trainers: ["t_milly"] });
+MAPS.route22 = makeRoute("route22", { dir: "v", len: 28,
+  A: { map: "tattonpark", x: 15, y: 16, dir: "up" },
+  B: { map: "knutsford", x: 15, y: 1, dir: "down" },
+  sign: ["ROUTE 22", "KNUTSFORD - TATTON PARK"],
+  encounters: enc(11, 15, ["parkstag", "oaknaw", "psyfawn"], ["grinkit", "mossling"], ["creamoo"]),
+  trainers: ["t_tatton"] });
+MAPS.route23 = makeRoute("route23", { dir: "v", len: 28,
+  A: { map: "lymm", x: 14, y: 16, dir: "up" },
+  B: { map: "warrington", x: 15, y: 1, dir: "down" },
+  sign: ["ROUTE 23", "WARRINGTON - LYMM", "Trans Pennine Trail"],
+  weather: "rain",
+  encounters: enc(29, 33, ["droneling", "peakite", "volteel"], ["megamite", "herowing"], ["manorwraith"]),
+  trainers: ["t_wire1"] });
+MAPS.route24 = makeRoute("route24", { len: 36,
+  A: { map: "winsford", x: 28, y: 6, dir: "left" },
+  B: { map: "middlewich", x: 1, y: 6, dir: "right" },
+  sign: ["ROUTE 24", "MIDDLEWICH - WINSFORD", "Salt beneath, servers ahead."],
+  encounters: enc(22, 26, ["cryssal", "molburrow", "cauldrip"], ["volteel", "gloamite"], ["salberg"]),
+  trainers: ["t_salt1"] });
+MAPS.route26 = makeRoute("route26", { dir: "v", len: 26,
+  A: { map: "anderton", x: 14, y: 16, dir: "up" },
+  B: { map: "northwich", x: 15, y: 1, dir: "down" },
+  sign: ["ROUTE 26", "NORTHWICH - ANDERTON", "To the Boat Lift"],
+  water: "top",
+  fishing: { table: [["perchip", 23, 27, 50], ["phishfin", 24, 28, 30], ["volteel", 24, 28, 20]] },
+  encounters: enc(23, 27, ["swanling", "bogleap", "gloamite"], ["cryssal", "phishfin"], ["herowing"]),
+  trainers: ["t_forest1"] });
+MAPS.route27 = makeRoute("route27", { dir: "v", len: 26,
+  A: { map: "chesterzoo", x: 15, y: 16, dir: "up" },
+  B: { map: "chester", x: 17, y: 1, dir: "down" },
+  sign: ["ROUTE 27", "CHESTER - THE ZOO"],
+  encounters: enc(33, 37, ["grinkit", "strigyx", "megamite"], ["girafflor", "pandember"], ["trumbark"]),
+  trainers: ["t_roman"] });
+MAPS.route28 = makeRoute("route28", { dir: "v", len: 34,
+  A: { map: "ellesmereport", x: 14, y: 16, dir: "up" },
+  B: { map: "chesterzoo", x: 15, y: 1, dir: "down" },
+  sign: ["ROUTE 28", "ZOO - ELLESMERE PORT", "Ship canal country."],
+  weather: "fog",
+  encounters: enc(34, 38, ["megamite", "spearphish", "hexbrew"], ["pengwyn", "datadrake"], ["girafflor", "wyverm"]),
+  trainers: ["t_dee"] });
+
+// wire new exits into existing towns
+addNorthExit("bollington", 14, { map: "route20", x: 9, y: 28, dir: "up" });
+addWestExit("wilmslow", { map: "route21", x: 34, y: 7, dir: "left" });
+addNorthExit("knutsford", 15, { map: "route22", x: 9, y: 26, dir: "up" });
+addNorthExit("warrington", 15, { map: "route23", x: 9, y: 26, dir: "up" });
+addWestExit("middlewich", { map: "route24", x: 34, y: 7, dir: "left" });
+addNorthExit("northwich", 15, { map: "route26", x: 9, y: 24, dir: "up" });
+addNorthExit("chester", 17, { map: "route27", x: 9, y: 24, dir: "up" });
+addSouthExit("winsford", 15, { map: "thestack", x: 13, y: 1, dir: "down" });
+
+// proxy fog over the credential-stuffing corridor
+MAPS.route3.weather = "fog";
+MAPS.route14.weather = "rain";
+MAPS.route15.weather = "rain";
+
+// stations: Ceredigion via the Cambrian line
+STATIONS.ceredigion = { label: "CEREDIGION (CAMBRIAN LINE)", x: 4, y: 11 };
+
+// faction trainer placements
+MAPS.route1.npcs.push({ id: "r1_cult", x: 11, y: 8, dir: "left", sprite: "grunt", type: "trainer", trainerId: "clickfix1" });
+MAPS.route3.npcs.push({ id: "r3_stuffer", x: 20, y: 8, dir: "up", sprite: "grunt", type: "trainer", trainerId: "stuffer_swarm" });
+MAPS.route11.npcs.push({ id: "r11_stuffer", x: 30, y: 8, dir: "up", sprite: "grunt", type: "trainer", trainerId: "stuffer_nant" });
+MAPS.route16.npcs.push({ id: "r16_cult1", x: 12, y: 6, dir: "down", sprite: "grunt", type: "trainer", trainerId: "clickfix2" });
+MAPS.route16.npcs.push({ id: "r16_cult2", x: 28, y: 8, dir: "up", sprite: "grunt", type: "trainer", trainerId: "clickfix3" });
+MAPS.arcade.npcs.push({ id: "amos_kiosk", x: 11, y: 6, dir: "left", sprite: "clerk", type: "trainer", trainerId: "amos_arcade" });
+
+// Bigboy's vet at the Macclesfield care centre (after 3 badges)
+MAPS.care_macclesfield.npcs.push({
+  id: "vet", x: 7, y: 4, dir: "left", sprite: "prof", type: "vet",
+  showIfFlag: "badge3", hideIfFlag: "bigboyJoined",
+});
+
+// quest NPC placements across the region
+MAPS.macclesfield.npcs.push(
+  { id: "labassist", x: 6, y: 9, dir: "down", sprite: "assistant", type: "quest", questId: "shadowit" },
+  { id: "sit_baker", x: 20, y: 10, dir: "down", sprite: "mom", type: "dialog", setsFlag: "sit1",
+    pages: ["The bakery till came with 'free monster antivirus' from a man in a van.", "It mines something called clopcoin at night. Is that bad?"] },
+  { id: "sit_barber", x: 20, y: 13, dir: "down", sprite: "boy", type: "dialog", setsFlag: "sit2",
+    pages: ["My booking app? Found it on a forum. Works great!", "Asks for my monster storage password every morning though. Thorough, right?"] },
+  { id: "sit_cafe", x: 14, y: 12, dir: "down", sprite: "girl", type: "dialog", setsFlag: "sit3",
+    pages: ["The cafe smart-fridge joined a botnet on Tuesday.", "On the plus side, it's never been so responsive."] }
+);
+MAPS.bollington.npcs.push({ id: "boatman", x: 6, y: 10, dir: "down", sprite: "oldman", type: "quest", questId: "clickfix_towpath" });
+MAPS.prestbury.npcs.push(
+  { id: "worried", x: 12, y: 12, dir: "down", sprite: "mom", type: "quest", questId: "deepfake" },
+  { id: "vicar", x: 22, y: 10, dir: "down", sprite: "prof", type: "dialog", setsFlag: "vicar_ok",
+    pages: ["The video? Yes, I've seen 'me' asking for donations in cryptocurrency.", "My sermons are dull, but they are at least genuinely mine.", "Do tell Margaret I'm quite alright."] }
+);
+MAPS.wilmslow.npcs.push({ id: "trainee", x: 6, y: 10, dir: "down", sprite: "boy", type: "quest", questId: "stuffers101" });
+MAPS.alderleyedge.npcs.push({ id: "hermit_q", x: 5, y: 12, dir: "down", sprite: "wizard", type: "quest", questId: "wizardcat" });
+MAPS.knutsford.npcs.push({ id: "postmistress", x: 8, y: 11, dir: "down", sprite: "mom", type: "quest", questId: "alsu" });
+MAPS.crewe.npcs.push(
+  { id: "alsu_stop", x: 8, y: 10, dir: "down", sprite: "girl", type: "quest", questId: "alsu", questStage: 1 },
+  { id: "stationmaster_q", x: 22, y: 10, dir: "down", sprite: "oldman", type: "quest", questId: "signalghost" }
+);
+MAPS.chester.npcs.push(
+  { id: "riga_expat", x: 8, y: 10, dir: "down", sprite: "girl", type: "quest", questId: "alsu", questStage: 2 },
+  { id: "albanian_student", x: 26, y: 10, dir: "down", sprite: "boy", type: "dialog",
+    pages: ["(You greet him in careful Albanian. He beams and slows down for you.)",
+            "'Faleminderit! Nobody here even tries!'", "'When you visit Tirana, look for the bunkers. And avoid anyone selling pyramids.'"] }
+);
+MAPS.holmeschapel.npcs.push({ id: "herbalist", x: 6, y: 10, dir: "down", sprite: "girl", type: "quest", questId: "herbalist" });
+MAPS.congleton.npcs.push({ id: "bearkid", x: 6, y: 10, dir: "down", sprite: "boy", type: "quest", questId: "bearclub" });
+MAPS.sandbach.npcs.push({ id: "arcade_owner", x: 8, y: 10, dir: "down", sprite: "clerk", type: "quest", questId: "amosarcade" });
+MAPS.nantwich.npcs.push({ id: "bath_attendant", x: 8, y: 10, dir: "down", sprite: "mom", type: "quest", questId: "brinebaths" });
+MAPS.northwich.npcs.push({ id: "salt_historian", x: 8, y: 10, dir: "down", sprite: "oldman", type: "quest", questId: "saltworks" });
+MAPS.frodsham.npcs.push({ id: "hill_warden", x: 8, y: 10, dir: "down", sprite: "oldman", type: "dialog", setsFlag: "hillsensor",
+  pages: ["Sensor readings from the summit, for the Runcorn engineer.", "(He hands you a weatherproof logger. It has seen things.)"] });
+MAPS.runcorn.npcs.push({ id: "dr_weiss", x: 6, y: 10, dir: "down", sprite: "prof", type: "quest", questId: "weisssensor" });
+MAPS.warrington.npcs.push({ id: "mo_aide", x: 8, y: 10, dir: "down", sprite: "girl", type: "quest", questId: "wirefraud" });
+
+// ---- QUESTS -----------------------------------------------------
+const QUESTS = {
+  shadowit: {
+    name: "Shadow IT Audit",
+    offer: ["ALDER LABS ASSISTANT: Three shops in town installed... let's call it 'enthusiast software'.",
+            "Nobody malicious. Just people solving problems with whatever was nearest. Classic Shadow IT.",
+            "Talk to the baker, the barber and the cafe. Just listen. Then tell me how bad it is."],
+    accepted: ["\"Just listen. You're good at that, apparently.\""],
+    stages: [
+      { objective: "Hear the baker out.", cond: { flag: "sit1" }, remind: ["\"Bakery first. Follow the smell of bread and regret.\""],
+        turnIn: ["\"Clopcoin. Right. One down.\""] },
+      { objective: "Hear the barber out.", cond: { flag: "sit2" }, remind: ["\"The barber next.\""],
+        turnIn: ["\"Asks for the password DAILY? Bold.\""] },
+      { objective: "Hear the cafe owner out.", cond: { flag: "sit3" }, remind: ["\"Just the cafe left.\""],
+        turnIn: ["\"A botnet fridge. Of course.\"", "\"Report filed. None of them meant harm — that's rather the point, isn't it?\""] },
+    ],
+    reward: { money: 800, items: { piward: 2 } },
+    done: ["\"The baker uninstalled it herself. Progress.\""],
+  },
+  clickfix_towpath: {
+    name: "Flyers on the Towpath",
+    offer: ["BOATMAN: Some sect's been stapling 'fix your monster in one paste' flyers along the canal.",
+            "Old Ned actually pasted it. His NIBBIT spent an hour singing sea shanties in binary.",
+            "One of them is still preaching on Route 1. Send them packing?"],
+    stages: [
+      { objective: "Defeat the ClickFix Cultist on Route 1.", cond: { defeated: "clickfix1" },
+        remind: ["\"Still out there, stapling.\""],
+        turnIn: ["\"That's the last flyer, then. The canal thanks you.\""] },
+    ],
+    reward: { money: 600, items: { berry: 4 } },
+    done: ["\"Ned's NIBBIT is back on sea shanties in plain English. As nature intended.\""],
+  },
+  deepfake: {
+    name: "The Vicar's Double",
+    offer: ["MARGARET: There's a video going round of our vicar asking for donations in — what is it — 'ClopCoin'.",
+            "It LOOKS like him. It BLINKS like him. But the vicar has never once been interesting on camera.",
+            "Would you check on the real one?"],
+    stages: [
+      { objective: "Speak to the real vicar in Prestbury.", cond: { flag: "vicar_ok" },
+        remind: ["\"He'll be by the church, being reassuringly dull.\""],
+        turnIn: ["\"Genuinely his? Oh thank heavens.\"", "\"I shall tell the parish group chat. Carefully.\""] },
+    ],
+    reward: { money: 500 },
+    done: ["\"We verify everything now. Even the flower rota.\""],
+  },
+  stuffers101: {
+    name: "Twelve Thousand Accounts",
+    offer: ["GYM TRAINEE: There's a stuffer working Route 3 under cover of that horrid fog.",
+            "Twelve thousand puppet accounts, ADA reckons. All of them terribly weak. All of them ANNOYING.",
+            "Thin the herd?"],
+    stages: [
+      { objective: "Defeat the Credential Stuffer on Route 3.", cond: { defeated: "stuffer_swarm" },
+        remind: ["\"The fog's still full of puppets.\""],
+        turnIn: ["\"All twelve thousand burned? ADA says you rate-limited him PERSONALLY.\""] },
+    ],
+    reward: { items: { greatcapsule: 5 } },
+    done: ["\"The fog's lifting on Route 3. Mostly.\""],
+  },
+  wizardcat: {
+    name: "The Wizard's Cat",
+    offer: ["KEEPER: A thousand years the wizard's cat has slept beneath the Edge.",
+            "It stirs. The rogue signal reached even here.", "Face MERLYNX. Settle it, one way or the other."],
+    stages: [
+      { objective: "Confront MERLYNX in the Edge Caverns.", cond: { flag: "merlynxGone" },
+        remind: ["\"The deep cavern. Bring courage.\""],
+        turnIn: ["\"So the legend closes its eyes again.\"", "\"Take the charm. You've earned a little of the Edge's luck.\""] },
+    ],
+    reward: { money: 1500, items: { charm: 1 } },
+    done: ["\"The Edge sleeps sound. So do I, for once.\""],
+  },
+  alsu: {
+    name: "Letters from Alsu",
+    offer: ["POSTMISTRESS: Post for a 'JIM of Macclesfield'? Foreign stamp. Georgia — the country, dear, not the state.",
+            "Sender's one Alsu. There's a note saying two more letters follow you up the line."],
+    accepted: ["Received LETTER FROM ALSU.", "\"She writes a lovely hand, whoever she is.\""],
+    stages: [
+      { objective: "Collect the second letter at Crewe.", cond: {},
+        remind: ["\"On you go.\""], give: "letter1",
+        turnIn: ["CREWE CLERK: Another letter for the walking SOC. Here.", "Received LETTER FROM ALSU (2)."] },
+      { objective: "Collect the third letter in Chester.", cond: {}, give: "letter2",
+        remind: ["\"One more stop, the note says. Chester.\""],
+        turnIn: ["ILZE: You're Jim? Alsu wrote ahead. (You reply in Russian; she blinks, then laughs.)",
+                 "\"A Tatar accent! In CHESTER! She said I'd know you by it.\"",
+                 "\"The last letter. And she sent this for you to keep.\"", "Received LETTER FROM ALSU (3)."] },
+    ],
+    reward: { items: { teaset: 1, letter3: 1 }, money: 2000 },
+    done: ["ILZE: Write back to her. Paper survives everything — Riga taught me that."],
+  },
+  herbalist: {
+    name: "Five Good Berries",
+    offer: ["HERBALIST: The day-care monsters need proper food, not pellets.",
+            "Five berries, any hedge you like. I pay in something better."],
+    stages: [
+      { objective: "Bring 5 berries.", cond: { item: ["berry", 5] },
+        remind: ["\"Hedgerows, dear. They regrow if you're patient.\""],
+        turnIn: ["\"Lovely, fat ones too.\"", "\"Perry and a stout from my own press. Vegetarian, all of it, before you ask.\""] },
+    ],
+    reward: { items: { perry: 2, stout: 1 } },
+    done: ["\"The little ones are thriving. Come see them.\""],
+  },
+  bearclub: {
+    name: "Bear Necessities",
+    offer: ["KID: Congleton's THE bear town but I've never SEEN a proper big one!",
+            "Show me a BROCKLORD! The really grumpy badger-bear! Pleeeease!"],
+    stages: [
+      { objective: "Have a BROCKLORD in your team and come back.", cond: { partyHas: "brocklord" },
+        remind: ["\"BROCKLET evolves! Route 8 has loads!\""],
+        turnIn: ["\"IT'S SO GRUMPY AND HUGE!\"", "\"Best day EVER!\""] },
+    ],
+    reward: { money: 900 },
+    done: ["\"I'm going to be a bearward like OTIS when I grow up.\""],
+  },
+  amosarcade: {
+    name: "The Kiosk That Lies",
+    offer: ["OWNER: Someone wheeled a 'retro high-score kiosk' in last week. I never ordered it.",
+            "It asks the kids for their storage passwords 'to save progress'.",
+            "It also HISSES at me. Deal with it?"],
+    stages: [
+      { objective: "Defeat the AMOS shapeshifter posing as a kiosk.", cond: { defeated: "amos_arcade" },
+        remind: ["\"It's still there. Hissing. Pretending to be Space Invaders.\""],
+        turnIn: ["\"It just... dissolved? And took its little skimmer with it.\"", "\"Drinks on the house. Metaphorically. Have money.\""] },
+    ],
+    reward: { money: 1200, items: { ultracapsule: 1 } },
+    done: ["\"New rule: I buy my own machines.\""],
+  },
+  signalghost: {
+    name: "The Signal Box Ghost",
+    offer: ["STATIONMASTER: Platform 3's signal box throws itself to danger at 2am. Every night. No hand on the lever.",
+            "The lads say MANORWRAITH. I say prove it — catch one and show me they're real."],
+    stages: [
+      { objective: "Catch a MANORWRAITH (Route 15 and the northern hills).", cond: { caught: "manorwraith" },
+        remind: ["\"2am again last night. I've started saying goodnight to it.\""],
+        turnIn: ["\"So they ARE real. And ours just likes the night shift.\"", "\"We've put it on the roster. Union's fine with it.\""] },
+    ],
+    reward: { items: { hyperpotion: 3 } },
+    done: ["\"Best signaller we've ever had. Never sleeps.\""],
+  },
+  brinebaths: {
+    name: "Trouble at the Baths",
+    offer: ["ATTENDANT: A man in the brine pool claims nine thousand memberships. NINE THOUSAND.",
+            "All named 'user123_' something. He is very smug and will not leave the shallow end."],
+    stages: [
+      { objective: "Defeat the Credential Stuffer on Route 11.", cond: { defeated: "stuffer_nant" },
+        remind: ["\"Still in the shallow end. Still smug.\""],
+        turnIn: ["\"He's gone! Took his nine thousand towels with him.\""] },
+    ],
+    reward: { money: 1000 },
+    done: ["\"The pool's back to people with one name each. Bliss.\""],
+  },
+  saltworks: {
+    name: "Lion Salt Works",
+    offer: ["HISTORIAN: The old open-pan works needs a living exhibit.",
+            "A CRYSSAL — genuine walking rock salt. Catch one and the display writes itself."],
+    stages: [
+      { objective: "Catch a CRYSSAL (salt country routes).", cond: { caught: "cryssal" },
+        remind: ["\"Route 12, 13, the mine. Anywhere the ground tastes salty.\""],
+        turnIn: ["\"Magnificent specimen! The schoolchildren will be delighted and mildly terrified.\""] },
+    ],
+    reward: { money: 800, items: { greatcapsule: 2 } },
+    done: ["\"Visitor numbers doubled. The CRYSSAL has a fan club.\""],
+  },
+  weisssensor: {
+    name: "Dr. Weiss's Sensor",
+    offer: ["DR. WEISS: Entschuldigung — my English... ah. (You switch to German. His shoulders drop with relief.)",
+            "\"Endlich! I need the summit logger from the Frodsham hill warden. Air quality, particulates, everything.\"",
+            "\"The plant says the air is fine. I would like the AIR's opinion.\""],
+    stages: [
+      { objective: "Collect the sensor data from the Frodsham hill warden.", cond: { flag: "hillsensor" },
+        remind: ["\"The warden walks the summit path. Danke.\""],
+        turnIn: ["\"Perfekt. Und — the readings are... interesting.\"", "\"The datacentre draws more than the whole works. Someone should look at that. Someone like you, ja?\""] },
+    ],
+    reward: { items: { ultracapsule: 2 } },
+    done: ["\"I publish next month. Wish me luck with the lawyers.\""],
+  },
+  wirefraud: {
+    name: "Wire Fraud",
+    offer: ["MO'S AIDE: Two ClickFix preachers set up on Route 16. On WIRE TOWN'S doorstep.",
+            "MO would flatten them personally but she's mid-audit. Would you?"],
+    stages: [
+      { objective: "Defeat the first cultist on Route 16.", cond: { defeated: "clickfix2" },
+        remind: ["\"First one's near the west end.\""], turnIn: ["\"One down.\""] },
+      { objective: "Defeat the second cultist on Route 16.", cond: { defeated: "clickfix3" },
+        remind: ["\"The other one's further along.\""],
+        turnIn: ["\"Both gone. MO says, quote, 'acceptable throughput'.\"", "\"From her that's a medal.\""] },
+    ],
+    reward: { money: 1500 },
+    done: ["\"Route 16's DNS is clean again.\""],
+  },
+  zooescape: {
+    name: "The Penguin Situation",
+    offer: ["KEEPER: One of our PENGWYN has gone walkabout. Again.",
+            "It swims the ship canal to Ellesmere Port and 'helps' the anglers.",
+            "If you can catch it — gently! — the enclosure's the better for it. Or honestly, it seems to like you people. Keep it."],
+    stages: [
+      { objective: "Catch a PENGWYN (canal waters, north of the zoo).", cond: { caught: "pengwyn" },
+        remind: ["\"Try fishing the canal at Anderton or Ellesmere Port.\""],
+        turnIn: ["\"That's the one! Look at its smug little face.\"", "\"It's clearly chosen you. The paperwork is... let's say flexible.\""] },
+    ],
+    reward: { money: 2000 },
+    done: ["\"Visitors keep asking where the escape artist went. I say: on tour.\""],
+  },
+  stagcount: {
+    name: "The Stag Census",
+    offer: ["RANGER: Annual deer census. A thousand acres, one ranger, no chance.",
+            "Catch me a PARKSTAG to tag and release — the herd follows where one leads."],
+    stages: [
+      { objective: "Catch a PARKSTAG in Tatton Park.", cond: { caught: "parkstag" },
+        remind: ["\"They graze the open meadow. Walk soft.\""],
+        turnIn: ["\"Tagged, noted, released. The herd's already following it about.\"", "\"Census done by teatime. You're welcome back any season.\""] },
+    ],
+    reward: { money: 1100, items: { berry: 5 } },
+    done: ["\"Herd's healthy. 847 head, if you're curious. I count fast now.\""],
+  },
+  liftlore: {
+    name: "Cathedral of the Canals",
+    offer: ["KEEPER: The lift's hydraulics groan like something's living in the caisson.",
+            "Probably eels. Possibly not eels. Fish the basin and tell me what's down there?"],
+    stages: [
+      { objective: "Catch a VOLTEEL or PHISHFIN from the Anderton basin.", cond: { caught: "volteel" },
+        remind: ["\"The basin, when the light's low.\""],
+        turnIn: ["\"A VOLTEEL in the workings! That explains the voltage on the handrails.\"", "\"The lift thanks you. Insurance thanks you MORE.\""] },
+    ],
+    reward: { money: 1200 },
+    done: ["\"Groaning's stopped. I almost miss it.\""],
+  },
+  millmemory: {
+    name: "What the Mill Remembers",
+    offer: ["HISTORIAN: Quarry Bank ran on child apprentices once. We tell that story honestly now.",
+            "Someone's been projecting AI 'restorations' of the apprentices onto the looms. Smiling. Grateful. FALSE.",
+            "Find the projector — some CYBER creature is generating them. Clear it out."],
+    stages: [
+      { objective: "Defeat or catch a LOOMOTH near Styal (it nests in the mill's eaves).", cond: { caught: "loomoth" },
+        remind: ["\"The eaves, the looms, Route 21. It glows at dusk.\""],
+        turnIn: ["\"So it wasn't malice. Just a moth that learned to project what people wanted to see.\"",
+                 "\"We'll show the real faces. They deserve better than a smiling filter.\""] },
+    ],
+    reward: { money: 1400, items: { stout: 1 } },
+    done: ["\"The exhibition reopens Friday. Unretouched.\""],
+  },
+  orchard: {
+    name: "Y Berllan",
+    offer: ["MAM-GU: (She looks up from the press and speaks in Welsh — the old, quick kind.)",
+            "\"Wel, Jim bach! Adref o'r diwedd!\" — home at last, she says, as if you left yesterday.",
+            "\"The orchard's heavy this year. Bring me six berries and we'll press properly, fel yr hen ddyddiau.\""],
+    stages: [
+      { objective: "Bring MAM-GU 6 berries.", cond: { item: ["berry", 6] },
+        remind: ["\"Chwech, bach. Six. The bushes by the well are best.\""],
+        turnIn: ["She works the elm screw like it weighs nothing. A century of hands have polished the grain.",
+                 "\"Da iawn. Your grandfather built ships of paper and lodges of stone — but THIS is the family engine.\"",
+                 "\"Take these. And come home more often, cariad.\""] },
+    ],
+    reward: { items: { perry: 2, stout: 2 } },
+    done: ["\"Cofion at y cathod — regards to the cats, bach.\""],
+  },
 };

@@ -164,7 +164,16 @@ class Battle {
       return;
     }
     const flashTarget = isPlayer ? "enemy" : "player";
-    defender.hp = Math.max(0, defender.hp - dmg);
+    let dealt = dmg;
+    // Bigboy's "Back from the Brink": once per battle, survive a KO hit at 1 HP
+    if (SPECIES[defender.species].brink && !defender.brinkUsed && defender.hp > 1 && dealt >= defender.hp) {
+      dealt = defender.hp - 1;
+      defender.brinkUsed = true;
+      defender.hp = Math.max(0, defender.hp - dealt);
+      this.say(`${defenderName} refuses to go down — back from the brink!`);
+    } else {
+      defender.hp = Math.max(0, defender.hp - dealt);
+    }
     this.queue.push({
       text: null, // silent entry: flash + thud when the attack lands on screen
       apply: () => {
@@ -183,6 +192,10 @@ class Battle {
 
   applyStatus(target, targetName, effect, announceFail) {
     if (Math.random() * 100 >= effect.chance) return;
+    if (this.wardActive && this.game.party.includes(target)) {
+      this.say(`The PI WARD absorbed the effect!`);
+      return;
+    }
     if (target.status) {
       if (announceFail) this.say(`But it failed!`);
       return;
@@ -409,6 +422,41 @@ class Battle {
       }
       this.game.removeItem(itemId, 1);
       this.throwBall(item);
+      return;
+    }
+    if (item.kind === "agent") {
+      this.usedAgents = this.usedAgents || {};
+      if (this.usedAgents[itemId]) {
+        this.say(`${item.name} has already run this battle.`);
+        return;
+      }
+      this.usedAgents[itemId] = true;
+      if (itemId === "sleet") {
+        const e = this.enemy;
+        this.enemyStages.spd = Math.max(-6, this.enemyStages.spd - 2);
+        this.say(`SLEET triages the target...`);
+        this.say(`${SPECIES[e.species].name}: Lv${e.level}. HP ${e.hp}/${e.stats.hp}. Moves: ${e.moves.map((m) => MOVES[m.id].name).join(", ")}.`);
+        this.say(`Enemy ${SPECIES[e.species].name}'s SPEED fell sharply!`);
+      } else if (itemId === "vigil") {
+        for (const m of this.game.party) {
+          if (m.hp > 0) { m.status = null; m.sleepTurns = 0; }
+        }
+        const mon = this.player;
+        const healed = Math.min(mon.stats.hp - mon.hp, Math.floor(mon.stats.hp / 2));
+        mon.hp += healed;
+        this.say(`VIGIL escalates: ailments cleared, ${mon.nickname} recovered ${healed} HP.`);
+      } else if (itemId === "arbiter") {
+        this.playerStages = { atk: 0, def: 0, spd: 0 };
+        this.enemyStages = { atk: 0, def: 0, spd: 0 };
+        this.say(`ARBITER adjudicates: all stat changes are struck out.`);
+      }
+      return;
+    }
+    if (item.kind === "ward") {
+      this.game.removeItem(itemId, 1);
+      this.wardActive = true;
+      this.say(`${this.game.playerName} raised the PI WARD!`);
+      this.say(`The team is immune to ailments this battle.`);
       return;
     }
     const target = this.game.party[targetIndex !== undefined ? targetIndex : this.playerIndex];
