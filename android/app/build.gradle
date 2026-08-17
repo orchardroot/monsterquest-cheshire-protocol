@@ -17,6 +17,7 @@ android {
     signingConfigs {
         release {
             if (project.hasProperty('storeFile')) {
+                storeType 'PKCS12'
                 storeFile file(project.property('storeFile'))
                 storePassword project.property('storePassword')
                 keyAlias project.property('keyAlias')
