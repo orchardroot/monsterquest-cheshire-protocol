@@ -1,12 +1,10 @@
 # MonsterQuest: The Cheshire Protocol
 
-A widescreen, Switch-style monster-catching RPG set across the real
-towns and landmarks of **Cheshire, England** in 2026 — starring a SOC
-lead, his two cats, and the AI agents he built. Vanilla JavaScript and
-HTML5 canvas: no dependencies, no build step, no audio files (the
-chiptune soundtrack is synthesized live in WebAudio).
+A widescreen, Switch-style monster-catching RPG set across the real towns and landmarks of **Cheshire, England** in 2026 — starring a SOC lead, his two cats, and the AI agents he built. Vanilla JavaScript and HTML5 canvas: no dependencies, no build step, no audio files (the chiptune soundtrack is synthesised live in WebAudio).
 
-All creatures, names, sprites, maps, music and art are original.
+I wanted the game I'd have played to death at eleven, except set where I actually live and about the job I actually do. So the routes are the roads I walk, the gym leaders are the towns' real trades, the villains are the threat actors from my last quarter's incident reports, and the two party members you can't put in a box are my cats. All creatures, names, sprites, maps, music and art are original.
+
+**Play it:** open `index.html`, or grab the Android APK from [Releases](../../releases/tag/apk-latest).
 
 ## The story
 
@@ -73,6 +71,8 @@ story's climax, where GLITCHRA waits in the static.
 Then the **WHITE HATS** (Sue, Raj, Kim, Doc) and **Champion VEX** at
 Chester — gated behind all 8 badges *and* defeating ROOT at Jodrell Bank.
 
+(Yes, the Cyber-type gym is in Warrington. Draw your own conclusions.)
+
 ## Features
 
 - **Widescreen 960x540 presentation** filling the whole display, with
@@ -129,6 +129,10 @@ On phones an on-screen D-pad, A/B and MENU buttons appear automatically.
   Pages once under *Settings → Pages → Source: GitHub Actions*), open in
   Chrome, and *Add to Home screen* for a fullscreen offline install.
 
+## For the curious: how it's built
+
+Everything is hand-rolled — tile renderer, procedural monster sprites, a Gen-1-style battle engine with the full type chart, and a chiptune sequencer that composes the soundtrack from note tables at load time. There is deliberately no framework and no bundler: `git clone`, open a file, play. CI builds a signed WebView APK on every push and publishes it to a rolling release, and a Pages workflow is ready to go if you want it hosted.
+
 ## Project layout
 
 ```
@@ -141,3 +145,7 @@ js/battle.js    turn-based battle engine
 js/game.js      overworld, UI, story scripting, activities, main loop
 android/        WebView wrapper project (built by CI into the APK)
 ```
+
+---
+
+*orchardroot — made in Cheshire, under the close supervision of MEADOW and BIGBOY, who did not consent to being in a video game.*
