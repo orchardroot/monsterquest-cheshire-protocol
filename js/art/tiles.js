@@ -1225,13 +1225,13 @@
   ]));
   P("door_gym", deco(null, [
     "nnnnnnnnnnnnnnnn", "NNNNNNNNNNNNNNNN", "nnkkkkkkkkkkkknn", "nnk4444444444knn",
-    "nnk4333333334knn", "nnk43444444434knn".slice(0, 16), "nnk4344554434knn", "nnk434555543ok".slice(0, 16),
-    "nnk4345555443knn", "nnk4344554434knn", "nnk4334433443knn", "nnk4333333334knn",
-    "nnk43333553334k.".slice(0, 16), "nnk4444444444knn", "nnkkkkkkkkkkkknn", "nnNNNNNNNNNNNNnn"
+    "nnk4333333334knn", "nnk4344444434knn", "nnk4345555434knn", "nnk4355555543kn.",
+    "nnk4355555543knn", "nnk4345555434knn", "nnk4334433443knn", "nnk4333333334knn",
+    "nnk4333553334knn", "nnk4444444444knn", "nnkkkkkkkkkkkknn", "nnNNNNNNNNNNNNnn"
   ]));
   P("door_stairs_up", deco(null, [
     "nnnnnnnnnnnnnnnn", "nlllllllllllllln", "nlNNNNNNNNNNNNln", "nlNllllllllllNln",
-    "nlNlNNNNNNNNlNln", "nlNlNllllllNlNln", "nlNlNlNNNNlNlNln", "nlNlNlllllNlNln.".slice(0, 16),
+    "nlNlNNNNNNNNlNln", "nlNlNllllllNlNln", "nlNlNlNNNNlNlNln", "nlNlNlllllNlNln.",
     "nlNlNlNNNNlNlNln", "nlNlNllllllNlNln", "nlNlNNNNNNNNlNln", "nlNllllllllllNln",
     "nlNNNNNNNNNNNNln", "nlllllllllllllln", "nNNNNNNNNNNNNNNn", "nnnnnnnnnnnnnnnn"
   ]));
@@ -1262,7 +1262,7 @@
   ]));
   P("shop_awning", deco(null, [
     "kkkkkkkkkkkkkkkk", "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c",
-    "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c", "21212121212121212".slice(0, 16), "2k2k2k2k2k2k2k2k",
+    "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c", "2121212121212121", "2k2k2k2k2k2k2k2k",
     "................", "................", "................", "................",
     "................", "................", "................", "................"
   ]));
@@ -1291,8 +1291,8 @@
   ]));
   P("sign_chippy", deco(function (ctx, f, s) { fill(ctx, "#ecece4"); }, [
     "................", ".kkkkkkkkkkkkkk.", ".k333333333333k.", ".k344444444443k.",
-    ".k34kk4k4k44443k".slice(0, 16), ".k34k44k4k4443k.", ".k34kkk4kkk443k.", ".k344444444443k.",
-    ".k34888884444k..", ".k3488{{{844443k".slice(0, 16), ".k34888884443k..", ".k344444444443k.",
+    ".k34kk4k4k44443k", ".k34k44k4k4443k.", ".k34kkk4kkk443k.", ".k344444444443k.",
+    ".k34888884444k..", ".k3488{{{844443k", ".k34888884443k..", ".k344444444443k.",
     ".k333333333333k.", ".kkkkkkkkkkkkkk.", "................", "................"
   ]));
   P("sign_pub", deco(function (ctx, f, s) { fill(ctx, "#f0e8d8"); rect(ctx, 0, 0, ART, 2, C.tudor); }, [
@@ -1339,10 +1339,10 @@
     "..i....i....i...", "..i....i....i...", "iiiiiiiiiiiiiiii", "................"
   ]));
   P("fence_wire", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 2, "fwr"); }, [
-    "................", ".....|..........", "....|.|.........", "|||||||||||||||| ".slice(0, 16),
-    "....|.|.........", "..|.|.|.|.|.|.|.", "|||||||||||||||| ".slice(0, 16), "..|.|.|.|.|.|.|.",
-    "....|.|.........", "|||||||||||||||| ".slice(0, 16), "..|.|.|.|.|.|.|.", "....|.|.........",
-    "|||||||||||||||| ".slice(0, 16), "....|.|.........", "....|.|.........", "................"
+    "................", ".....|..........", "....|.|.........", "||||||||||||||||",
+    "....|.|.........", "..|.|.|.|.|.|.|.", "||||||||||||||||", "..|.|.|.|.|.|.|.",
+    "....|.|.........", "||||||||||||||||", "..|.|.|.|.|.|.|.", "....|.|.........",
+    "||||||||||||||||", "....|.|.........", "....|.|.........", "................"
   ]));
   P("gate_wood", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 2, "gw"); }, [
     "................", "................", "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP",
@@ -1545,9 +1545,9 @@
   ]));
   P("hay_bale", deco(function (ctx, f, s) { turf(ctx, s, "#9aa858", "#7b8842", "#b6c274", 2, "hb"); }, [
     "................", "................", "....33333333....", "...3444444443...",
-    "..34333333333 4.".slice(0, 16), "..3433333333443.", "..3433333333443.", "..3443333333343.",
+    "..34333333333 4.", "..3433333333443.", "..3433333333443.", "..3443333333343.",
     "..3433333333443.", "..3443333333343.", "..3433333333443.", "..3443333333343.",
-    "...344444444 3..".slice(0, 16), "....33333333....", "................", "................"
+    "...344444444 3..", "....33333333....", "................", "................"
   ]));
   P("apple_press", deco(function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); }, [
     "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "......O>O.......",
@@ -1628,8 +1628,8 @@
   ]));
   P("silk_bolt", deco(function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); }, [
     "................", "................", "..((((((((((((..", "..()((((((((()..",
-    "..((((((((((((..", "..()((((((((()..", "..3333333333333.".slice(0, 16), "..344444444443..",
-    "..3333333333333.".slice(0, 16), "..{{{{{{{{{{{{..", "..{}}}}}}}}}}{..", "..{{{{{{{{{{{{..",
+    "..((((((((((((..", "..()((((((((()..", "..3333333333333.", "..344444444443..",
+    "..3333333333333.", "..{{{{{{{{{{{{..", "..{}}}}}}}}}}{..", "..{{{{{{{{{{{{..",
     "..cccccccccccc..", "..cCCCCCCCCCCc..", "..cccccccccccc..", "................"
   ]));
 
@@ -1652,9 +1652,9 @@
   });
   P("salt_works_pipe", deco(function (ctx, f, s) { grit(ctx, s, "#6a6a70", "#4e4e54", "#87878e", 14, "swp"); }, [
     "................", "................", "................", "LLLLLLLLLLLLLLLL",
-    "UUUUUUUUUUUUUUUU", "LLLLLLLLLLLLLLLL", ":::::::::::::::: ".slice(0, 16), "....i......i....",
+    "UUUUUUUUUUUUUUUU", "LLLLLLLLLLLLLLLL", "::::::::::::::::", "....i......i....",
     "....i......i....", "LLLLLLLLLLLLLLLL", "UUUUUUUUUUUUUUUU", "LLLLLLLLLLLLLLLL",
-    ":::::::::::::::: ".slice(0, 16), "....i......i....", "....i......i....", "................"
+    "::::::::::::::::", "....i......i....", "....i......i....", "................"
   ]));
   P("brine_pump", decoAnim(function (ctx, f, s) { grit(ctx, s, "#5a5a60", "#42424a", "#767680", 14, "bp"); }, [[
     "................", ".....iiiiii.....", ".....iLLLLi.....", "....iiLLLLii....",
@@ -1711,11 +1711,11 @@
   P("train_engine", deco(null, [
     "kkkkkkkkkkkkkkkk", "k}}}}}}}}}}}}}}k", "k}cccccccccccc}k", "k}c}}}}}}}}}}c}k",
     "k}c}88888888}c}k", "k}c}87777778}c}k", "k}c}88888888}c}k", "k}c}}}}}}}}}}c}k",
-    "k}cccccccccccc}k", "k}}}}}}}}}}}}}}k", "k}11111111111}k.".slice(0, 16), "k}}}}}}}}}}}}}}k",
+    "k}cccccccccccc}k", "k}}}}}}}}}}}}}}k", "k}11111111111}k.", "k}}}}}}}}}}}}}}k",
     "kiiiiiiiiiiiiiik", "kiIIiiiiiiiiIIik", "kiIIiiiiiiiiIIik", "kkkkkkkkkkkkkkkk"
   ]));
   P("train_carriage", deco(null, [
-    "kkkkkkkkkkkkkkkk", "k22222222222222k", "k2111111111111 k".slice(0, 16), "k21777771777712k",
+    "kkkkkkkkkkkkkkkk", "k22222222222222k", "k2111111111111 k", "k21777771777712k",
     "k21788887888812k", "k21788887888812k", "k21777771777712k", "k21111111111112k",
     "k22222222222222k", "k21111111111112k", "k2cccccccccccc2k", "k22222222222222k",
     "kiiiiiiiiiiiiiik", "kiIIiiiiiiiiIIik", "kiIIiiiiiiiiIIik", "kkkkkkkkkkkkkkkk"
@@ -1752,7 +1752,7 @@
     pond(ctx, f, { face: "#3f6a63", top: "#4b7a70", dark: "#26443f", light: "#699e8f", hi: "#a9cfc0", len: 4 });
   }, [
     "................", "................", "..kkkkkkkkkkkk..", ".keeeeeeeeeeeek.",
-    ".kevvvvvvvvvvek.", ".ke1111111111ek.", ".kev555555vvek.", ".ke1v5vv5v11vek",
+    ".kevvvvvvvvvvek.", ".ke1111111111ek.", ".kev5555555vvek.", ".ke1v5vv5v11vek.",
     ".kevvvvvvvvvvek.", ".ke1111111111ek.", ".keeeeeeeeeeeek.", "..kkkkkkkkkkkk..",
     "...kEEEEEEEEk...", "....kkkkkkkk....", "................", "................"
   ]));
@@ -1786,7 +1786,7 @@
     "................", "......LLLL......", "......LUUL......", ".....LLUULL.....",
     ".....LUUUUL.....", "....LLUUUULL....", "....LU....UL....", "...LLU....ULL...",
     "...LU......UL...", "..LLU......ULL..", "..LU........UL..", ".LLU........ULL.",
-    ".LUUUUUUUUUUUUL.", "LLLLLLLLLLLLLLLL", ":::::::::::::::.".slice(0, 16), "................"
+    ".LUUUUUUUUUUUUL.", "LLLLLLLLLLLLLLLL", ":::::::::::::::.", "................"
   ]));
   P("radio_mast", decoAnim(null, [[
     ".......ii.......", "......i11i......", ".......ii.......", "......i..i......",
@@ -1816,7 +1816,7 @@
   P("church_window", deco(function (ctx, f, s) { stoneWall(ctx, s, "#9a9a90", "#77776e", "#b6b6ac", "#6b6b62", 6); }, [
     "................", "......nnnn......", ".....nkkkkn.....", "....nk1551kn....",
     "...nk155551kn...", "...nk1{{551kn...", "...nk1{}{51kn...", "...nk11{}11kn...",
-    "...nk1ee{11kn...", "...nk1eee11kn...", "...nk15551 kn...".slice(0, 16), "...nk155551kn...",
+    "...nk1ee{11kn...", "...nk1eee11kn...", "...nk15551 kn...", "...nk155551kn...",
     "...nkkkkkkkkn...", "...nnnnnnnnnn...", "................", "................"
   ]));
   P("church_door", deco(function (ctx, f, s) { stoneWall(ctx, s, "#9a9a90", "#77776e", "#b6b6ac", "#6b6b62", 6); }, [
@@ -1839,7 +1839,7 @@
   ]));
   P("chippy_counter", deco(function (ctx, f, s) { tileFloor(ctx, s, "#d8d0c0", "#bdb4a2"); }, [
     "cccccccccccccccc", "CCCCCCCCCCCCCCCC", "cLLLLLLLLLLLLLLc", "cLUUUUUUUUUUUULc",
-    "cL3333LL333333Lc", "cL3443LL3444 3Lc".slice(0, 16), "cL3333LL333333Lc", "cLUUUUUUUUUUUULc",
+    "cL3333LL333333Lc", "cL3443LL3444 3Lc", "cL3333LL333333Lc", "cLUUUUUUUUUUUULc",
     "cLLLLLLLLLLLLLLc", "cCCCCCCCCCCCCCCc", "cccccccccccccccc", "cCCCCCCCCCCCCCCc",
     "cccccccccccccccc", "cCCCCCCCCCCCCCCc", "cccccccccccccccc", "CCCCCCCCCCCCCCCC"
   ]));
@@ -1850,10 +1850,10 @@
     "98kkkkkkkkkkkk89", "9888888888888889", "9999999999999999", "................"
   ]));
   P("greenhouse_bed", deco(function (ctx, f, s) { grit(ctx, s, C.mud, "#4c331a", "#8a6640", 20, "ghb"); }, [
-    "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "Oppppppppppppp O".slice(0, 16), "Op^^p^^^p^^p^^pO",
+    "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "Oppppppppppppp O", "Op^^p^^^p^^p^^pO",
     "Op^eeh^he^h^ee^O", "Op^e1e^ee^ee1e^O", "Opeee^eeeeeee^pO", "Op^e^ee1ee^ee^pO",
-    "Ope1ee^eeee1eepO", "Op^ee^eeee^ee^pO", "Oppppppppppppp O".slice(0, 16), "O>>>>>>>>>>>>>>O",
-    "OOOOOOOOOOOOOOOO", "Oppppppppppppp O".slice(0, 16), "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO"
+    "Ope1ee^eeee1eepO", "Op^ee^eeee^ee^pO", "Oppppppppppppp O", "O>>>>>>>>>>>>>>O",
+    "OOOOOOOOOOOOOOOO", "Oppppppppppppp O", "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO"
   ]));
 
   // ---- zoo, racecourse, airport, moor, orchard ----
@@ -2092,13 +2092,13 @@
 
   P("table", deco(wood, [
     "................", "..PPPPPPPPPPPP..", ".PccccccccccccP.", ".PcCCCCCCCCCCcP.",
-    ".PcCoooooooo CP.".slice(0, 16), ".PcCoooooooocCP.", ".PcCoooooooocCP.", ".PcCCCCCCCCCCcP.",
+    ".PcCoooooooo CP.", ".PcCoooooooocCP.", ".PcCoooooooocCP.", ".PcCCCCCCCCCCcP.",
     ".PccccccccccccP.", "..PPPPPPPPPPPP..", "..OO........OO..", "..O>........O>..",
     "..O>........O>..", "..OO........OO..", "................", "................"
   ]));
   P("table_round", deco(wood, [
     "................", ".....PPPPPP.....", "...PPcccccePP...", "..PcccccccccccP.",
-    ".PcccCCCCCCcccP.", ".PccCoooooo CccP".slice(0, 16), ".PccCooooooCccP.", ".PccCooooooCccP.",
+    ".PcccCCCCCCcccP.", ".PccCoooooo CccP", ".PccCooooooCccP.", ".PccCooooooCccP.",
     ".PcccCCCCCCcccP.", "..PcccccccccccP.", "...PPccccccPP...", ".....PPPPPP.....",
     "......O>>O......", "......O>>O......", ".....OOOOOO.....", "................"
   ]));
@@ -2208,7 +2208,7 @@
     "...kk111111kk...", ".....kkkkkk.....", "................", "................"
   ]));
   P("fruit_machine", decoAnim(function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); }, [[
-    "................", "..3333333333333.".slice(0, 16), "..3111111111113.", "..31kkkkkkkkk13.",
+    "................", "..3333333333333.", "..3111111111113.", "..31kkkkkkkkk13.",
     "..31k555k555k13.", "..31k5e5k515k13.", "..31k555k555k13.", "..31kkkkkkkkk13.",
     "..3111111111113.", "..3555333555513.", "..3111111111113.", "..31kk1111kk113.",
     "..3111111111113.", "..3333333333333.", "................", "................"
@@ -2248,8 +2248,8 @@
     "..OOOOOOOOOOOO..", "................", "................", "................"
   ]));
   P("gym_badge_stand", deco(function (ctx, f, s) { boards(ctx, s, "#d0a860", "#a8823f", "#e2c184", "h", 8); }, [
-    "................", ".....555555.....", "....54444445....", "....5455554 5...".slice(0, 16),
-    "....5451154 5...".slice(0, 16), "....5455554 5...".slice(0, 16), "....54444445....", ".....555555.....",
+    "................", ".....555555.....", "....54444445....", "....5455554 5...",
+    "....5451154 5...", "....5455554 5...", "....54444445....", ".....555555.....",
     "......5555......", "......5445......", ".....555555.....", "....OOOOOOOO....",
     "....OPPPPPPO....", "...OOOOOOOOOO...", "...O>>>>>>>>O...", "................"
   ]));
@@ -2261,30 +2261,30 @@
   ]));
   P("mirror", deco(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [
     "................", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..OP88888888PO..",
-    "..OP87777778PO..", "..OP87ccc7778PO.".slice(0, 16), "..OP87cc77778PO.".slice(0, 16), "..OP87777778PO..",
+    "..OP87777778PO..", "..OP87ccc7778PO.", "..OP87cc77778PO.", "..OP87777778PO..",
     "..OP87777778PO..", "..OP87777778PO..", "..OP87777778PO..", "..OP88888888PO..",
     "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "................", "................"
   ]));
   P("painting", deco(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [
-    "................", "..5555555555555.".slice(0, 16), "..5444444444445.", "..54wwwwwwwww45.",
-    "..54wwwwwwwww45.", "..54wwwwwwwww45.", "..54ggggggggg45.", "..54gvgggvgggg45".slice(0, 16),
+    "................", "..5555555555555.", "..5444444444445.", "..54wwwwwwwww45.",
+    "..54wwwwwwwww45.", "..54wwwwwwwww45.", "..54ggggggggg45.", "..54gvgggvgggg45",
     "..54gvvgvvggg45.", "..54GGGGGGGGG45.", "..5444444444445.", "..5555555555555.",
     "................", "................", "................", "................"
   ]));
   P("clock_wall", decoAnim(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [[
     "................", "................", "....OOOOOOOO....", "...OcccccccсO...".replace("с", "c"),
-    "..Occcccccccc O.".slice(0, 16), "..OccckcccccccO.".slice(0, 16), "..Occcccccccc O.".slice(0, 16), "..OccckkkccccO..",
-    "..Occccckcccc O.".slice(0, 16), "..Occccckkccc O.".slice(0, 16), "..OcccccccccсO..".replace("с", "c"), "...OccccccccO...",
+    "..Occcccccccc O.", "..OccckcccccccO.", "..Occcccccccc O.", "..OccckkkccccO..",
+    "..Occccckcccc O.", "..Occccckkccc O.", "..OcccccccccсO..".replace("с", "c"), "...OccccccccO...",
     "....OOOOOOOO....", "................", "................", "................"
   ], [
     "................", "................", "....OOOOOOOO....", "...OccccccccO...",
-    "..OccccccccccO..", "..Occcccccccc O.".slice(0, 16), "..OcccccccccccO.".slice(0, 16), "..OccckkkkkccO..",
-    "..OcccccccccccO.".slice(0, 16), "..OccccccccccO..", "..OccccccccccO..", "...OccccccccO...",
+    "..OccccccccccO..", "..Occcccccccc O.", "..OcccccccccccO.", "..OccckkkkkccO..",
+    "..OcccccccccccO.", "..OccccccccccO..", "..OccccccccccO..", "...OccccccccO...",
     "....OOOOOOOO....", "................", "................", "................"
   ]]));
   P("cat_bed", deco(wood, [
     "................", "................", "................", "................",
-    "....((((((((....", "...()))))))(....", "..()((((((()) ..".slice(0, 16), "..()(aaaaaa()...",
+    "....((((((((....", "...()))))))(....", "..()((((((()) ..", "..()(aaaaaa()...",
     "..()(aaaaaa()...", "..()(aaaaaa()...", "..())))))))()...", "...(((((((((....",
     "....))))))))....", "................", "................", "................"
   ]));
