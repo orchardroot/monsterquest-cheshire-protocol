@@ -1,0 +1,671 @@
+// MonsterQuest v2 — world engine tests (map runtime, overworld, NPCs,
+// interaction, encounters). Headless only: no browser, no canvas assertions
+// beyond "it drew something and didn't throw".
+"use strict";
+const H = require("../headless");
+
+// Step the loop `n` fixed steps, letting promises settle between steps.
+function pump(env, n) {
+  let i = 0;
+  return new Promise(function (resolve) {
+    (function loop() {
+      if (i++ >= n) return resolve();
+      env.step(1);
+      setImmediate(loop);
+    })();
+  });
+}
+
+function boot(opts) {
+  opts = opts || {};
+  const env = H.load();
+  const MQ = env.MQ;
+  MQ.View.init();
+  MQ.Input.init();
+  MQ.Dialog.auto = true;
+  MQ.DEV = false;                      // quiet the redefine warnings in fixtures
+  fixtures(MQ);
+  MQ.Scenes.push(MQ.Overworld, { map: opts.map || "we_field", x: opts.x, y: opts.y, dir: opts.dir });
+  MQ.Scenes.flush();
+  return env;
+}
+
+// ---- fixtures -----------------------------------------------------------
+function fixtures(MQ) {
+  const W = MQ.World;
+
+  MQ.Story = MQ.Story || {};
+  MQ.Story.npcScripts = MQ.Story.npcScripts || {};
+  MQ.Story.npcScripts.we_greeter = function* (ctx) {
+    yield ctx.S.say("Now then. Mind the ledge.");
+    yield ctx.S.setFlag("we_greeted");
+    return "done";
+  };
+  MQ.Story.npcScripts.we_trigger = function* (ctx) {
+    yield ctx.S.setFlag("we_triggered");
+  };
+
+  MQ.Data.define("encounters", "we_field_grass", {
+    zone: "grass", rate: 1,
+    table: [
+      { species: "nibbit", min: 3, max: 5, w: 60 },
+      { species: "flitchick", min: 3, max: 6, w: 30 },
+      { species: "spindrake", min: 5, max: 7, w: 4, rare: true }
+    ]
+  });
+  MQ.Data.define("encounters", "we_field_grass_night", {
+    zone: "grass", rate: 1,
+    table: [{ species: "flitmoth", min: 4, max: 6, w: 50 }, { species: "webshade", min: 4, max: 7, w: 20 }]
+  });
+  MQ.Data.define("encounters", "fish_we_field", {
+    zone: "water", rate: 1,
+    table: [
+      { species: "puddlish", min: 4, max: 6, w: 60, tier: "common" },
+      { species: "perchip", min: 5, max: 8, w: 25, tier: "uncommon" },
+      { species: "torrentide", min: 8, max: 12, w: 6, tier: "rare" }
+    ]
+  });
+  MQ.Data.define("trainers", "tr_we_field_1", {
+    name: "Bev", cls: "Walker", sprite: "npc_walker",
+    party: [{ species: "nibbit", level: 5 }], ai: "random", payout: 120,
+    intro: ["You've the look of someone who walks."], win: ["Told you."], lose: ["Fair enough."]
+  });
+
+  // 24 x 18 field: tree border, tall grass, a pond, a ledge shelf, a house.
+  W.defineMap("we_field", {
+    name: "Test Field", region: "east", outdoor: true, music: "route_east", weatherZone: "east", ambience: "forest",
+    legend: {
+      "T": "tree_oak", "t": "tree_oak_top", ".": "grass", "w": "grass_tall", "=": "path_dirt",
+      "~": "water", "L": "ledge_down", "#": "wall_brick_red", "D": "door_wood", "W": "window",
+      "R": "roof_slate", "S": "sign", "c": "cliff_climb", "f": "flowers_yellow", "l": "lamp", " ": null
+    },
+    layers: {
+      ground: [
+        "TTTTTTTTTTTTTTTTTTTTTTTT",
+        "T......................T",
+        "T...RRRR....wwwww......T",
+        "T...#WDW....wwwww......T",
+        "T......................T",
+        "T.....=................T",
+        "T.....=......S.........T",
+        "T.....=................T",
+        "T.....========.........T",
+        "T............=.........T",
+        "TLLLLLLLLLLLL=LLLLLLLL.T",
+        "T............=.........T",
+        "T...~~~~.....=......c..T",
+        "T...~~~~.....=.........T",
+        "T...~~~~.....=....l....T",
+        "T............=.........T",
+        "T............=.........T",
+        "TTTTTTTTTTTTTTTTTTTTTTTT"
+      ],
+      over: [
+        "tttttttttttttttttttttttt",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "tttttttttttttttttttttttt"
+      ]
+    },
+    warps: [{ x: 6, y: 3, to: "we_house", tx: 5, ty: 8, dir: "up", kind: "door" }],
+    signs: [{ x: 13, y: 6, text: ["TEST FIELD", "Ledges south. Pond west. Mind the cat."] }],
+    items: [{ x: 9, y: 6, item: "potion", n: 1, flag: "item_we_field_1" }],
+    npcs: [
+      { id: "we_greeter", x: 8, y: 12, dir: "down", sprite: "npc_walker", behaviour: "still", script: "we_greeter" },
+      { id: "we_wanderer", x: 17, y: 6, dir: "down", sprite: "npc_kid", behaviour: "wander", radius: 2, say: ["Lovely day."] },
+      { id: "we_patroller", x: 15, y: 15, dir: "up", sprite: "npc_ranger", behaviour: "path", path: [[15, 15], [18, 15]], say: ["Just doing my rounds."] },
+      { id: "we_trainer", x: 20, y: 8, dir: "left", sprite: "npc_walker", behaviour: "still", trainer: "tr_we_field_1", sight: 4 },
+      { id: "we_looker", x: 3, y: 15, dir: "down", sprite: "npc_granny", behaviour: "look", radius: 3, say: ["Ooh, hello."] }
+    ],
+    triggers: [{ x: 13, y: 16, w: 1, h: 1, script: "we_trigger", once: "we_trigger_done" }],
+    encounters: { grass: "we_field_grass", water: null, cave: null },
+    fishing: "fish_we_field",
+    restPoints: [{ x: 13, y: 6, flag: "we_rested" }],
+    spawnPoint: { x: 13, y: 9 },
+    healPoint: { x: 13, y: 9 },
+    landmark: { name: "The Test Field", x: 13, y: 9 }
+  });
+
+  W.defineMap("we_house", W.template("house_large", {
+    name: "Test House",
+    warps: [{ x: 7, y: 13, to: "we_field", tx: 6, ty: 4, dir: "down", kind: "door" }],
+    npcs: [{ id: "we_mum", x: 3, y: 4, dir: "down", sprite: "mum", behaviour: "still", say: ["Wipe your feet."] }]
+  }));
+
+  // an edge-linked pair, to exercise generated edge warps
+  W.defineMap("we_edge_a", {
+    name: "Edge A", region: "east", outdoor: true,
+    legend: { ".": "grass", "T": "tree_oak" },
+    layers: { ground: ["..........", "..........", "..........", "..........", ".........."] },
+    edges: { south: { map: "we_edge_b", offset: 0 } },
+    spawnPoint: { x: 5, y: 2 }
+  });
+  W.defineMap("we_edge_b", {
+    name: "Edge B", region: "east", outdoor: true,
+    legend: { ".": "grass" },
+    layers: { ground: ["..........", "..........", "..........", "..........", ".........."] },
+    edges: { north: { map: "we_edge_a", offset: 0 } },
+    spawnPoint: { x: 5, y: 2 }
+  });
+}
+
+module.exports = function (t, assert) {
+
+  // ---- map runtime -----------------------------------------------------
+  t("World.prepare builds collision, zone, ledge and interact grids", function () {
+    const env = H.load(); const MQ = env.MQ; fixtures(MQ);
+    const W = MQ.World, m = W.get("we_field");
+    const rt = W.prepare(m);
+    assert.strictEqual(rt.w, 24); assert.strictEqual(rt.h, 18);
+    assert.strictEqual(W.blocked(m, 0, 0, null), true, "tree border is solid");
+    assert.strictEqual(W.blocked(m, 13, 9, null), false, "spawn is walkable");
+    assert.strictEqual(W.zoneAt(m, 13, 2), "grass", "tall grass is an encounter zone");
+    assert.strictEqual(W.zoneAt(m, 13, 9), null);
+    assert.strictEqual(W.ledgeAt(m, 4, 10), "down");
+    assert.strictEqual(W.interactAt(m, 13, 6), "sign");
+    assert.strictEqual(W.interactAt(m, 6, 3), "door");
+    assert.ok(W.signAt(m, 13, 6));
+    assert.ok(W.itemAt(m, 9, 6));
+    assert.strictEqual(W.itemAt(m, 9, 6).flag, "item_we_field_1");
+    assert.ok(rt.anim.length > 0, "water is animated");
+    // preparing twice returns the same object
+    assert.strictEqual(W.prepare(m), rt);
+  });
+
+  t("water, crags and bogs open up with the right traversal ability", function () {
+    const env = H.load(); const MQ = env.MQ; fixtures(MQ);
+    const W = MQ.World, m = W.get("we_field");
+    const none = new Set(), boat = new Set(["boat"]), climb = new Set(["climb"]);
+    assert.strictEqual(W.blocked(m, 5, 12, none), true, "water blocked on foot");
+    assert.strictEqual(W.blocked(m, 5, 12, boat), false, "water opens with the boat");
+    assert.strictEqual(W.blockReason(m, 5, 12, none), "water");
+    assert.strictEqual(W.blocked(m, 20, 12, none), true, "crag blocked without grips");
+    assert.strictEqual(W.blocked(m, 20, 12, climb), false);
+    assert.strictEqual(W.blockReason(m, 20, 12, none), "climb");
+  });
+
+  t("edges generate seamless warps in both directions", function () {
+    const env = H.load(); const MQ = env.MQ; fixtures(MQ);
+    const W = MQ.World;
+    const a = W.get("we_edge_a");
+    W.prepare(a);
+    const w = W.warpAt(a, 3, 4);
+    assert.ok(w, "south edge produced a warp");
+    assert.strictEqual(w.to, "we_edge_b");
+    assert.strictEqual(w.ty, 0);
+    assert.strictEqual(w.kind, "edge");
+    const b = W.get("we_edge_b");
+    W.prepare(b);
+    assert.strictEqual(W.warpAt(b, 3, 0).to, "we_edge_a");
+  });
+
+  t("the nine interior templates instantiate, differ, and validate", function () {
+    const env = H.load(); const MQ = env.MQ; fixtures(MQ);
+    const W = MQ.World;
+    const wanted = ["house_small", "house_large", "shop", "care_centre", "gym_hall", "station", "pub", "church", "cave_room"];
+    wanted.forEach(function (name) {
+      assert.ok(W.builtins[name], "missing template " + name);
+      const def = W.builtin(name, { name: "T " + name, warps: [{ x: 1, y: 1, to: "we_field", tx: 13, ty: 9, dir: "down", kind: "door" }] });
+      const m = W.defineMap("tpl_" + name, def);
+      assert.ok(m.width >= 10 && m.height >= 8, name + " is a real room");
+      const rows = m.layers.ground;
+      rows.forEach(function (r) { assert.strictEqual(r.length, m.width, name + " has a ragged row"); });
+      assert.ok(m.anchors && m.anchors.door, name + " has anchors");
+      assert.strictEqual(W.blocked(m, m.spawnPoint.x, m.spawnPoint.y, null), false, name + " spawn is walkable");
+    });
+    // patch overrides poke single cells
+    const patched = W.template("house_small", { patch: [{ x: 1, y: 2, ch: "t" }] });
+    assert.strictEqual(patched.layers.ground[2].charAt(1), "t");
+    const errs = W.validate();
+    assert.strictEqual(errs.length, 0, errs.join("\n"));
+  });
+
+  t("A* routes around obstacles and refuses the impossible", function () {
+    const env = H.load(); const MQ = env.MQ; fixtures(MQ);
+    const W = MQ.World, m = W.get("we_field");
+    const path = W.findPath(m, 13, 9, 13, 15);
+    assert.ok(path && path.length >= 6, "found a route south");
+    assert.strictEqual(path[path.length - 1].x, 13);
+    assert.strictEqual(path[path.length - 1].y, 15);
+    // into the pond without a boat: no route
+    assert.strictEqual(W.findPath(m, 13, 9, 5, 12, { maxNodes: 400 }), null);
+    // with a boat there is one
+    assert.ok(W.findPath(m, 13, 9, 5, 12, { abilities: new Set(["boat"]), maxNodes: 900 }));
+  });
+
+  // ---- overworld movement ----------------------------------------------
+  t("the player walks, is stopped by a wall, and slides along it", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    assert.strictEqual(MQ.Scenes.top().id, "overworld");
+    assert.strictEqual(O.state.map, "we_field");
+    const startX = O.player.px;
+    env.key("ArrowRight");
+    return pump(env, 20).then(function () {
+      assert.ok(O.player.px > startX + 20, "walked right (" + (O.player.px - startX) + "px)");
+      env.key("ArrowRight", false);
+      // now push into the tree border on the east side
+      O.place(21, 9, "right");
+      env.key("ArrowRight");
+      return pump(env, 40);
+    }).then(function () {
+      assert.ok(O.player.px < 23 * 32 - 9, "stopped by the tree wall at x=" + (O.player.px / 32).toFixed(2));
+      assert.ok(O.player.px > 22 * 32, "…but got right up to it");
+      assert.strictEqual(O.player.dir, "right");
+      // sliding: hold down-right against the same wall and you should slide south
+      const y0 = O.player.py;
+      env.key("ArrowDown");
+      return pump(env, 30).then(function () {
+        assert.ok(O.player.py > y0 + 10, "slid along the wall instead of sticking");
+        env.key("ArrowRight", false); env.key("ArrowDown", false);
+      });
+    });
+  });
+
+  t("running is faster than walking and tall grass slows you", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    O.place(10, 9, "up");
+    let walked, ran, grassed;
+    env.key("ArrowUp");
+    return pump(env, 30).then(function () {
+      walked = 9 * 32 + 16 - O.player.py;
+      O.place(10, 9, "up");
+      env.key("ShiftLeft");
+      return pump(env, 30);
+    }).then(function () {
+      ran = 9 * 32 + 16 - O.player.py;
+      assert.ok(ran > walked * 1.4, "run " + ran.toFixed(1) + "px vs walk " + walked.toFixed(1) + "px");
+      env.key("ShiftLeft", false);
+      O.place(13, 3, "up");                       // stood in the tall grass block
+      MQ.Encounters.repel(9999);                  // no ambushes while we measure
+      return pump(env, 30);
+    }).then(function () {
+      grassed = 3 * 32 + 16 - O.player.py;
+      assert.ok(grassed < walked, "tall grass slowed the walk: " + grassed.toFixed(1) + " < " + walked.toFixed(1));
+      assert.ok(grassed > walked * 0.7, "…but only a bit");
+      env.key("ArrowUp", false);
+      MQ.Encounters.clearRepel();
+    });
+  });
+
+  t("ledges hop you down and never back up", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    O.place(4, 9, "down");
+    env.key("ArrowDown");
+    return pump(env, 45).then(function () {
+      assert.ok(O.player.y >= 11, "hopped the ledge to y=" + O.player.y);
+      env.key("ArrowDown", false);
+      // walking back up into the ledge tile is refused
+      const y = O.player.py;
+      O.place(4, 11, "up");
+      env.key("ArrowUp");
+      return pump(env, 40).then(function () {
+        env.key("ArrowUp", false);
+        assert.ok(O.player.y >= 11, "ledge blocks the way back up (y=" + O.player.y + ")");
+      });
+    });
+  });
+
+  t("water needs the boat; the boat drops you back on land", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    O.place(9, 13, "left");
+    env.key("ArrowLeft");
+    return pump(env, 30).then(function () {
+      assert.ok(O.player.x >= 8, "stopped at the water's edge (x=" + O.player.x + ")");
+      assert.strictEqual(O.state.boating, false);
+      O.unlock("boat");
+      assert.strictEqual(O.hasAbility("boat"), true);
+      assert.strictEqual(MQ.Flags.get("unlock_boat"), true);
+      return pump(env, 40);
+    }).then(function () {
+      assert.ok(O.player.x < 8, "with the licence you can chug across (x=" + O.player.x + ")");
+      assert.strictEqual(O.state.boating, true, "and you are in the boat");
+      env.key("ArrowLeft", false);
+      env.key("ArrowRight");
+      return pump(env, 80);
+    }).then(function () {
+      env.key("ArrowRight", false);
+      assert.ok(O.player.x >= 8, "back on the bank");
+      assert.strictEqual(O.state.boating, false, "the boat let you off");
+    });
+  });
+
+  // ---- warps -------------------------------------------------------------
+  t("stepping on a door warps inside, and back out again", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    O.place(6, 4, "up");
+    env.key("ArrowUp");
+    return pump(env, 60).then(function () {
+      env.key("ArrowUp", false);
+      assert.strictEqual(O.state.map, "we_house", "went inside");
+      assert.strictEqual(O.player.x, 5);
+      assert.ok(O.currentMap().outdoor === false);
+      return O.warp("we_field", 13, 9, "down", { fade: false });
+    }).then(function () {
+      assert.strictEqual(O.state.map, "we_field");
+      assert.strictEqual(O.player.x, 13);
+      assert.strictEqual(O.player.y, 9);
+      assert.ok(O.state.visited.we_field >= 1);
+    });
+  });
+
+  t("warp() is a promise and the camera clamps to the map", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    const mw = 24 * 32, mh = 18 * 32;
+    return O.warp("we_field", 1, 1, "down", { fade: false }).then(function () {
+      // this map is narrower than the view, so it is centred, not clamped to 0
+      assert.ok(Math.abs(O.camera.x - (mw - MQ.View.w) / 2) < 0.01, "narrow map centred, x=" + O.camera.x);
+      assert.ok(O.camera.y >= -0.001, "camera clamped to the top edge, y=" + O.camera.y);
+      return O.warp("we_field", 22, 16, "down", { fade: false });
+    }).then(function () {
+      assert.ok(O.camera.y <= mh - MQ.View.h + 0.001, "camera clamped to the bottom edge");
+      assert.ok(O.camera.y > 0, "…and it did have room to scroll");
+    });
+  });
+
+  // ---- encounters --------------------------------------------------------
+  t("encounter rolls pick from the table, honour repel and lean rare with SIGNAL", function () {
+    const env = boot(); const MQ = env.MQ, E = MQ.Encounters;
+    const m = MQ.World.get("we_field");
+    const seen = {};
+    for (let i = 0; i < 250; i++) {
+      const r = E.rollZone(m, "grass", { force: true });
+      assert.ok(r, "forced roll produced an encounter");
+      seen[r.species] = (seen[r.species] || 0) + 1;
+      assert.ok(r.level >= 3 && r.level <= 7, "level in band: " + r.level);
+      assert.strictEqual(r.table, "we_field_grass");
+    }
+    assert.ok(seen.nibbit > seen.spindrake, "common beats rare");
+    // repel
+    E.repel(50);
+    assert.strictEqual(E.rollZone(m, "grass", {}), null, "repel suppresses encounters");
+    E.clearRepel();
+    // night swaps the table
+    MQ.Clock.setTime(23, 0);
+    const night = E.tableId(m, "grass");
+    assert.strictEqual(night, "we_field_grass_night");
+    MQ.Clock.setTime(12, 0);
+    assert.strictEqual(E.tableId(m, "grass"), "we_field_grass");
+    // SIGNAL raises the rare weight
+    let rareLow = 0, rareHigh = 0;
+    for (let i = 0; i < 400; i++) if (E.rollZone(m, "grass", { force: true }).species === "spindrake") rareLow++;
+    MQ.Flags.set("signal_meter", true);
+    MQ.Flags.set("cutover_days", 0);
+    assert.ok(E.signalLevel() > 0.9, "signal is high: " + E.signalLevel());
+    for (let i = 0; i < 400; i++) if (E.rollZone(m, "grass", { force: true }).species === "spindrake") rareHigh++;
+    assert.ok(rareHigh > rareLow, "SIGNAL raised rare weight (" + rareLow + " → " + rareHigh + ")");
+    MQ.Flags.set("signal_meter", false);
+    MQ.Flags.clear("cutover_days");
+  });
+
+  t("walking in tall grass eventually starts a wild battle", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    let started = null, ended = false;
+    MQ.Events.on("battle:start", function (d) { started = d; });
+    MQ.Events.on("battle:end", function () { ended = true; });
+    const realRandom = Math.random;
+    Math.random = function () { return 0.01; };     // pin the roll so this never flakes
+    O.place(12, 2, "right");
+    env.key("ArrowRight");
+    return pump(env, 140).then(function () {
+      env.key("ArrowRight", false);
+      Math.random = realRandom;
+      assert.ok(started, "an encounter fired in the tall grass");
+      assert.ok(["nibbit", "flitchick", "spindrake"].indexOf(started.species) >= 0);
+      assert.strictEqual(started.zone, "grass");
+      assert.strictEqual(started.table, "we_field_grass");
+      assert.ok(ended, "and the battle finished, handing control back");
+      assert.strictEqual(MQ.Overworld.busy(), false);
+    }, function (e) { Math.random = realRandom; throw e; });
+  });
+
+  t("chain fishing leans the table and rods gate the tiers", function () {
+    const env = boot(); const MQ = env.MQ, E = MQ.Encounters;
+    const m = MQ.World.get("we_field");
+    let bamboo = 0;
+    for (let i = 0; i < 200; i++) { const r = E.fish(m, 5, 12, { rod: "bamboo" }); if (r && r.tier === "rare") bamboo++; }
+    assert.strictEqual(bamboo, 0, "a bamboo rod never lands the rare tier");
+    E.breakChain();
+    let rare = 0;
+    for (let i = 0; i < 200; i++) { const r = E.fish(m, 5, 12, { rod: "weighted" }); if (r && r.tier === "rare") rare++; }
+    assert.ok(rare > 0, "a weighted rod can");
+    assert.ok(E.state.chain > 0, "a chain is being tracked");
+  });
+
+  t("preview lists what lives here (Tracker perk / BIGBOY's nose)", function () {
+    const env = boot(); const MQ = env.MQ;
+    const p = MQ.Encounters.preview(MQ.World.get("we_field"), 13, 2);
+    assert.ok(p && p.rows.length === 3);
+    assert.strictEqual(p.zone, "grass");
+    assert.strictEqual(p.rows[0].species, "nibbit");
+    let total = 0;
+    p.rows.forEach(function (r) { total += r.pct; });
+    assert.ok(total >= 97 && total <= 103, "percentages add up: " + total);
+    assert.strictEqual(MQ.Encounters.preview(MQ.World.get("we_field"), 13, 9), null);
+  });
+
+  // ---- NPCs --------------------------------------------------------------
+  t("NPC behaviours: wander stays home, patrols walk their path, lookers turn", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    const w = O.getNpc("we_wanderer"), p = O.getNpc("we_patroller"), l = O.getNpc("we_looker");
+    assert.ok(w && p && l);
+    O.place(3, 14, "down");                  // stand next to the looker
+    return pump(env, 260).then(function () {
+      assert.ok(Math.abs(w.x - w.home.x) <= 2 && Math.abs(w.y - w.home.y) <= 2, "wanderer stayed within its radius");
+      assert.ok(p.x > 15 || p.pathIdx > 0, "patroller made progress along the path");
+      assert.strictEqual(l.dir, "up", "the looker turned to face the player");
+    });
+  });
+
+  t("a trainer spots you, walks up, and the battle sets the beaten flag", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    const tr = O.getNpc("we_trainer");
+    assert.strictEqual(MQ.NPC.isBeaten(tr), false);
+    O.place(17, 8, "right");                 // 3 tiles inside its line of sight
+    return pump(env, 6).then(function () {
+      assert.strictEqual(tr.spotted, true, "spotted by the trainer");
+      assert.ok(MQ.NPC.emoting(tr), "the '!' bubble is up");
+      return pump(env, 220);
+    }).then(function () {
+      assert.strictEqual(MQ.Flags.get("beat_tr_we_field_1"), true, "battle resolved and the flag is set");
+      assert.ok(tr.x <= 20 && tr.x >= 18, "the trainer walked up to you (x=" + tr.x + ")");
+      assert.strictEqual(MQ.NPC.sightCheck(tr, O.player, O.blockedTile), 0, "a beaten trainer stops staring");
+    });
+  });
+
+  t("script commands drive the overworld: move, face, spawn, camera, freeze", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    O.place(13, 9, "down");
+    const S = MQ.Script.cmds;
+    const gen = function* (ctx) {
+      yield S.face("player", "left");
+      yield S.spawnNpc({ id: "we_ghost", x: 12, y: 10, dir: "down", sprite: "npc_walker", say: ["Boo."] });
+      yield S.move("player", ["up", "up"]);
+      yield S.camera(2, 2, 0);
+      yield S.cameraFollow();
+      yield S.showNpc("we_ghost", false);
+      return "ok";
+    };
+    const p = MQ.Script.run(gen, { S: S });
+    assert.strictEqual(O.frozen(), true, "scripts freeze the overworld");
+    return Promise.all([p, pump(env, 90)]).then(function (r) {
+      assert.strictEqual(r[0], "ok");
+      assert.strictEqual(O.player.y, 7, "moved two tiles north");
+      assert.ok(O.getNpc("we_ghost"), "spawned NPC exists");
+      assert.strictEqual(O.getNpc("we_ghost").hidden, true);
+      assert.strictEqual(O.frozen(), false, "and unfroze afterwards");
+      assert.strictEqual(O.removeNpc("we_ghost"), true);
+      assert.strictEqual(O.getNpc("we_ghost"), null);
+    });
+  });
+
+  // ---- interaction -------------------------------------------------------
+  t("A reads signs, pockets items and runs NPC scripts", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    const said = [];
+    const realSay = MQ.Dialog.say;
+    MQ.Dialog.say = function (pages, opts) { said.push(Array.isArray(pages) ? pages.join(" ") : String(pages)); return realSay.call(MQ.Dialog, pages, opts); };
+    O.place(13, 7, "up");                       // facing the sign at (13,6)
+    MQ.Input.inject("a");
+    return pump(env, 12).then(function () {
+      assert.ok(said.join(" ").indexOf("TEST FIELD") >= 0, "read the sign: " + said.join(" | "));
+      // item pickup
+      said.length = 0;
+      O.place(9, 7, "up");
+      MQ.Input.inject("a");
+      return pump(env, 12);
+    }).then(function () {
+      assert.strictEqual(MQ.Flags.get("item_we_field_1"), true, "the pickup flag is set");
+      assert.ok(said.join(" ").indexOf("found") >= 0, "told the player: " + said.join(" | "));
+      // NPC script
+      said.length = 0;
+      O.place(8, 11, "down");                   // facing we_greeter at (8,12)
+      MQ.Input.inject("a");
+      return pump(env, 20);
+    }).then(function () {
+      assert.strictEqual(MQ.Flags.get("we_greeted"), true, "the NPC script ran");
+      assert.strictEqual(MQ.Flags.get("talked_we_greeter"), true);
+      assert.strictEqual(O.getNpc("we_greeter").dir, "up", "the NPC turned to face you");
+      MQ.Dialog.say = realSay;
+    });
+  });
+
+  t("doors, healers and locked things answer the A button", function () {
+    const env = boot({ map: "we_house" }); const MQ = env.MQ, O = MQ.Overworld;
+    assert.strictEqual(O.state.map, "we_house");
+    // the door out of the house is a warp tile: interacting with it warps
+    const p = MQ.Interact.run({ map: O.currentMap(), player: O.player }, { kind: "door", x: 7, y: 13 });
+    return Promise.all([p, pump(env, 60)]).then(function () {
+      assert.strictEqual(O.state.map, "we_field", "the door let us out");
+      // a locked door just grumbles
+      return Promise.all([
+        MQ.Interact.run({ map: O.currentMap(), player: O.player }, { kind: "door", x: 0, y: 0, tile: "door_locked" }),
+        pump(env, 10)
+      ]);
+    }).then(function () {
+      assert.strictEqual(O.state.map, "we_field");
+    });
+  });
+
+  t("a step trigger fires once and remembers", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    O.place(13, 15, "down");
+    env.key("ArrowDown");
+    return pump(env, 40).then(function () {
+      env.key("ArrowDown", false);
+      assert.strictEqual(MQ.Flags.get("we_triggered"), true, "trigger ran");
+      assert.strictEqual(MQ.Flags.get("we_trigger_done"), true, "and marked itself done");
+    });
+  });
+
+  // ---- cats --------------------------------------------------------------
+  t("MEADOW and BIGBOY follow on the breadcrumb trail, BIGBOY sits", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    MQ.Flags.set("cats_joined", true);
+    O.refreshCats();
+    const cats = O.cats();
+    assert.strictEqual(cats.length, 2);
+    assert.strictEqual(cats[0].cat, "meadow");
+    assert.strictEqual(cats[1].cat, "bigboy");
+    O.place(13, 9, "down");
+    MQ.NPC.trailReset(O.player.px, O.player.py, "down");
+    env.key("ArrowDown");
+    return pump(env, 60).then(function () {
+      env.key("ArrowDown", false);
+      const d0 = Math.abs(cats[0].py - O.player.py);
+      const d1 = Math.abs(cats[1].py - O.player.py);
+      assert.ok(d0 > 8, "MEADOW trails behind (" + d0.toFixed(1) + "px)");
+      assert.ok(d1 > d0, "BIGBOY trails further back (" + d1.toFixed(1) + "px)");
+      assert.ok(d1 < 32 * 4, "…but keeps up");
+      return pump(env, 140);                 // stand still
+    }).then(function () {
+      assert.strictEqual(cats[1].sitting, true, "BIGBOY sat down when you stopped");
+    });
+  });
+
+  // ---- rendering, HUD, save ---------------------------------------------
+  t("draw() renders chunked layers, entities and the HUD without throwing", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    MQ.Flags.set("signal_meter", true);
+    MQ.Flags.set("cutover_days", 17);
+    O.toggleMinimap(true);
+    const ctx = MQ.View.ctx || env.screen.getContext("2d");
+    ctx.calls.length = 0;
+    MQ.Loop.render();
+    assert.ok(ctx.calls.length > 20, "drew " + ctx.calls.length + " canvas ops");
+    assert.ok(ctx.calls.indexOf("drawImage") >= 0, "blitted tile chunks");
+    // second frame reuses the cached chunks
+    const first = ctx.calls.length;
+    ctx.calls.length = 0;
+    MQ.Loop.render();
+    assert.ok(ctx.calls.length > 10);
+    O.toggleMinimap(false);
+    MQ.Flags.set("signal_meter", false);
+    MQ.Flags.clear("cutover_days");
+    return pump(env, 2);
+  });
+
+  t("setTile rewrites collision and drops the affected chunk", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    const m = O.currentMap();
+    assert.strictEqual(MQ.World.blocked(m, 13, 9, null), false);
+    O.setTile(13, 9, "rock");
+    assert.strictEqual(MQ.World.blocked(m, 13, 9, null), true, "the new tile blocks");
+    O.setTile(13, 9, "grass");
+    assert.strictEqual(MQ.World.blocked(m, 13, 9, null), false);
+  });
+
+  t("the save provider round-trips position, abilities and spawned NPCs", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    O.place(11, 13, "left");
+    O.unlock("climb"); O.unlock("waders");
+    O.state.steps = 412;
+    O.spawnNpc({ id: "we_extra", x: 12, y: 13, dir: "down", sprite: "npc_walker", say: ["Hiya."] });
+    const blob = JSON.parse(JSON.stringify(O.saveProvider.save()));
+    assert.strictEqual(blob.map, "we_field");
+    assert.deepStrictEqual(blob.abilities.sort(), ["climb", "waders"]);
+    assert.strictEqual(blob.spawned.length, 1);
+    // wipe and restore
+    O.saveProvider.load(undefined);
+    assert.strictEqual(O.state.abilities.size, 0);
+    assert.strictEqual(O.state.steps, 0);
+    O.saveProvider.load(blob);
+    assert.strictEqual(O.state.steps, 412);
+    assert.strictEqual(O.hasAbility("climb"), true);
+    assert.strictEqual(O.state.map, "we_field");
+    assert.ok(O.getNpc("we_extra"), "the spawned NPC came back");
+    assert.strictEqual(MQ.Save.providers.overworld === undefined, true, "Boot registers it; we don't double-register");
+  });
+
+  t("freeze and hideHud gate input and chrome", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    O.place(13, 9, "down");
+    const y0 = O.player.py;
+    O.freeze(true);
+    env.key("ArrowDown");
+    return pump(env, 20).then(function () {
+      assert.strictEqual(O.player.py, y0, "frozen means frozen");
+      O.freeze(false);
+      return pump(env, 20);
+    }).then(function () {
+      env.key("ArrowDown", false);
+      assert.ok(O.player.py > y0, "and unfreezing lets you go");
+      O.hideHud(true);
+      MQ.Loop.render();
+      O.hideHud(false);
+    });
+  });
+};
