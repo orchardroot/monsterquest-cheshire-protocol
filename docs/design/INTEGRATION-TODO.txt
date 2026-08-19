@@ -1,0 +1,16 @@
+  FAIL Slipstream boosts speed on entry; Quiet Cat makes it +2
+  FAIL catching a wild monster ends the battle with the catch
+  FAIL bag items heal and cost the turn
+  FAIL the capture animation and the timing minigame draw
+  FAIL rewards can grant a monster, a perk point and a traversal unlock
+  FAIL brews apply timed buffs the rest of the game can read
+  FAIL dex records seen/caught with habitat notes and fires milestones
+  FAIL cat gaps: MEADOW squeezes through and fetches what's behind
+
+Known cross-team mismatches after merging ws/ui-a + ws/content-core (2026-08-19):
+- battle expects MQ.Inventory.has/count for capsules+items; content-core uses pockets — reconcile the item lookup API (battle/engine.js chooses, content/state.js owns).
+- battle effect kind 'priority' unimplemented in battle/effects.js (data emits it).
+- battle scene capture animation: null guard needed when Settings.captureMinigame is off.
+- cats: Quiet Cat perk should make Slipstream +2 (perk lookup mismatch: MQ.Progression.has vs MQ.Trainer.perks).
+- quests rewards: unlock() needs MQ.Overworld present, or a flag fallback the test accepts.
+- brewing buffs: MQ.Inventory brew-buff channel vs content-activities' expectations (activities not built yet).
