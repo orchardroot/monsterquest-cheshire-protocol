@@ -1,10 +1,12 @@
 # MonsterQuest: The Cheshire Protocol — ROSTER (shared id vocabulary, v2)
 
-*This is the contract every workstream codes against. Every id here is **final**: `snake_case`, ASCII, unique within its table. Implementers add fields (stats, learnsets, art, scripts) but never rename an id. Where a design doc used a different spelling, this file wins and the deviation is noted. British English in display strings.*
+*This is the contract every workstream codes against. Every id here is **final**: `snake_case`, ASCII, unique within its table. Implementers add fields (stats, learnsets, art, scripts) but never rename an id. British English in display strings.*
+
+**Cross-reference (which doc is canonical for which ids).** DESIGN-INDEX.md is canonical for: chapter numbers/titles/level bands, gym order and `leader_*`/`badge_*`/`tm_*` reward ids, the eleven traversal-ability ids, **map ids** (towns, interiors, routes, dungeon levels), story flags (verbatim from STORY-BIBLE §10), character ids and names, side-system ids, quest-id shapes (`main_<nn>_<slug>`, `case_<nn>_<slug>`), achievement ids (`ach_<nn>`), perk-id shape, boss/trainer-id shapes and the naming conventions in its §9. SYSTEMS-SPEC.md is canonical for battle rules, agent effects (§6), perk names (§8), gear/consumable names (§3) and side-system hooks (§16). **This file (ROSTER) is canonical for:** species ids and dex order, move ids and stats, ability ids, item ids (the id spelling of every SYSTEMS-SPEC item), trainer-class ids, sprite ids, song and sfx ids, and encounter-table contents. Where an id appears in both, the spelling here matches DESIGN-INDEX; if you find one that doesn't, DESIGN-INDEX wins and this file has a bug.
 
 Conventions used throughout:
 - **Types (13):** `normal fire water grass electric flying bug poison rock ground psychic ghost cyber` (lower-case ids; display capitalised). Type chart = `js/data.js` TYPE_CHART carried forward.
-- **Chapters / level bands** (STORY-BIBLE §7 is canonical): Ch1 3–8 · Ch2 8–14 · Ch3 13–18 · Ch4 17–22 · Ch5 21–26 · Ch6 25–30 · Ch7 29–34 · Ch8 33–37 · Ch9 36–41 · Ch10 40–45 · Ch11 44–50 · Ch12 48–56 · PG 55–70.
+- **Chapters / level bands** (DESIGN-INDEX §1 is canonical; STORY-BIBLE §7 agrees): Ch1 3–8 · Ch2 8–14 · Ch3 13–18 · Ch4 17–22 · Ch5 21–26 · Ch6 25–30 · Ch7 29–34 · Ch8 33–37 · Ch9 36–41 · Ch10 40–45 · Ch11 44–50 · Ch12 48–56 · PG 55–70.
 - **Rarity:** `common | uncommon | rare | legendary | unique` (unique = story-gift/boss-only, never in wild tables).
 - **BST tier:** low ≤ 300 · mid 301–400 · high 401–500 · legendary > 500. Six stats `hp atk def spa spd spe`.
 - **Habitat tags** (species `habitat`, also used by encounter table ids): `town silk mill moor bog cave sandstone estate mere rail salt brine canal river marsh fog cyber roman orchard forest heath zoo urban station chem sky`.
@@ -88,7 +90,7 @@ Dex order = roughly the order the player meets them. `overdrive` = the line's Ov
 | 056 | `verdigrit` | VERDIGRIT | bug/rock | cave | uncommon | — | mid | `od_rock` | Ore-armoured stag beetle; ability `stonemason` | Ch5 |
 | 057 | `squeakwing` | SQUEAKWING | poison/flying | cave | common | → `shriekwing` level:22 | low | `od_flying` | Pipistrelle with a sour bite | Ch2 Edge Caverns |
 | 058 | `shriekwing` | SHRIEKWING | poison/flying | cave | uncommon | — | mid | `od_poison` | Cave bat whose shriek curdles milk | Ch4 |
-| 059 | `gloamite` | GLOAMITE | ghost/rock | cave | uncommon | → `gloamguard` location:edge_caverns_knights | low | `od_rock` | A sleeping knight's helm that dreams | Ch2 Edge Caverns |
+| 059 | `gloamite` | GLOAMITE | ghost/rock | cave | uncommon | → `gloamguard` location:alderley_edge_caverns_b3 | low | `od_rock` | A sleeping knight's helm that dreams | Ch2 Edge Caverns |
 | 060 | `gloamguard` | GLOAMGUARD | ghost/rock | cave | rare | — | high | `od_rock` | One of the Edge's sleeping knights, woken early | Ch8 |
 | 061 | `owlume` | OWLUME | flying/psychic | forest | uncommon (dusk/night) | → `strigyx` level:26 | low | `od_psychic` | Sandhills owlet with lamp-glow eyes | Ch2 R7 dusk |
 | 062 | `strigyx` | STRIGYX | flying/psychic | forest | rare | — | high | `od_psychic` | Great owl that reads the wind's mind | Ch8 Arley night |
@@ -119,7 +121,7 @@ Dex order = roughly the order the player meets them. `overdrive` = the line's Ov
 | 077 | `poltergrid` | POLTERGRID | cyber/ghost | rail | rare (night) | — | high | `od_cyber` | Nests in signal-box telemetry noise; moves the levers at 03:00 | Ch4 Holmes Chapel night |
 | 078 | `keystone` | KEYSTONE | rock | rail | common | → `viaductus` level:30 | low | `od_rock` | Viaduct-arch sprite; one per arch at Twemlow | Ch4 R10 |
 | 079 | `viaductus` | VIADUCTUS | rock | rail | uncommon | — | high | `od_rock` | Twenty-three arches walking | Ch7 |
-| 080 | `dishlet` | DISHLET | cyber/psychic | sky | uncommon | → `parabolus` location:jodrell_grounds | low | `od_cyber` | Small radio-dish creature; turns to face the signal | Ch4 Jodrell grounds |
+| 080 | `dishlet` | DISHLET | cyber/psychic | sky | uncommon | → `parabolus` location:jodrell_bank | low | `od_cyber` | Small radio-dish creature; turns to face the signal | Ch4 Jodrell grounds |
 | 081 | `parabolus` | PARABOLUS | cyber/psychic | sky | rare | — | high | `od_cyber` | Lovell-dish sentinel; listens for seventy years | Ch10 |
 | 082 | `pulsaris` | PULSARIS | electric/psychic | sky | rare (night) | — | high | `od_electric` | Static tuned to a pulsar; ticks in a fixed period | Ch4 Jodrell night |
 | 083 | `cubbin` | CUBBIN | normal/ground | town | uncommon | → `bruinhall` level:28 | low | `od_ground` | Beartown cub; the town sold its Bible for it | Ch4 Congleton |
@@ -159,10 +161,10 @@ Dex order = roughly the order the player meets them. `overdrive` = the line's Ov
 | 107 | `salberg` | SALBERG | rock/water | salt | rare | — | high | `od_rock` | Salt berg with a brine core | Ch7 Salt Mine |
 | 108 | `brinelet` | BRINELET | water | brine | common | → `saltmaid` level:30 | low | `od_water` | Brine sprite from the springs; ability `brine_body` | Ch6 Nantwich |
 | 109 | `saltmaid` | SALTMAID | water/psychic | brine | uncommon | — | high | `od_water` | Brine-pool naiad; Nell's ace | Ch6 gym |
-| 110 | `crabbex` | CRABBEX | water/rock | river | common | → `krabbaron` location:anderton_lift | low | `od_water` | Weaver salt-crab | Ch6 R16 |
+| 110 | `crabbex` | CRABBEX | water/rock | river | common | → `krabbaron` location:anderton | low | `od_water` | Weaver salt-crab | Ch6 R16 |
 | 111 | `krabbaron` | KRABBARON | water/rock | canal | uncommon | — | high | `od_water` | Boat-lift crab, iron-clawed | Ch7 Anderton |
 | 112 | `volteel` | VOLTEEL | electric/water | river | uncommon | — | high | `od_electric` | Weaver eel that shorts out swing bridges | Ch6 R16 (fishing) |
-| 113 | `perrypip` | PERRYPIP | grass | orchard | common | → `perryarch` location:y_berllan_orchard | low | `od_grass` | Perry-pear sprite from Y Berllan | Ch6 Y Berllan |
+| 113 | `perrypip` | PERRYPIP | grass | orchard | common | → `perryarch` location:y_berllan | low | `od_grass` | Perry-pear sprite from Y Berllan | Ch6 Y Berllan |
 | 114 | `perryarch` | PERRYARCH | grass/ground | orchard | uncommon | — | high | `od_grass` | Elm-press treant; ability `deep_roots` | Ch6 Y Berllan |
 | 115 | `brithyll` | BRITHYLL | water | orchard | rare | — | mid | `od_water` | Welsh brown trout from the orchard pond (Welsh-only riddle) | Ch6 Y Berllan pond |
 | 116 | `ceffylwen` | CEFFYLWEN | normal/psychic | orchard | rare | — | high | `od_psychic` | The milk-white mare of the legend; opens the knights' chamber | Ch6 Y Berllan (Welsh riddle) |
@@ -256,11 +258,11 @@ Dex order = roughly the order the player meets them. `overdrive` = the line's Ov
 
 ---
 
-## 2. MOVES (166)
+## 2. MOVES (170)
 
 Schema per SYSTEMS-SPEC §4 / ENGINE-ARCHITECTURE §4. Columns: **Cat** phys/spec/status · **Pow** — for status · **Acc** `—` = never miss (`acc:999`) · **Pri** priority · **Flags** `c` contact, `s` sound, `ch` charge, `rc` recharge, `p` protect_ok, `od` overdriveOnly. **Effects** use the spec's effect kinds; `%` = chance; target is foe unless `self`.
 
-### 2.1 Normal (15)
+### 2.1 Normal (16)
 
 | id | Name | Type | Cat | Pow | Acc | PP | Pri | Flags | Effects | One-liner |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -279,6 +281,7 @@ Schema per SYSTEMS-SPEC §4 / ENGINE-ARCHITECTURE §4. Columns: **Cat** phys/spe
 | `belfry_toll` | Belfry Toll | normal | spec | 75 | 100 | 15 | 0 | s | stage foe spd −1 20% | Sandbach bell peal |
 | `skitter` | Skitter | normal | status | — | — | 20 | +1 | — | stage self eva +1, spe +1 | MEADOW's dart-and-vanish |
 | `big_sit` | Big Sit | normal | status | — | — | 5 | 0 | — | cleanse foe stages (reset foe stages only); stage self def +2 | BIGBOY sits on the problem (cat trust 5) |
+| `bear_hug` | Bear Hug | normal | phys | 80 | 100 | 15 | 0 | c | trap 4 | Otis's Skill Card (`tm_bear_hug`) |
 
 ### 2.2 Fire (10)
 
@@ -326,7 +329,7 @@ Schema per SYSTEMS-SPEC §4 / ENGINE-ARCHITECTURE §4. Columns: **Cat** phys/spe
 | `hedge_lay` | Hedge Lay | grass | status | — | — | 10 | 0 | — | terrain grass 5; stage self def +1 | Laid hedge: Grass terrain, def up |
 | `mulberry_leaf` | Mulberry Leaf | grass | status | — | — | 10 | 0 | — | heal 0.25 self; cleanse self | Silkworm's supper |
 
-### 2.5 Electric (9)
+### 2.5 Electric (10)
 
 | id | Name | Type | Cat | Pow | Acc | PP | Pri | Flags | Effects | One-liner |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -339,6 +342,7 @@ Schema per SYSTEMS-SPEC §4 / ENGINE-ARCHITECTURE §4. Columns: **Cat** phys/spe
 | `static_wave` | Static Wave | electric | status | — | 90 | 20 | 0 | — | status par | Paralysing wave |
 | `signal_box` | Signal Box | electric | status | — | — | 10 | 0 | — | terrain static 5; stage self spe +1 | Set the levers: Static terrain |
 | `charge_up` | Charge Up | electric | status | — | — | 20 | 0 | — | stage self spa +1, spd +1 | Store a charge |
+| `live_rail` | Live Rail | electric | spec | 80 | 100 | 15 | 0 | — | status par 10% | Ada's Skill Card (`tm_live_rail`) |
 
 ### 2.6 Flying (10)
 
@@ -369,7 +373,7 @@ Schema per SYSTEMS-SPEC §4 / ENGINE-ARCHITECTURE §4. Columns: **Cat** phys/spe
 | `cocoon` | Cocoon | bug | status | — | — | 20 | 0 | — | stage self def +1, spd +1 | Spin a shell |
 | `moth_dust` | Moth Dust | bug | status | — | 75 | 15 | 0 | — | status cnf | Powdered scales confuse |
 
-### 2.8 Poison (9)
+### 2.8 Poison (10)
 
 | id | Name | Type | Cat | Pow | Acc | PP | Pri | Flags | Effects | One-liner |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -382,6 +386,7 @@ Schema per SYSTEMS-SPEC §4 / ENGINE-ARCHITECTURE §4. Columns: **Cat** phys/spe
 | `reagent_mix` | Reagent Mix | poison | spec | 90 | 95 | 10 | 0 | — | status psn 20% | Ria's fume cupboard |
 | `toxic_dose` | Toxic Dose | poison | status | — | 90 | 10 | 0 | — | status tox | Escalating poison |
 | `proxy_veil` | Proxy Veil | poison | status | — | — | 5 | 0 | — | weather fog 4; stage self eva +1 | Residential-proxy fog |
+| `proxy_cloud` | Proxy Cloud | poison | status | — | — | 10 | 0 | — | weather fog 5; status tox 30% | Ria's Skill Card (`tm_proxy_cloud`) |
 
 ### 2.9 Rock (8)
 
@@ -410,7 +415,7 @@ Schema per SYSTEMS-SPEC §4 / ENGINE-ARCHITECTURE §4. Columns: **Cat** phys/spe
 | `subsidence` | Subsidence | ground | status | — | 100 | 15 | 0 | — | stage foe def −1, acc −1 | The buildings tilt |
 | `sink_hole` | Sink Hole | ground | status | — | 30 | 5 | 0 | — | ohko | Winsford subsidence — one-hit KO |
 
-### 2.11 Psychic (9)
+### 2.11 Psychic (10)
 
 | id | Name | Type | Cat | Pow | Acc | PP | Pri | Flags | Effects | One-liner |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -423,6 +428,7 @@ Schema per SYSTEMS-SPEC §4 / ENGINE-ARCHITECTURE §4. Columns: **Cat** phys/spe
 | `calm_read` | Calm Read | psychic | status | — | — | 20 | 0 | — | stage self spa +1, spd +1 | Sit and read |
 | `cipher_riddle` | Cipher Riddle | psychic | status | — | 80 | 15 | 0 | s | status cnf | Gaskell's letter-cipher |
 | `mirror_glass` | Mirror Glass | psychic | status | — | — | 10 | 0 | — | copy_stages | Copy the foe's stat stages |
+| `cranford_whisper` | Cranford Whisper | psychic | spec | 75 | 100 | 15 | 0 | s | stage foe spd −1 20% | Gaskell's Skill Card (`tm_cranford_whisper`) |
 
 ### 2.12 Ghost (10)
 
@@ -546,7 +552,7 @@ Hook names per SYSTEMS-SPEC §2. `impl` key in `abilities.js` = the id.
 
 ## 4. ITEMS (149 listed + patterned key items)
 
-`kind` ∈ `heal cure capsule gear held_consumable consumable key ingredient brew evo tm rod`. Price `—` = not sold (0). Gear/held ids match SYSTEMS-SPEC §3 (deviation: evolution items get distinct ids so `copper_coil` gear ≠ `copper_wire` evo).
+`kind` ∈ `heal cure capsule gear held_consumable consumable key ingredient brew evo tm rod`; items with `trinket:true` may also be worn in `trainer.trinkets[0..1]` (SYSTEMS-SPEC §16). Price `—` = not sold (0). Gear/held ids match SYSTEMS-SPEC §3 (deviation: evolution items get distinct ids so `copper_coil` gear ≠ `copper_wire` evo).
 
 ### 4.1 Healing & cures
 
@@ -607,9 +613,8 @@ Hook names per SYSTEMS-SPEC §2. `impl` key in `abilities.js` = the id.
 | `silk_wrap` | Silk Wrap | gear | — | Burn damage halved (Q1) |
 | `firebox_charm` | Firebox Charm | gear | — | Fire moves ×1.1 (Di rematch tier 5) |
 | `hide_plate` | Hide Plate | gear | — | Rock moves against holder ×0.75 (Q20) |
-| `beacon_ember` | Beacon Ember | gear | — | Fire ×1.1; also Damson Fire ingredient (Q23) |
-| `wool_cap` | Wool Cap | gear | — | Ice/Wind chip nullified; spd ×1.1 in Wind (Q18) |
-| `anchor_packet` `anchor_cipher` `anchor_bear` `anchor_kernel` `anchor_token` `anchor_daemon` `anchor_proxy` `anchor_admin` | Anchor: <badge> | gear | — | Leader rematch tier 5 uniques: type ×1.3 for that leader's type, holder immune to that type's status |
+| `beacon_ember` | Beacon Ember | gear | — | Fire ×1.2 at night; also Damson Fire ingredient (Q23) |
+| `anchor_packet` `anchor_cipher` `anchor_bear` `anchor_kernel` `anchor_token` `anchor_daemon` `anchor_proxy` `anchor_admin` | Anchor: <badge> | gear | — | Leader rematch tier 5 uniques: that leader's type ×1.2, holder immune to that badge's house-rule terrain/weather |
 
 ### 4.4 Held consumables (SYSTEMS-SPEC 21–25)
 
@@ -626,7 +631,7 @@ Hook names per SYSTEMS-SPEC §2. `impl` key in `abilities.js` = the id.
 | id | Name | Kind | Price | Effect |
 |---|---|---|---|---|
 | `boombox` | CFS-B11 Boombox | consumable | 500 | Guaranteed flee from wild |
-| `storm_glass` | Storm Glass | consumable | 400 | Set Rain 5 (once per battle) |
+| `rain_jar` | Rain Jar | consumable | 400 | Set Rain 5 (once per battle) — battle item; the *Rain Cloak* below is the trainer trinket |
 | `sun_lamp` | Sun Lamp | consumable | 400 | Set Sun 5 |
 | `fog_machine` | Fog Machine | consumable | 400 | Set Fog 5 |
 | `wind_whistle` | Wind Whistle | consumable | 400 | Set Wind 5 |
@@ -647,40 +652,42 @@ Hook names per SYSTEMS-SPEC §2. `impl` key in `abilities.js` = the id.
 
 ### 4.7 Key items (traversal, story, side)
 
+Traversal is gated by the eleven **ability ids** in DESIGN-INDEX §3 (`bike squeeze shove billhook lamp boat lift waders climb goggles railcard`) held in `MQ.Overworld.state.abilities`; the pickup script both gives the bag item and calls `unlock(<ability>)`. Map scripts test the ability, never the item.
+
 | id | Name | Kind | Chapter | Effect |
 |---|---|---|---|---|
-| `middlewood_bike` | Middlewood Bike | key | 1 | Cycleway speed, tunnel shortcut |
+| `middlewood_bike` | Middlewood Bike | key | 1 | → `unlock('bike')`: cycleway sprint lanes, R2 tunnel shortcut |
 | `alder_contract` | Alder Labs Contract | key | 1 | Story |
 | `casebook` | Casebook | key | 1 | Opens Casebook tab |
 | `camera` | Camera | key | 1 | Photo mode (Q4) |
-| `davy_lamp` | Davy Lamp | key | 2 | Dark levels, night glades (= "Cave Lamp") |
+| `davy_lamp` | Davy Lamp | key (`trinket:true`) | 2 | → `unlock('lamp')`: dark cave levels, night glades, hidden cave-floor items (Miner-Warden Gwil, end of `case_04_wizards_well`) |
 | `turings_apple` | Turing's Apple | key | 2 | Collectible #2 |
-| `billhook` | Billhook | key | 2/8 | Hedge gaps, mere paths |
-| `signal_meter` | Jodrell Handheld | key | 4 | SIGNAL METER layer |
+| `billhook` | Billhook | key | 1–2 | → `unlock('billhook')`: hedge gaps, R5 diagonals, R8 mere path (Hedge-layer Cadoc, `prestbury`) |
+| `signal_meter` | Signal Meter (Jodrell handheld) | key | 4 | SIGNAL METER layer (ROOT, `jodrell_bank` gate) |
 | `face_fragment_1` `face_fragment_2` | Face Fragment | key | 3/4 | AMOS breadcrumbs |
-| `railcard` | Railcard | key | 5 | Station fast travel |
+| `railcard` | Railcard | key | 5 | → `unlock('railcard')`: station fast travel (`rail_fast_travel`) |
 | `cambrian_ticket` | Cambrian Line Ticket | key | 5 | Y Berllan |
 | `conductors_whistle` | Conductor's Whistle | key | 5 | Call a train from any station tile (Q15) |
 | `pippin_drive` | PIPPIN Drive | key | 6 | Story |
-| `narrowboat_licence` | Narrowboat Licence | key | 7 | Canals, Weaver |
-| `lift_pass` | Anderton Lift Pass | key | 7 | Boat lift levels |
-| `salt_mine_pass` | Salt Mine Pass | key | 7 | Salt Mine |
+| `narrowboat_licence` | Narrowboat Licence | key | 7 | → `unlock('boat')`: canal/Weaver water tiles (Boatwoman Carys, `middlewich`) |
+| `lift_pass` | Anderton Lift Pass | key | 7 | → `unlock('lift')`: `anderton_lift_lower` ↔ `anderton_lift_upper` (Lift Engineer Beth) |
+| `salt_mine_pass` | Salt Mine Pass | key | 7 | `salt_mine_cage` (Mine-Captain Rhona) |
 | `salt_lantern` | Salt Lantern | key | 7 | Mine encounter rate −30% toggle (Q25) |
-| `waders` | Waders | key | 9 | Marsh tiles |
-| `gritstone_grips` | Gritstone Grips | key | 7/8 | Climbing |
-| `proxy_goggles` | Proxy Goggles | key | 9 | Fog routes |
-| `bunker_key` | Bunker Key | key | 9 | Hack Green |
+| `waders` | Waders | key | 9 | → `unlock('waders')`: marsh tiles (Trail-Warden Gethin, `frodsham`) |
+| `gritstone_grips` | Gritstone Grips | key | 4+ | → `unlock('climb')`: crag/quarry summits (Old Bowstone, `lyme_park`, needs `badge_bear`) |
+| `proxy_goggles` | Proxy Goggles | key | 9 | → `unlock('goggles')`: fog banks (Chemist Ria with `badge_proxy`) |
+| `bunker_key` | Bunker Key | key | 6+ | `hack_green_b1` (Nantwich trail, post-Ch.6) |
 | `stack_schematics` | THE STACK Schematics | key | 9 | Story |
-| `root_access` | Root Access | key | 11 | THE STACK halls |
+| `stack_lanyard` | STACK Lanyard | key | 9 | `stack_lobby` (ROOT, `frodsham_hill` bench) |
 | `zoo_membership` | Zoo Membership | key | 12/PG | Chester Zoo |
-| `sandstone_passport` `gritstone_passport` `ring_passport` | Trail Passport | key | var | Trail quests |
+| `sandstone_passport` `gritstone_passport` | Trail Passport | key | var | Trail quests |
 | `arcade_pass` | Arcade Pass | key | 10 | Warrington arcade |
-| `nino_letter_1` … `nino_letter_5` | Letter from Nino | key | 2/5/9/12/PG | Story letters (Georgia) |
-| `ghost_lens` | Ghost Lens | key | 4 | Photo mode reveals static creatures |
-| `field_notebook` | Field Notebook | key | 4 | Dex habitats / ripe bushes |
-| `rain_cloak` | Rain Cloak | key | 3 | Trainer trinket: rain no longer slows walking |
-| `sprint_soles` | Sprint Soles | key | 3 | Trainer trinket: run +8% |
-| `weighted_line` | Weighted Line | key | 1 | see rods |
+| `nino_letter_1` … `nino_letter_4`, `nino_letter_final` | Letter from Nino | key | 2/5/9/12/PG | Story letters (Georgia); ids match the flags |
+| `ghost_lens` | Ghost Lens | key (`trinket:true`) | 4 | Photo mode reveals static creatures; night Ghost fishing tier |
+| `field_notebook` | Field Notebook | key (`trinket:true`) | 4 | Dex habitats / ripe bushes |
+| `rain_cloak` | Rain Cloak | key (`trinket:true`) | 3 | Trainer trinket: rain no longer slows walking (not the `rain_jar` battle item) |
+| `sprint_soles` | Sprint Soles | key (`trinket:true`) | 3 | Trainer trinket: run +8% |
+| `wool_cap` | Wool Cap | key (`trinket:true`) | 6 | Trainer trinket: cold/Wind chip nullified for the party; spd ×1.1 in Wind (Q18) |
 | `photo_album` | Sighting Album | key | 1 | Photo storage |
 | `collectible_<n>` (1–25) | see WORLD-BIBLE §5 | key | var | e.g. `collectible_1` Nancy's Paint Tin … `collectible_25` Beeston collar tag |
 | `viewpoint_<map>` (12) | Viewpoint plaque | key | var | Summit collectibles |
@@ -697,9 +704,11 @@ Hook names per SYSTEMS-SPEC §2. `impl` key in `abilities.js` = the id.
 
 ### 4.9 Ingredients (14) and brews (9)
 
+Brew item ids equal the recipe ids in SYSTEMS-SPEC §16 (`brew_<slug>`); the *Used in* column names the recipe slug.
+
 | id | Name | Kind | Source | Used in |
 |---|---|---|---|---|
-| `perry_pear` | Perry Pear | ingredient | Y Berllan trees (daily) | perry, nains_cask |
+| `perry_pear` | Perry Pear | ingredient | Y Berllan trees (daily) | perry, mamgu_cask |
 | `apple` | Apple | ingredient | orchards, markets | clarifier |
 | `brine_sample` | Brine Sample | ingredient | Nantwich lido (rod) | clarifier |
 | `barley` | Barley | ingredient | Nantwich Saturday market, farms | elm_stout |
@@ -714,19 +723,19 @@ Hook names per SYSTEMS-SPEC §2. `impl` key in `abilities.js` = the id.
 | `cream` | Cream | ingredient | Nantwich cheese show | cats_cup |
 | `catmint` | Catmint | ingredient | Tatton | cats_cup |
 | `timber_oak` `timber_pine` `timber_birch` | Timber | ingredient | Delamere | Q23 beacon |
-| `perry` | Perry | brew | tier 1 | Party full HP + Overdrive starts 25 |
-| `clarifier` | Clarifier | brew | tier 1 | Cures all status (party) |
-| `elm_stout` | Elm Stout | brew | tier 1 | Def +1 first 3 turns |
-| `damson_fire` | Damson Fire | brew | tier 2 | Fire ×1.2 one battle |
-| `hedgerow_cordial` | Hedgerow Cordial | brew | tier 2 | Catch ×1.3 for 10 real minutes |
-| `salt_mead` | Salt Mead | brew | tier 2 | Rock/Ground ×0.75 taken one battle |
-| `bait_tin` | Bait Tin | brew | tier 2 | Fishing Rare zone widened |
-| `cats_cup` | Cat's Cup | brew | tier 1 | Cat trust +1 (daily) |
-| `nains_cask` | Nain's Cask | brew | tier 3 | +1 perk point weekly |
+| `brew_perry` | Perry | brew | tier 1 | Party full HP + Overdrive starts 25 |
+| `brew_clarifier` | Clarifier | brew | tier 1 | Cures all status (party) |
+| `brew_elm_stout` | Elm Stout | brew | tier 1 | Def +1 first 3 turns |
+| `brew_damson_fire` | Damson Fire | brew | tier 2 | Fire ×1.2 one battle |
+| `brew_hedgerow_cordial` | Hedgerow Cordial | brew | tier 2 | Catch ×1.3 for 10 real minutes |
+| `brew_salt_mead` | Salt Mead | brew | tier 2 | Rock/Ground ×0.75 taken one battle |
+| `brew_bait_tin` | Bait Tin | brew (`trinket:true`) | tier 2 | Fishing Rare zone widened (consumed in the bag, or worn as a trinket for the passive effect) |
+| `brew_cats_cup` | Cat's Cup | brew | tier 1 | Cat trust +1 (daily) |
+| `brew_mamgu_cask` | Mam-gu's Cask | brew | tier 3 | +1 perk point weekly |
 
 ### 4.10 Skill Cards (TMs)
 
-Convention: `skill_<move_id>`, kind `tm`, teaches `<move_id>`, single-use, price 2000 in Knutsford "book of moves" or quest rewards. Shipped set (24): `skill_torrent skill_flame_burst skill_volt_strike skill_petal_storm skill_rock_slide skill_quake skill_mind_ray skill_night_pulse skill_data_stream skill_hack_slash skill_sludge skill_wing_attack skill_bug_bite skill_static_wave skill_toxic_dose skill_sleep_powder skill_agility skill_encrypt skill_firewall_up skill_hedge_lay skill_signal_box skill_mere_mist skill_ridge_gale skill_beacon_light`.
+Convention (DESIGN-INDEX §9): `tm_<move_id>`, kind `tm`, teaches `<move_id>`, single-use, price 2000 at `knutsford_bookshop` ("chapters") or quest rewards. **Gym rewards (DESIGN-INDEX §2, one per leader, not sold):** `tm_live_rail` (Ada), `tm_cranford_whisper` (Gaskell), `tm_bear_hug` (Otis), `tm_firebox_roar` (Di), `tm_brine_jet` (Nell), `tm_salt_grind` (Jack), `tm_proxy_cloud` (Ria), `tm_zero_day` (Mo). Shop/quest set (24): `tm_torrent tm_flame_burst tm_volt_strike tm_petal_storm tm_rock_slide tm_quake tm_mind_ray tm_night_pulse tm_data_stream tm_hack_slash tm_sludge tm_wing_attack tm_bug_bite tm_static_wave tm_toxic_dose tm_sleep_powder tm_agility tm_encrypt tm_firewall_up tm_hedge_lay tm_signal_box tm_mere_mist tm_ridge_gale tm_beacon_light`.
 
 ---
 
@@ -779,7 +788,7 @@ Sprite sheets are procedural (`art/sprites.js`); id = sheet key. Player/cats hav
 | `player_bike` | Jim on the Middlewood Bike |
 | `player_boat` | Jim at a narrowboat tiller (with `boat_narrow`) |
 | `mum` | Jim's mum (phone calls; Macclesfield flat) |
-| `mrs_bobbin` | Neighbour who feeds MEADOW |
+| `mrs_bobbin` | Mrs Bobbin, neighbour who feeds MEADOW (npc id `npc_macclesfield_bobbin`) |
 | `vex` | VEX: hoodie, capital-letter confidence |
 | `vex_hood` | VEX hooded (Runcorn bridge) |
 | `alder` | Dr Wren Alder, cardigan and tea |
@@ -791,21 +800,22 @@ Sprite sheets are procedural (`art/sprites.js`); id = sheet key. Player/cats hav
 | `jack` | Foreman Jack, hi-vis, spirit level |
 | `ria` | Chemist Ria, lab coat |
 | `mo` | Netrunner Mo, headset |
-| `root` | ROOT: hi-vis, fifties, sardonic |
+| `root` | ROOT: the whistleblower, fifties, ex-telecoms, sardonic |
 | `alder_impostor` `root_impostor` `vex_impostor` `jim_impostor` | Understudy wearing faces (palette-shifted duplicates) |
-| `elis` | Elis Pennant, good coat, Stormy Point |
-| `mam_gu` | Mam-gu (Nesta) — SIDE-CONTENT calls her Nain; one sprite, one id |
-| `dai` | Press-hand Dai |
+| `elis` | Elis Pennant — the Old Man of the Edge, good coat, Stormy Point |
+| `mamgu` | Mam-gu (Nesta), keeper of Y Berllan (character id `mamgu`, DESIGN-INDEX §7) |
+| `dai` | Press-hand Dai (npc id `npc_y_berllan_dai`) |
 | `sue` `raj` `kim` `doc` | White Hats |
 | `kellan` | Brother Kellan, picnic-blanket prophet |
-| `twelvek` | TWELVE-K, STACK lanyard |
-| `whistleblower` | alias of `root` for Ch4 gate scene (hi-vis, hood) |
+| `twelve_k` | TWELVE-K, STACK lanyard (character id `twelve_k`) |
+| `root_hivis` | ROOT in hi-vis and hood for the Ch4 `jodrell_bank` gate scene (ROOT *is* the whistleblower; palette variant of `root`) |
 | `npc_walker` `npc_cyclist` `npc_fisher` `npc_weaver` `npc_shopkeep` `npc_dev` `npc_ranger` `npc_miner` `npc_caver` `npc_historian` `npc_signaller` `npc_boater` `npc_saltworker` `npc_chemist` `npc_birder` `npc_fellrunner` `npc_farmer` `npc_bandsman` `npc_kid` `npc_granny` `npc_cultist` `npc_stuffer` `npc_shadow_it` `npc_amos` `npc_darkbyte` `npc_whitehat` `npc_ghost_trainer` `npc_vex` | Trainer-class sprites (generic; `npc_vex` = `vex`); each has 2 palette variants |
 | `npc_nurse` | Care-centre nurse (VIGIL asks if you've eaten) |
+| *(named side NPCs)* | Every named side NPC in DESIGN-INDEX §7 (Fellrunner Ceri, Lift Engineer Beth, Wheelwright Enid, Signalwoman Dot, Weaver Bronwen, Miner-Warden Gwil, Boatwoman Carys, …) has npc id `npc_<town>_<firstname>` and uses the trainer-class sprite of their trade with a palette variant unless a dedicated sprite is listed above |
 | `npc_sysadmin` | Generic sysadmin (gym 1 trainers) |
 | `npc_stoker` | Generic stoker (gym 4 trainers) |
-| `treacle_tam` | Treacle Tam (market fixer) |
-| `spokes` | Bike hire |
+| `treacle_tam` | Treacle Tam (npc id `npc_macclesfield_tam`) |
+| `spokes` | Spokes, bike hire (npc id `npc_bollington_spokes`) |
 | `cat_meadow` | MEADOW: small black cat, fast walk cycle, sit, sniff |
 | `cat_bigboy` | BIGBOY: huge black-and-white, slow walk, sit, purr |
 | `cat_grinkit` | Hidden cats (grin overlay) |
@@ -824,9 +834,9 @@ Sprite sheets are procedural (`art/sprites.js`); id = sheet key. Player/cats hav
 
 ---
 
-## 7. SONG IDS (38)
+## 7. SONG IDS (42)
 
-WebAudio synth motifs. `MQ.Songs[id] = {bpm, key, tracks…}`. Town motifs share a 4-bar county theme in different modes.
+WebAudio synth motifs. `MQ.Songs[id] = {bpm, key, tracks…}`. Town motifs share a 4-bar county theme in different modes. Ids follow DESIGN-INDEX §9: `town_<route token>`, `route_<region>` (one per DESIGN-INDEX §4 region), `battle_<kind>`.
 
 | id | Where | Mood / motif |
 |---|---|---|
@@ -846,10 +856,14 @@ WebAudio synth motifs. `MQ.Songs[id] = {bpm, key, tracks…}`. Town motifs share
 | `town_chester` | Chester | Roman brass, cathedral organ, the county theme in Ionian |
 | `town_zoo` | Chester Zoo / Ellesmere Port / Parkgate | Playful marimba; Port variant flare hum |
 | `town_berllan` | Y Berllan | Welsh harp, elm-press creak, sea haze |
-| `route_east` | Ch1–2 routes (moor, canal, mill) | Walking pulse, flute |
-| `route_mid` | Ch3–5 routes (estate, heath, rail) | Strings + rail snare |
-| `route_salt` | Ch6–7 routes (brine, salt, canal) | Marimba + water |
-| `route_west` | Ch8–12 routes (forest, sandstone, marsh) | Wind pads, low brass |
+| `route_east` | `east` region routes (moor, canal, mill) | Walking pulse, flute |
+| `route_bollin` | `bollin` region routes (Carrs, Sandhills, Chelford) | `route_east` motif, added strings |
+| `route_dane` | `dane` region routes (viaduct, heath, Cloud) | Strings + rail snare |
+| `route_south` | `south` region routes (rail, Wybunbury, Weaver) | `route_dane` motif, rail snare forward |
+| `route_salt` | `salt` region routes (brine, salt, canal) | Marimba + water |
+| `route_mersey` | `mersey` region routes (towpath, marsh, fog) | Wind pads, turbine pulse |
+| `route_west` | `west` region routes (forest, sandstone, Wirral) | Wind pads, low brass |
+| `route_wales` | `wales` (the lane to Aberaeron) | Harp, sea haze |
 | `dungeon_cave` | Edge Caverns, Salt Mine, Hack Green, Beeston well | Drips, drone, distant knights |
 | `dungeon_bog` | Lindow, Delamere night, Ince marsh | Wet, uneasy, wisp bells |
 | `dungeon_stack` | THE STACK / Jodrell interior | Server hum, cooling fans, ORACLE's 4-note tag |
@@ -877,115 +891,117 @@ WebAudio synth motifs. `MQ.Songs[id] = {bpm, key, tracks…}`. Town motifs share
 
 ## 9. ENCOUNTER TABLES
 
-**Id convention:** `enc_<area>_<zone>[_<variant>]` where `<area>` = the map id stem (below), `<zone>` ∈ `grass water cave fish`, `<variant>` ∈ `night rain fog` (day/dry/clear is the unsuffixed table). Rules: night tables replace day between 20:00–06:00 (dusk 18–21 uses day tables with `time:['dusk']` weights); rain/fog tables *overlay* (weighted 50% with base) when that weather is active; a map that lacks a variant falls back to its base table. Fishing tables use rod tiers: `tier:'common'|'uncommon'|'rare'|'legendary'|'ghost'` per row.
+**Id convention (DESIGN-INDEX §5/§9):** `<mapid>_<zone>[_<variant>]` where `<mapid>` is a canonical DESIGN-INDEX map id (town, interior, route `route_<from>_<to>` or dungeon level), `<zone>` ∈ `grass water cave`, `<variant>` ∈ `night rain fog` (day/dry/clear is the unsuffixed table). Fishing tables are `fish_<mapid>`. Rules: night tables replace day between 20:00–06:00 (dusk 18–21 uses day tables with `time:['dusk']` weights); rain/fog tables *overlay* (weighted 50% with base) when that weather is active; a map that lacks a variant falls back to its base table. Sub-maps without a table of their own use their parent's (`alderley_edge_stormy_point` → `alderley_edge_grass`); routes listed as "(also …)" share the row. Fishing tables use rod tiers: `tier:'common'|'uncommon'|'rare'|'legendary'|'ghost'` per row.
 
-**Map id stems (areas):** `macclesfield r1_canal r2_middlewood r3_gritstone_n r4_bollin r5_mottram bollington prestbury poynton lyme_park teggs_nose wilmslow r6_carrs styal lindow_moss r7_sandhills alderley_edge edge_caverns_copper edge_caverns_hough edge_caverns_knights r8_chelford knutsford tatton_park rostherne r9_ollerton r10_twemlow r11_brereton holmes_chapel jodrell_grounds jodrell_interior congleton bosley_cloud r12_biddulph little_moreton mow_cop r13_wheelock sandbach r14_elworth crewe crewe_works r15_wybunbury nantwich hack_green r16_weaver r17_booth_lane middlewich winsford r18_vale_royal r19_rudheath northwich salt_mine anderton_lift marbury great_budworth r20_arley lymm r21_bridgewater warrington daresbury r22_daresbury_lane runcorn halton_castle r23_frodsham_marsh frodsham frodsham_hill r24_helsby delamere r25_whitegate tarporley r26_kelsall r27_bunbury beeston r28_tarvin chester chester_walls r29_shropshire_union chester_zoo ellesmere_port r30_wirral_way parkgate ince_marshes the_stack y_berllan_orchard coed_y_berllan daresbury_church`.
+**Map ids with tables** (all from DESIGN-INDEX §5): `macclesfield route_macc_bollington route_bollington_poynton route_poynton_lyme route_macc_prestbury route_prestbury_wilmslow poynton lyme_park teggs_nose route_wilmslow_styal styal lindow_moss route_wilmslow_alderley alderley_edge alderley_edge_caverns_b1 alderley_edge_caverns_b2 alderley_edge_caverns_b3 route_alderley_knutsford tatton_park rostherne_mere route_knutsford_holmes route_holmes_jodrell route_holmes_congleton holmes_chapel jodrell_bank jodrell_bank_tower congleton bosley_cloud route_congleton_moreton little_moreton_hall mow_cop route_congleton_sandbach sandbach route_sandbach_crewe crewe_works route_crewe_nantwich nantwich_brine_lido hack_green_b1 route_nantwich_winsford route_sandbach_middlewich middlewich winsford winsford_deepstore route_winsford_northwich route_middlewich_northwich northwich salt_mine_galleries salt_mine_marston_b1 salt_mine_marston_b2 anderton marbury_park route_budworth_lymm delamere_forest route_frodsham_delamere route_delamere_tarporley route_tarporley_beeston beeston_castle beeston_castle_well route_runcorn_frodsham frodsham_hill route_warrington_daresbury daresbury runcorn stack_hall_1 stack_cold_f1 lymm_dam route_lymm_warrington warrington route_tarporley_chester chester_walls chester_groves route_chester_zoo chester_zoo ellesmere_port route_ellesmere_parkgate parkgate ince_marshes y_berllan y_berllan_pond y_berllan_coed`.
 
 Level ranges follow the chapter bands. Weights `w` are left to the data workstream except where noted; species listed first are the most common.
 
 | Table id | Lv | Species (4–8) |
 |---|---|---|
-| `enc_r1_canal_grass` | 3–6 | nibbit, towpaddle, flitchick, mistlop, sootling, sparkit |
-| `enc_r1_canal_grass_night` | 3–7 | flitmoth, nibbit, spindrake (rare morph), bollinmoth, webshade |
-| `enc_r1_canal_water` | 4–7 | towpaddle, puddlish, heronet |
-| `enc_r1_canal_fish` | 4–8 | puddlish (common), perchip (uncommon), torrentide (rare) |
-| `enc_r2_middlewood_grass` | 4–7 | mistlop, flitchick, grousel, nibbit, mistewe, keystone |
-| `enc_r2_middlewood_grass_night` | 4–8 | flitmoth, mistlop, sootling, nancylith (rare, dusk) |
-| `enc_r3_gritstone_n_grass` | 5–8 | grousel, mistewe, mistlop, galewing, piphart, harrowlop |
-| `enc_r3_gritstone_n_grass_rain` | 5–8 | mistewe, heronet, grousel, sheepwire |
-| `enc_r4_bollin_grass` | 4–7 | heronet, nibbit, flitchick, prickpip, sootling, bobbinet |
-| `enc_r4_bollin_water` | 5–8 | towpaddle, puddlish, heronet, otterkin |
-| `enc_r4_bollin_grass_night` | 5–8 | flitmoth, bollinmoth, mistwisp, spindrake |
-| `enc_r5_mottram_grass` | 5–8 | prickpip, sparkit, flitchick, piphart, peepcam (uncommon), pitpony |
-| `enc_poynton_water` / `enc_poynton_fish` | 4–8 | puddlish, torrentide, perchip; fish: puddlish/perchip/torrentide (rare, tagged) |
-| `enc_lyme_park_grass` | 6–9 | piphart, stagwire (uncommon), grousel, mistewe, galewing, moorcock |
-| `enc_teggs_nose_grass` | 12–20 (later gate) | moorcock, harrowlop, galewing, nancylith, runestane, gargoylet |
-| `enc_r6_carrs_grass` | 8–11 | sheepwire, heronet, flitchick, sparkit, botling, puddlish |
-| `enc_r6_carrs_fish` | 8–12 | perchip, puddlish, torrentide, piketide (rare) |
-| `enc_styal_grass` | 8–12 | sluiceling, botling, sheepwire, webshade (night), sootling |
-| `enc_styal_water` | 9–12 | sluiceling, heronet, otterkin |
-| `enc_lindow_moss_grass` | 9–13 | mistwisp, bogleap, peatkin, puppetacct (fog), sheepwire |
-| `enc_lindow_moss_grass_night` | 10–14 | mistwisp, peatkin, phantasmal (rare), lindowan (boss only, scripted) |
-| `enc_lindow_moss_grass_fog` | 10–14 | puppetacct, proxling, mistwisp |
-| `enc_r7_sandhills_grass` | 9–13 | owlume (dusk), prickpip, cuprabug, mistlop, sparkit |
-| `enc_alderley_edge_grass` | 10–13 | cuprabug, squeakwing, prickpip, owlume, sparkit |
-| `enc_edge_caverns_copper_cave` | 10–14 | cuprabug, squeakwing, gloamite, verdigrit (rare) |
-| `enc_edge_caverns_hough_water` | 30–36 (Narrowboat) | crabbex, bellmere (rare), otterkin, gloamite |
-| `enc_edge_caverns_knights_cave` | 55–65 (PG) | gloamguard, dolmenor, mowstane, timberwraith, strigyx, merlynx (scripted) |
-| `enc_r8_chelford_grass` | 12–16 | prickpip, bramblehog, quillet, sheepwire, piphart, owlume |
-| `enc_r8_chelford_grass_night` | 12–16 | mistwisp, owlume, bellmere (rare, mere path) |
-| `enc_tatton_park_grass` | 13–17 | piphart, stagwire, swanling, quillet, sheepwire, ramvolt |
-| `enc_tatton_park_grass_rain` | 13–17 | stagwire (rain-only antler patterns), heronet, swanling |
-| `enc_tatton_park_water` / `_fish` | 13–18 | swanling, perchip, piketide, heronet |
-| `enc_rostherne_water` | 14–18 | bellmere (rare), swanling, piketide, dishlet |
-| `enc_r9_ollerton_grass` | 14–18 | sheepwire, ramvolt, piphart, quillet, curdli |
-| `enc_r10_twemlow_grass` | 16–20 | keystone, heronet, otterkin, sparkrail (night), quillet |
-| `enc_r10_twemlow_grass_rain` | 16–20 | otterkin, heronet, keystone (flood variant) |
-| `enc_r11_brereton_grass` | 16–20 | otterkin, prickpip, bramblehog, swanling, tudorling |
-| `enc_holmes_chapel_grass_night` | 17–21 | poltergrid (rare), sparkrail, keystone |
-| `enc_jodrell_grounds_grass` | 17–21 | dishlet, quillet, piphart, oakling |
-| `enc_jodrell_grounds_grass_night` | 18–22 | pulsaris (rare), dishlet, owlume |
-| `enc_congleton_grass` | 18–22 | cubbin (uncommon), otterkin, prickpip, curdli, belfrit |
-| `enc_bosley_cloud_grass` | 19–23 | runestane, moorcock, harrowlop, bruinhall (rare, wandering bear), galewing |
-| `enc_r12_biddulph_grass` | 19–23 | tudorling, keystone, prickpip, sparkrail |
-| `enc_little_moreton_grass_night` | 20–24 | tudorling, timberwraith (rare), mistwisp |
-| `enc_mow_cop_grass` | 20–24 | mowstane (rare, night), runestane, moorcock, gargoylet |
-| `enc_r13_wheelock_grass` / `_water` | 21–25 | belfrit, curdli, towpaddle, mallardier, crabbex |
-| `enc_sandbach_grass` | 21–25 | belfrit, curdli, rottling (bounty), quillet |
-| `enc_r14_elworth_grass` | 22–26 | chuglet, sleeperk, keystone, sparkrail |
-| `enc_r14_elworth_grass_night` | 22–26 | sparkrail, poltergrid (rare), chuglet |
-| `enc_crewe_works_cave` | 23–27 | chuglet, shunterra, bricklum, sleeperk, steamloco (PG only) |
-| `enc_r15_wybunbury_grass` | 23–27 | curdli, cheshwheel (rare), sheepwire, ramvolt, rottling |
-| `enc_r15_wybunbury_grass_night` | 23–27 | mistwisp, phantasmal, gloamite |
-| `enc_nantwich_water` / `_fish` | 25–29 | brinelet, saltling, crabbex, volteel (fish rare) |
-| `enc_hack_green_cave` | 40–46 (PG gate) | puppetacct, wormhack, teramite, trojanox, gloamite |
-| `enc_r16_weaver_water` / `_fish` | 25–30 | crabbex, otterkin, volteel, torrentide, panscald (rare) |
-| `enc_r16_weaver_grass` | 25–30 | brinelet, saltling, sheepwire, mallardier |
-| `enc_r17_booth_lane_grass` | 27–31 | saltling, cryssal, keystone, bitmite |
-| `enc_middlewich_grass_night` | 28–32 | chordle (rare), mistwisp, phantasmal |
-| `enc_winsford_fish` | 28–33 | flashfin (uncommon), phishfin, subsidon (rare, dawn), volteel |
-| `enc_winsford_cave` (DeepStore) | 28–33 | bitmite, teramite (rare), virling, cryssal |
-| `enc_r18_vale_royal_water` | 28–33 | crabbex, mallardier, otterkin, torrentide |
-| `enc_r19_rudheath_grass` | 28–33 | saltling, cryssal, sheepwire, flashfin (flash pools) |
-| `enc_northwich_grass` | 29–33 | saltling, cryssal, brinelet, panscald |
-| `enc_salt_mine_cave` | 30–34 | saltling, cryssal, pillarnaut, salberg (rare), virling, wormhack |
-| `enc_salt_mine_water` | 30–34 | crabbex, salberg, brinelet |
-| `enc_anderton_lift_water` | 30–34 | krabbaron, mallardier, crabbex, bargemog (uncommon) |
-| `enc_marbury_grass` / `_night` | 30–34 | owlume, strigyx, ladymere (rare, night) |
-| `enc_r20_arley_grass_night` | 31–35 | strigyx, owlume, mistwisp, bargemog |
-| `enc_delamere_grass` | 33–37 | mossling, oakling, groveguard, lampyr (night), hornhound |
-| `enc_delamere_grass_night` | 33–37 | lampyr, drownwood (rare), owlume, mossbear |
-| `enc_delamere_water` | 33–37 | otterkin, lutrarch, drownwood (rare) |
-| `enc_r24_helsby_grass` | 34–38 | gargoylet, falconet, mossling, cuprabug |
-| `enc_r26_kelsall_grass` | 34–38 | falconet, groveguard, thornarch (rare), hornhound |
-| `enc_r27_bunbury_water` | 34–38 | mallardier, otterkin, torrentide, crabbex |
-| `enc_beeston_grass` | 35–39 | gargoylet, falconet, peregrint, mossbear, gloamite |
-| `enc_beeston_cave` | 35–39 | gloamite, gargoylet, cuprabug, gloamguard (rare) |
-| `enc_r23_frodsham_marsh_grass` | 36–40 | egrette, curlewind, bogleap, turbinix, sheepwire |
-| `enc_r23_frodsham_marsh_grass_night` | 36–40 | mistwisp, egrette, phantasmal, beaconflare (beacon event only) |
-| `enc_frodsham_hill_grass` | 36–40 | falconet, peregrint, gargoylet, moorcock |
-| `enc_r22_daresbury_lane_grass_fog` | 37–41 | proxling, puppetacct, botnetle, quarkling |
-| `enc_daresbury_grass` | 37–41 | quarkling, grinkit (uncommon), mirrorling (rare), sparkit |
-| `enc_runcorn_grass` | 37–41 | smogling, proxling, botnetle, chlorodon (rare) |
-| `enc_runcorn_fish` (Mersey) | 37–42 | sludgeon (rare), volteel, torrentide (poison morph flag) |
-| `enc_the_stack_cave` | 38–42 / PG 55–65 | trojanox, botnetle, wormhack, firewaul (rare), droneling, teramite, shardmind (boss add only) |
-| `enc_lymm_water` / `_fish` | 40–44 | bellmere, piketide, otterkin, volteel; fish rare `salmoneer` |
-| `enc_lymm_water_night` | 40–44 | volteel, piketide, glitchra (sighting only, scripted) |
-| `enc_r21_bridgewater_water` | 40–44 | bargemog, mallardier, krabbaron |
-| `enc_warrington_grass` | 41–45 | peepcam, panoptix, botnetle, droneling, datadrake (rare) |
-| `enc_jodrell_interior_cave` | 44–50 | dishlet, parabolus, teramite, wormhack, shardmind (adds), glitchra (boss) |
-| `enc_r28_tarvin_grass` | 44–48 | falconet, hornhound, sheepwire, groveguard |
-| `enc_chester_walls_grass_night` | 48–54 | legionet, centurigeist (rare), gargoylet, grotesquire (rare) |
-| `enc_chester_fish` (Dee) | 48–56 | salmoneer (legendary table dawn/dusk), piketide, volteel |
-| `enc_r29_shropshire_union_water` | 50–56 | bargemog, krabbaron, mallardier |
-| `enc_chester_zoo_grass` | 55–60 | pengwyn, girafflor, pandember (each scripted "escapee" encounter, then rare wild) |
-| `enc_ellesmere_port_grass` | 55–60 | flarestack, botnetle, bargemog, krabbaron |
-| `enc_r30_wirral_way_grass` / `enc_parkgate_grass` | 55–62 | egrette, curlewind, crabbex, ebbwraith (rare dusk) |
-| `enc_ince_marshes_grass_fog` | 58–66 | proxling, puppetacct, turbinix, egrette, teramite |
-| `enc_y_berllan_orchard_grass` | 26–32 (no wild until Ch6 end; PG 55–65) | perrypip, prickpip, rottling, mulchmaw, ceffylwen (riddle only) |
-| `enc_y_berllan_orchard_fish` | 26–32 | brithyll (rare, Welsh-only), puddlish, torrentide |
-| `enc_coed_y_berllan_grass` | 28–34 | perryarch, oakling, derwydd (rare), owlume |
-| `enc_coed_y_berllan_grass_night` | 28–34 | owlume, strigyx, mistwisp |
+| `route_macc_bollington_grass` | 3–6 | nibbit, towpaddle, flitchick, mistlop, sootling, sparkit |
+| `route_macc_bollington_grass_night` | 3–7 | flitmoth, nibbit, spindrake (rare morph), bollinmoth, webshade |
+| `route_macc_bollington_water` | 4–7 | towpaddle, puddlish, heronet |
+| `fish_route_macc_bollington` | 4–8 | puddlish (common), perchip (uncommon), torrentide (rare) |
+| `route_bollington_poynton_grass` | 4–7 | mistlop, flitchick, grousel, nibbit, mistewe, keystone |
+| `route_bollington_poynton_grass_night` | 4–8 | flitmoth, mistlop, sootling, nancylith (rare, dusk) |
+| `route_poynton_lyme_grass` | 5–8 | grousel, mistewe, mistlop, galewing, piphart, harrowlop |
+| `route_poynton_lyme_grass_rain` | 5–8 | mistewe, heronet, grousel, sheepwire |
+| `route_macc_prestbury_grass` | 4–7 | heronet, nibbit, flitchick, prickpip, sootling, bobbinet |
+| `route_macc_prestbury_water` | 5–8 | towpaddle, puddlish, heronet, otterkin |
+| `route_macc_prestbury_grass_night` | 5–8 | flitmoth, bollinmoth, mistwisp, spindrake |
+| `route_prestbury_wilmslow_grass` | 5–8 | prickpip, sparkit, flitchick, piphart, peepcam (uncommon), pitpony |
+| `poynton_water` / `fish_poynton` | 4–8 | puddlish, torrentide, perchip; fish: puddlish/perchip/torrentide (rare, tagged) |
+| `lyme_park_grass` | 6–9 | piphart, stagwire (uncommon), grousel, mistewe, galewing, moorcock |
+| `teggs_nose_grass` | 12–20 (later gate) | moorcock, harrowlop, galewing, nancylith, runestane, gargoylet |
+| `route_wilmslow_styal_grass` | 8–11 | sheepwire, heronet, flitchick, sparkit, botling, puddlish |
+| `fish_route_wilmslow_styal` | 8–12 | perchip, puddlish, torrentide, piketide (rare) |
+| `styal_grass` | 8–12 | sluiceling, botling, sheepwire, webshade (night), sootling |
+| `styal_water` | 9–12 | sluiceling, heronet, otterkin |
+| `lindow_moss_grass` | 9–13 | mistwisp, bogleap, peatkin, puppetacct (fog), sheepwire |
+| `lindow_moss_grass_night` | 10–14 | mistwisp, peatkin, phantasmal (rare), lindowan (boss only, scripted) |
+| `lindow_moss_grass_fog` | 10–14 | puppetacct, proxling, mistwisp |
+| `lindow_moss_water` (also `lindow_moss_deep`) | 10–14 | bogleap, towpaddle, puddlish, toadlore (rare) |
+| `route_wilmslow_alderley_grass` | 9–13 | owlume (dusk), prickpip, cuprabug, mistlop, sparkit |
+| `alderley_edge_grass` | 10–13 | cuprabug, squeakwing, prickpip, owlume, sparkit |
+| `alderley_edge_caverns_b1_cave` | 10–14 | cuprabug, squeakwing, gloamite, verdigrit (rare) |
+| `alderley_edge_caverns_b2_water` | 30–36 (Narrowboat) | crabbex, bellmere (rare), otterkin, gloamite |
+| `alderley_edge_caverns_b3_cave` | 55–65 (PG) | gloamguard, dolmenor, mowstane, timberwraith, strigyx, merlynx (scripted) |
+| `route_alderley_knutsford_grass` | 12–16 | prickpip, bramblehog, quillet, sheepwire, piphart, owlume |
+| `route_alderley_knutsford_grass_night` | 12–16 | mistwisp, owlume, bellmere (rare, mere path) |
+| `tatton_park_grass` | 13–17 | piphart, stagwire, swanling, quillet, sheepwire, ramvolt |
+| `tatton_park_grass_rain` | 13–17 | stagwire (rain-only antler patterns), heronet, swanling |
+| `tatton_park_water` / `fish_tatton_park` | 13–18 | swanling, perchip, piketide, heronet |
+| `rostherne_mere_water` | 14–18 | bellmere (rare), swanling, piketide, dishlet |
+| `route_knutsford_holmes_grass` | 14–18 | sheepwire, ramvolt, piphart, quillet, curdli |
+| `route_holmes_jodrell_grass` | 16–20 | keystone, heronet, otterkin, sparkrail (night), quillet |
+| `route_holmes_jodrell_grass_rain` | 16–20 | otterkin, heronet, keystone (flood variant) |
+| `route_holmes_congleton_grass` | 16–20 | otterkin, prickpip, bramblehog, swanling, tudorling |
+| `holmes_chapel_grass_night` | 17–21 | poltergrid (rare), sparkrail, keystone |
+| `jodrell_bank_grass` | 17–21 | dishlet, quillet, piphart, oakling |
+| `jodrell_bank_grass_night` | 18–22 | pulsaris (rare), dishlet, owlume |
+| `congleton_grass` | 18–22 | cubbin (uncommon), otterkin, prickpip, curdli, belfrit |
+| `bosley_cloud_grass` | 19–23 | runestane, moorcock, harrowlop, bruinhall (rare, wandering bear), galewing |
+| `route_congleton_moreton_grass` | 19–23 | tudorling, keystone, prickpip, sparkrail |
+| `little_moreton_hall_grass_night` | 20–24 | tudorling, timberwraith (rare), mistwisp |
+| `mow_cop_grass` | 20–24 | mowstane (rare, night), runestane, moorcock, gargoylet |
+| `route_congleton_sandbach_grass` / `route_congleton_sandbach_water` | 21–25 | belfrit, curdli, towpaddle, mallardier, crabbex |
+| `sandbach_grass` | 21–25 | belfrit, curdli, rottling (bounty), quillet |
+| `route_sandbach_crewe_grass` | 22–26 | chuglet, sleeperk, keystone, sparkrail |
+| `route_sandbach_crewe_grass_night` | 22–26 | sparkrail, poltergrid (rare), chuglet |
+| `crewe_works_cave` | 23–27 | chuglet, shunterra, bricklum, sleeperk, steamloco (PG only) |
+| `route_crewe_nantwich_grass` | 23–27 | curdli, cheshwheel (rare), sheepwire, ramvolt, rottling |
+| `route_crewe_nantwich_grass_night` | 23–27 | mistwisp, phantasmal, gloamite |
+| `nantwich_brine_lido_water` / `fish_nantwich_brine_lido` | 25–29 | brinelet, saltling, crabbex, volteel (fish rare) |
+| `hack_green_b1_cave` (also `_b2`) | 40–46 (`bunker_key`, post-Ch.6; tuned for Ch.9+) | puppetacct, wormhack, teramite, trojanox, gloamite |
+| `route_nantwich_winsford_water` / `fish_route_nantwich_winsford` | 25–30 | crabbex, otterkin, volteel, torrentide, panscald (rare) |
+| `route_nantwich_winsford_grass` | 25–30 | brinelet, saltling, sheepwire, mallardier |
+| `route_sandbach_middlewich_grass` | 27–31 | saltling, cryssal, keystone, bitmite |
+| `middlewich_grass_night` | 28–32 | chordle (rare), mistwisp, phantasmal |
+| `fish_winsford` | 28–33 | flashfin (uncommon), phishfin, subsidon (rare, dawn), volteel |
+| `winsford_deepstore_cave` (also `salt_mine_sinkhole`) | 28–33 | bitmite, teramite (rare), virling, cryssal |
+| `route_winsford_northwich_water` | 28–33 | crabbex, mallardier, otterkin, torrentide |
+| `route_middlewich_northwich_grass` | 28–33 | saltling, cryssal, sheepwire, flashfin (flash pools) |
+| `northwich_grass` | 29–33 | saltling, cryssal, brinelet, panscald |
+| `salt_mine_galleries_cave` (also `salt_mine_cage`, `salt_mine_deepstore_cold`, `salt_mine_back_stair`) | 30–34 | saltling, cryssal, pillarnaut, salberg (rare) |
+| `salt_mine_marston_b1_cave` (DARKBYTE sub-hideout; `_b3` PG +25) | 30–34 | virling, wormhack, trojanox (rare), bitmite, pillarnaut |
+| `salt_mine_marston_b2_water` | 30–34 | crabbex, salberg, brinelet |
+| `anderton_water` | 30–34 | krabbaron, mallardier, crabbex, bargemog (uncommon) |
+| `marbury_park_grass` / `marbury_park_grass_night` | 30–34 | owlume, strigyx, ladymere (rare, night) |
+| `route_budworth_lymm_grass_night` | 31–35 | strigyx, owlume, mistwisp, bargemog |
+| `delamere_forest_grass` | 33–37 | mossling, oakling, groveguard, lampyr (night), hornhound |
+| `delamere_forest_grass_night` | 33–37 | lampyr, drownwood (rare), owlume, mossbear |
+| `delamere_forest_water` | 33–37 | otterkin, lutrarch, drownwood (rare) |
+| `route_frodsham_delamere_grass` | 34–38 | gargoylet, falconet, mossling, cuprabug |
+| `route_delamere_tarporley_grass` | 34–38 | falconet, groveguard, thornarch (rare), hornhound |
+| `route_tarporley_beeston_water` | 34–38 | mallardier, otterkin, torrentide, crabbex |
+| `beeston_castle_grass` | 35–39 | gargoylet, falconet, peregrint, mossbear, gloamite |
+| `beeston_castle_well_cave` (also `beeston_castle_keep`) | 35–39 | gloamite, gargoylet, cuprabug, gloamguard (rare) |
+| `route_runcorn_frodsham_grass` | 36–40 | egrette, curlewind, bogleap, turbinix, sheepwire |
+| `route_runcorn_frodsham_grass_night` | 36–40 | mistwisp, egrette, phantasmal, beaconflare (beacon event only) |
+| `frodsham_hill_grass` | 36–40 | falconet, peregrint, gargoylet, moorcock |
+| `route_warrington_daresbury_grass_fog` (also `route_daresbury_runcorn`) | 37–41 | proxling, puppetacct, botnetle, quarkling |
+| `daresbury_grass` | 37–41 | quarkling, grinkit (uncommon), mirrorling (rare), sparkit |
+| `runcorn_grass` | 37–41 | smogling, proxling, botnetle, chlorodon (rare) |
+| `fish_runcorn` (the Mersey) | 37–42 | sludgeon (rare), volteel, torrentide (poison morph flag) |
+| `stack_hall_1_cave` (shared by `stack_hall_1..8`; PG `stack_cold_f1_cave` shared by `stack_cold_f1..f5`) | 38–42 / PG 55–65 | trojanox, botnetle, wormhack, firewaul (rare), droneling, teramite, shardmind (boss add only) |
+| `lymm_dam_water` / `fish_lymm_dam` | 40–44 | bellmere, piketide, otterkin, volteel; fish rare `salmoneer` |
+| `lymm_dam_water_night` | 40–44 | volteel, piketide, glitchra (sighting only, scripted) |
+| `route_lymm_warrington_water` | 40–44 | bargemog, mallardier, krabbaron |
+| `warrington_grass` | 41–45 | peepcam, panoptix, botnetle, droneling, datadrake (rare) |
+| `jodrell_bank_tower_cave` (also `jodrell_bank_control_room`, `jodrell_bank_dish`) | 44–50 | dishlet, parabolus, teramite, wormhack, shardmind (adds), glitchra (boss) |
+| `route_tarporley_chester_grass` | 44–48 | falconet, hornhound, sheepwire, groveguard |
+| `chester_walls_grass_night` | 48–54 | legionet, centurigeist (rare), gargoylet, grotesquire (rare) |
+| `fish_chester_groves` (the Dee at `chester_groves`) | 48–56 | salmoneer (legendary table dawn/dusk), piketide, volteel |
+| `route_chester_zoo_water` (also `route_zoo_ellesmere`) | 50–56 | bargemog, krabbaron, mallardier |
+| `chester_zoo_grass` | 55–60 | pengwyn, girafflor, pandember (each scripted "escapee" encounter, then rare wild) |
+| `ellesmere_port_grass` | 55–60 | flarestack, botnetle, bargemog, krabbaron |
+| `route_ellesmere_parkgate_grass` / `parkgate_grass` | 55–62 | egrette, curlewind, crabbex, ebbwraith (rare dusk) |
+| `ince_marshes_grass_fog` | 58–66 | proxling, puppetacct, turbinix, egrette, teramite |
+| `y_berllan_grass` | 26–32 (no wild until Ch6 end; PG 55–65) | perrypip, prickpip, rottling, mulchmaw, ceffylwen (riddle only) |
+| `fish_y_berllan_pond` | 26–32 | brithyll (rare, Welsh-only), puddlish, torrentide |
+| `y_berllan_coed_grass` | 28–34 | perryarch, oakling, derwydd (rare), owlume |
+| `y_berllan_coed_grass_night` | 28–34 | owlume, strigyx, mistwisp |
 
 Every species name above is an id from §1. Wild `spindrake` and `grinkit` are the only starter/gift-line species that appear in tables.
 
@@ -993,16 +1009,27 @@ Every species name above is an id from §1. Wild `spindrake` and `grinkit` are t
 
 ## 10. FLAG / QUEST / ACHIEVEMENT ID CONVENTIONS
 
-**Flags** (`MQ.Flags`): story flags use exactly STORY-BIBLE §10 ids (`contract_signed`, `starter_chosen`, `badge_packet` … `badge_admin`, `all_badges`, `choice_agents`, `choice_vex`, `choice_plug`, `invoice_holder`, `champion_result`, `postgame_open`, PG flags `fifth_pulse penguin_case ellesmere_mirror lymm_pumps_talk amos_jim_face knights_hall_open merlynx_on_press roodee_rematch nino_letter_final`). Additional conventions:
-- Trainer beaten: `t_<trainer_id>`; rematch tier: `t_<trainer_id>_tier` (0–5).
-- Item pickup: `item_<map>_<n>`; hidden: `hitem_<map>_<n>`.
-- Trigger seen: `seen_<map>_<name>`; NPC talked once: `npc_<npc_id>_met`.
-- Traversal unlocks live in `MQ.Overworld.state.abilities` with the key-item ids from §4.7 (`middlewood_bike`, `davy_lamp`, `billhook`, `narrowboat_licence`, `lift_pass`, `waders`, `gritstone_grips`, `proxy_goggles`, `railcard`, `cambrian_ticket`, `root_access`) plus `meadow_squeeze`, `bigboy_shove`.
+DESIGN-INDEX §6 and §9 are canonical for everything in this section; it is repeated here so implementers have one page. Where an older draft of this file differed (`t_*`, `npc_*_met`, `skill_*`, `main_chNN`, `ach_<slug>`, `perk_hunter/warden/handler`, `vex_chNN`), the DESIGN-INDEX forms below replaced it.
+
+**Flags** (`MQ.Flags`): story flags are exactly STORY-BIBLE §10 / DESIGN-INDEX §6 ids (`contract_signed`, `starter_chosen` (value = starter line id `silkin` | `brinewt` | `kindlin`), `cats_joined`, `white_nancy_seen`, `vex_battle_1`, `agent_sleet`, `wheel_fridge_fixed`, `lindow_lake_seen`, `elis_met`, `merlynx_seen`, `badge_packet` … `badge_admin`, `all_badges`, `nino_letter_1..4`, `nino_letter_final`, `agent_vigil`, `overdrive_unlocked`, `deer_census_done`, `rostherne_relay_seen`, `tbilisi_domain_found`, `gaskell_network`, `vex_battle_2`, `agent_arbiter`, `jodrell_turned_away`, `signal_meter`, `cutover_started`, `cutover_days`, `amos_first_glimpse`, `crewe_fog_cleared`, `apt_boss_beaten`, `sandbach_crosses_lit`, `sandbach_shrine`, `twelvek_lanyard_seen`, `salon_seen`, `welsh_word_learned`, `rail_fast_travel`, `cambrian_ticket`, `lido_battle_done`, `kellan_handed_in` | `kellan_walked`, `orchard_open`, `vet_story_told`, `pippin_found`, `choice_agents` (`wipe` | `feed`), `agents_hardened`, `bigboy_shield`, `brewing_open`, `aberaeron_open`, `amos_alder_face`, `narrowboat_licence`, `mine_descended`, `checkpoints_seen`, `terrataur_woken`, `boat_lift_silence`, `lift_pass`, `stack_on_map`, `vex_missing`, `vex_release_stopped`, `choice_vex` (`verify` | `challenge`), `vex_ally`, `beeston_well_note`, `zephyrion_seen`, `root_bench_talk`, `invoice_holder` (`root` | `alder`), `runcorn_fog_fridges` (0–6), `gateway_cleared`, `stack_doors_opened` (0–8), `plug_pulled`, `mo_alerts`, `grin_remained`, `transporter_phase`, `cutover_restarted`, `jodrell_open`, `root_defeated`, `glitchra_defeated`, `oracle_you_came_back`, `choice_plug` (`delete` | `quarantine` | `custody`), `agent_pippin`, `glitchra_catchable`, `whitehat_sue/raj/kim/doc`, `champion_fought`, `champion_result` (`won` | `lost` | `thrown`), `vex_name_revealed`, `postgame_open`, PG `fifth_pulse penguin_case ellesmere_mirror lymm_pumps_talk amos_jim_face knights_hall_open merlynx_on_press roodee_rematch nino_letter_final`, rest points `bigboy_sat_kerridge bigboy_sat_tatton bigboy_sat_frodsham bigboy_sat_roodee`, beacons `beacon_lit_<mapid>`). Additional conventions (DESIGN-INDEX §6 "side systems" and §9):
+- Item pickup: `item_<mapid>_<n>`; hidden: `hitem_<mapid>_<n>`.
+- NPC talked once: `talked_<npcId>` (e.g. `talked_npc_sandbach_nia`); trigger seen: `seen_<mapid>_<name>`.
+- Trainer beaten: `beat_<trainerId>`; rematch tier: `rematch_<trainerId>` (0–5).
+- Side-system flags: `arena_open`, `arena_<tier>_clear`, `bounty_board_open`, `photo_mode`, `fish_rod_tier` (int), `brew_tier` (int), `trust_meadow` / `trust_bigboy` (0–5), `season_<mm>_done`, `ach_<nn>`.
+- Traversal unlocks are **not flags**: they are the eleven ability ids in `MQ.Overworld.state.abilities` (`bike squeeze shove billhook lamp boat lift waders climb goggles railcard`, DESIGN-INDEX §3), granted by `unlock(id)` when the matching key item / cat / badge is obtained (§4.7). `squeeze` comes with `cats_joined`, `shove` with `badge_bear`.
 - Legendary state: `leg_<species>_state` ∈ `unseen | seen | fled | caught` and `leg_<species>_site` (rotation index).
-- Counters (`MQ.Flags.add`): `count_puppets_beaten`, `count_amos_exposed`, `count_lures_refused`, `count_brink_saves`, `count_overdrives`, `count_lido_heals`, `count_bounties`, `count_warrants`, `count_photos`, `steps_total`, `steps_rain`, `runcorn_fog_fridges`, `stack_doors_opened`, `cutover_days`.
+- Counters (`MQ.Flags.add`): `count_puppets_beaten`, `count_amos_exposed`, `count_lures_refused`, `count_brink_saves`, `count_overdrives`, `count_lido_heals`, `count_bounties`, `count_warrants`, `count_photos`, `steps_total`, `steps_rain`, plus the story counters `runcorn_fog_fridges`, `stack_doors_opened`, `cutover_days`.
+- Chapter accessor: `chapter` (int 1–12, 13 = post-game).
 
-**Quests** (`MQ.Quests`): main chapters `main_ch01` … `main_ch12`, `main_pg`; casebook cases `case_<nn>_<slug>` for SIDE-CONTENT §1: `case_01_silk_thread case_02_white_nancy_watch case_03_middlewood_escort case_04_wizards_well case_05_quarry_bank_overtime case_06_deer_census case_07_poynton_pool_ledger case_08_gaskell_draft case_09_penny_farthing_rally case_10_bear_of_congleton case_11_signal_box case_12_saxon_crosses_cipher case_13_bounty_fenced_goods case_14_deepfake_vicar case_15_timetable_tangle case_16_stokers_ladder case_17_brine_of_nantwich case_18_nantwich_ram case_19_middlewich_salt_roads case_20_winsford_flashes case_21_whistle_test case_22_lift_logic case_23_frodsham_beacon case_24_runcorn_gauntlet case_25_weaver_hall_ghost case_26_delamere_watch case_27_lymm_dam_reflection case_28_wire_arcade case_29_chester_walls_round case_30_elm_press`; bounties `bounty_<species>_<n>` (generated, `kind:'bounty'`); trails `trail_gritstone trail_sandstone trail_ring`; season cases `season_<mm>_<slug>` (e.g. `season_01_wassail`, `season_05_mayday`, `season_10_static_surge`); epilogues `epilogue_<slug>`. Quest stage ids are `s1..sN` within a quest; completion sets flag `q_<quest_id>_done`.
+**Quests** (`MQ.Quests`): main chapters `main_<nn>_<slug>` — `main_01_silk_and_static main_02_the_wheel_and_the_edge main_03_picnic_blankets main_04_the_dish_goes_dark main_05_puppets_on_the_line main_06_brine_and_perry main_07_salt main_08_the_ruin main_09_bridge_traffic main_10_draw_your_own_conclusions main_11_the_sky_is_quiet main_12_the_firewall main_13_fifth_pulse`; casebook cases `case_<nn>_<slug>` for SIDE-CONTENT §1: `case_01_silk_thread case_02_white_nancy_watch case_03_middlewood_escort case_04_wizards_well case_05_quarry_bank_overtime case_06_deer_census case_07_poynton_pool_ledger case_08_gaskell_draft case_09_penny_farthing_rally case_10_bear_of_congleton case_11_signal_box case_12_saxon_crosses_cipher case_13_bounty_fenced_goods case_14_deepfake_vicar case_15_timetable_tangle case_16_stokers_ladder case_17_brine_of_nantwich case_18_nantwich_ram case_19_middlewich_salt_roads case_20_winsford_flashes case_21_whistle_test case_22_lift_logic case_23_frodsham_beacon case_24_runcorn_gauntlet case_25_weaver_hall_ghost case_26_delamere_watch case_27_lymm_dam_reflection case_28_wire_arcade case_29_chester_walls_round case_30_elm_press`; bounties `bounty_<slug>` (generated: `bounty_<species>_<n>`, `kind:'bounty'`); trails `trail_gritstone trail_sandstone`; season cases `season_<mm>_<slug>` (e.g. `season_01_wassail`, `season_05_mayday`, `season_10_static_surge`); epilogues `epilogue_<slug>`. Quest stage ids are `s1..sN` within a quest; quest step flags are `case_<nn>_<step>` / `main_<nn>_<step>` (e.g. `case_12_handed_in`, `case_25_pup_returned`); completion sets `case_<nn>_done` / `main_<nn>_done`.
 
-**Achievements** (`MQ.Achievements`, SIDE-CONTENT §2.9 order): `ach_first_triage ach_walked_not_ran ach_bothered_by_weather ach_unbothered_by_weather ach_paste_refused ach_not_today_botnet ach_trust_anchor ach_eight_anchors ach_cranford_correspondent ach_bear_necessity ach_salt_of_the_earth ach_sighted_not_cited ach_ghost_in_the_signal_box ach_brine_time ach_balanced_caissons ach_on_time_every_time ach_wallwalker ach_small_black_fast ach_back_from_the_brink ach_big_boy_energy ach_first_press ach_nain_would_approve ach_cambrian_line ach_ambidextrous ach_ticket_to_ride ach_twelve_thousand_puppets ach_wearing_a_trusted_face ach_shadow_it_sunlit ach_bounty_hunter ach_warrant_served ach_arena_bronze ach_arena_silver ach_arena_gold ach_arena_platinum ach_arena_obsidian ach_casebook_closed ach_full_dex ach_overdriven ach_principal ach_cheshire_protocol`.
+**Achievements** (`MQ.Achievements`; ids `ach_01` … `ach_40` per DESIGN-INDEX §8, in SIDE-CONTENT §2.9 order; the slug is the display key): `ach_01` first_triage · `ach_02` walked_not_ran · `ach_03` bothered_by_weather · `ach_04` unbothered_by_weather · `ach_05` paste_refused · `ach_06` not_today_botnet · `ach_07` trust_anchor · `ach_08` eight_anchors · `ach_09` cranford_correspondent · `ach_10` bear_necessity · `ach_11` salt_of_the_earth · `ach_12` sighted_not_cited · `ach_13` ghost_in_the_signal_box · `ach_14` brine_time · `ach_15` balanced_caissons · `ach_16` on_time_every_time · `ach_17` wallwalker · `ach_18` small_black_fast · `ach_19` back_from_the_brink · `ach_20` big_boy_energy · `ach_21` first_press · `ach_22` mamgu_would_approve · `ach_23` cambrian_line · `ach_24` ambidextrous · `ach_25` ticket_to_ride · `ach_26` twelve_thousand_puppets · `ach_27` wearing_a_trusted_face · `ach_28` shadow_it_sunlit · `ach_29` bounty_hunter · `ach_30` warrant_served · `ach_31` arena_bronze · `ach_32` arena_silver · `ach_33` arena_gold · `ach_34` arena_platinum · `ach_35` arena_obsidian · `ach_36` casebook_closed · `ach_37` full_dex · `ach_38` overdriven · `ach_39` principal · `ach_40` cheshire_protocol.
 
-**Badges:** `packet cipher bear kernel token daemon proxy admin` (flag `badge_<id>`). **Agents:** `sleet vigil arbiter pippin`. **Perk ids:** `perk_<tree>_<slug>` with trees `hunter warden handler` (SYSTEMS-SPEC names win over SIDE-CONTENT's Analyst/Responder labels; SIDE-CONTENT's `Analyst`/`Responder` reward points map to `warden`/`handler`). **Temperaments:** lower-case of SYSTEMS-SPEC §1 names (`brisk stubborn sharp blunt wary bold rash patient nosy gruff mardy canny steadfast placid skittish sly solid windy plain ordinary even fair`). **Weather:** `rain sun fog wind`. **Terrain:** `grass wet salt static silk`. **Statuses:** `psn tox par brn slp frz cnf`. **Difficulty:** `story normal hard nightmare`. **Trainer ids:** `<class>_<map>_<n>` for route trainers, `leader_<name>` (`leader_ada` …), `vex_ch01` … `vex_champion`, `boss_<slug>` (`boss_lindowan boss_apt boss_kellan_lido boss_understudy_beeston boss_hack_green boss_gateway boss_root boss_glitchra boss_oracle boss_stack_remnant`), `whitehat_sue` … `whitehat_doc`.
+**Badges:** `packet cipher bear kernel token daemon proxy admin` (flag `badge_<id>`; `badges` = count in flag expressions; leader Anchor items `anchor_<badge>`). **Agents:** ids `sleet vigil arbiter pippin` (unlock flags `agent_<id>`; sfx `agent_<id>`). PIPPIN's agent id is `pippin`; its one ability is **Defer** (`defer`, menu id `agent_pippin_defer`, SYSTEMS-SPEC §6) — "Defer" is the ability, never the agent id. **Perk ids** (SYSTEMS-SPEC §8, DESIGN-INDEX §9): `perk_<branch>_<slug>` with branches `triage escalate adjudicate` (mirroring SLEET/VIGIL/ARBITER); one id per node, second ranks are `rank:2` of the same node:
+- `perk_triage_focused perk_triage_exploit perk_triage_first_strike perk_triage_overclocker perk_triage_big_game perk_triage_tracker` (r2 Ambush) `perk_triage_quick_draw perk_triage_trailblazer` (r2 Deep Cuts) `perk_triage_sharp_triage` (agent node) `perk_triage_kill_chain` (capstone)
+- `perk_escalate_containment perk_escalate_patch perk_escalate_steady perk_escalate_second_wind perk_escalate_isolation` (r2 Umbrella Discipline) `perk_escalate_rollback perk_escalate_fail_safe_protocol` (r2 Quiet Cat) `perk_escalate_cat_handler` (r2 Bond) `perk_escalate_escalation` (agent node) `perk_escalate_incident_commander` (capstone)
+- `perk_adjudicate_enumerate perk_adjudicate_fingerprint` (r2 Naturalist) `perk_adjudicate_timeline perk_adjudicate_steady_hand perk_adjudicate_soft_touch` (r2 Golden Ratio) `perk_adjudicate_zero_trust perk_adjudicate_phase_break` (r2 Sniper) `perk_adjudicate_ledger_keeper` (r2 Trader, r3 Wide Share) `perk_adjudicate_iron_bell` (agent node) `perk_adjudicate_attribution` (r2 Overkill; capstone)
+
+**Temperaments:** lower-case of SYSTEMS-SPEC §1 names (`brisk stubborn sharp blunt wary bold rash patient nosy gruff mardy canny steadfast placid skittish sly solid windy plain ordinary even fair`). **Weather:** overworld `clear rain fog wind sun snow`, battle `rain sun fog wind`. **Terrain:** `grass wet salt static silk`. **Day bands:** `dawn day dusk night`. **Statuses:** `psn tox par brn slp frz cnf`. **Difficulty:** `story normal hard nightmare`. **Currencies:** credits; `marks` (Casebook Marks), `chips` (Arena Chips).
+
+**Trainer ids** (DESIGN-INDEX §9): route/area trainers `tr_<mapid>_<n>` (class from §5 in the trainer's data); leaders `leader_ada leader_gaskell leader_otis leader_di leader_nell leader_jack leader_ria leader_mo`; rival fights `vex_1 vex_2 vex_3 vex_4` (Ch.1/3/8/12 pre-league) and `champion_vex`; White Hats `whitehat_sue whitehat_raj whitehat_kim whitehat_doc`; bosses `boss_preserved_one` (Lindow), `boss_apt`, `boss_kellan`, `boss_understudy_beeston`, `boss_terrataur`, `boss_hack_green_ops`, `boss_gateway` (Ch.9 chokepoint), `boss_root`, `boss_glitchra`, `boss_oracle` (`oracle_core`, Ch.9/11/PG), `boss_stack_remnant`; faction grunts `darkbyte_grunt_<n>`, `stuffer_1..3`. **Character ids** (dialogue speakers; DESIGN-INDEX §7): `player vex alder root elis mamgu nino grinmalkin oracle kellan twelve_k understudy cat_meadow cat_bigboy agent_sleet agent_vigil agent_arbiter agent_pippin`, leaders `leader_*`, named NPCs `npc_<town>_<firstname>`.
