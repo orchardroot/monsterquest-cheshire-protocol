@@ -602,3 +602,154 @@
     // mooring ring
     Art.frame(ctx, 6, 4, 5, 5, "#33333c"); px(ctx, 8, 4, "#5c5c68");
   });
+
+  // ---------------------------------------------------------------
+  // VEGETATION — oak, pine, birch, apple, willow, autumn, hedges
+  // Two-tile trees: the `_top` id is the crown, drawn on the over
+  // layer so the player walks behind it.
+  // ---------------------------------------------------------------
+  function treeGround(ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "tg"); foot(ctx, 8, 14, 6); }
+
+  P("tree_oak_top", deco(null, [
+    "....kkkkkkk.....", "..kkEEEEEEEkk...", ".kEEEeeeeeEEEEk.", "kEEee^^^^^eeEEEk",
+    "kEee^^^^^^^^eeEk", "kEe^^^^^^^^^^eEk", "kEe^^^^^^^^^^eEk", "kEee^^^^^^^^eeEk",
+    "kEEee^^^^^^eeEEk", ".kEEeeee^^eeeEk.", ".kkEEEeeeeeEEkk.", "..kkEEEEEEEkkk..",
+    "....kkkkkkk.....", "................", "................", "................"
+  ]));
+  P("tree_oak", deco(treeGround, [
+    ".kEEeeeeeeeeEEk.", "..kEEEeeeeeEEEk.", "...kkEEEEEEEkk..", ".....kkOOOkk....",
+    "......O>OO......", "......OO>O......", "......O>OO......", "......OO>O......",
+    "......O>OO......", ".....OO>OOO.....", "....OO>OOOO>O...", "...O>OOOOOOO>O..",
+    "................", "................", "................", "................"
+  ]));
+
+  P("tree_pine_top", deco(null, [
+    ".......v........", "......vVv.......", "......vVv.......", ".....vvVVv......",
+    ".....vVVVv......", "....vvVVVVv.....", "....vVVVVVv.....", "...vvVVVVVVv....",
+    "...vVVVVVVVv....", "..vvVVVVVVVVv...", "..vVVVVVVVVVv...", ".vvVVVVVVVVVVv..",
+    ".vVVVVVVVVVVVv..", "vvVVVVVVVVVVVVv.", "vVVVVVVVVVVVVVv.", "................"
+  ]));
+  P("tree_pine", deco(treeGround, [
+    ".vvVVVVVVVVVVv..", "vvVVVVVVVVVVVVv.", "vVVVVVVVVVVVVVVv", "vvVVVVVVVVVVVVv.",
+    ".vvVVVVVVVVVVv..", "..vvVVVVVVVVv...", "...vvVVVVVVv....", "....vvVVVVv.....",
+    ".....vvVVv......", "......O>O.......", "......O>O.......", "......O>O.......",
+    ".....OO>OO......", "....O>OOO>O.....", "................", "................"
+  ]));
+
+  P("tree_birch_top", deco(null, [
+    "...^^^..^^^^....", "..^^^^^^^^^^^...", ".^^h^^^^h^^^^^..", "^^^^h^^^^^h^^^^.",
+    "^h^^^^^h^^^^^h^^", "^^^^h^^^^^h^^^^^", ".^^^^^^h^^^^^^^.", ".^^h^^^^^^^h^^..",
+    "..^^^^^^^^^^^^..", "...^^^^h^^^^^...", "....^^^^^^^.....", ".....^^c^^......",
+    "......ccC.......", "......cCC.......", "......ckC.......", "......cCC......."
+  ]));
+  P("tree_birch", deco(treeGround, [
+    "...^^^^ccC^^^^..", "..^^^^^ckC^^^^^.", "...^^^^cCC^^^^..", ".....^^ccC^^....",
+    "......ccC.......", "......ckC.......", "......ccC.......", "......cCC.......",
+    "......ckC.......", "......ccC.......", "......cCC.......", "......ccC.......",
+    ".....CccCC......", "....CCcccCC.....", "................", "................"
+  ]));
+
+  P("tree_apple_top", deco(null, [
+    "....kkkkkkk.....", "..kkEEeeeeEkk...", ".kEEeee^1eeEEEk.", "kEEee^^^^^eeEEEk",
+    "kEee^^1^^^^1eeEk", "kEe^^^^^^^^^^eEk", "kEe^^1^^^^^^1eEk", "kEee^^^^1^^^eeEk",
+    "kEEee^^^^^^eeEEk", ".kEEee1^^1eeeEk.", ".kkEEEeeeeeEEkk.", "..kkEEEEEEEkkk..",
+    "....kkkkkkk.....", "................", "................", "................"
+  ]));
+  P("tree_apple", function (ctx, f, s) {
+    treeGround(ctx, f, s);
+    ascii(ctx, APPLE_BASE, PAL);
+    // a windfall in the grass
+    px(ctx, 3, 14, C.red); px(ctx, 4, 14, "#e06a5a"); px(ctx, 3, 15, C.redDk);
+  });
+  const APPLE_BASE = sheet([
+    ".kEEee1eeee1EEk.", "..kEEEeeeeeEEEk.", "...kkEEEEEEEkk..", ".....kkOOOkk....",
+    "......O>OO......", "......OO>O......", "......O>OO......", "......OO>O......",
+    "......O>OO......", ".....OO>OOO.....", "....OO>OOOO>O...", "...O>OOOOOOO>O..",
+    "................", "................", "................", "................"
+  ]);
+
+  P("tree_dead", deco(treeGround, [
+    "...>.....>......", "....>...>.......", ".....>.>>.......", "..>...>>........",
+    "...>>.O>........", "......O>........", "....>>O>>>......", "......O>..>.....",
+    "......O>........", "......O>........", "......O>........", ".....OO>>.......",
+    "....O>OO>>......", "...O>OOOO>......", "................", "................"
+  ]));
+
+  P("tree_willow", deco(treeGround, [
+    "...;;;;;;;;;;...", "..;;V;;;;;;V;;..", ".;;;;;;;;;;;;;;.", ";;;V;;;;;;;;V;;;",
+    ";.;.;.;.;.;.;.;.", ".;.;.;O>.;.;.;..", ";.;.;.O>;.;.;.;.", ".;.;..O>.;..;.;.",
+    ";.;...O>...;.;..", ".;....O>....;...", "......O>........", "......O>........",
+    ".....OO>>.......", "....O>OOO>......", "................", "................"
+  ]));
+
+  P("tree_autumn", deco(treeGround, [
+    "....kk///kk.....", "..kk//5///kk....", ".k///5///5//k...", "k//5//////5//k..",
+    "k/////5///////k.", "k//5////5////Ok.", "k////////5//O>k.", ".k//5//////O>k..",
+    "..k//////O>k....", "...kk///O>k.....", "......O>O.......", "......O>O.......",
+    ".....OO>OO......", "....O>OOOO>.....", "................", "................"
+  ]));
+
+  // Clipped hedges — procedural so a long run reads as one hedge.
+  function hedgeBody(ctx, seed, top, key) {
+    const r = rnd(key, seed);
+    fill(ctx, C.hedgeDk);
+    dither(ctx, 0, 0, ART, ART, C.hedge, 8);
+    dither(ctx, 0, 0, ART, ART, "#3f9436", 3);
+    speckle(ctx, r, 0, 0, ART, ART, ["#1a4a1c", "#4f9c3f", "#57a63f"], 30);
+    rect(ctx, 0, top, ART, 1, "#4f9c3f");
+    rect(ctx, 0, top + 1, ART, 1, "#3d8a30");
+    for (let i = 0; i < 7; i++) px(ctx, (r() * ART) | 0, top + ((r() * 2) | 0), "#6cbb52");
+    Art.edge(ctx, "s", "#000", 0.28);
+  }
+  P("hedge", function (ctx, f, s) { hedgeBody(ctx, s, 0, "hg"); });
+  P("hedge_low", function (ctx, f, s) {
+    turf(ctx, s, C.grass, C.grassDk, C.grassLt, 2, "hl");
+    const r = rnd("hlb", s);
+    rect(ctx, 0, 4, ART, 11, C.hedgeDk);
+    dither(ctx, 0, 4, ART, 11, C.hedge, 8);
+    speckle(ctx, r, 0, 4, ART, 11, ["#1a4a1c", "#4f9c3f"], 20);
+    rect(ctx, 0, 4, ART, 1, "#4f9c3f");
+    for (let i = 0; i < 6; i++) px(ctx, (r() * ART) | 0, 4 + ((r() * 2) | 0), "#6cbb52");
+    Art.edge(ctx, "s", "#000", 0.24);
+  });
+
+  P("bush", deco(treeGround, [
+    "................", "................", ".....EEEEE......", "...EEeeeeeEE....",
+    "..EEee^^^eeEE...", ".Eee^^^^^^^eeE..", ".Ee^^^^^^^^^eE..", "Eee^^^^^^^^^eeE.",
+    "Eee^^^^^^^^^^eE.", "Ee^^^^^^^^^^^eE.", "EEee^^^^^^^^eEE.", ".EEeeee^^eeeEE..",
+    "..EEEEeeeeEEE...", "....EEEEEEE.....", "................", "................"
+  ]));
+  P("berry_bush", deco(treeGround, [
+    "................", "................", ".....EEEEE......", "...EEee1eeEE....",
+    "..EEee^^^ee1E...", ".Eee^1^^^^^eeE..", ".Ee^^^^^1^^^eE..", "Eee1^^^^^^^^eeE.",
+    "Eee^^^^^1^^^^eE.", "Ee^^1^^^^^^1^eE.", "EEee^^^^1^^^eEE.", ".EEeee1^^eeeEE..",
+    "..EEEEeeeeEEE...", "....EEEEEEE.....", "................", "................"
+  ]));
+
+  P("mushroom", deco(null, [
+    "................", "................", "................", "................",
+    "................", "................", "................", "................",
+    "..........1.....", ".....111.121....", "....11211.[[....", "....11111.[[....",
+    ".....[[[..[[....", ".....[][..]]....", "................", "................"
+  ]));
+
+  P("stump", deco(treeGround, [
+    "................", "................", "................", "................",
+    "................", "................", "....OOOOOOOO....", "...O>PPPPPP>O...",
+    "..O>PPoooPPP>O..", "..O>PPoooPPP>O..", "...O>PPPPPP>O...", "...OOOOOOOOOO...",
+    "...O>>OOO>>OO...", "....OO>>OO>O....", "................", "................"
+  ]));
+
+  P("log", deco(treeGround, [
+    "................", "................", "................", "................",
+    "................", "................", "..OOOOOOOOOOOO..", ".OPPoPPPPPoPPPO.",
+    "OPo>PPoPPPPoPPPO", "OPoPPPPPPoPPPPPO", ".O>OOO>OOOO>OOO.", "..OOOOOOOOOOOO..",
+    "................", "................", "................", "................"
+  ]));
+
+  P("moss_rock", deco(treeGround, [
+    "................", "................", "................", ".....nnnn.......",
+    "...nnllllnn.....", "..nllllllnnn....", "..nlllllnnnNn...", ".nllleelnnNNNn..",
+    ".nlleeeennNNNn..", "nnlleeeeennNNnn.", "nNnleeeeeennNnn.", "nNNneeeeennNNnn.",
+    ".NNNneeeennNNn..", "..NNNNNNNNNNn...", "................", "................"
+  ]));
