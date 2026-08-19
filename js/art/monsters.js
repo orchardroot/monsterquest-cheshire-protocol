@@ -283,7 +283,7 @@
   body("turbine wheel", "machine", { wheel: true });
   body("dish", "machine", { dish: true });
   body("camera drone", "machine", { lens: true, hover: true });
-  body("lever-frame sleeper spool loom brush inkwell mirror stack house folly viaduct helm bell", "machine", { frame: true });
+  body("lever-frame sleeper spool loom brush inkwell mirror stack house viaduct helm bell", "machine", { frame: true });
   body("core", "machine", { orb: true, hover: true });
   body("imp", "biped", { small: true, horns: "small" });
   body("knight legionary centurion", "biped", { armour: true, helm: true });
@@ -296,7 +296,7 @@
   body("wisp sprite", "ghost", { small: true, glow: true });
   body("fish trout salmon perch minnow sturgeon lurefish pike leviathan", "fish");
   body("treant stump acorn hedge", "plant");
-  body("stone berg crystal shard dolmen cross pillar", "rock");
+  body("stone berg crystal shard dolmen cross pillar folly", "rock");
   body("gargoyle grotesque", "rock", { wings: "bat", face: true });
 
   const KEYWORDS = [
