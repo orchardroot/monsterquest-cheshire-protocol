@@ -590,9 +590,9 @@
   });
   P("bridge_rail", deco(null, [
     "................", "................", "................", "................",
-    "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "..O..........O..",
-    "..O..........O..", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..",
-    "..O..........O..", "..O..........O..", "..O..........O..", "................"
+    "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..O>>>>>>>>>>O..", "..O>........O>..",
+    "..OO........OO..", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..O>>>>>>>>>>O..",
+    "..O>........O>..", "..OO........OO..", "..O>........O>..", "................"
   ]));
 
   P("boat_dock", function (ctx, f, s) {
@@ -610,12 +610,18 @@
   // ---------------------------------------------------------------
   function treeGround(ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "tg"); foot(ctx, 8, 14, 6); }
 
-  P("tree_oak_top", deco(null, [
+  const OAK_TOP = sheet([
     "....kkkkkkk.....", "..kkEEEEEEEkk...", ".kEEEeeeeeEEEEk.", "kEEee^^^^^eeEEEk",
     "kEee^^^^^^^^eeEk", "kEe^^^^^^^^^^eEk", "kEe^^^^^^^^^^eEk", "kEee^^^^^^^^eeEk",
     "kEEee^^^^^^eeEEk", ".kEEeeee^^eeeEk.", ".kkEEEeeeeeEEkk.", "..kkEEEEEEEkkk..",
     "....kkkkkkk.....", "................", "................", "................"
-  ]));
+  ]);
+  // The crown gets a seeded dapple so a wood is never a stamped grid.
+  P("tree_oak_top", function (ctx, f, s) {
+    ascii(ctx, OAK_TOP, PAL);
+    const r = rnd("oakt", s);
+    for (let i = 0; i < 9; i++) px(ctx, 3 + ((r() * 10) | 0), 3 + ((r() * 8) | 0), r() < 0.5 ? "#71c455" : "#2a6a24");
+  });
   P("tree_oak", deco(treeGround, [
     ".kEEeeeeeeeeEEk.", "..kEEEeeeeeEEEk.", "...kkEEEEEEEkk..", ".....kkOOOkk....",
     "......O>OO......", "......OO>O......", "......O>OO......", "......OO>O......",
@@ -623,12 +629,20 @@
     "................", "................", "................", "................"
   ]));
 
-  P("tree_pine_top", deco(null, [
+  const PINE_TOP = sheet([
     ".......v........", "......vVv.......", "......vVv.......", ".....vvVVv......",
     ".....vVVVv......", "....vvVVVVv.....", "....vVVVVVv.....", "...vvVVVVVVv....",
     "...vVVVVVVVv....", "..vvVVVVVVVVv...", "..vVVVVVVVVVv...", ".vvVVVVVVVVVVv..",
     ".vVVVVVVVVVVVv..", "vvVVVVVVVVVVVVv.", "vVVVVVVVVVVVVVv.", "................"
-  ]));
+  ]);
+  P("tree_pine_top", function (ctx, f, s) {
+    ascii(ctx, PINE_TOP, PAL);
+    const r = rnd("pinet", s);
+    for (let i = 0; i < 10; i++) {
+      const y = 3 + ((r() * 12) | 0), half = 1 + ((y * 7) / 15) | 0;
+      px(ctx, 7 + ((r() * (half * 2 + 1)) | 0) - half, y, r() < 0.55 ? "#3f8f4c" : "#123018");
+    }
+  });
   P("tree_pine", deco(treeGround, [
     ".vvVVVVVVVVVVv..", "vvVVVVVVVVVVVVv.", "vVVVVVVVVVVVVVVv", "vvVVVVVVVVVVVVv.",
     ".vvVVVVVVVVVVv..", "..vvVVVVVVVVv...", "...vvVVVVVVv....", "....vvVVVVv.....",
@@ -1168,39 +1182,40 @@
   });
   P("roof_metal", function (ctx, f, s) { roofOf(ctx, s, "metal", "#7a8a90", "#5b6a70", "#9db0b6"); });
 
-  P("chimney", deco(null, [
+  P("chimney", deco(function (ctx, f, s) { roofOf(ctx, s, "slate", C.slate, C.slateDk, C.slateLt, "#26263a"); }, [
     "..bbbbbbbbbbbb..", "..brrrrrrrrrrb..", "..mmmmmmmmmmmm..", "..bBbbbBbbbBbb..",
     "..bbbbbbbbbbbb..", "..mmmmmmmmmmmm..", "..bbBbbbBbbbBb..", "..bbbbbbbbbbbb..",
     "..mmmmmmmmmmmm..", "..bBbbbBbbbBbb..", "..bbbbbbbbbbbb..", "..mmmmmmmmmmmm..",
     "..bbbbbbbbbbbb..", "..bbBbbbBbbbBb..", "..mmmmmmmmmmmm..", "..BBBBBBBBBBBB.."
   ]));
-  P("chimney_mill", deco(null, [
+  P("chimney_mill", deco(function (ctx, f, s) { roofOf(ctx, s, "slate", C.slate, C.slateDk, C.slateLt, "#26263a"); }, [
     "....BBBBBBBB....", "....BrrrrrrB....", "....BmmmmmmB....", "....BbbbbbbB....",
     "....BbBbbBbB....", "....BmmmmmmB....", "....BbbbbbbB....", "...BbbbbbbbbB...",
     "...BmmmmmmmmB...", "...BbbBbbBbbbB..", "...BbbbbbbbbB...", "...BmmmmmmmmB...",
     "..BbbbbbbbbbbB..", "..BbbBbbbbBbbB..", "..BmmmmmmmmmmB..", "..BBBBBBBBBBBB.."
   ]));
+  const SMOKE_PAL = Art.pal({ "-": "#b9c6d4", "=": "#9fb0c2" });
   P("chimney_smoke", decoAnim(null, [[
     "................", "................", "................", ".......~~.......",
-    "......~~~~......", "......~~~.......", ".......~~.......", ".......~~.......",
-    "........~~......", "........~~......", ".......~~.......", ".......~~.......",
+    "......~~~~......", "......~~~.......", ".......~-.......", ".......-~.......",
+    "........~-......", "........-~......", ".......~=.......", ".......=~.......",
     "................", "................", "................", "................"
   ], [
     "................", "................", "......~~~.......", ".....~~~~~......",
-    ".....~~~~.......", "......~~~.......", "......~~........", ".......~~.......",
-    ".......~~.......", "........~.......", "........~~......", ".......~~.......",
+    ".....~~~~.......", "......~~~.......", "......~-........", ".......-~.......",
+    ".......~-.......", "........=.......", "........~-......", ".......=~.......",
     "................", "................", "................", "................"
   ], [
     "................", ".....~~~........", "....~~~~~.......", "....~~~~~.......",
-    ".....~~~........", "......~~........", "......~~........", "......~~........",
-    ".......~........", ".......~~.......", "........~.......", "........~.......",
+    ".....~~~........", "......~-........", "......-~........", "......~=........",
+    ".......-........", ".......~-.......", "........=.......", "........-.......",
     "................", "................", "................", "................"
   ], [
     "....~~~.........", "...~~~~~........", "...~~~~~........", "....~~~.........",
-    ".....~..........", ".....~~.........", "......~.........", "......~~........",
-    ".......~........", ".......~........", "........~.......", "........~.......",
+    ".....~..........", ".....~-.........", "......-.........", "......~-........",
+    ".......=........", ".......-........", "........~.......", "........=.......",
     "................", "................", "................", "................"
-  ]]));
+  ]], SMOKE_PAL));
 
   // ---- doors & windows ----
   const DOOR = sheet([
@@ -1223,13 +1238,13 @@
     "bbk>O>OiIiO>O>kb", "bbk>O>>iIi>>O>kb", "bbk>OOOiiiOOO>kb", "bbk>O>>>>>>>O>kb",
     "bbk>O>OOOOO>O>kb", "bbk>O>>>>>>>O>kb", "bbk>>>>>>>>>>>kb", "bbkkkkkkkkkkkkbb"
   ]));
-  P("door_gym", deco(null, [
+  P("door_gym", deco(function (ctx, f, s) { fill(ctx, "#8a8a90"); }, [
     "nnnnnnnnnnnnnnnn", "NNNNNNNNNNNNNNNN", "nnkkkkkkkkkkkknn", "nnk4444444444knn",
     "nnk4333333334knn", "nnk4344444434knn", "nnk4345555434knn", "nnk4355555543kn.",
     "nnk4355555543knn", "nnk4345555434knn", "nnk4334433443knn", "nnk4333333334knn",
     "nnk4333553334knn", "nnk4444444444knn", "nnkkkkkkkkkkkknn", "nnNNNNNNNNNNNNnn"
   ]));
-  P("door_stairs_up", deco(null, [
+  P("door_stairs_up", deco(function (ctx, f, s) { fill(ctx, "#8a8a90"); }, [
     "nnnnnnnnnnnnnnnn", "nlllllllllllllln", "nlNNNNNNNNNNNNln", "nlNllllllllllNln",
     "nlNlNNNNNNNNlNln", "nlNlNllllllNlNln", "nlNlNlNNNNlNlNln", "nlNlNlllllNlNln.",
     "nlNlNlNNNNlNlNln", "nlNlNllllllNlNln", "nlNlNNNNNNNNlNln", "nlNllllllllllNln",
@@ -1395,10 +1410,10 @@
   // (deco-layer tiles paint on a transparent ground)
   // ---------------------------------------------------------------
   P("lamp", deco(null, [
-    "................", ".......ii.......", "......i66i......", "......66666.....",
-    "......i66i......", ".......ii.......", ".......ii.......", ".......ii.......",
-    ".......ii.......", ".......ii.......", ".......ii.......", ".......ii.......",
-    ".......ii.......", "......iIIi......", "......iiii......", "................"
+    "................", "......iiii......", "......i66i......", ".....i6666i.....",
+    ".....666666.....", ".....i6666i.....", "......iIIi......", "......iIIi......",
+    "......iIIi......", "......iIIi......", "......iIIi......", "......iIIi......",
+    "......iIIi......", ".....iIIIIi.....", ".....iiiiii.....", "................"
   ]));
   P("lamp_victorian", deco(null, [
     ".......5........", "......iii.......", ".....i666i......", ".....66666......",
@@ -1555,19 +1570,19 @@
     "..O>11111111>O..", "..O>11111111>O..", "..OOOOOOOOOOOO..", "..O>........>O..",
     "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "................"
   ]));
-  P("crate", deco(null, [
+  P("crate", deco(function (ctx, f, s) { cobbles(ctx, s, "#9a9aa8", "#7a7a88", "#b6b6c2", "#68687a"); }, [
     "................", "................", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..",
     "..OP>>>>>>>>PO..", "..OP>oooooo>PO..", "..OPO>oooo>OPO..", "..OPOO>oo>OOPO..",
     "..OPOOO>>OOOPO..", "..OPOO>oo>OOPO..", "..OPO>oooo>OPO..", "..OP>oooooo>PO..",
     "..OP>>>>>>>>PO..", "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "................"
   ]));
-  P("barrel", deco(null, [
+  P("barrel", deco(function (ctx, f, s) { cobbles(ctx, s, "#9a9aa8", "#7a7a88", "#b6b6c2", "#68687a"); }, [
     "................", "................", "....OOOOOOOO....", "...O>>>>>>>>O...",
     "...OPPPPPPPPO...", "..OiiiiiiiiiiO..", "..OPPPPPPPPPPO..", "..OP>oooooo>PO..",
     "..OP>oooooo>PO..", "..OiiiiiiiiiiO..", "..OP>oooooo>PO..", "..OPPPPPPPPPPO..",
     "...OiiiiiiiiO...", "...OPPPPPPPPO...", "....OOOOOOOO....", "................"
   ]));
-  P("sack", deco(null, [
+  P("sack", deco(function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); }, [
     "................", "................", "................", "......aaaa......",
     ".....aAAAAa.....", ".....aAaaAa.....", "....aAaaaaAa....", "...aAaaaaaaAa...",
     "...aaaaaaaaaa...", "..aAaaaaaaaaAa..", "..aaaaaaaaaaaa..", "..aAaaaaaaaaAa..",
@@ -1708,19 +1723,19 @@
     "....i::::i......", "....iiiiii......", "......ii........", "......ii........",
     "......ii........", "......ii........", ".....iIIi.......", ".....iiii......."
   ]]));
-  P("train_engine", deco(null, [
+  P("train_engine", deco(function (ctx, f, s) { fill(ctx, "#1b1720"); }, [
     "kkkkkkkkkkkkkkkk", "k}}}}}}}}}}}}}}k", "k}cccccccccccc}k", "k}c}}}}}}}}}}c}k",
     "k}c}88888888}c}k", "k}c}87777778}c}k", "k}c}88888888}c}k", "k}c}}}}}}}}}}c}k",
     "k}cccccccccccc}k", "k}}}}}}}}}}}}}}k", "k}11111111111}k.", "k}}}}}}}}}}}}}}k",
     "kiiiiiiiiiiiiiik", "kiIIiiiiiiiiIIik", "kiIIiiiiiiiiIIik", "kkkkkkkkkkkkkkkk"
   ]));
-  P("train_carriage", deco(null, [
+  P("train_carriage", deco(function (ctx, f, s) { fill(ctx, "#1b1720"); }, [
     "kkkkkkkkkkkkkkkk", "k22222222222222k", "k2111111111111 k", "k21777771777712k",
     "k21788887888812k", "k21788887888812k", "k21777771777712k", "k21111111111112k",
     "k22222222222222k", "k21111111111112k", "k2cccccccccccc2k", "k22222222222222k",
     "kiiiiiiiiiiiiiik", "kiIIiiiiiiiiIIik", "kiIIiiiiiiiiIIik", "kkkkkkkkkkkkkkkk"
   ]));
-  P("train_door", deco(null, [
+  P("train_door", deco(function (ctx, f, s) { fill(ctx, "#1b1720"); }, [
     "kkkkkkkkkkkkkkkk", "k11111111111111k", "k1kkkkkkkkkkkk1k", "k1k777777777k11k",
     "k1k788888887k11k", "k1k788888887k11k", "k1k777777777k11k", "k1kkkkkkkkkkk11k",
     "k1k5kkkkkkkkk11k", "k1kkkkkkkkkkk11k", "k1k111111111k11k", "k11111111111111k",
@@ -1756,7 +1771,7 @@
     ".kevvvvvvvvvvek.", ".ke1111111111ek.", ".keeeeeeeeeeeek.", "..kkkkkkkkkkkk..",
     "...kEEEEEEEEk...", "....kkkkkkkk....", "................", "................"
   ]));
-  P("boat_lift", deco(null, [
+  P("boat_lift", deco(function (ctx, f, s) { fill(ctx, "#4a5058"); dither(ctx, 0, 0, ART, ART, "#3a4048", 6); }, [
     "iIiiiiiiiiiiiiIi", "iI............Ii", "iI.i........i.Ii", "iI..i......i..Ii",
     "iIiiiiiiiiiiiiIi", "iI..i......i..Ii", "iI.i........i.Ii", "iIiiiiiiiiiiiiIi",
     "iI.i........i.Ii", "iI..i......i..Ii", "iIiiiiiiiiiiiiIi", "iI..i......i..Ii",
@@ -1770,7 +1785,7 @@
   ]));
 
   // ---- Jodrell / masts ----
-  P("dish", deco(null, [
+  P("dish", deco(function (ctx, f, s) { flags(ctx, s, "#b0b0b8", "#95959f", "#c8c8d0", "#7e7e88"); }, [
     "..cccccccccccc..", ".ccCCCCCCCCCCcc.", "cCCzzzzzzzzzzCCc", "cCzzzzzzzzzzzzCc",
     "cCzzZZZZZZZZzzCc", "cCzZZ~~~~~~ZZzCc", "cCzZ~~~~~~~~ZzCc", "cCzZ~~~~~~~~ZzCc",
     "cCzZ~~~~~~~~ZzCc", "cCzZZ~~~~~~ZZzCc", "cCzzZZZZZZZZzzCc", "cCzzzzzzzzzzzzCc",
@@ -1788,7 +1803,7 @@
     "...LU......UL...", "..LLU......ULL..", "..LU........UL..", ".LLU........ULL.",
     ".LUUUUUUUUUUUUL.", "LLLLLLLLLLLLLLLL", ":::::::::::::::.", "................"
   ]));
-  P("radio_mast", decoAnim(null, [[
+  P("radio_mast", decoAnim(function (ctx, f, s) { turf(ctx, s, C.moorGrass, "#6b7a36", "#a8b662", 3, "rm"); }, [[
     ".......ii.......", "......i11i......", ".......ii.......", "......i..i......",
     "......i..i......", ".....iiiiii.....", ".....i....i.....", ".....i....i.....",
     "....iiiiiiii....", "....i......i....", "....i......i....", "...iiiiiiiiii...",
@@ -1807,7 +1822,7 @@
     "nlNkjKkkkkKjkNln", "nlNkjKkkkkKjkNln", "nlNkjKkkkkKjkNln", "nlNkjKkkkkKjkNln",
     "nlNkjKkkkkKjkNln", "nlNkjjjjjjjjkNln", "nlNkkkkkkkkkkNln", "nnNNNNNNNNNNNNnn"
   ]));
-  P("portcullis", deco(function (ctx, f, s) { fill(ctx, "#1b1720"); }, [
+  P("portcullis", deco(function (ctx, f, s) { fill(ctx, "#1b1720"); dither(ctx, 0, 0, ART, ART, "#2c2733", 5); }, [
     "iiiiiiiiiiiiiiii", "iIiIiIiIiIiIiIiI", "i.i.i.i.i.i.i.i.", "iiiiiiiiiiiiiiii",
     "i.i.i.i.i.i.i.i.", "i.i.i.i.i.i.i.i.", "iiiiiiiiiiiiiiii", "i.i.i.i.i.i.i.i.",
     "i.i.i.i.i.i.i.i.", "iiiiiiiiiiiiiiii", "i.i.i.i.i.i.i.i.", "i.i.i.i.i.i.i.i.",
@@ -2132,7 +2147,7 @@
     "..k:8{{{{{{8:k..", "..k:88888888:k..", "..k::::::::::k..", "..kkkkkkkkkkkk..",
     "...k::5::5::k...", "...kkkkkkkkkk...", "....k......k....", "................"
   ]));
-  P("plant_pot", deco(null, [
+  P("plant_pot", deco(function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); }, [
     "................", "......^^........", "....^^e^e^......", "...^ee^^^ee^....",
     "..^^eeeeeee^^...", "...^eee^eee^....", "....^^eee^^.....", "......^e^.......",
     ".......e........", "....11111111....", "....12222221....", "....11111111....",
