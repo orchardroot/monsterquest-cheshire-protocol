@@ -1,15 +1,24 @@
-// STUB — owned by art (painters) / world (catalogue names + properties).
-// Foundation ships the full NAMED catalogue with correct properties and
-// flat-colour placeholder painters. The art workstream replaces painters
-// (keep ids and properties stable; maps depend on them).
 // =============================================================
-// MonsterQuest v2 — MQ.Tiles: named tile catalogue + painters
+// MonsterQuest v2 — MQ.Tiles: the named tile catalogue + painters
+// Owned by: art (painters, helpers) — the catalogue ids/properties are
+// the world workstream's contract and are kept byte-stable below.
+//
+// Every tile is 16x16 source pixel art baked once into an offscreen
+// canvas and drawn by the overworld at 2x (MQ.TILE = 32). Painters use
+// fillRect only (via MQ.Art helpers) so they bake identically in a
+// browser and in headless test contexts.
+//
+// Palette: Cheshire. Red brick, sandstone, slate, salt white, canal
+// green, pine dark, moor purple, silk-mill mustard, rail steel.
 // =============================================================
 (function () {
   "use strict";
   const MQ = window.MQ;
   const U = MQ.U;
   const ART = MQ.ART;
+  const Art = MQ.Art;
+  const C = Art.C;
+  const PAL = Art.PAL;
 
   const defs = {};
   const cache = {};        // id|frame|variant → canvas
@@ -33,402 +42,563 @@
   Tiles.count = function () { return Object.keys(defs).length; };
   Tiles.isSolid = function (id) { const d = defs[id]; return !!(d && (d.solid || d.water)); };
   Tiles.frames = function (id) { const d = defs[id]; return d && d.anim ? d.anim.length : 1; };
+  Tiles.variants = function (id) { const d = defs[id]; return d ? d.variants : 0; };
 
-  // Placeholder painter: flat colour with a little seeded texture and a
-  // recognisable mark for the tile class (solid = darker rim, water = waves...)
-  function placeholder(ctx, d, frame, seed) {
-    const rnd = U.rng(d.id + ":" + seed);
-    ctx.fillStyle = d.color;
-    ctx.fillRect(0, 0, ART, ART);
-    const dark = U.shade(d.color, 0.82), light = U.shade(d.color, 1.15);
-    for (let i = 0; i < 10; i++) {
-      ctx.fillStyle = rnd() < 0.5 ? dark : light;
-      ctx.fillRect(Math.floor(rnd() * ART), Math.floor(rnd() * ART), 1 + Math.floor(rnd() * 2), 1);
-    }
-    if (d.water) {
-      ctx.fillStyle = light;
-      const off = (frame || 0) % 4;
-      for (let y = 2; y < ART; y += 5) { ctx.fillRect((y + off * 2) % ART, y, 3, 1); ctx.fillRect((y + 8 + off * 2) % ART, y + 2, 2, 1); }
-    } else if (d.grass) {
-      ctx.fillStyle = dark;
-      for (let i = 0; i < 6; i++) { const x = 1 + Math.floor(rnd() * 14), y = 2 + Math.floor(rnd() * 12); ctx.fillRect(x, y, 1, 3); ctx.fillRect(x + 1, y - 1, 1, 2); }
-    } else if (d.solid) {
-      ctx.fillStyle = U.shade(d.color, 0.6);
-      ctx.fillRect(0, 0, ART, 1); ctx.fillRect(0, 0, 1, ART); ctx.fillRect(0, ART - 1, ART, 1); ctx.fillRect(ART - 1, 0, 1, ART);
-    }
-    if (d.ledge) {
-      ctx.fillStyle = U.shade(d.color, 0.5);
-      ctx.fillRect(0, ART - 4, ART, 2);
-    }
-    if (d.interact) {
-      ctx.fillStyle = "#fff"; ctx.globalAlpha = 0.5;
-      ctx.fillRect(6, 6, 4, 4);
-      ctx.globalAlpha = 1;
+  // =============================================================
+  // PAINTER LIBRARY
+  // Helpers below are deliberately small and composable: a background
+  // family (grass / path / floor / wall) plus an ascii overlay covers
+  // almost every tile, and the odd landmark gets a bespoke painter.
+  // =============================================================
+  const px = Art.px, rect = Art.rect, fill = Art.fill, ascii = Art.ascii;
+  const dither = Art.dither, speckle = Art.speckle, bevel = Art.bevel;
+  const vgrad = Art.vgrad, hgrad = Art.hgrad, tuft = Art.tuft;
+
+  function rnd(id, seed) { return U.rng(id + "#" + (seed | 0)); }
+
+  // ---- ground beds --------------------------------------------------
+  // Turf: dithered base + seeded blades. Variants shuffle the blades so a
+  // field of grass never shows an obvious grid.
+  function turf(ctx, seed, base, dk, lt, blades, key) {
+    const r = rnd(key || "turf", seed);
+    fill(ctx, base);
+    dither(ctx, 0, 0, ART, ART, dk, 4);
+    dither(ctx, 0, 0, ART, ART, lt, 2);
+    speckle(ctx, r, 0, 0, ART, ART, [dk, lt, base], 16);
+    for (let i = 0; i < blades; i++) {
+      const x = 1 + ((r() * 14) | 0), y = 3 + ((r() * 13) | 0);
+      tuft(ctx, x, y, dk, base, lt, 2 + ((r() * 2) | 0));
     }
   }
 
-  // get(id, frame, variantSeed) → cached 16×16 canvas
-  Tiles.get = function (id, frame, seed) {
-    const d = defs[id];
-    if (!d) return null;
-    frame = d.anim ? ((frame || 0) % d.anim.length) : 0;
-    seed = d.variants > 1 ? ((seed || 0) % d.variants) : 0;
-    const key = id + "|" + frame + "|" + seed;
-    let c = cache[key];
-    if (c) return c;
-    c = document.createElement("canvas");
-    c.width = ART; c.height = ART;
-    const ctx = c.getContext("2d");
-    if (typeof d.paint === "function") {
-      d.paint(ctx, frame, seed, d);
-    } else if (d.art) {
-      const rows = d.anim ? d.art[frame] || d.art : d.art;
-      const img = MQ.Art.render(rows, d.pal || {}, 1, false);
-      if (d.under) { const u = Tiles.get(d.under, frame, seed); if (u) ctx.drawImage(u, 0, 0); }
-      ctx.drawImage(img, 0, 0);
-    } else {
-      if (d.under) { const u = Tiles.get(d.under, frame, seed); if (u) ctx.drawImage(u, 0, 0); }
-      placeholder(ctx, d, frame, seed);
-    }
-    cache[key] = c;
-    return c;
-  };
-  Tiles.warm = function () {
-    const ks = Object.keys(defs);
-    for (let i = 0; i < ks.length; i++) {
-      const d = defs[ks[i]];
-      const nf = d.anim ? d.anim.length : 1;
-      for (let f = 0; f < nf; f++) for (let v = 0; v < d.variants; v++) Tiles.get(ks[i], f, v);
-    }
-  };
-  Tiles.clearCache = function () { const ks = Object.keys(cache); for (let i = 0; i < ks.length; i++) delete cache[ks[i]]; };
-
-  // ---- catalogue ------------------------------------------------------
-  // T(id, colour, props). Property shorthands: S solid, W water, G grass
-  // encounter, D deco layer, O over layer, A:n animated frames, V:n variants
-  const A4 = [0, 1, 2, 3];
-  function T(id, color, p) {
-    p = p || {};
-    const d = { color: color };
-    if (p.S) d.solid = true;
-    if (p.W) { d.water = true; d.encounter = "water"; }
-    if (p.G) { d.grass = true; d.encounter = "grass"; }
-    if (p.C) d.encounter = "cave";
-    if (p.D) d.layer = "deco";
-    if (p.O) d.layer = "over";
-    if (p.A) d.anim = p.A === 4 ? A4 : U.range(p.A);
-    if (p.V) d.variants = p.V;
-    if (p.L) d.ledge = p.L;
-    if (p.I) d.interact = p.I;
-    if (p.light) d.light = true;
-    if (p.under) d.under = p.under;
-    d.desc = p.desc || "";
-    Tiles.define(id, d);
+  // Loose ground: soil, gravel, sand, salt — grain, no blades.
+  function grit(ctx, seed, base, dk, lt, n, key) {
+    const r = rnd(key || "grit", seed);
+    fill(ctx, base);
+    dither(ctx, 0, 0, ART, ART, dk, 3);
+    dither(ctx, 0, 0, ART, ART, lt, 2);
+    speckle(ctx, r, 0, 0, ART, ART, [dk, lt], n);
   }
 
-  // -- ground: grass / paths / floors
-  T("grass", "#5aab46", { V: 3, desc: "Short grass" });
-  T("grass_dark", "#3f8a34", { V: 2 });
-  T("grass_tall", "#3d9a3a", { G: 1, V: 2, desc: "Tall grass — wild encounters" });
-  T("grass_moor", "#8a9a4a", { G: 1, V: 2, desc: "Moorland grass — encounters" });
-  T("moor_heather", "#8a5aa0", { G: 1, V: 2, desc: "Heather — encounters" });
-  T("moor_bog", "#4a5a30", { S: 1, desc: "Bog — impassable" });
-  T("flowers_yellow", "#e0d040", { V: 2 });
-  T("flowers_red", "#e05050", { V: 2 });
-  T("flowers_blue", "#5070e0", { V: 2 });
-  T("flowers_white", "#f0f0f0", { V: 2 });
-  T("path_dirt", "#b8925a", { V: 2 });
-  T("path_cobble", "#9a9aa8", { V: 2 });
-  T("path_flag", "#a8a090", { V: 2, desc: "Flagstones" });
-  T("path_gravel", "#b0a898", { V: 2 });
-  T("path_tarmac", "#505058", { V: 1 });
-  T("path_wet", "#7a8a70", { V: 1, desc: "Puddled path" });
-  T("sand", "#e8d8a0", { V: 2 });
-  T("mud", "#6a4a2a", { V: 2 });
-  T("snow", "#f0f4ff", { V: 2 });
-  T("salt_flat", "#e8e8f0", { V: 2, desc: "Salt flats" });
-  T("salt_crust", "#d8d8e8", { S: 1, desc: "Salt crust ridge" });
-  T("orchard_grass", "#6ab04c", { V: 2 });
-  T("pine_needles", "#6a5a3a", { V: 2 });
-  T("cave_floor", "#6a6070", { C: 1, V: 3, desc: "Cave floor — encounters" });
-  T("cave_floor_dark", "#4a4050", { C: 1, V: 2 });
-  T("mine_floor", "#5a5048", { C: 1, V: 2 });
-  T("floor_wood", "#b08050", { V: 2 });
-  T("floor_wood_dark", "#8a6038", { V: 1 });
-  T("floor_stone", "#909098", { V: 2 });
-  T("floor_tile", "#d8d0c0", { V: 2 });
-  T("floor_tile_check", "#c8c8c8", { V: 1 });
-  T("floor_carpet", "#a04040", { V: 1 });
-  T("floor_lab", "#c0d8e0", { V: 1 });
-  T("floor_gym", "#d0a860", { V: 1 });
-  T("rug", "#c03030", { V: 1 });
-  T("rug_edge", "#a02828", { V: 1 });
-  T("platform", "#a8a0a0", { V: 2, desc: "Station platform" });
-  T("platform_edge", "#e0d060", { desc: "Platform edge (yellow line)" });
-  T("void", "#000000", { S: 1, desc: "Nothing" });
+  // Cobbles / setts: staggered rounded blocks with a joint colour.
+  function cobbles(ctx, seed, face, dk, lt, joint, cw, ch) {
+    const r = rnd("cob" + face, seed);
+    cw = cw || 4; ch = ch || 4;
+    fill(ctx, joint);
+    let row = 0;
+    for (let y = 0; y < ART; y += ch, row++) {
+      const ox = (row & 1) ? -((cw / 2) | 0) : 0;
+      for (let bx = ox; bx < ART; bx += cw) {
+        const q = r();
+        const c = q < 0.25 ? dk : (q > 0.75 ? lt : face);
+        const x0 = Math.max(bx, 0), x1 = Math.min(bx + cw - 1, ART);
+        if (x1 <= x0) continue;
+        rect(ctx, x0, y, x1 - x0, ch - 1, c);
+        rect(ctx, x0, y, x1 - x0, 1, U.shade(c, 1.16));
+        rect(ctx, x0, y + ch - 2, x1 - x0, 1, U.shade(c, 0.86));
+      }
+    }
+  }
 
-  // -- water
-  T("water", "#4a8ad8", { W: 1, A: 4, desc: "Water — needs boat" });
-  T("water_deep", "#25538f", { W: 1, A: 4 });
-  T("water_canal", "#3a6a9a", { W: 1, A: 4, desc: "Canal water" });
-  T("water_river", "#4a90c8", { W: 1, A: 4 });
-  T("water_flash", "#5a80a8", { W: 1, A: 4, desc: "Flash / mere" });
-  T("water_pond", "#4a7ab0", { W: 1, A: 4 });
-  T("brine_pool", "#7ac8c0", { W: 1, A: 4, desc: "Brine pool" });
-  T("water_edge", "#6aa0e0", { S: 1, A: 4, desc: "Bank / shallows" });
-  T("water_reeds", "#5a9a70", { W: 1, A: 2, desc: "Reeds at the water's edge" });
-  T("lake_reeds", "#5a9a70", { S: 1, A: 2, desc: "Reeds (walkable bank blocked)" });
-  T("waterfall", "#a0d0f0", { S: 1, A: 4 });
-  T("hot_spring", "#c0e0f0", { W: 1, A: 4, I: "spring", desc: "Hot spring — heals" });
-  T("shallows", "#8ac0e0", { A: 4, desc: "Shallow water — walkable" });
-  T("bridge_wood", "#a07840", { desc: "Wooden bridge" });
-  T("bridge_stone", "#8a8a90", { desc: "Stone bridge" });
-  T("bridge_rail", "#7a5a30", { S: 1, D: 1, desc: "Bridge railing" });
-  T("boat_dock", "#8a6a40", { I: "boat", desc: "Jetty — boat" });
-  T("fish_spot", "#3a7ac0", { W: 1, A: 4, I: "fish", desc: "Fishing spot" });
+  // Flagstones: big irregular slabs.
+  function flags(ctx, seed, face, dk, lt, joint) {
+    const r = rnd("flag" + face, seed);
+    fill(ctx, joint);
+    const cuts = [[0, 0, 9, 7], [9, 0, 7, 7], [0, 7, 6, 9], [6, 7, 10, 9]];
+    for (let i = 0; i < cuts.length; i++) {
+      const s = cuts[i], q = r();
+      const c = q < 0.3 ? dk : (q > 0.7 ? lt : face);
+      rect(ctx, s[0], s[1], s[2] - 1, s[3] - 1, c);
+      rect(ctx, s[0], s[1], s[2] - 1, 1, U.shade(c, 1.12));
+      speckle(ctx, r, s[0], s[1], s[2] - 1, s[3] - 1, [U.shade(c, 0.9)], 3);
+    }
+  }
 
-  // -- vegetation
-  T("tree_oak", "#2e6d22", { S: 1, V: 2 });
-  T("tree_oak_top", "#3a8a2c", { O: 1, V: 2, desc: "Oak canopy (walk behind)" });
-  T("tree_pine", "#1e5a2a", { S: 1, V: 2 });
-  T("tree_pine_top", "#286a34", { O: 1, V: 2 });
-  T("tree_birch", "#6aa050", { S: 1, V: 2 });
-  T("tree_birch_top", "#88b860", { O: 1 });
-  T("tree_apple", "#4a9a3a", { S: 1, I: "shake", desc: "Apple tree — shake for fruit" });
-  T("tree_apple_top", "#5aa848", { O: 1 });
-  T("tree_dead", "#5a4a3a", { S: 1 });
-  T("tree_willow", "#7aa860", { S: 1 });
-  T("tree_autumn", "#c07030", { S: 1, V: 2 });
-  T("hedge", "#2f7a2a", { S: 1, V: 2 });
-  T("hedge_low", "#3f8a3a", { S: 1 });
-  T("bush", "#3a8a3a", { S: 1, V: 2 });
-  T("berry_bush", "#3a7a3a", { S: 1, I: "berry", desc: "Berry bush" });
-  T("mushroom", "#c8a070", { I: "pick", D: 1 });
-  T("stump", "#7a5a30", { S: 1 });
-  T("log", "#8a6a3a", { S: 1 });
-  T("moss_rock", "#5a7a4a", { S: 1 });
+  // Timber floor / decking.
+  function boards(ctx, seed, face, dk, lt, dir, pw) {
+    const r = rnd("brd" + face, seed);
+    Art.planks(ctx, { x: 0, y: 0, w: ART, h: ART, face: face, dark: dk, light: lt, grain: U.shade(face, 0.82), dir: dir || "h", pw: pw || 5, rnd: r });
+  }
 
-  // -- rock / cliffs / ledges
-  T("rock", "#8a8070", { S: 1, V: 2 });
-  T("rock_moor", "#7a7a70", { S: 1, V: 2, desc: "Gritstone" });
-  T("rock_small", "#9a9080", { S: 1 });
-  T("boulder", "#7a7068", { S: 1, I: "push", desc: "Boulder — needs strength" });
-  T("cliff_top", "#8a7a60", { S: 1 });
-  T("cliff_face", "#6a5a48", { S: 1 });
-  T("cliff_left", "#7a6a50", { S: 1 });
-  T("cliff_right", "#7a6a50", { S: 1 });
-  T("cliff_corner", "#6a5a48", { S: 1 });
-  T("cliff_climb", "#9a8a68", { I: "climb", desc: "Climbable crag — needs climb" });
-  T("crag", "#5a5058", { S: 1, desc: "Castle crag" });
-  T("ledge_down", "#9a8a68", { L: "down", desc: "Ledge — hop down" });
-  T("ledge_left", "#9a8a68", { L: "left" });
-  T("ledge_right", "#9a8a68", { L: "right" });
-  T("ledge_up", "#9a8a68", { L: "up" });
-  T("cave_wall", "#3a3040", { S: 1, V: 2 });
-  T("cave_wall_top", "#2a2030", { S: 1 });
-  T("cave_entrance", "#101018", { I: "door", desc: "Cave mouth" });
-  T("stalag", "#8a8090", { S: 1, V: 2 });
-  T("ore", "#c0a040", { S: 1, I: "mine", desc: "Ore vein" });
-  T("crystal", "#a0d0f0", { S: 1, light: 1, A: 2 });
-  T("mine_cart_rail_h", "#7a6a5a", { desc: "Mine cart rails" });
-  T("mine_cart_rail_v", "#7a6a5a", {});
-  T("mine_cart", "#5a4a40", { S: 1, I: "cart" });
-  T("mine_prop", "#8a6a40", { S: 1 });
+  // Water body. `o` carries the colour set; frame drives the ripple drift.
+  function pond(ctx, frame, o) {
+    Art.ripples(ctx, frame, {
+      w: ART, h: ART, face: o.face, top: o.top || U.shade(o.face, 1.08),
+      dark: o.dark, light: o.light, hi: o.hi || o.light, dither: true, len: o.len || 4, phase: o.phase || 0
+    });
+  }
 
-  // -- buildings: walls / roofs / doors / windows
-  T("wall_brick_red", "#a04838", { S: 1, V: 2, desc: "Red brick (mill towns)" });
-  T("wall_brick_dark", "#703028", { S: 1 });
-  T("wall_stone_sandstone", "#c8a070", { S: 1, V: 2, desc: "Chester sandstone" });
-  T("wall_stone_grey", "#8a8a90", { S: 1, V: 2 });
-  T("wall_stone_grit", "#6a6a68", { S: 1, desc: "Gritstone wall (moor villages)" });
-  T("wall_tudor", "#f0e8d8", { S: 1, desc: "Black-and-white Tudor timber" });
-  T("wall_tudor_beam", "#2a2020", { S: 1, desc: "Tudor beam" });
-  T("wall_render_white", "#ecece4", { S: 1 });
-  T("wall_render_cream", "#e8dcb8", { S: 1 });
-  T("wall_glass", "#a0d0e0", { S: 1, desc: "Glass wall (greenhouse/lab)" });
-  T("wall_castle", "#7a7a80", { S: 1, desc: "Castle wall" });
-  T("wall_castle_top", "#8a8a90", { S: 1, desc: "Battlements" });
-  T("wall_city", "#b89060", { S: 1, desc: "Sandstone city wall (walkable top elsewhere)" });
-  T("wall_city_walk", "#c8a878", { desc: "City wall walkway" });
-  T("wall_interior", "#c8b8a0", { S: 1 });
-  T("wall_interior_top", "#8a7a68", { S: 1 });
-  T("wall_wainscot", "#a08060", { S: 1 });
-  T("roof_slate", "#4a4a5a", { S: 1, V: 2 });
-  T("roof_slate_edge", "#3a3a48", { S: 1 });
-  T("roof_tile_red", "#b04a3a", { S: 1, V: 2 });
-  T("roof_thatch", "#c8a860", { S: 1, V: 2 });
-  T("roof_glass", "#b0e0f0", { S: 1, desc: "Greenhouse roof" });
-  T("roof_metal", "#7a8a90", { S: 1, desc: "Corrugated roof (salt works)" });
-  T("roof_over", "#4a4a5a", { O: 1, desc: "Roof edge drawn above player" });
-  T("chimney", "#5a3a30", { S: 1 });
-  T("chimney_mill", "#7a4030", { S: 1, desc: "Tall mill chimney" });
-  T("chimney_smoke", "#c8c8d0", { O: 1, A: 4 });
-  T("door_wood", "#6a4020", { I: "door" });
-  T("door_red", "#b02020", { I: "door" });
-  T("door_shop", "#3a6aa0", { I: "door" });
-  T("door_locked", "#4a3018", { S: 1, I: "door", desc: "Locked door" });
-  T("door_gym", "#c0a020", { I: "door" });
-  T("door_stairs_up", "#a08060", { I: "door", desc: "Stairs up" });
-  T("door_stairs_down", "#705040", { I: "door", desc: "Stairs down" });
-  T("window", "#8ac0e0", { S: 1 });
-  T("window_lit", "#f0d060", { S: 1, light: 1 });
-  T("window_shop", "#a0d0f0", { S: 1 });
-  T("shop_awning", "#c03030", { O: 1, desc: "Striped awning" });
-  T("sign", "#8a6a40", { S: 1, I: "sign" });
-  T("sign_post", "#7a5a30", { S: 1, I: "sign" });
-  T("sign_chippy", "#f0c020", { S: 1, I: "sign", desc: "Chippy sign" });
-  T("sign_pub", "#5a3a20", { S: 1, I: "sign", desc: "Pub sign" });
-  T("sign_station", "#203060", { S: 1, I: "sign", desc: "Station name board" });
-  T("station_clock", "#e0e0d0", { S: 1, I: "sign", A: 2, desc: "Station clock" });
-  T("noticeboard", "#8a6a40", { S: 1, I: "sign" });
-  T("fence_wood", "#a07840", { S: 1 });
-  T("fence_wood_post", "#8a6030", { S: 1 });
-  T("fence_iron", "#303038", { S: 1 });
-  T("fence_stone", "#8a8a80", { S: 1, desc: "Dry stone wall" });
-  T("fence_wire", "#8a8a8a", { S: 1 });
-  T("gate_wood", "#a07840", { I: "gate", desc: "Gate (opens)" });
-  T("gate_iron", "#303038", { S: 1, I: "gate" });
-  T("wall_garden", "#a89078", { S: 1 });
-  T("steps", "#9a9aa0", {});
-  T("pavement", "#b0b0b8", { V: 2 });
-  T("kerb", "#909098", {});
-  T("road", "#505058", { V: 1 });
-  T("road_line", "#e0e0d0", {});
-  T("zebra", "#e8e8e0", {});
+  // ---- masonry ------------------------------------------------------
+  function brickWall(ctx, seed, face, dk, lt, mortar, bw, bh) {
+    Art.bricks(ctx, {
+      x: 0, y: 0, w: ART, h: ART, bw: bw || 8, bh: bh || 4,
+      face: face, dark: dk, light: lt, mortar: mortar, rnd: rnd("brk" + face, seed)
+    });
+    Art.edge(ctx, "n", U.shade(face, 1.25), 0.5);
+    Art.edge(ctx, "s", "#000", 0.16);
+  }
 
-  // -- street furniture / town deco
-  T("lamp", "#303040", { S: 1, light: 1, D: 1 });
-  T("lamp_victorian", "#202028", { S: 1, light: 1, D: 1 });
-  T("bench", "#8a6a40", { S: 1, D: 1, I: "sit" });
-  T("bin", "#3a5a3a", { S: 1, D: 1 });
-  T("postbox", "#c02020", { S: 1, D: 1, I: "sign" });
-  T("phonebox", "#c02020", { S: 1, D: 1 });
-  T("market_stall", "#d0a040", { S: 1, I: "shop", desc: "Market stall" });
-  T("market_stall_top", "#e0b050", { O: 1 });
-  T("bus_stop", "#5a5a68", { S: 1, D: 1, I: "sign" });
-  T("bollard", "#404048", { S: 1, D: 1 });
-  T("planter", "#8a6a40", { S: 1, D: 1 });
-  T("statue", "#909098", { S: 1, I: "sign" });
-  T("bear_statue", "#6a5a4a", { S: 1, I: "sign", desc: "Congleton bear" });
-  T("cross_saxon", "#a09880", { S: 1, I: "sign", desc: "Sandbach Saxon cross" });
-  T("moai", "#7a7a80", { S: 1, I: "sign", desc: "Moai head (the odd one)" });
-  T("white_nancy", "#f0f0f0", { S: 1, I: "sign", desc: "White Nancy folly" });
-  T("war_memorial", "#b0b0a8", { S: 1, I: "sign" });
-  T("fountain", "#8ab0d0", { S: 1, A: 4 });
-  T("well", "#7a7a80", { S: 1, I: "sign" });
-  T("bandstand", "#c8b890", { S: 1 });
-  T("picnic_table", "#a08050", { S: 1, I: "sit" });
-  T("scarecrow", "#c8a060", { S: 1, I: "sign" });
-  T("hay_bale", "#e0c060", { S: 1 });
-  T("apple_press", "#7a5a30", { S: 1, I: "machine", desc: "Cider / apple press" });
-  T("crate", "#a08040", { S: 1 });
-  T("barrel", "#8a5a30", { S: 1 });
-  T("sack", "#c0a070", { S: 1 });
+  function stoneWall(ctx, seed, face, dk, lt, mortar, bh) {
+    Art.stonework(ctx, { x: 0, y: 0, w: ART, h: ART, bh: bh || 5, face: face, dark: dk, light: lt, mortar: mortar, rnd: rnd("stw" + face, seed) });
+    Art.edge(ctx, "s", "#000", 0.18);
+  }
 
-  // -- Cheshire landmarks & industry
-  T("mill_wheel", "#6a4a2a", { S: 1, A: 4, desc: "Silk mill water wheel" });
-  T("mill_wall", "#8a4030", { S: 1, desc: "Silk mill brickwork" });
-  T("mill_window", "#c0d8e8", { S: 1, desc: "Tall mill window" });
-  T("loom", "#7a5a40", { S: 1, I: "machine", desc: "Silk loom" });
-  T("silk_bolt", "#d060a0", { S: 1, desc: "Bolts of silk" });
-  T("salt_pan", "#c8c8d0", { S: 1, I: "machine", desc: "Salt works evaporating pan" });
-  T("salt_pile", "#f0f0f8", { S: 1 });
-  T("salt_works_pipe", "#6a6a70", { S: 1 });
-  T("brine_pump", "#5a5a60", { S: 1, I: "machine", A: 2, desc: "Brine pump" });
-  T("rail_track_h", "#6a6060", { desc: "Rail track" });
-  T("rail_track_v", "#6a6060", {});
-  T("rail_track_x", "#6a6060", {});
-  T("rail_buffer", "#c03030", { S: 1 });
-  T("rail_signal", "#3a3a40", { S: 1, A: 2, light: 1 });
-  T("train_engine", "#204060", { S: 1, I: "train", desc: "Train (front)" });
-  T("train_carriage", "#803030", { S: 1, I: "train", desc: "Train carriage" });
-  T("train_door", "#a04040", { I: "train", desc: "Carriage door — travel" });
-  T("canal_lock", "#5a4a30", { S: 1, I: "machine", desc: "Canal lock gate" });
-  T("canal_lock_beam", "#8a7040", { S: 1 });
-  T("towpath", "#a08a60", { V: 2, desc: "Canal towpath" });
-  T("narrowboat", "#206040", { S: 1, I: "boat", desc: "Narrowboat" });
-  T("boat_lift", "#606870", { S: 1, desc: "Anderton boat lift ironwork" });
-  T("boat_lift_top", "#707880", { O: 1 });
-  T("dish", "#d0d8e0", { S: 1, desc: "Radio telescope dish (Jodrell)" });
-  T("dish_base", "#7a8088", { S: 1 });
-  T("dish_top", "#e0e8f0", { O: 1 });
-  T("radio_mast", "#8a8a90", { S: 1, light: 1, A: 2 });
-  T("castle_gate", "#4a4a50", { I: "door", desc: "Castle gatehouse" });
-  T("castle_tower", "#6a6a70", { S: 1 });
-  T("portcullis", "#3a3a40", { S: 1, I: "gate" });
-  T("church_wall", "#9a9a90", { S: 1 });
-  T("church_window", "#6060c0", { S: 1, desc: "Stained glass" });
-  T("church_door", "#5a3a20", { I: "door" });
-  T("church_spire", "#7a7a80", { S: 1 });
-  T("gravestone", "#8a8a88", { S: 1, I: "sign" });
-  T("pub_wall", "#f0e8d8", { S: 1 });
-  T("pub_door", "#4a2a10", { I: "door" });
-  T("chippy_counter", "#e0e0e8", { S: 1, I: "shop", desc: "Chippy counter" });
-  T("greenhouse_wall", "#b0e0e8", { S: 1 });
-  T("greenhouse_door", "#80b0c0", { I: "door" });
-  T("greenhouse_bed", "#5a8a40", { S: 1, I: "pick" });
-  T("zoo_fence", "#4a5a4a", { S: 1, desc: "Zoo enclosure fence" });
-  T("zoo_enclosure", "#8a9a70", { desc: "Zoo enclosure floor" });
-  T("zoo_pool", "#5aa0d0", { W: 1, A: 4 });
-  T("zoo_sign", "#3a7a3a", { S: 1, I: "sign" });
-  T("pine_forest_floor", "#4a3a2a", { G: 1, V: 2, desc: "Pine forest floor — encounters" });
-  T("moor_path", "#7a6a48", { V: 2 });
-  T("moor_stone", "#6a6a68", { S: 1, desc: "Standing stone" });
-  T("orchard_row", "#6ab04c", {});
-  T("racecourse_rail", "#f0f0f0", { S: 1 });
-  T("racecourse_turf", "#4aa040", { V: 2 });
-  T("mere_jetty", "#8a6a40", { I: "fish" });
-  T("airport_fence", "#8a8a8a", { S: 1 });
-  T("runway", "#404048", {});
-  T("server_rack", "#202830", { S: 1, light: 1, A: 2, I: "pc", desc: "Server rack (Cyber)" });
-  T("cable_duct", "#303840", { S: 1 });
-  T("terminal", "#20b898", { S: 1, light: 1, A: 2, I: "pc", desc: "Terminal" });
-  T("hologram", "#40e0c0", { light: 1, A: 4, D: 1 });
+  function roofOf(ctx, seed, style, face, dk, lt, shadow) {
+    Art.roof(ctx, { x: 0, y: 0, w: ART, h: ART, style: style, face: face, dark: dk, light: lt, shadow: shadow || dk, rnd: rnd("rf" + face, seed) });
+  }
 
-  // -- interiors
-  T("counter", "#8a6a40", { S: 1, I: "shop" });
-  T("counter_top", "#a08050", { S: 1 });
-  T("shelf", "#7a5a30", { S: 1, I: "shelf" });
-  T("shelf_books", "#7a5a30", { S: 1, I: "shelf" });
-  T("pc", "#3050a0", { S: 1, I: "pc", light: 1, A: 2 });
-  T("healer", "#e05070", { S: 1, I: "machine", light: 1, A: 2, desc: "Healing machine" });
-  T("machine", "#606070", { S: 1, I: "machine" });
-  T("table", "#a08050", { S: 1 });
-  T("table_round", "#a08050", { S: 1 });
-  T("chair", "#8a6a40", { S: 1 });
-  T("stool", "#8a6a40", { S: 1 });
-  T("bed", "#c04050", { S: 1, I: "bed", desc: "Bed — rest" });
-  T("bed_head", "#a03040", { S: 1 });
-  T("tv", "#202028", { S: 1, I: "sign", light: 1 });
-  T("bookcase", "#6a4a2a", { S: 1, I: "shelf" });
-  T("plant_pot", "#4a8a3a", { S: 1 });
-  T("fireplace", "#5a4a40", { S: 1, light: 1, A: 4 });
-  T("stove", "#404048", { S: 1, I: "machine" });
-  T("sink", "#c8c8d0", { S: 1 });
-  T("fridge", "#e0e0e8", { S: 1, I: "shelf" });
-  T("wardrobe", "#6a4a2a", { S: 1 });
-  T("piano", "#202020", { S: 1, I: "machine" });
-  T("bar", "#5a3a20", { S: 1, I: "shop", desc: "Pub bar" });
-  T("bar_taps", "#c0a040", { S: 1 });
-  T("dartboard", "#c04040", { S: 1, I: "sign" });
-  T("fruit_machine", "#e0c030", { S: 1, I: "machine", light: 1, A: 2 });
-  T("stairs", "#a08060", { I: "door" });
-  T("carpet_stairs", "#a03040", { I: "door" });
-  T("mat", "#8a7a5a", {});
-  T("mat_welcome", "#8a6a3a", {});
-  T("lab_bench", "#c8d0d8", { S: 1, I: "shelf" });
-  T("capsule_case", "#e0e0f0", { S: 1, I: "machine", light: 1, desc: "Starter capsules" });
-  T("gym_badge_stand", "#c0a020", { S: 1, I: "sign" });
-  T("gym_statue", "#909098", { S: 1, I: "sign" });
-  T("mirror", "#c0d0e0", { S: 1 });
-  T("painting", "#8a6a40", { S: 1, I: "sign" });
-  T("clock_wall", "#e0e0d0", { S: 1, I: "sign", A: 2 });
-  T("box_pc", "#4060b0", { S: 1, I: "pc", light: 1, A: 2, desc: "Storage box PC" });
-  T("brew_vat", "#7a5a30", { S: 1, I: "machine", A: 2, desc: "Brewing vat" });
-  T("cash_till", "#c0c0c8", { S: 1, I: "shop" });
-  T("cat_bed", "#a0a0c0", { S: 1 });
-  T("cat_bowl", "#e0e0e8", { S: 1 });
-  T("shadow", "#000000", { D: 1, desc: "Generic shadow deco (drawn translucent)" });
+  // Dev-time sanity check: every ascii tile sheet is 16 rows of 16 chars.
+  function checkRows(rows) {
+    if (!MQ.DEV) return rows;
+    if (rows.length !== ART) MQ.warn("tiles: ascii sheet has " + rows.length + " rows: " + rows[0]);
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].length !== ART) MQ.warn("tiles: ascii row " + i + " is " + rows[i].length + " chars: \"" + rows[i] + "\"");
+    }
+    return rows;
+  }
+  const sheet = checkRows;
 
-  MQ.Tiles = Tiles;
-})();
+  // Render an ascii sheet over a background painter.
+  // bg = function(ctx, frame, seed) | colour string | null (transparent)
+  function deco(bg, rows, palOver) {
+    checkRows(rows);
+    const p = palOver ? Art.pal(palOver) : PAL;
+    return function (ctx, frame, seed) {
+      if (typeof bg === "function") bg(ctx, frame, seed);
+      else if (bg) fill(ctx, bg);
+      ascii(ctx, rows, p);
+    };
+  }
+
+  // Same, but the ascii sheet is chosen by animation frame.
+  function decoAnim(bg, frames, palOver) {
+    for (let i = 0; i < frames.length; i++) checkRows(frames[i]);
+    const p = palOver ? Art.pal(palOver) : PAL;
+    return function (ctx, frame, seed) {
+      if (typeof bg === "function") bg(ctx, frame, seed);
+      else if (bg) fill(ctx, bg);
+      ascii(ctx, frames[(frame | 0) % frames.length], p);
+    };
+  }
+
+  // Same, but the ascii sheet is chosen by variant seed.
+  function decoVar(bg, sheets, palOver) {
+    for (let i = 0; i < sheets.length; i++) checkRows(sheets[i]);
+    const p = palOver ? Art.pal(palOver) : PAL;
+    return function (ctx, frame, seed) {
+      if (typeof bg === "function") bg(ctx, frame, seed);
+      else if (bg) fill(ctx, bg);
+      ascii(ctx, sheets[(seed | 0) % sheets.length], p);
+    };
+  }
+
+  // ---- shared backgrounds -------------------------------------------
+  const BG = {};
+  BG.grass = function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 5, "g"); };
+  BG.grassQuiet = function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 2, "gq"); };
+  BG.moor = function (ctx, f, s) { turf(ctx, s, C.moorGrass, "#6b7a36", "#a4b25e", 4, "mo"); };
+  BG.dirt = function (ctx, f, s) { grit(ctx, s, C.dirt, C.dirtDk, C.dirtLt, 20, "di"); };
+  BG.cobble = function (ctx, f, s) { cobbles(ctx, s, "#9a9aa8", "#7a7a88", "#b6b6c2", "#68687a"); };
+  BG.pave = function (ctx, f, s) { flags(ctx, s, "#b0b0b8", "#95959f", "#c8c8d0", "#7e7e88"); };
+  BG.floorWood = function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); };
+  BG.floorStone = function (ctx, f, s) { flags(ctx, s, "#909098", "#75757f", "#a8a8b2", "#63636d"); };
+  BG.floorTile = function (ctx, f, s) { tileFloor(ctx, s, "#d8d0c0", "#bdb4a2"); };
+  BG.cave = function (ctx, f, s) { grit(ctx, s, "#6a6070", "#4d4557", "#867c8e", 26, "cv"); };
+  BG.none = null;
+
+  function tileFloor(ctx, seed, face, dk) {
+    const r = rnd("tf" + face, seed);
+    fill(ctx, face);
+    for (let y = 0; y < ART; y += 8) for (let x = 0; x < ART; x += 8) {
+      const c = ((x + y) % 16 === 0) ? face : U.shade(face, 0.96);
+      rect(ctx, x, y, 7, 7, c);
+      rect(ctx, x, y, 7, 1, U.shade(c, 1.06));
+    }
+    rect(ctx, 7, 0, 1, ART, dk); rect(ctx, 15, 0, 1, ART, dk);
+    rect(ctx, 0, 7, ART, 1, dk); rect(ctx, 0, 15, ART, 1, dk);
+    speckle(ctx, r, 0, 0, ART, ART, [U.shade(face, 1.05)], 6);
+  }
+
+  // Contact shadow at the foot of an object, so it sits on the ground.
+  function foot(ctx, cx, cy, w) { Art.shadow(ctx, cx, cy, w || 5, 2, 0.22); }
+
+  // =============================================================
+  // PAINTERS — keyed by tile id.
+  // =============================================================
+  const PAINT = {};
+  function P(id, fn) { PAINT[id] = fn; return fn; }
+
+  // ---------------------------------------------------------------
+  // GROUND — turf, moor, paths, floors
+  // ---------------------------------------------------------------
+  P("grass", function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 5, "g"); });
+  P("grass_dark", function (ctx, f, s) { turf(ctx, s, "#3f8a34", "#2b6926", "#59a844", 4, "gd"); });
+
+  P("grass_tall", function (ctx, f, s) {
+    turf(ctx, s, "#3d9a3a", "#2a6f28", "#55b84c", 0, "gt");
+    const r = rnd("tall", s);
+    const lean = (f | 0) & 1;
+    for (let i = 0; i < 14; i++) {
+      const x = (r() * ART) | 0, h = 6 + ((r() * 7) | 0);
+      const c = r() < 0.35 ? "#67c95c" : "#43a63c";
+      const dark = U.shade(c, 0.72);
+      for (let j = 0; j < h; j++) {
+        const tip = j > h - 4;
+        const dx = tip ? (lean ? 1 : 0) : 0;
+        px(ctx, (x + dx) & 15, 15 - j, tip ? c : dark);
+      }
+      px(ctx, (x + (lean ? 2 : 1)) & 15, 15 - h, "#7ad86a");
+    }
+  });
+
+  P("grass_moor", function (ctx, f, s) {
+    turf(ctx, s, C.moorGrass, "#6b7a36", "#a8b662", 6, "gm");
+    const r = rnd("moorg", s);
+    for (let i = 0; i < 5; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, C.bracken);
+  });
+
+  P("moor_heather", function (ctx, f, s) {
+    turf(ctx, s, "#5f6b34", "#454e26", "#77854a", 3, "mh");
+    const r = rnd("heath", s);
+    for (let i = 0; i < 11; i++) {
+      const x = (r() * ART) | 0, y = 2 + ((r() * 13) | 0);
+      rect(ctx, x, y, 1, 3, "#4a5a2c");
+      px(ctx, x, y - 1, C.heather);
+      px(ctx, (x + 1) & 15, y, r() < 0.5 ? C.heatherLt : C.heather);
+      px(ctx, (x - 1 + 16) & 15, y + 1, C.heatherDk);
+    }
+  });
+
+  P("moor_bog", function (ctx, f, s) {
+    grit(ctx, s, C.peat, "#33291c", "#63523c", 22, "bog");
+    const r = rnd("bogp", s);
+    for (let i = 0; i < 3; i++) {
+      const x = 2 + ((r() * 10) | 0), y = 3 + ((r() * 9) | 0);
+      rect(ctx, x, y, 4, 3, "#2c2a20");
+      rect(ctx, x, y, 4, 1, "#4a4c3a");
+      px(ctx, x + 1, y + 1, "#5b6050");
+    }
+    for (let i = 0; i < 4; i++) {
+      const x = (r() * ART) | 0;
+      rect(ctx, x, 4 + ((r() * 8) | 0), 1, 4, C.moorGrass);
+    }
+    Art.edge(ctx, "ns", "#000", 0.18);
+  });
+
+  function flowerBed(petal, petal2, centre) {
+    return function (ctx, f, s) {
+      turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "fl");
+      const r = rnd("flow" + petal, s);
+      for (let i = 0; i < 6; i++) {
+        const x = 1 + ((r() * 13) | 0), y = 2 + ((r() * 12) | 0);
+        const p = r() < 0.5 ? petal : petal2;
+        px(ctx, x, y - 1, p); px(ctx, x - 1, y, p); px(ctx, x + 1, y, p); px(ctx, x, y + 1, p);
+        px(ctx, x, y, centre);
+        px(ctx, x, y + 2, C.grassDk);
+      }
+    };
+  }
+  P("flowers_yellow", flowerBed("#f0e04c", "#e8c832", "#8a6a10"));
+  P("flowers_red", flowerBed("#e05050", "#c03434", "#f0d060"));
+  P("flowers_blue", flowerBed("#6a86e8", "#4c62c8", "#e8e0a0"));
+  P("flowers_white", flowerBed("#f4f4ee", "#dcdcd2", "#e8c040"));
+
+  P("path_dirt", function (ctx, f, s) {
+    grit(ctx, s, C.dirt, C.dirtDk, C.dirtLt, 24, "pd");
+    const r = rnd("pdr", s);
+    for (let i = 0; i < 3; i++) rect(ctx, (r() * 12) | 0, (r() * ART) | 0, 3, 1, U.shade(C.dirtDk, 0.9));
+    for (let i = 0; i < 4; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#8f8f86");
+  });
+
+  P("path_cobble", function (ctx, f, s) { cobbles(ctx, s, "#9a9aa8", "#7a7a88", "#b6b6c2", "#68687a"); });
+  P("path_flag", function (ctx, f, s) { flags(ctx, s, "#a8a090", "#8c8578", "#c0b8a6", "#77715f"); });
+  P("path_gravel", function (ctx, f, s) {
+    grit(ctx, s, "#b0a898", "#8e876f", "#cdc6b4", 34, "pg");
+    const r = rnd("grv", s);
+    for (let i = 0; i < 10; i++) rect(ctx, (r() * 15) | 0, (r() * 15) | 0, 2, 1, r() < 0.5 ? "#d6d0c0" : "#847d68");
+  });
+
+  P("path_tarmac", function (ctx, f, s) {
+    grit(ctx, s, "#505058", "#3d3d45", "#66666e", 30, "tar");
+    const r = rnd("tarc", s);
+    let x = (r() * ART) | 0;
+    for (let y = 0; y < ART; y++) { px(ctx, x, y, "#3a3a42"); if (r() < 0.35) x = (x + (r() < 0.5 ? 1 : 15)) & 15; }
+  });
+
+  P("path_wet", function (ctx, f, s) {
+    grit(ctx, s, "#7a8a70", "#5e6c56", "#94a189", 20, "pw");
+    const r = rnd("wet", s);
+    for (let i = 0; i < 3; i++) {
+      const x = 1 + ((r() * 9) | 0), y = 2 + ((r() * 10) | 0), w = 4 + ((r() * 3) | 0);
+      rect(ctx, x, y, w, 3, "#6d8496");
+      rect(ctx, x + 1, y, w - 2, 1, "#93b0c4");
+      px(ctx, x + 1, y + 1, "#c4dbe8");
+    }
+  });
+
+  P("sand", function (ctx, f, s) {
+    grit(ctx, s, "#e8d8a0", "#c9b57e", "#f6ecc4", 26, "sd");
+    const r = rnd("sdr", s);
+    for (let i = 0; i < 4; i++) rect(ctx, (r() * 11) | 0, (r() * ART) | 0, 5, 1, "#d8c78e");
+  });
+
+  P("mud", function (ctx, f, s) {
+    grit(ctx, s, C.mud, "#4c331a", "#8a6640", 28, "md");
+    const r = rnd("mdr", s);
+    for (let i = 0; i < 4; i++) {
+      const x = (r() * 13) | 0, y = (r() * 13) | 0;
+      rect(ctx, x, y, 3, 2, "#4a3a26"); px(ctx, x + 1, y, "#7d6a4c");
+    }
+  });
+
+  P("snow", function (ctx, f, s) {
+    fill(ctx, "#f0f4ff");
+    dither(ctx, 0, 0, ART, ART, "#dde4f4", 5);
+    const r = rnd("snw", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#ffffff", "#cfd8ee"], 18);
+    for (let i = 0; i < 3; i++) rect(ctx, (r() * 10) | 0, (r() * ART) | 0, 5, 1, "#d5def2");
+  });
+
+  P("salt_flat", function (ctx, f, s) {
+    fill(ctx, "#e8e8f0");
+    dither(ctx, 0, 0, ART, ART, "#d6d8e6", 4);
+    const r = rnd("slt", s);
+    // polygonal crust cracks
+    const cx = 4 + ((r() * 8) | 0), cy = 4 + ((r() * 8) | 0);
+    rect(ctx, 0, cy, ART, 1, "#c3c6d8");
+    rect(ctx, cx, 0, 1, cy, "#c3c6d8");
+    rect(ctx, (cx + 6) & 15, cy, 1, ART - cy, "#c3c6d8");
+    speckle(ctx, r, 0, 0, ART, ART, ["#ffffff", "#cdd0e0"], 14);
+  });
+
+  P("salt_crust", function (ctx, f, s) {
+    fill(ctx, "#d8d8e8");
+    const r = rnd("sltc", s);
+    for (let i = 0; i < 5; i++) {
+      const x = (r() * 12) | 0, y = 2 + ((r() * 10) | 0), w = 3 + ((r() * 4) | 0);
+      rect(ctx, x, y, w, 3, "#eef0fa");
+      rect(ctx, x, y + 3, w, 1, "#b9bcd0");
+      rect(ctx, x, y, w, 1, "#ffffff");
+    }
+    speckle(ctx, r, 0, 0, ART, ART, ["#ffffff", "#b7bacd"], 16);
+    Art.edge(ctx, "s", "#000", 0.2);
+  });
+
+  P("orchard_grass", function (ctx, f, s) {
+    turf(ctx, s, "#6ab04c", "#4d8c36", "#8ccb66", 4, "orc");
+    const r = rnd("orcp", s);
+    for (let i = 0; i < 3; i++) { const x = (r() * 15) | 0, y = (r() * 15) | 0; px(ctx, x, y, "#c8d84a"); px(ctx, x + 1, y, "#e0e878"); }
+  });
+
+  P("pine_needles", function (ctx, f, s) {
+    grit(ctx, s, "#6a5a3a", "#4c3f26", "#8a7a52", 18, "pn");
+    const r = rnd("pnl", s);
+    for (let i = 0; i < 14; i++) {
+      const x = (r() * 14) | 0, y = (r() * 15) | 0;
+      rect(ctx, x, y, 2, 1, r() < 0.4 ? "#3e4a2c" : "#7d6b44");
+    }
+    for (let i = 0; i < 3; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#2f4a2a");
+  });
+
+  P("cave_floor", function (ctx, f, s) {
+    grit(ctx, s, "#6a6070", "#4d4557", "#867c8e", 26, "cf");
+    const r = rnd("cfr", s);
+    for (let i = 0; i < 4; i++) {
+      const x = (r() * 13) | 0, y = (r() * 13) | 0;
+      rect(ctx, x, y, 3, 2, "#5a5165"); rect(ctx, x, y, 3, 1, "#7b7186");
+    }
+    Art.edge(ctx, "ns", "#000", 0.12);
+  });
+  P("cave_floor_dark", function (ctx, f, s) {
+    grit(ctx, s, "#4a4050", "#332c3c", "#615668", 22, "cfd");
+    Art.edge(ctx, "nsew", "#000", 0.2);
+  });
+  P("mine_floor", function (ctx, f, s) {
+    grit(ctx, s, "#5a5048", "#413931", "#786c60", 24, "mf");
+    const r = rnd("mfr", s);
+    for (let i = 0; i < 3; i++) rect(ctx, 0, (r() * ART) | 0, ART, 1, "#4a423a");
+    for (let i = 0; i < 4; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#8e8474");
+  });
+
+  P("floor_wood", function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); });
+  P("floor_wood_dark", function (ctx, f, s) { boards(ctx, s, "#8a6038", "#65431f", "#a37b4c", "v", 5); });
+  P("floor_stone", function (ctx, f, s) { flags(ctx, s, "#909098", "#75757f", "#a8a8b2", "#63636d"); });
+  P("floor_tile", function (ctx, f, s) { tileFloor(ctx, s, "#d8d0c0", "#bdb4a2"); });
+  P("floor_tile_check", function (ctx, f, s) {
+    Art.checker(ctx, 0, 0, ART, ART, "#d8d8dc", "#3c3c46", 8);
+    rect(ctx, 0, 0, 8, 1, "#eaeaee"); rect(ctx, 8, 8, 8, 1, "#eaeaee");
+    rect(ctx, 8, 0, 8, 1, "#4e4e5a"); rect(ctx, 0, 8, 8, 1, "#4e4e5a");
+    rect(ctx, 0, 7, ART, 1, "#9a9aa2"); rect(ctx, 0, 15, ART, 1, "#9a9aa2");
+  });
+  P("floor_carpet", function (ctx, f, s) {
+    fill(ctx, "#a04040");
+    dither(ctx, 0, 0, ART, ART, "#8d3636", 6);
+    dither(ctx, 0, 0, ART, ART, "#b25050", 3);
+    const r = rnd("crp", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#8a3232", "#b85858"], 20);
+  });
+  P("floor_lab", function (ctx, f, s) {
+    fill(ctx, "#c0d8e0");
+    rect(ctx, 0, 7, ART, 1, "#a3bfc9"); rect(ctx, 0, 15, ART, 1, "#a3bfc9");
+    rect(ctx, 7, 0, 1, ART, "#a3bfc9"); rect(ctx, 15, 0, 1, ART, "#a3bfc9");
+    rect(ctx, 0, 0, 7, 1, "#dcecf2"); rect(ctx, 8, 8, 7, 1, "#dcecf2");
+    const r = rnd("lab", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#d4e6ec"], 6);
+  });
+  P("floor_gym", function (ctx, f, s) {
+    boards(ctx, s, "#d0a860", "#a8823f", "#e2c184", "h", 8);
+    rect(ctx, 0, 0, ART, 1, "#8f6c2e");
+    rect(ctx, 2, 2, 12, 12, null);
+    // pale court markings
+    rect(ctx, 1, 3, 14, 1, "#f2e6c8"); rect(ctx, 1, 12, 14, 1, "#f2e6c8");
+  });
+  P("rug", function (ctx, f, s) {
+    fill(ctx, "#c03030");
+    Art.frame(ctx, 0, 0, ART, ART, "#8f1f1f");
+    Art.frame(ctx, 2, 2, 12, 12, "#e8c060");
+    Art.checker(ctx, 4, 4, 8, 8, "#c03030", "#a82828", 2);
+    px(ctx, 7, 7, "#e8c060"); px(ctx, 8, 8, "#e8c060");
+  });
+  P("rug_edge", function (ctx, f, s) {
+    fill(ctx, "#a02828");
+    rect(ctx, 0, 0, ART, 2, "#8f1f1f");
+    for (let x = 0; x < ART; x += 2) rect(ctx, x, ART - 3, 1, 3, "#e8c060");
+    dither(ctx, 0, 2, ART, 11, "#b53232", 6);
+  });
+
+  P("platform", function (ctx, f, s) {
+    flags(ctx, s, "#a8a0a0", "#8b8484", "#c2baba", "#767070");
+    const r = rnd("plt", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#bab2b2"], 8);
+  });
+  P("platform_edge", function (ctx, f, s) {
+    flags(ctx, s, "#a8a0a0", "#8b8484", "#c2baba", "#767070");
+    rect(ctx, 0, 10, ART, 4, "#e0d060");
+    rect(ctx, 0, 10, ART, 1, "#f4e894");
+    rect(ctx, 0, 13, ART, 1, "#a8912f");
+    rect(ctx, 0, 14, ART, 2, "#5a5a60");
+    for (let x = 1; x < ART; x += 4) rect(ctx, x, 11, 1, 2, "#c8b64e");
+  });
+
+  P("void", function (ctx) { fill(ctx, "#08080c"); dither(ctx, 0, 0, ART, ART, "#101018", 3); });
+
+  // ---------------------------------------------------------------
+  // WATER — canal green, mere silver, brine turquoise
+  // ---------------------------------------------------------------
+  function waterPainter(o) { return function (ctx, f) { pond(ctx, f, o); }; }
+
+  P("water", waterPainter({ face: "#4a8ad8", top: "#5f9ce4", dark: "#2f65ab", light: "#8dc0f2", hi: "#cfe6ff" }));
+  P("water_deep", waterPainter({ face: "#25538f", top: "#2d6099", dark: "#173c69", light: "#4b83c4", hi: "#8fb9e4", len: 3 }));
+  P("water_canal", waterPainter({ face: "#3f6a63", top: "#4b7a70", dark: "#26443f", light: "#699e8f", hi: "#a9cfc0", len: 5, phase: 2 }));
+  P("water_river", waterPainter({ face: "#4a90c8", top: "#57a0d6", dark: "#2f6a9a", light: "#8ec4e8", hi: "#d0ecfa", len: 6 }));
+  P("water_flash", waterPainter({ face: "#5a80a8", top: "#6a90b6", dark: "#3d5f83", light: "#93b4cf", hi: "#c9dde9", len: 3, phase: 1 }));
+  P("water_pond", waterPainter({ face: "#4a7ab0", top: "#578ac0", dark: "#325a89", light: "#83aed6", hi: "#c4dcef", len: 4, phase: 3 }));
+  P("brine_pool", waterPainter({ face: "#7ac8c0", top: "#8ad8cf", dark: "#4e9a94", light: "#a9e6de", hi: "#e2f8f4", len: 5 }));
+  P("zoo_pool", waterPainter({ face: "#5aa0d0", top: "#6bb0dc", dark: "#3b7aa8", light: "#95cbe8", hi: "#d6effa", len: 4, phase: 2 }));
+  P("fish_spot", function (ctx, f, s) {
+    pond(ctx, f, { face: "#3a7ac0", top: "#4587cc", dark: "#255a99", light: "#7cb0e2", hi: "#c2e0f8", len: 4 });
+    // concentric rise-ring, expanding with the frame
+    const r = 2 + ((f | 0) % 4);
+    const g = ctx.globalAlpha; ctx.globalAlpha = 0.55 - ((f | 0) % 4) * 0.1;
+    ctx.fillStyle = "#dff0ff";
+    ctx.fillRect(8 - r, 8, r * 2, 1); ctx.fillRect(8, 8 - r, 1, r * 2);
+    ctx.fillRect(8 - r + 1, 8 - r + 1, 1, 1); ctx.fillRect(8 + r - 1, 8 + r - 1, 1, 1);
+    ctx.fillRect(8 - r + 1, 8 + r - 1, 1, 1); ctx.fillRect(8 + r - 1, 8 - r + 1, 1, 1);
+    ctx.globalAlpha = g;
+  });
+
+  P("shallows", function (ctx, f) {
+    pond(ctx, f, { face: "#8ac0e0", top: "#98cbe8", dark: "#6ba2c4", light: "#bfe0f4", hi: "#eaf8ff", len: 5 });
+    const r = rnd("shal", 0);
+    speckle(ctx, r, 0, 0, ART, ART, ["#c9a978", "#a8916a"], 8);
+  });
+
+  // Bank / shallows edge: dry bank at the top, water below, foam between.
+  P("water_edge", function (ctx, f, s) {
+    grit(ctx, s, "#c9b184", "#a58f65", "#e0cca4", 16, "bank");
+    for (let i = 0; i < 6; i++) rect(ctx, (i * 3) % ART, 2 + (i % 4), 2, 1, "#8f7a52");
+    pondBand(ctx, f, 9);
+  });
+  function pondBand(ctx, f, y0) {
+    Art.ripples(ctx, f, { x: 0, y: y0, w: ART, h: ART - y0, face: "#5f9ce4", top: "#4c86cd", dark: "#3d76bd", light: "#9ac8f2", hi: "#d8ecff", rows: [1, 3, 5], len: 4 });
+    rect(ctx, 0, y0 - 1, ART, 1, "#e8f4ff");
+    const r = rnd("foam", 0);
+    for (let i = 0; i < 5; i++) px(ctx, (r() * ART) | 0, y0 - 2, "#f2f9ff");
+  }
+
+  const REED_PAL = Art.pal({});
+  const REEDS_A = sheet([
+    "................", "......V.........", ".....V..V...V...", "....V.VV.V..VV..",
+    "...V.VV.VV.VVV..", "...V.V..V..V.V..", "...V.V..V..V.V..", "..V..V..V..V.V..",
+    "..V..V..V..V.V..", "..V..V..V..V.V..", "..V..V..V..V.V..", "..V..V..V..V.V..",
+    "..v..v..v..v.v..", "..v..v..v..v.v..", "................", "................"
+  ]);
+  const REEDS_B = sheet([
+    "................", ".......V........", "....V...V....V..", "...VV..VV...VV..",
+    "..VVV.VV.V.VV...", "...V..V..V..V...", "...V..V..V..V...", "...V..V..V..V...",
+    "..V...V..V..V...", "..V...V..V..V...", "..V...V..V..V...", "..V...V..V..V...",
+    "..v...v..v..v...", "..v...v..v..v...", "................", "................"
+  ]);
+  P("water_reeds", function (ctx, f, s) {
+    pond(ctx, f, { face: "#3f6a63", top: "#4b7a70", dark: "#26443f", light: "#699e8f", hi: "#a9cfc0", len: 4 });
+    ascii(ctx, (f | 0) % 2 ? REEDS_B : REEDS_A, REED_PAL);
+  });
+  P("lake_reeds", function (ctx, f, s) {
+    grit(ctx, s, "#5a9a70", "#3f7351", "#7fba90", 16, "reedb");
+    rect(ctx, 0, 11, ART, 5, "#41705a");
+    ascii(ctx, (f | 0) % 2 ? REEDS_A : REEDS_B, REED_PAL);
+    Art.edge(ctx, "s", "#000", 0.2);
+  });
+
+  P("waterfall", function (ctx, f) {
+    const fr = (f | 0) & 3;
+    fill(ctx, "#6fa8d8");
+    for (let x = 0; x < ART; x++) {
+      const c = (x % 4 === 0) ? "#eaf6ff" : (x % 4 === 2 ? "#a0d0f0" : "#7cb6e0");
+      rect(ctx, x, 0, 1, ART, c);
+    }
+    for (let i = 0; i < 6; i++) {
+      const y = (i * 3 + fr * 3) % ART;
+      rect(ctx, (i * 3) % ART, y, 1, 3, "#ffffff");
+      rect(ctx, (i * 3 + 5) % ART, (y + 6) % ART, 1, 2, "#d6ecff");
+    }
+    rect(ctx, 0, 0, ART, 1, "#b8dcf4");
+  });
+
+  P("hot_spring", function (ctx, f) {
+    pond(ctx, f, { face: "#c0e0f0", top: "#d2ecf8", dark: "#93bfd4", light: "#e8f8ff", hi: "#ffffff", len: 3 });
+    const fr = (f | 0) & 3;
+    const g = ctx.globalAlpha; ctx.globalAlpha = 0.45;
+    ctx.fillStyle = "#ffffff";
+    for (let i = 0; i < 4; i++) {
+      const x = 2 + i * 4, y = (12 - fr * 2 - i * 3 + 16) % 16;
+      ctx.fillRect(x, y, 2, 1); ctx.fillRect(x + 1, y - 1 < 0 ? 15 : y - 1, 1, 1);
+    }
+    ctx.globalAlpha = g;
+  });
+
+  P("bridge_wood", function (ctx, f, s) {
+    boards(ctx, s, "#a07840", "#6d4a22", "#c39a60", "v", 4);
+    rect(ctx, 0, 0, ART, 1, "#7a5628");
+    rect(ctx, 0, ART - 1, ART, 1, "#5c3f1c");
+    const r = rnd("brdg", s);
+    for (let i = 0; i < 6; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#4a3116");
+  });
+  P("bridge_stone", function (ctx, f, s) {
+    flags(ctx, s, "#8a8a90", "#6e6e76", "#a6a6ae", "#5c5c64");
+    rect(ctx, 0, 0, ART, 1, "#6a6a72"); rect(ctx, 0, ART - 1, ART, 1, "#565660");
+  });
+  P("bridge_rail", deco(null, [
+    "................", "................", "................", "................",
+    "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "..O..........O..",
+    "..O..........O..", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..",
+    "..O..........O..", "..O..........O..", "..O..........O..", "................"
+  ]));
+
+  P("boat_dock", function (ctx, f, s) {
+    boards(ctx, s, "#8a6a40", "#5f4522", "#a9854f", "h", 4);
+    rect(ctx, 1, 0, 2, ART, "#6d4a22"); rect(ctx, 13, 0, 2, ART, "#6d4a22");
+    rect(ctx, 0, 14, ART, 2, "#4a3116");
+    // mooring ring
+    Art.frame(ctx, 6, 4, 5, 5, "#33333c"); px(ctx, 8, 4, "#5c5c68");
+  });
