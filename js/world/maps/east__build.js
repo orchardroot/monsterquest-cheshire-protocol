@@ -43,8 +43,8 @@
     for (let j = y; j < y + h; j++) { this.set(l, x, j, ch); this.set(l, x + w - 1, j, ch); }
     return this;
   };
-  P.h = function (l, x, y, n, ch) { for (let i = 0; i < n; i++) this.set(l, x + i, y, ch); return this; };
-  P.v = function (l, x, y, n, ch) { for (let i = 0; i < n; i++) this.set(l, x, y + i, ch); return this; };
+  P.hline = function (l, x, y, n, ch) { for (let i = 0; i < n; i++) this.set(l, x + i, y, ch); return this; };
+  P.vline = function (l, x, y, n, ch) { for (let i = 0; i < n; i++) this.set(l, x, y + i, ch); return this; };
   // Stamp an array of strings; `skip` chars (default space) pass through.
   P.stamp = function (l, x, y, rows, skip) {
     skip = skip === undefined ? " " : skip;
@@ -115,13 +115,13 @@
     const rh = o.rh === undefined ? 2 : o.rh;
     const roof = o.roof || "R", wall = o.wall || "#", win = o.win === null ? null : (o.win || "W");
     const door = o.door || "D";
-    for (let j = 0; j < rh; j++) c.h("g", x, y + j, w, roof);
-    for (let j = rh; j < h; j++) c.h("g", x, y + j, w, wall);
+    for (let j = 0; j < rh; j++) c.hline("g", x, y + j, w, roof);
+    for (let j = rh; j < h; j++) c.hline("g", x, y + j, w, wall);
     if (win) for (let j = rh; j < h - 1; j++) for (let i = 1; i < w - 1; i += 2) c.set("g", x + i, y + j, win);
     const dx = o.doorX === undefined ? x + Math.floor(w / 2) : x + o.doorX;
     c.set("g", dx, y + h - 1, door);
     if (o.doors) for (let k = 0; k < o.doors.length; k++) c.set("g", x + o.doors[k], y + h - 1, door);
-    if (o.over) c.h("o", x, y, w, o.over);
+    if (o.over) c.hline("o", x, y, w, o.over);
     if (o.chimney !== undefined) c.set("g", x + o.chimney, y, o.chimneyCh || "M");
     return { door: { x: dx, y: y + h - 1 }, front: { x: dx, y: y + h } };
   };
