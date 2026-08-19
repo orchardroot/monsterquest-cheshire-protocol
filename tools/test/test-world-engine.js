@@ -721,7 +721,7 @@ module.exports = function (t, assert) {
       MQ.Dialog.say = realSay;
       assert.strictEqual(r[0], true, "the errand completed");
       assert.strictEqual(MQ.Flags.get("we_gap_1"), true, "the gap is marked done");
-      assert.strictEqual(MQ.Flags.get("item_potion"), 1, "MEADOW brought back the goods");
+      assert.strictEqual(MQ.Flags.get("item_salve"), 1, "MEADOW brought back the goods");
       assert.strictEqual(O.frozen(), false);
       assert.strictEqual(O.getCat("meadow").scriptCtl, null);
     }, function (e) { MQ.Dialog.say = realSay; throw e; });
