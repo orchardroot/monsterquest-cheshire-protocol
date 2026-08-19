@@ -1201,3 +1201,191 @@
     ".......~........", ".......~........", "........~.......", "........~.......",
     "................", "................", "................", "................"
   ]]));
+
+  // ---- doors & windows ----
+  const DOOR = sheet([
+    "bbbbbbbbbbbbbbbb", "mmmmmmmmmmmmmmmm", "bbkkkkkkkkkkkkbb", "bbkOOOOOOOOOOkbb",
+    "bbkOPPPPPPPPOkbb", "bbkOP>>>>>>POkbb", "bbkOP>oooo>POkbb", "bbkOP>oooo>POkbb",
+    "bbkOP>>>>>>POkbb", "bbkOPPPPPPPPOkbb", "bbkOP>>>>>>POkbb", "bbkOP>oooo>POkbb",
+    "bbkOP>oo5o>POkbb", "bbkOP>>>>>>POkbb", "bbkOOOOOOOOOOkbb", "bbkkkkkkkkkkkkbb"
+  ]);
+  P("door_wood", deco(null, DOOR));
+  P("door_red", deco(null, DOOR, { "O": "#6e1414", "P": "#d05a4c", "o": "#b02828", ">": "#4e0e0e" }));
+  P("door_shop", deco(null, [
+    "aaaaaaaaaaaaaaaa", "AAAAAAAAAAAAAAAA", "aakkkkkkkkkkkkaa", "aakiiiiiiiiiikaa",
+    "aaki88888888ikaa", "aaki87777778ikaa", "aaki87777778ikaa", "aaki88888888ikaa",
+    "aakiiiiiiiiiikaa", "aaki{{{{{{{{ikaa", "aaki{}}}}}}{ikaa", "aaki{}}}}}}{ikaa",
+    "aaki{}}}}5}{ikaa", "aaki{{{{{{{{ikaa", "aakiiiiiiiiiikaa", "aakkkkkkkkkkkkaa"
+  ]));
+  P("door_locked", deco(null, [
+    "bbbbbbbbbbbbbbbb", "mmmmmmmmmmmmmmmm", "bbkkkkkkkkkkkkbb", "bbk>>>>>>>>>>kbb",
+    "bbk>OOOOOOOO>kbb", "bbk>O>>>>>>O>kbb", "bbk>O>OOOO>O>kbb", "bbk>O>OiiO>O>kbb",
+    "bbk>O>OiIiO>O>kb", "bbk>O>>iIi>>O>kb", "bbk>OOOiiiOOO>kb", "bbk>O>>>>>>>O>kb",
+    "bbk>O>OOOOO>O>kb", "bbk>O>>>>>>>O>kb", "bbk>>>>>>>>>>>kb", "bbkkkkkkkkkkkkbb"
+  ]));
+  P("door_gym", deco(null, [
+    "nnnnnnnnnnnnnnnn", "NNNNNNNNNNNNNNNN", "nnkkkkkkkkkkkknn", "nnk4444444444knn",
+    "nnk4333333334knn", "nnk43444444434knn".slice(0, 16), "nnk4344554434knn", "nnk434555543ok".slice(0, 16),
+    "nnk4345555443knn", "nnk4344554434knn", "nnk4334433443knn", "nnk4333333334knn",
+    "nnk43333553334k.".slice(0, 16), "nnk4444444444knn", "nnkkkkkkkkkkkknn", "nnNNNNNNNNNNNNnn"
+  ]));
+  P("door_stairs_up", deco(null, [
+    "nnnnnnnnnnnnnnnn", "nlllllllllllllln", "nlNNNNNNNNNNNNln", "nlNllllllllllNln",
+    "nlNlNNNNNNNNlNln", "nlNlNllllllNlNln", "nlNlNlNNNNlNlNln", "nlNlNlllllNlNln.".slice(0, 16),
+    "nlNlNlNNNNlNlNln", "nlNlNllllllNlNln", "nlNlNNNNNNNNlNln", "nlNllllllllllNln",
+    "nlNNNNNNNNNNNNln", "nlllllllllllllln", "nNNNNNNNNNNNNNNn", "nnnnnnnnnnnnnnnn"
+  ]));
+  P("door_stairs_down", deco(null, [
+    "nnnnnnnnnnnnnnnn", "nNNNNNNNNNNNNNNn", "nNkkkkkkkkkkkkNn", "nNkKKKKKKKKKKkNn",
+    "nNkKjjjjjjjjKkNn", "nNkKjNNNNNNjKkNn", "nNkKjNllllNjKkNn", "nNkKjNlnnlNjKkNn",
+    "nNkKjNllllNjKkNn", "nNkKjNNNNNNjKkNn", "nNkKjjjjjjjjKkNn", "nNkKKKKKKKKKKkNn",
+    "nNkkkkkkkkkkkkNn", "nNNNNNNNNNNNNNNn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn"
+  ]));
+
+  const WINDOW = sheet([
+    "bbbbbbbbbbbbbbbb", "mmmmmmmmmmmmmmmm", "bbkkkkkkkkkkkkbb", "bbkiiiiiiiiiikbb",
+    "bbki88888888ikbb", "bbki87777778ikbb", "bbki87777778ikbb", "bbki87777778ikbb",
+    "bbkiiiiiiiiiikbb", "bbki87777778ikbb", "bbki87777778ikbb", "bbki87777778ikbb",
+    "bbki88888888ikbb", "bbkiiiiiiiiiikbb", "bbkkkkkkkkkkkkbb", "bbbbbbbbbbbbbbbb"
+  ]);
+  P("window", deco(null, WINDOW));
+  P("window_lit", function (ctx, f, s) {
+    ascii(ctx, WINDOW, LIT_PAL);
+    Art.glow(ctx, 8, 8, 4, "#ffd98a", 0.1);
+  });
+  const LIT_PAL = Art.pal({ "7": "#f0d060", "8": "#fbeaa8", "i": "#4a3a20" });
+  P("window_shop", deco(null, [
+    "aaaaaaaaaaaaaaaa", "AAAAAAAAAAAAAAAA", "aakkkkkkkkkkkkaa", "aakiiiiiiiiiikaa",
+    "aaki88888888ikaa", "aaki87777778ikaa", "aaki87111778ikaa", "aaki87111778ikaa",
+    "aaki87777778ikaa", "aaki87733778ikaa", "aaki87733778ikaa", "aaki87777778ikaa",
+    "aaki88888888ikaa", "aakiiiiiiiiiikaa", "aakOOOOOOOOOOkaa", "aakkkkkkkkkkkkaa"
+  ]));
+  P("shop_awning", deco(null, [
+    "kkkkkkkkkkkkkkkk", "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c",
+    "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c", "21212121212121212".slice(0, 16), "2k2k2k2k2k2k2k2k",
+    "................", "................", "................", "................",
+    "................", "................", "................", "................"
+  ]));
+
+  // ---- signs & boards ----
+  function postGrass(ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "sg"); foot(ctx, 8, 15, 4); }
+  function postPave(ctx, f, s) { flags(ctx, s, "#b0b0b8", "#95959f", "#c8c8d0", "#7e7e88"); foot(ctx, 8, 15, 4); }
+
+  P("sign", deco(postGrass, [
+    "................", "..kkkkkkkkkkkk..", "..kOOOOOOOOOOk..", "..kOPPPPPPPPOk..",
+    "..kOPkkkPkkkPOk.", "..kOPPPPPPPPOk..", "..kOPkkkkkkPOk..", "..kOPPPPPPPPOk..",
+    "..kOPkkkPkkPPOk.", "..kOPPPPPPPPOk..", "..kOOOOOOOOOOk..", "..kkkkkkkkkkkk..",
+    "......O>O.......", "......O>O.......", "......O>O.......", "................"
+  ]));
+  P("sign_post", deco(postGrass, [
+    "................", "................", "...kkkkkkk......", "...kOPPPOk..kk..",
+    "...kOPkPOkkkPOk.", "...kOPPPOkkOPOk.", "...kkkkkkk..kk..", "......O>O.......",
+    "..kkkkkkkkkk....", "..kOPPPPPPOk....", "..kOPkkkkPOk....", "..kkkkkkkkkk....",
+    "......O>O.......", "......O>O.......", "......O>O.......", "................"
+  ]));
+  P("noticeboard", deco(postGrass, [
+    "................", ".kkkkkkkkkkkkkk.", ".kOOOOOOOOOOOOk.", ".kO88888888888k.",
+    ".kO8cccc8ccccc8k", ".kO8ckkc8ckkkc8k", ".kO8cccc8ccccc8k", ".kO8ckkc8ckkkc8k",
+    ".kO8cccc8ccccc8k", ".kO888888888888k", ".kO8cccccc8ccc8k", ".kO8ckkkkc8ckc8k",
+    ".kO8cccccc8ccc8k", ".kOOOOOOOOOOOOk.", "...O>O....O>O...", "...O>O....O>O..."
+  ]));
+  P("sign_chippy", deco(function (ctx, f, s) { fill(ctx, "#ecece4"); }, [
+    "................", ".kkkkkkkkkkkkkk.", ".k333333333333k.", ".k344444444443k.",
+    ".k34kk4k4k44443k".slice(0, 16), ".k34k44k4k4443k.", ".k34kkk4kkk443k.", ".k344444444443k.",
+    ".k34888884444k..", ".k3488{{{844443k".slice(0, 16), ".k34888884443k..", ".k344444444443k.",
+    ".k333333333333k.", ".kkkkkkkkkkkkkk.", "................", "................"
+  ]));
+  P("sign_pub", deco(function (ctx, f, s) { fill(ctx, "#f0e8d8"); rect(ctx, 0, 0, ART, 2, C.tudor); }, [
+    "TTTTTTTTTTTTTTTT", "....O>....>O....", "....OkkkkkkO....", "...kkkkkkkkkk...",
+    "...kOOOOOOOOk...", "...kO5555555Ok..", "...kO5eeee55Ok..", "...kO5e11e55Ok..",
+    "...kO55e1e555k..", "...kO5555555Ok..", "...kO5eeeee5Ok..", "...kOOOOOOOOk...",
+    "...kkkkkkkkkk...", "................", "................", "................"
+  ]));
+  P("sign_station", deco(postPave, [
+    "................", "..kkkkkkkkkkkk..", "..k}}}}}}}}}}k..", "..k}cccccccc}k..",
+    "..k}c}}}}}}c}k..", "..k}c}cccc}c}k..", "..k}c}c}}c}c}k..", "..k}c}cccc}c}k..",
+    "..k}c}}}}}}c}k..", "..k}cccccccc}k..", "..k}}}}}}}}}}k..", "..kkkkkkkkkkkk..",
+    "....U....U......", "....U....U......", "....U....U......", "................"
+  ]));
+  P("station_clock", decoAnim(function (ctx, f, s) { fill(ctx, "#8a8a90"); rect(ctx, 0, 0, ART, ART, "#7a7a84"); }, [[
+    "................", "....kkkkkkkk....", "..kkccccccccKk..", "..kccccccccccK..",
+    ".kcckcccccckccK.", ".kccccccccccccK.", ".kcccckkkccccck.", ".kccccckccccccK.",
+    ".kccccckkkkcccK.", ".kcccccccccccck.", ".kcckcccccckccK.", "..kccccccccccK..",
+    "..kkKcccccckKk..", "....kkkkkkkk....", "......U..U......", "......U..U......"
+  ], [
+    "................", "....kkkkkkkk....", "..kkccccccccKk..", "..kccccccccccK..",
+    ".kcckcccccckccK.", ".kccccccccccccK.", ".kccccckcccccck.", ".kccccckkkkkccK.",
+    ".kcccccckccccck.", ".kccccccckccccK.", ".kcckcccccckccK.", "..kccccccccccK..",
+    "..kkKcccccckKk..", "....kkkkkkkk....", "......U..U......", "......U..U......"
+  ]]));
+
+  // ---- fences & gates ----
+  P("fence_wood", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "fw"); }, [
+    "................", "................", "................", "OOOOOOOOOOOOOOOO",
+    "PPPPPPPPPPPPPPPP", ">>>>>>>>>>>>>>>>", "..O>........O>..", "..O>........O>..",
+    "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP", ">>>>>>>>>>>>>>>>", "..O>........O>..",
+    "..O>........O>..", "..O>........O>..", "................", "................"
+  ]));
+  P("fence_wood_post", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "fwp"); }, [
+    "................", "................", ".....OOOO.......", ".....OPPO.......",
+    ".....OPPO.......", ".....OPPO.......", ".....OPPO.......", ".....OPPO.......",
+    ".....OPPO.......", ".....OPPO.......", ".....OPPO.......", ".....OPPO.......",
+    ".....OPPO.......", ".....O>>O.......", ".....OOOO.......", "................"
+  ]));
+  P("fence_iron", deco(function (ctx, f, s) { flags(ctx, s, "#b0b0b8", "#95959f", "#c8c8d0", "#7e7e88"); }, [
+    "................", "..i....i....i...", ".iIi..iIi..iIi..", "..i....i....i...",
+    "iiiiiiiiiiiiiiii", "..i....i....i...", "..i....i....i...", "..i....i....i...",
+    "..i....i....i...", "iiiiiiiiiiiiiiii", "..i....i....i...", "..i....i....i...",
+    "..i....i....i...", "..i....i....i...", "iiiiiiiiiiiiiiii", "................"
+  ]));
+  P("fence_wire", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 2, "fwr"); }, [
+    "................", ".....|..........", "....|.|.........", "|||||||||||||||| ".slice(0, 16),
+    "....|.|.........", "..|.|.|.|.|.|.|.", "|||||||||||||||| ".slice(0, 16), "..|.|.|.|.|.|.|.",
+    "....|.|.........", "|||||||||||||||| ".slice(0, 16), "..|.|.|.|.|.|.|.", "....|.|.........",
+    "|||||||||||||||| ".slice(0, 16), "....|.|.........", "....|.|.........", "................"
+  ]));
+  P("gate_wood", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 2, "gw"); }, [
+    "................", "................", "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP",
+    "O>..........>..O", "O.>........>...O", "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP",
+    "O...>.....>....O", "O....>...>.....O", "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP",
+    "O.....>.>......O", "O......>.......O", "OOOOOOOOOOOOOOOO", "................"
+  ]));
+  P("gate_iron", deco(function (ctx, f, s) { flags(ctx, s, "#b0b0b8", "#95959f", "#c8c8d0", "#7e7e88"); }, [
+    "..i..i..i..i..i.", ".iIi.iIi.iIi.iIi", "..i..i..i..i..i.", "iiiiiiiiiiiiiiii",
+    "..i..i..i..i..i.", "..i5.i..i.5i..i.", "..i..i5.5i..i..i", "iiiiiiiiiiiiiiii",
+    "..i..i5.5i..i..i", "..i5.i..i.5i..i.", "..i..i..i..i..i.", "iiiiiiiiiiiiiiii",
+    "..i..i..i..i..i.", "..i..i..i..i..i.", "iiiiiiiiiiiiiiii", "................"
+  ]));
+
+  // ---- street surfaces ----
+  P("steps", function (ctx, f, s) {
+    fill(ctx, "#9a9aa0");
+    for (let y = 0; y < ART; y += 4) {
+      rect(ctx, 0, y, ART, 3, "#a4a4aa");
+      rect(ctx, 0, y, ART, 1, "#c2c2c8");
+      rect(ctx, 0, y + 3, ART, 1, "#6f6f79");
+    }
+    const r = rnd("stp", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#8e8e96", "#b6b6be"], 12);
+  });
+  P("pavement", function (ctx, f, s) { flags(ctx, s, "#b0b0b8", "#95959f", "#c8c8d0", "#7e7e88"); });
+  P("kerb", function (ctx, f, s) {
+    flags(ctx, s, "#b0b0b8", "#95959f", "#c8c8d0", "#7e7e88");
+    rect(ctx, 0, 10, ART, 2, "#d0d0d8"); rect(ctx, 0, 12, ART, 1, "#83838d");
+    rect(ctx, 0, 13, ART, 3, "#4b4b53");
+    for (let x = 0; x < ART; x += 8) rect(ctx, x, 10, 1, 2, "#9b9ba3");
+  });
+  P("road", function (ctx, f, s) {
+    grit(ctx, s, "#505058", "#3d3d45", "#66666e", 28, "rd");
+    const r = rnd("rdp", s);
+    for (let i = 0; i < 5; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#7a7a84");
+  });
+  P("road_line", function (ctx, f, s) {
+    grit(ctx, s, "#505058", "#3d3d45", "#66666e", 24, "rl");
+    rect(ctx, 4, 0, 2, 6, "#e0e0d0"); rect(ctx, 4, 10, 2, 6, "#e0e0d0");
+    rect(ctx, 4, 0, 1, 6, "#f4f4ea"); rect(ctx, 4, 10, 1, 6, "#f4f4ea");
+  });
+  P("zebra", function (ctx, f, s) {
+    grit(ctx, s, "#505058", "#3d3d45", "#66666e", 18, "zb");
+    for (let x = 0; x < ART; x += 6) { rect(ctx, x, 0, 4, ART, "#e8e8e0"); rect(ctx, x, 0, 1, ART, "#f8f8f2"); rect(ctx, x + 3, 0, 1, ART, "#c2c2ba"); }
+  });
