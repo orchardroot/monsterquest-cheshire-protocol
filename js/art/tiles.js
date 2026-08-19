@@ -2316,6 +2316,66 @@
     ctx.globalAlpha = g;
   });
 
+
+  // ---------------------------------------------------------------
+  // NEW IDS (added by art) — see docs/design/reports/art-tiles.md.
+  // Additive only: nothing above changed id or properties.
+  // ---------------------------------------------------------------
+  P("marsh", function (ctx, f, s) {
+    turf(ctx, s, "#6f7f52", "#4e5b38", "#8fa06a", 4, "mrs");
+    const r = rnd("mrsw", s);
+    for (let i = 0; i < 3; i++) {
+      const x = 1 + ((r() * 11) | 0), y = 3 + ((r() * 10) | 0);
+      rect(ctx, x, y, 4, 2, "#55705f"); rect(ctx, x + 1, y, 2, 1, "#7fa08c");
+    }
+    for (let i = 0; i < 6; i++) {
+      const x = (r() * ART) | 0, y = 4 + ((r() * 10) | 0);
+      rect(ctx, x, y - 3, 1, 4, "#8a9a4a"); px(ctx, x, y - 4, "#b7a34a");
+    }
+  });
+  P("marsh_pool", function (ctx, f, s) {
+    pond(ctx, f, { face: "#4e6a63", top: "#5b7a70", dark: "#31463f", light: "#7d9c8c", hi: "#b6cfc0", len: 3, phase: 1 });
+    const r = rnd("mpw", s);
+    for (let i = 0; i < 5; i++) { const x = (r() * ART) | 0; rect(ctx, x, 2 + ((r() * 11) | 0), 1, 4, "#6b7a36"); }
+  });
+  P("boardwalk", function (ctx, f, s) {
+    boards(ctx, s, "#8f7448", "#5f4a26", "#ac8f5e", "h", 4);
+    rect(ctx, 0, 0, 1, ART, "#4a3116"); rect(ctx, 15, 0, 1, ART, "#4a3116");
+    const r = rnd("bwk", s);
+    for (let i = 0; i < 5; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#3f6a4a");
+    for (let y = 3; y < ART; y += 8) { px(ctx, 2, y, "#33333c"); px(ctx, 13, y, "#33333c"); }
+  });
+  P("roof_ridge", function (ctx, f, s) {
+    roofOf(ctx, s, "slate", C.slate, C.slateDk, C.slateLt, "#26263a");
+    rect(ctx, 0, 5, ART, 6, "#5b5b70");
+    rect(ctx, 0, 5, ART, 1, "#83839c");
+    rect(ctx, 0, 10, ART, 1, "#22222e");
+    for (let x = 1; x < ART; x += 4) rect(ctx, x, 6, 1, 4, "#4a4a5e");
+  });
+  P("bunting", deco(null, [
+    "kkkkkkkkkkkkkkkk", "1.5.e.{.1.5.e.{.", "1.5.e.{.1.5.e.{.", ".1.5.e.{.1.5.e.{",
+    "..1.5.e.{.1.5.e.", "...1.5.e.{.1.5..", "................", "................",
+    "................", "................", "................", "................",
+    "................", "................", "................", "................"
+  ]));
+  function shore(side) {
+    return function (ctx, f, s) {
+      pond(ctx, f, { face: "#5f9ce4", top: "#6fa8ea", dark: "#3d76bd", light: "#9ac8f2", hi: "#d8ecff", len: 4 });
+      const r = rnd("shr" + side, s);
+      const bank = function (x, y, w, h) {
+        rect(ctx, x, y, w, h, "#c9b184");
+        dither(ctx, x, y, w, h, "#a58f65", 4);
+        for (let i = 0; i < 12; i++) px(ctx, x + ((r() * w) | 0), y + ((r() * h) | 0), r() < 0.5 ? "#8f7a52" : "#e0cca4");
+      };
+      if (side === "n") { bank(0, 0, ART, 7); rect(ctx, 0, 7, ART, 1, "#e8f4ff"); }
+      else if (side === "w") { bank(0, 0, 7, ART); rect(ctx, 7, 0, 1, ART, "#e8f4ff"); }
+      else { bank(9, 0, 7, ART); rect(ctx, 8, 0, 1, ART, "#e8f4ff"); }
+    };
+  }
+  P("shore_n", shore("n"));
+  P("shore_w", shore("w"));
+  P("shore_e", shore("e"));
+
   // =============================================================
   // BAKING — get / warm / cache
   // =============================================================
@@ -2708,6 +2768,16 @@
   T("cat_bed", "#a0a0c0", { S: 1 });
   T("cat_bowl", "#e0e0e8", { S: 1 });
   T("shadow", "#000000", { D: 1, desc: "Generic shadow deco (drawn translucent)" });
+
+  // -- NEW IDS added by the art workstream (additive; see report)
+  T("marsh", "#6f7f52", { G: 1, V: 2, desc: "Marsh — walkable with Waders, encounters" });
+  T("marsh_pool", "#4e6a63", { W: 1, A: 4, desc: "Marsh pool" });
+  T("boardwalk", "#8f7448", { V: 2, desc: "Bog boardwalk" });
+  T("roof_ridge", "#5b5b70", { S: 1, desc: "Slate roof ridge" });
+  T("bunting", "#c03030", { O: 1, desc: "Festival bunting (over layer)" });
+  T("shore_n", "#c9b184", { S: 1, A: 4, desc: "Bank with water to the south" });
+  T("shore_w", "#c9b184", { S: 1, A: 4, desc: "Bank with water to the east" });
+  T("shore_e", "#c9b184", { S: 1, A: 4, desc: "Bank with water to the west" });
 
   MQ.Tiles = Tiles;
 })();

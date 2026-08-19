@@ -163,7 +163,7 @@ module.exports = function (t, assert) {
   const ids = Tiles.ids();
 
   t("catalogue: 288 named tiles, every one has a real painter", function () {
-    assert.strictEqual(ids.length, 288, "tile count changed");
+    assert.strictEqual(ids.length, 296, "tile count changed (288 catalogue + 8 art additions)");
     assert.deepStrictEqual(Array.from(Tiles.unpainted()), [], "tiles without painters");
     ["grass", "grass_tall", "path_cobble", "water_canal", "tree_oak", "wall_brick_red",
       "roof_slate", "door_wood", "window_lit", "mill_wheel", "dish", "moai", "healer",
@@ -277,7 +277,7 @@ module.exports = function (t, assert) {
     const st = Tiles.warm();
     let expect = 0;
     ids.forEach(function (id) { expect += Tiles.frames(id) * Tiles.props(id).variants; });
-    assert.strictEqual(st.tiles, 288);
+    assert.strictEqual(st.tiles, 296);
     assert.strictEqual(st.baked, expect, "warm() missed some");
   });
 
