@@ -168,7 +168,7 @@ module.exports = function (t, assert) {
       // pick the corrupt slot 3
       MQ.UI.Save.st.setCursor(2);
       press(env, "a");
-      return settle(env, 6);
+      return settle(env, 20);
     }).then(function () {
       // auto-dialog says its piece and then confirms "yes" -> name entry
       assert.strictEqual(MQ.Scenes.top().id, "name_entry", "corrupt save funnels into a new game");
