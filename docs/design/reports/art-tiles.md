@@ -16,7 +16,7 @@ the software rasteriser the tests install.
 **`js/art/tiles.js` — 296 hand-painted 16×16 tiles.**
 Every one of the world workstream's 288 placeholder painters is replaced with real
 pixel art; ids and properties are byte-stable (one addition, below). 8 new ids were
-added. `Tiles.warm()` bakes 418 canvases (frames × variants).
+added. `Tiles.warm()` bakes 432 canvases (frames × variants).
 
 Cheshire palette, used everywhere: silk-mill oxblood brick, Chester sandstone,
 blue slate, salt white, canal green, pine dark, moor purple/heather, silk-mill
