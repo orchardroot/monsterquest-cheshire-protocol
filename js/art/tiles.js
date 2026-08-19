@@ -1389,3 +1389,187 @@
     grit(ctx, s, "#505058", "#3d3d45", "#66666e", 18, "zb");
     for (let x = 0; x < ART; x += 6) { rect(ctx, x, 0, 4, ART, "#e8e8e0"); rect(ctx, x, 0, 1, ART, "#f8f8f2"); rect(ctx, x + 3, 0, 1, ART, "#c2c2ba"); }
   });
+
+  // ---------------------------------------------------------------
+  // STREET FURNITURE & TOWN DECO
+  // (deco-layer tiles paint on a transparent ground)
+  // ---------------------------------------------------------------
+  P("lamp", deco(null, [
+    "................", ".......ii.......", "......i66i......", "......66666.....",
+    "......i66i......", ".......ii.......", ".......ii.......", ".......ii.......",
+    ".......ii.......", ".......ii.......", ".......ii.......", ".......ii.......",
+    ".......ii.......", "......iIIi......", "......iiii......", "................"
+  ]));
+  P("lamp_victorian", deco(null, [
+    ".......5........", "......iii.......", ".....i666i......", ".....66666......",
+    ".....66566......", ".....i666i......", "......iii.......", ".......i........",
+    "......iIi.......", ".......i........", ".......i........", "......iIi.......",
+    ".......i........", "......iiii......", ".....iIIIIi.....", ".....iiiiii....."
+  ]));
+  P("bench", deco(null, [
+    "................", "................", "................", "................",
+    "..OOOOOOOOOOOO..", "..PPPPPPPPPPPP..", "..O>>>>>>>>>>O..", "..OOOOOOOOOOOO..",
+    "..PPPPPPPPPPPP..", "..O>>>>>>>>>>O..", "..O>........O>..", "..OO........OO..",
+    "..O>........O>..", "..OO........OO..", "..ii........ii..", "................"
+  ]));
+  P("bin", deco(null, [
+    "................", "................", "................", "................",
+    "................", "....iiiiiiii....", "....i::::::i....", "....vvvvvvvv....",
+    "....v;;;;;;v....", "....v;vvvv;v....", "....v;vvvv;v....", "....v;;;;;;v....",
+    "....v;vvvv;v....", "....vvvvvvvv....", "....iiiiiiii....", "................"
+  ]));
+  P("postbox", deco(null, [
+    "................", "................", "................", ".....111111.....",
+    "....11111111....", "....12222221....", "....11kkkk11....", "....11111111....",
+    "....11555111....", "....11111111....", "....12111121....", "....11111111....",
+    "....12222221....", "....11111111....", "....iiiiiiii....", "................"
+  ]));
+  P("phonebox", deco(null, [
+    "................", "...1111111111...", "...1222222221...", "...1177777711...",
+    "...1178888711...", "...1178888711...", "...1177777711...", "...1122222211...",
+    "...1178888711...", "...1178888711...", "...1178888711...", "...1177777711...",
+    "...1222222221...", "...1111111111...", "...2222222222...", "................"
+  ]));
+  P("bus_stop", deco(null, [
+    "................", "....iiiiiiii....", "....i}}}}}}i....", "....i}cccc}i....", "....i}c}}c}i....",
+    "....i}cccc}i....", "....i}}}}}}i....", "....iiiiiiii....", ".......U........",
+    ".......U........", ".......U........", ".......U........", ".......U........",
+    ".......U........", "......UUU.......", "................"
+  ]));
+  P("bollard", deco(null, [
+    "................", "................", "................", "................",
+    "................", "................", "......::::......", "......:ii:......",
+    "......iIIi......", "......iIIi......", "......iIIi......", "......iIIi......",
+    "......iIIi......", ".....iIIIIi.....", ".....::::::.....", "................"
+  ]));
+  P("planter", deco(null, [
+    "................", "................", "......^^........", "....^^e^e^^.....",
+    "...^ee^^^ee^....", "..1^^eeeee^^1...", "...^eee1eee^....", "....^^eeee^.....",
+    "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..O>OOOOOOOO>O..", "..OPPPPPPPPPPO..",
+    "..O>OOOOOOOO>O..", "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "................"
+  ]));
+
+  P("market_stall", deco(function (ctx, f, s) { cobbles(ctx, s, "#9a9aa8", "#7a7a88", "#b6b6c2", "#68687a"); }, [
+    "................", "................", "................", "................",
+    "................", "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "O11133311133311O",
+    "O..............O", "O.1..3..5..1..3O", "O.OOOOOOOOOOOO.O", "O.OPPPPPPPPPPO.O",
+    "O.OOOOOOOOOOOO.O", "O..............O", "O>............>O", "O>............>O"
+  ]));
+  P("market_stall_top", deco(null, [
+    "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c",
+    "2k2k2k2k2k2k2k2k", "................", "................", "................",
+    "................", "................", "................", "................",
+    "................", "................", "................", "................"
+  ]));
+
+  P("statue", deco(postPave, [
+    "................", "......nll.......", ".....nlllN......", ".....nlllN......",
+    "......nlN.......", ".....nllln......", "....nlllllN.....", "...nllllllln....",
+    "...nlN.l.NlN....", "....n..l..N.....", "......lll.......", ".....lllll......",
+    "....nlllllN.....", "...nnnnnnnnn....", "...NNNNNNNNN....", "................"
+  ]));
+  P("bear_statue", deco(postPave, [
+    "................", "................", "....O>....>O....", "....OOOOOOOO....",
+    "...OO>OOOO>OO...", "...OOkOOOOkOO...", "...OOOO>>OOOO...", "....OOOOOOOO....",
+    "...OOOOOOOOOO...", "..OOOOOOOOOOOO..", "..OO>OOOOOO>OO..", "..OOOOOOOOOOOO..",
+    "..OO>OO..OO>OO..", "..OOOOO..OOOOO..", "..nnnnnnnnnnnn..", "..NNNNNNNNNNNN.."
+  ]));
+  P("cross_saxon", deco(postGrass, [
+    "................", ".....nlllN......", ".....nlllN......", "...nnlllllnn....",
+    "...nlllllllN....", "...nlNlllNlN....", "...nnlllllnn....", ".....nlllN......",
+    ".....nlNlN......", ".....nlllN......", ".....nlNlN......", ".....nlllN......",
+    "....nlllllN.....", "...nlllllllN....", "...nnnnnnnnn....", "...NNNNNNNNN...."
+  ]));
+  P("moai", deco(postGrass, [
+    "................", "......nnnn......", ".....nllllN.....", "....nllllllN....",
+    "....nlllllln....", "....nlkllklN....", "....nlllllln....", "....nll..llN....",
+    "....nlll.llN....", "....nllkkkln....", "....nlllllln....", "....nllllllN....",
+    "...nlllllllln...", "...nNNNNNNNNn...", "...NNNNNNNNNN...", "................"
+  ]));
+  P("white_nancy", deco(function (ctx, f, s) { turf(ctx, s, C.moorGrass, "#6b7a36", "#a8b662", 3, "wn"); foot(ctx, 8, 15, 6); }, [
+    "................", "......cccc......", ".....cccccc.....", "....cccccccc....",
+    "....cccccccc....", "...cccccccccc...", "...cccccccccc...", "...cccccccccc...",
+    "..cccccccccccc..", "..cccccccccccc..", "..ccccccccccCC..", "..ccccccccccCC..",
+    "..cccccccccCCC..", "..CCCCCCCCCCCC..", "..nnnnnnnnnnnn..", "................"
+  ]));
+  P("war_memorial", deco(postPave, [
+    "................", ".......ll.......", "......lllN......", ".....llllln.....",
+    "......lllN......", "......lllN......", "......lllN......", "......lllN......",
+    "......lllN......", ".....llllln.....", ".....l...lN.....", "....nlllllln....",
+    "...nlllllllln...", "...nNNNNNNNNn...", "..NNNNNNNNNNNN..", "................"
+  ]));
+  P("fountain", decoAnim(postPave, [[
+    "..nnnnnnnnnnnn..", ".nllllllllllllN.", ".nlwwwwwwwwwwlN.", ".nlwWxwwwwxWwlN.",
+    ".nlwwwwffwwwwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwwffwwwwlN.",
+    ".nlwWxwwwwxWwlN.", ".nlwwwwwwwwwwlN.", ".nlwwwwwwwwwwlN.", ".nlwwwwwwwwwwlN.",
+    ".nNNNNNNNNNNNNN.", "..NNNNNNNNNNNN..", "................", "................"
+  ], [
+    "..nnnnnnnnnnnn..", ".nllllllllllllN.", ".nlwwwwwwwwwwlN.", ".nlwwwwffwwwwlN.",
+    ".nlwWxwffwxWwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwwffwwwwlN.",
+    ".nlwwwwwwwwwwlN.", ".nlwWxwwwwxWwlN.", ".nlwwwwwwwwwwlN.", ".nlwwwwwwwwwwlN.",
+    ".nNNNNNNNNNNNNN.", "..NNNNNNNNNNNN..", "................", "................"
+  ], [
+    "..nnnnnnnnnnnn..", ".nllllllllllllN.", ".nlwwwwffwwwwlN.", ".nlwwwffffwwwlN.",
+    ".nlwWxwffwxWwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwwffwwwwlN.",
+    ".nlwwwwwwwwwwlN.", ".nlwwwwwwwwwwlN.", ".nlwWxwwwwxWwlN.", ".nlwwwwwwwwwwlN.",
+    ".nNNNNNNNNNNNNN.", "..NNNNNNNNNNNN..", "................", "................"
+  ], [
+    "..nnnnnnnnnnnn..", ".nllllllllllllN.", ".nlwwwfwwfwwwlN.", ".nlwwwwffwwwwlN.",
+    ".nlwWxwffwxWwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwwffwwwwlN.",
+    ".nlwwwwwwwwwwlN.", ".nlwWxwwwwxWwlN.", ".nlwwwwwwwwwwlN.", ".nlwwwwwwwwwwlN.",
+    ".nNNNNNNNNNNNNN.", "..NNNNNNNNNNNN..", "................", "................"
+  ]]));
+  P("well", deco(postGrass, [
+    "................", "....O>....>O....", "....OOOOOOOO....", "....O>....>O....",
+    "....O>....>O....", "....O>....>O....", "..nnnnnnnnnnnn..", "..nllllllllllN..",
+    "..nlkkkkkkkklN..", "..nlkWWWWWWklN..", "..nlkWwwwwWklN..", "..nlkkkkkkkklN..",
+    "..nlllllllllln..", "..nNNNNNNNNNNn..", "..NNNNNNNNNNNN..", "................"
+  ]));
+  P("bandstand", deco(postPave, [
+    "......yy........", ".....yyyy.......", "....yyyyyy......", "...yyyyyyyy.....",
+    "..yyyyyyyyyy....", ".yyyyyyyyyyyy...", "aaaaaaaaaaaaaaaa", "AAAAAAAAAAAAAAAA",
+    "..O>......O>....", "..O>......O>....", "..O>......O>....", "..O>......O>....",
+    "..O>......O>....", "aaaaaaaaaaaaaaaa", "AAAAAAAAAAAAAAAA", "................"
+  ]));
+  P("picnic_table", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "pt"); }, [
+    "................", "................", "..OOOOOOOOOOOO..", "..PPPPPPPPPPPP..",
+    "..O>>>>>>>>>>O..", "..OOOOOOOOOOOO..", "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP",
+    "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO", "..O>......O>....", "..OOOOOOOOOOOO..",
+    "..PPPPPPPPPPPP..", "..OOOOOOOOOOOO..", "..O>......O>....", "................"
+  ]));
+  P("scarecrow", deco(function (ctx, f, s) { grit(ctx, s, C.dirt, C.dirtDk, C.dirtLt, 18, "sc"); }, [
+    "................", "......3333......", ".....333333.....", "....33333333....",
+    "......[[[[......", "......[k[k......", "......[[[[......", "..O>..3333..>O..",
+    "OOOOOOO33OOOOOOO", "..O>..3333..>O..", "......1111......", "......3333......",
+    "......3..3......", "......3..3......", "......O..O......", "................"
+  ]));
+  P("hay_bale", deco(function (ctx, f, s) { turf(ctx, s, "#9aa858", "#7b8842", "#b6c274", 2, "hb"); }, [
+    "................", "................", "....33333333....", "...3444444443...",
+    "..34333333333 4.".slice(0, 16), "..3433333333443.", "..3433333333443.", "..3443333333343.",
+    "..3433333333443.", "..3443333333343.", "..3433333333443.", "..3443333333343.",
+    "...344444444 3..".slice(0, 16), "....33333333....", "................", "................"
+  ]));
+  P("apple_press", deco(function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); }, [
+    "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "......O>O.......",
+    "......O>O.......", "......O>O.......", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..",
+    "..O>11111111>O..", "..O>11111111>O..", "..OOOOOOOOOOOO..", "..O>........>O..",
+    "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "................"
+  ]));
+  P("crate", deco(null, [
+    "................", "................", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..",
+    "..OP>>>>>>>>PO..", "..OP>oooooo>PO..", "..OPO>oooo>OPO..", "..OPOO>oo>OOPO..",
+    "..OPOOO>>OOOPO..", "..OPOO>oo>OOPO..", "..OPO>oooo>OPO..", "..OP>oooooo>PO..",
+    "..OP>>>>>>>>PO..", "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "................"
+  ]));
+  P("barrel", deco(null, [
+    "................", "................", "....OOOOOOOO....", "...O>>>>>>>>O...",
+    "...OPPPPPPPPO...", "..OiiiiiiiiiiO..", "..OPPPPPPPPPPO..", "..OP>oooooo>PO..",
+    "..OP>oooooo>PO..", "..OiiiiiiiiiiO..", "..OP>oooooo>PO..", "..OPPPPPPPPPPO..",
+    "...OiiiiiiiiO...", "...OPPPPPPPPO...", "....OOOOOOOO....", "................"
+  ]));
+  P("sack", deco(null, [
+    "................", "................", "................", "......aaaa......",
+    ".....aAAAAa.....", ".....aAaaAa.....", "....aAaaaaAa....", "...aAaaaaaaAa...",
+    "...aaaaaaaaaa...", "..aAaaaaaaaaAa..", "..aaaaaaaaaaaa..", "..aAaaaaaaaaAa..",
+    "..aaaaaaaaaaaa..", "..aAAaaaaaaAAa..", "..AAAAAAAAAAAA..", "................"
+  ]));
