@@ -684,4 +684,351 @@
     ]
   });
 
+  // ===============================================================
+  // ROUTES — regional families
+  // ===============================================================
+
+  // east: the walking pulse and the flute. The template for the family.
+  S.define("route_east", {
+    title: "Boots on the Towpath",
+    bpm: 134, key: "d", beats: 4, bars: 40,
+    loop: { from: 4, to: 40 },
+    patterns: {
+      lead_a: m("dorian", "0:0.5 0:0.5 2:1 4:1 2:0.5 0:0.5 | 4:1.5 2:0.5 0:1 -2:1 | 0:0.5 0:0.5 2:1 5:1 4:0.5 2:0.5 | 4:4"),
+      lead_b: m("dorian", "4:1 5:1 7:1.5 5:0.5 | 4:1 2:1 4:2 | 5:0.5 4:0.5 2:1 0:1 -2:1 | 0:4"),
+      lead_c: m("dorian", COUNTY_A),
+      lead_d: m("dorian", COUNTY_B),
+      lead_e: m("dorian", "7:0.5 6:0.5 5:1 4:1 2:1 | 4:2 5:2 | 4:0.5 2:0.5 0:1 -2:1 0:1 | 0:4"),
+      bass_a: bl("dorian", [0, 0, 3, 3, 5, 5, 4, 4], "drive"),
+      bass_b: bl("dorian", [5, 3, 4, 0, 5, 1, 4, 0], "drive"),
+      pad_a: ch("dorian", [0, 0, 3, 3, 5, 5, 4, 4], "off"),
+      pad_b: ch("dorian", [5, 3, 4, 0, 5, 1, 4, 0], "off"),
+      kit: "k..hs..hk.h.s..h",
+      kit2: "k..hs..hk.h.s.ss",
+      hats: D_HAT8
+    },
+    tracks: [
+      { id: "lead", inst: "flute", oct: 2, vol: 0.95, pan: -0.12, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_e lead_a" },
+      { id: "chip", inst: "pulse25", oct: 2, vol: 0.5, pan: 0.2, layer: 1, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_e lead_a" },
+      { id: "pad", inst: "pulse12", oct: 1, vol: 0.4, pan: 0.3, seq: "pad_a pad_a pad_b pad_a pad_b pad_a pad_b pad_a pad_b pad_a" },
+      { id: "bass", inst: "bass", oct: -1, vol: 1.05, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
+      { id: "kit", inst: "drums", vol: 0.85, seq: "kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2" },
+      { id: "hats", inst: "drums", vol: 0.35, layer: 1, seq: "hats*40" }
+    ]
+  });
+
+  // bollin: the east motif with strings laid over the Carrs.
+  S.define("route_bollin", {
+    title: "Willows on the Bollin",
+    bpm: 128, key: "d", beats: 4, bars: 40,
+    loop: { from: 4, to: 40 },
+    patterns: {
+      lead_a: m("dorian", "0:0.5 2:0.5 4:1 2:1 0:1 | 5:1.5 4:0.5 2:2 | 0:0.5 2:0.5 4:1 5:1 7:1 | 5:4"),
+      lead_b: m("dorian", COUNTY_A),
+      lead_c: m("dorian", COUNTY_B),
+      lead_d: m("dorian", "4:2 2:1 4:1 | 5:2 7:2 | 6:1 5:1 4:1 2:1 | 0:4"),
+      str_a: ch("dorian", [0, 0, 5, 5, 3, 3, 4, 4], "whole"),
+      str_b: ch("dorian", [5, 3, 1, 4, 5, 3, 4, 0], "whole"),
+      bass_a: bl("dorian", [0, 0, 5, 5, 3, 3, 4, 4], "drive"),
+      bass_b: bl("dorian", [5, 3, 1, 4, 5, 3, 4, 0], "drive"),
+      kit: "k..hs..hk.h.s..h",
+      kit2: "k..hs..hk.hks.sh"
+    },
+    tracks: [
+      { id: "lead", inst: "flute", oct: 2, vol: 0.9, pan: -0.12, send: 0.2, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "strings", inst: "strings", oct: 0, vol: 0.85, send: 0.3, seq: "str_a str_a str_b str_a str_b str_a str_b str_a str_b str_a" },
+      { id: "harp", inst: "harp", oct: 1, vol: 0.5, pan: 0.3, layer: 1, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "bass", inst: "bass", oct: -1, vol: 1.0, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
+      { id: "kit", inst: "drums", vol: 0.8, seq: "kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2" }
+    ]
+  });
+
+  // dane: viaduct arches, heath, the Cloud. Strings + rail snare.
+  S.define("route_dane", {
+    title: "Twenty-Three Arches",
+    bpm: 140, key: "a", beats: 4, bars: 40,
+    loop: { from: 4, to: 40 },
+    patterns: {
+      lead_a: m("aeolian", "0:1 2:0.5 3:0.5 4:1 3:1 | 2:1.5 0:0.5 -2:2 | 0:1 3:0.5 4:0.5 5:1 4:1 | 2:4"),
+      lead_b: m("aeolian", "4:1 5:1 7:1.5 5:0.5 | 4:2 2:2 | 3:1 4:1 5:1 4:1 | 2:4"),
+      lead_c: m("aeolian", COUNTY_A),
+      lead_d: m("aeolian", COUNTY_B),
+      lead_e: m("aeolian", "7:1 5:1 4:2 | 5:1 4:1 2:2 | 3:0.5 2:0.5 0:1 -1:1 0:1 | 0:4"),
+      str_a: ch("aeolian", [0, 0, 5, 5, 3, 3, 4, 4], "whole"),
+      str_b: ch("aeolian", [5, 1, 4, 0, 5, 3, 4, 0], "whole"),
+      bass_a: bl("aeolian", [0, 0, 5, 5, 3, 3, 4, 4], "drive"),
+      bass_b: bl("aeolian", [5, 1, 4, 0, 5, 3, 4, 0], "drive"),
+      snare: "k.x.s.x.k.x.s.x.",
+      snare2: "k.x.s.x.k.xxs.sx"
+    },
+    tracks: [
+      { id: "lead", inst: "pulse25", oct: 2, vol: 0.95, pan: -0.12, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_e lead_a" },
+      { id: "strings", inst: "strings", oct: 0, vol: 0.9, send: 0.28, seq: "str_a str_a str_b str_a str_b str_a str_b str_a str_b str_a" },
+      { id: "bass", inst: "bass", oct: -1, vol: 1.05, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
+      { id: "kit", inst: "drums", vol: 0.85, seq: "snare*3 snare2 snare*3 snare2 snare*3 snare2 snare*3 snare2 snare*3 snare2 snare*3 snare2 snare*3 snare2 snare*3 snare2 snare*3 snare2 snare*3 snare2" }
+    ]
+  });
+
+  // south: the dane motif with the rail snare pushed to the front.
+  S.define("route_south", {
+    title: "Down the Weaver Line",
+    bpm: 146, key: "a", beats: 4, bars: 40,
+    loop: { from: 4, to: 40 },
+    patterns: {
+      lead_a: m("aeolian", "0:0.5 0:0.5 3:1 2:0.5 0:0.5 -2:1 | 0:2 4:2 | 3:0.5 2:0.5 0:1 3:1 4:1 | 2:4"),
+      lead_b: m("aeolian", "5:1 4:1 2:1.5 0:0.5 | 3:2 4:2 | 5:1 7:1 5:1 4:1 | 2:4"),
+      lead_c: m("aeolian", COUNTY_A),
+      lead_d: m("aeolian", COUNTY_B),
+      bass_a: bl("aeolian", [0, 0, 3, 3, 4, 4, 0, 0], "pump"),
+      bass_b: bl("aeolian", [5, 5, 3, 3, 4, 1, 0, 0], "pump"),
+      pad_a: ch("aeolian", [0, 0, 3, 3, 4, 4, 0, 0], "off"),
+      pad_b: ch("aeolian", [5, 5, 3, 3, 4, 1, 0, 0], "off"),
+      rail: "x.xxs.x.x.xxs.x.",
+      rail2: "x.xxs.x.x.xxsxsx",
+      kick: "k...k...k...k..k"
+    },
+    tracks: [
+      { id: "lead", inst: "pulse12", oct: 2, vol: 0.95, pan: -0.1, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "pad", inst: "pulse25", oct: 1, vol: 0.45, pan: 0.28, seq: "pad_a pad_a pad_b pad_a pad_b pad_a pad_b pad_a pad_b pad_a" },
+      { id: "strings", inst: "strings", oct: 0, vol: 0.55, layer: 1, send: 0.2, seq: "pad_a pad_a pad_b pad_a pad_b pad_a pad_b pad_a pad_b pad_a" },
+      { id: "bass", inst: "bass", oct: -1, vol: 1.05, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
+      { id: "rail", inst: "drums", vol: 0.8, seq: "rail*3 rail2 rail*3 rail2 rail*3 rail2 rail*3 rail2 rail*3 rail2 rail*3 rail2 rail*3 rail2 rail*3 rail2 rail*3 rail2 rail*3 rail2" },
+      { id: "kick", inst: "drums", vol: 0.9, seq: "kick*40" }
+    ]
+  });
+
+  // salt: marimba and water over the brine country.
+  S.define("route_salt", {
+    title: "Brine Country",
+    bpm: 126, key: "f", beats: 4, bars: 40,
+    loop: { from: 4, to: 40 },
+    patterns: {
+      mar_a: ap("lydian", [0, 0, 4, 4, 3, 3, 5, 5], [0, 2, 4, 6, 4, 2], 4, 0.5),
+      mar_b: ap("lydian", [5, 3, 4, 0, 5, 1, 4, 0], [0, 4, 2, 6, 4, 2], 4, 0.5),
+      lead_a: m("lydian", "0:1 2:1 4:1.5 2:0.5 | 5:2 4:2 | 2:1 4:1 6:1.5 4:0.5 | 2:4"),
+      lead_b: m("lydian", COUNTY_A),
+      lead_c: m("lydian", COUNTY_B),
+      lead_d: m("lydian", "6:1 4:1 2:2 | 5:1 4:1 2:2 | 0:1 2:1 4:1 2:1 | 0:4"),
+      bass_a: bl("lydian", [0, 0, 4, 4, 3, 3, 5, 5], "drive"),
+      bass_b: bl("lydian", [5, 3, 4, 0, 5, 1, 4, 0], "drive"),
+      kit: "k.dhs..dk.h.s.dh",
+      kit2: "k.dhs..dk.hds.dd"
+    },
+    tracks: [
+      { id: "lead", inst: "marimba", oct: 2, vol: 0.95, pan: -0.1, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "mar", inst: "marimba", oct: 1, vol: 0.6, pan: 0.25, seq: "mar_a mar_a mar_b mar_a mar_b mar_a mar_b mar_a mar_b mar_a" },
+      { id: "pad", inst: "pad", oct: 0, vol: 0.55, send: 0.3, layer: 1, seq: "mar_a mar_a mar_b mar_a mar_b mar_a mar_b mar_a mar_b mar_a" },
+      { id: "bass", inst: "bass", oct: -1, vol: 1.0, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
+      { id: "kit", inst: "drums", vol: 0.8, seq: "kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2" }
+    ]
+  });
+
+  // mersey: wind pads and turbine pulse over the marsh.
+  S.define("route_mersey", {
+    title: "Fog on the Flats",
+    bpm: 118, key: "c", beats: 4, bars: 40,
+    loop: { from: 4, to: 40 },
+    patterns: {
+      pad_a: ch("aeolian", [0, 0, 5, 5, 3, 3, 4, 4], "whole"),
+      pad_b: ch("aeolian", [5, 5, 1, 1, 4, 4, 0, 0], "whole"),
+      lead_a: m("aeolian", "0:2 2:1 3:1 | 4:2 3:2 | 2:1 0:1 -2:2 | 0:4"),
+      lead_b: m("aeolian", "4:1 3:1 2:2 | 5:2 4:2 | 3:1 2:1 0:1 -1:1 | 0:4"),
+      lead_c: m("aeolian", COUNTY_A),
+      lead_d: m("aeolian", COUNTY_B),
+      turb: m("aeolian", "0:0.5 .:0.5 0:0.5 .:0.5 0:0.5 .:0.5 0:0.5 .:0.5 | 0:0.5 .:0.5 0:0.5 .:0.5 0:0.5 .:0.5 0:0.5 .:0.5 | 4:0.5 .:0.5 4:0.5 .:0.5 4:0.5 .:0.5 4:0.5 .:0.5 | 4:0.5 .:0.5 4:0.5 .:0.5 4:0.5 .:0.5 4:0.5 .:0.5"),
+      bass_a: bl("aeolian", [0, 0, 5, 5, 3, 3, 4, 4], "tick"),
+      bass_b: bl("aeolian", [5, 5, 1, 1, 4, 4, 0, 0], "tick"),
+      kit: "k...s...k...s.h.",
+      kit2: "k...s...k..ks.hh"
+    },
+    tracks: [
+      { id: "pad", inst: "pad", oct: 0, vol: 1.0, send: 0.4, seq: "pad_a pad_a pad_b pad_a pad_b pad_a pad_b pad_a pad_b pad_a" },
+      { id: "lead", inst: "flute", oct: 2, vol: 0.85, pan: -0.15, send: 0.3, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "turbine", inst: "pulse12", oct: 1, vol: 0.35, pan: 0.32, seq: "turb turb turb turb turb turb turb turb turb turb" },
+      { id: "bass", inst: "bass", oct: -1, vol: 1.0, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
+      { id: "kit", inst: "drums", vol: 0.75, seq: "kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2" }
+    ]
+  });
+
+  // west: forest, sandstone, the Wirral. Wind pads and low brass.
+  S.define("route_west", {
+    title: "Sandstone Trail",
+    bpm: 128, key: "g", beats: 4, bars: 40,
+    loop: { from: 4, to: 40 },
+    patterns: {
+      lead_a: m("dorian", "0:1 2:1 3:1.5 2:0.5 | 4:2 2:2 | 5:1 4:1 2:1.5 0:0.5 | -2:4"),
+      lead_b: m("dorian", "4:1 5:1 6:2 | 5:1 4:1 2:2 | 0:1 2:1 4:1 5:1 | 4:4"),
+      lead_c: m("dorian", COUNTY_A),
+      lead_d: m("dorian", COUNTY_B),
+      brass_a: ch("dorian", [0, 0, 3, 3, 5, 5, 4, 4], "half"),
+      brass_b: ch("dorian", [5, 3, 4, 0, 5, 1, 4, 0], "half"),
+      pad_a: ch("dorian", [0, 0, 3, 3, 5, 5, 4, 4], "whole"),
+      pad_b: ch("dorian", [5, 3, 4, 0, 5, 1, 4, 0], "whole"),
+      bass_a: bl("dorian", [0, 0, 3, 3, 5, 5, 4, 4], "drive"),
+      bass_b: bl("dorian", [5, 3, 4, 0, 5, 1, 4, 0], "drive"),
+      kit: "k..hs..hk..hs..h",
+      kit2: "k..hs..hk.khs.sh"
+    },
+    tracks: [
+      { id: "lead", inst: "pulse25", oct: 2, vol: 0.9, pan: -0.12, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "brass", inst: "brass", oct: 0, vol: 0.7, seq: "brass_a brass_a brass_b brass_a brass_b brass_a brass_b brass_a brass_b brass_a" },
+      { id: "pad", inst: "pad", oct: 0, vol: 0.6, send: 0.35, seq: "pad_a pad_a pad_b pad_a pad_b pad_a pad_b pad_a pad_b pad_a" },
+      { id: "bass", inst: "bass", oct: -1, vol: 1.05, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
+      { id: "kit", inst: "drums", vol: 0.8, seq: "kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2" }
+    ]
+  });
+
+  // wales: the lane to Aberaeron. Harp and sea haze, no drums at all.
+  S.define("route_wales", {
+    title: "The Lane to Aberaeron",
+    bpm: 110, key: "d", beats: 4, bars: 32,
+    loop: { from: 0, to: 32 },
+    patterns: {
+      harp_a: ap("mixolydian", [0, 4, 5, 3, 0, 4, 3, 0], [0, 2, 4, 7, 9, 7, 4, 2], 4, 0.5),
+      harp_b: ap("mixolydian", [5, 3, 1, 4, 5, 3, 4, 0], [0, 2, 4, 7, 4, 2], 4, 0.5),
+      tune_a: m("mixolydian", "0:1.5 2:0.5 4:2 | 5:1.5 4:0.5 2:2 | 4:1 5:1 7:1.5 5:0.5 | 4:4"),
+      tune_b: m("mixolydian", COUNTY_A),
+      tune_c: m("mixolydian", COUNTY_B),
+      tune_d: m("mixolydian", "7:1.5 6:0.5 5:2 | 4:1.5 2:0.5 0:2 | -3:1 0:1 2:2 | 0:4"),
+      bass_a: bl("mixolydian", [0, 4, 5, 3, 0, 4, 3, 0], "root"),
+      bass_b: bl("mixolydian", [5, 3, 1, 4, 5, 3, 4, 0], "root"),
+      sea: "z......z....z..."
+    },
+    tracks: [
+      { id: "harp", inst: "harp", oct: 1, vol: 1.0, pan: 0.2, send: 0.4, seq: "harp_a harp_b harp_a harp_b" },
+      { id: "tune", inst: "flute", oct: 2, vol: 0.9, pan: -0.18, send: 0.3, seq: "tune_a tune_b tune_c tune_d tune_a tune_b tune_c tune_d" },
+      { id: "strings", inst: "strings", oct: 0, vol: 0.6, send: 0.3, layer: 1, seq: "bass_a bass_b bass_a bass_b" },
+      { id: "bass", inst: "sub", oct: -1, vol: 0.85, seq: "bass_a bass_b bass_a bass_b" },
+      { id: "sea", inst: "drums", vol: 0.35, seq: "sea*32" }
+    ]
+  });
+
+  // ===============================================================
+  // DUNGEONS
+  // ===============================================================
+
+  S.define("dungeon_cave", {
+    title: "Beneath the Edge",
+    bpm: 70, key: "b", beats: 4, bars: 32,
+    loop: { from: 0, to: 32 },
+    patterns: {
+      drone: m("aeolian", "0:4 | 0:4 | 0:4 | 0:4 | -2:4 | -2:4 | -4:4 | -4:4"),
+      knight: m("aeolian", ".:4 | .:2 0:1 2:1 | 3:2 2:2 | .:4 | .:4 | .:2 4:1 3:1 | 2:2 0:2 | .:4"),
+      knight2: m("aeolian", ".:4 | 4:2 3:2 | 2:1 0:1 -2:2 | .:4 | .:4 | 0:2 -1:2 | 0:4 | .:4"),
+      glass_a: m("aeolian", "7:2 .:2 | .:4 | 4:2 .:2 | .:4 | 5:2 .:2 | .:4 | 2:3 .:1 | .:4"),
+      bass: bl("aeolian", [0, 0, 0, 0, 5, 5, 3, 3], "root"),
+      bass2: bl("aeolian", [5, 5, 3, 3, 4, 4, 0, 0], "root"),
+      drip: "d.......d...d...",
+      drip2: "d......d........",
+      rumble: "..............g."
+    },
+    tracks: [
+      { id: "drone", inst: "drone", oct: -1, vol: 1.2, send: 0.45, seq: "drone drone drone drone" },
+      { id: "choir", inst: "choir", oct: 0, vol: 0.7, send: 0.55, seq: "knight knight2 knight knight2" },
+      { id: "glass", inst: "glass", oct: 2, vol: 0.6, pan: 0.3, send: 0.6, layer: 1, seq: "glass_a glass_a glass_a glass_a" },
+      { id: "bass", inst: "sub", oct: -2, vol: 1.0, seq: "bass bass2 bass bass2" },
+      { id: "drip", inst: "drums", vol: 0.6, send: 0.5, seq: "drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2" },
+      { id: "rumble", inst: "drums", vol: 0.5, layer: 1, seq: "rumble*32" }
+    ]
+  });
+
+  S.define("dungeon_bog", {
+    title: "What the Peat Keeps",
+    bpm: 66, key: "e", beats: 4, bars: 32,
+    loop: { from: 0, to: 32 },
+    patterns: {
+      pad_a: ch("phrygian", [0, 0, 1, 1, 0, 0, 6, 6], "whole"),
+      pad_b: ch("phrygian", [1, 1, 4, 4, 0, 0, 0, 0], "whole"),
+      wisp_a: m("phrygian", ".:2 7:1 6:1 | .:4 | 4:1 3:1 .:2 | .:4 | .:2 8:1 7:1 | .:4 | 5:2 4:2 | .:4"),
+      wisp_b: m("phrygian", "6:1 5:1 4:2 | .:4 | 3:1 1:1 0:2 | .:4 | .:4 | 4:2 3:2 | 1:2 0:2 | .:4"),
+      moan: m("phrygian", "0:8 | -2:8 | 1:8 | 0:8"),
+      bass_a: bl("phrygian", [0, 0, 1, 1, 0, 0, 6, 6], "root"),
+      bass_b: bl("phrygian", [1, 1, 4, 4, 0, 0, 0, 0], "root"),
+      wet: "d..z....d.....d.",
+      wet2: "d.....z.....d..."
+    },
+    tracks: [
+      { id: "pad", inst: "pad", oct: 0, vol: 1.0, send: 0.5, seq: "pad_a pad_b pad_a pad_b" },
+      { id: "wisp", inst: "bell", oct: 2, vol: 0.7, pan: 0.25, send: 0.6, seq: "wisp_a wisp_b wisp_a wisp_b" },
+      { id: "moan", inst: "choir", oct: 0, vol: 0.6, send: 0.5, layer: 1, seq: "moan moan moan moan moan moan moan moan" },
+      { id: "bass", inst: "sub", oct: -2, vol: 1.0, seq: "bass_a bass_b bass_a bass_b" },
+      { id: "wet", inst: "drums", vol: 0.55, send: 0.4, seq: "wet wet2 wet wet2 wet wet2 wet wet2 wet wet2 wet wet2 wet wet2 wet wet2 wet wet2 wet wet2 wet wet2 wet wet2 wet wet2 wet wet2 wet wet2 wet wet2" }
+    ]
+  });
+
+  // THE STACK / Jodrell interior. Server hum, fans, ORACLE's tag.
+  S.define("dungeon_stack", {
+    title: "Cooling Fans",
+    bpm: 96, key: "c", beats: 4, bars: 32,
+    loop: { from: 0, to: 32 },
+    patterns: {
+      hum: m("phrygian", "0:8 | 0:8 | 1:8 | 0:8"),
+      fans: "hhhhhhhhhhhhhhhh",
+      fans2: "hhhhhhhhhhhhhhhz",
+      tag: ORACLE_TAG_SLOW + " | .:4 | .:4 | .:4 | .:4",
+      tag2: ".:4 | .:4 | .:4 | .:4 | " + ORACLE_TAG_SLOW,
+      pulse_a: m("phrygian", "0:0.5 .:0.5 0:0.5 .:0.5 0:0.5 .:0.5 0:0.5 .:0.5 | 0:0.5 .:0.5 0:0.5 .:0.5 1:0.5 .:0.5 1:0.5 .:0.5 | 0:0.5 .:0.5 0:0.5 .:0.5 0:0.5 .:0.5 0:0.5 .:0.5 | -2:0.5 .:0.5 -2:0.5 .:0.5 -2:0.5 .:0.5 -2:0.5 .:0.5"),
+      lead_a: m("phrygian", ".:4 | 4:1 3:1 1:2 | 0:2 -2:2 | .:4"),
+      lead_b: m("phrygian", ".:4 | 7:1 6:1 4:2 | 3:2 1:2 | 0:4"),
+      bass_a: bl("phrygian", [0, 0, 0, 0, 1, 1, 0, 0], "tick"),
+      bass_b: bl("phrygian", [6, 6, 1, 1, 0, 0, 0, 0], "tick")
+    },
+    tracks: [
+      { id: "hum", inst: "drone", oct: -1, vol: 1.1, send: 0.3, seq: "hum hum hum hum hum hum hum hum" },
+      { id: "pulse", inst: "pulse12", oct: 1, vol: 0.35, pan: 0.3, seq: "pulse_a pulse_a pulse_a pulse_a pulse_a pulse_a pulse_a pulse_a" },
+      { id: "oracle", inst: "fm", oct: 1, vol: 0.85, pan: -0.2, send: 0.55, params: { ratio: 1.41, index: 3 }, seq: "tag tag2 tag tag2 tag tag2 tag tag2" },
+      { id: "lead", inst: "glass", oct: 2, vol: 0.6, send: 0.5, layer: 1, seq: "lead_a lead_b lead_a lead_b lead_a lead_b lead_a lead_b" },
+      { id: "bass", inst: "sub", oct: -2, vol: 1.0, seq: "bass_a bass_b bass_a bass_b" },
+      { id: "fans", inst: "drums", vol: 0.3, seq: "fans*3 fans2 fans*3 fans2 fans*3 fans2 fans*3 fans2 fans*3 fans2 fans*3 fans2 fans*3 fans2 fans*3 fans2" }
+    ]
+  });
+
+  // NEW ID: mill interiors (Quarry Bank, Clarence, Havannah).
+  S.define("dungeon_mill", {
+    title: "The Wheel and the Water",
+    bpm: 88, key: "a", beats: 4, bars: 32,
+    loop: { from: 0, to: 32 },
+    patterns: {
+      wheel: "x...x...x...x...",
+      wheel2: "x...x...x..xx...",
+      water: "d.z.d.z.d.z.d.z.",
+      lead_a: m("dorian", "0:2 3:1 2:1 | 4:2 3:2 | 2:1 0:1 -2:2 | 0:4"),
+      lead_b: m("dorian", "5:1 4:1 3:2 | 2:2 0:2 | 3:1 4:1 5:1 4:1 | 2:4"),
+      lead_c: m("dorian", COUNTY_A),
+      pad_a: ch("dorian", [0, 0, 3, 3, 5, 5, 4, 4], "whole"),
+      pad_b: ch("dorian", [5, 3, 4, 0, 5, 1, 4, 0], "whole"),
+      bass_a: bl("dorian", [0, 0, 3, 3, 5, 5, 4, 4], "half"),
+      bass_b: bl("dorian", [5, 3, 4, 0, 5, 1, 4, 0], "half")
+    },
+    tracks: [
+      { id: "lead", inst: "pluck", oct: 2, vol: 0.85, pan: -0.15, send: 0.3, seq: "lead_a lead_b lead_c lead_a lead_b lead_c lead_a lead_b" },
+      { id: "pad", inst: "pad", oct: 0, vol: 0.8, send: 0.35, seq: "pad_a pad_b pad_a pad_b" },
+      { id: "bass", inst: "bass", oct: -1, vol: 0.95, seq: "bass_a bass_b bass_a bass_b" },
+      { id: "wheel", inst: "drums", vol: 0.8, seq: "wheel*3 wheel2 wheel*3 wheel2 wheel*3 wheel2 wheel*3 wheel2 wheel*3 wheel2 wheel*3 wheel2 wheel*3 wheel2 wheel*3 wheel2" },
+      { id: "water", inst: "drums", vol: 0.4, send: 0.3, layer: 1, seq: "water*32" }
+    ]
+  });
+
+  // NEW ID: railway stations and platforms.
+  S.define("place_station", {
+    title: "Platform Four",
+    bpm: 104, key: "e", beats: 4, bars: 24,
+    loop: { from: 0, to: 24 },
+    patterns: {
+      lead_a: m("mixolydian", ".:1 0:1 2:2 | 4:2 2:2 | .:1 4:1 5:2 | 4:4"),
+      lead_b: m("mixolydian", "6:1 5:1 4:2 | 2:2 0:2 | -3:1 0:1 2:2 | 0:4"),
+      lead_c: m("mixolydian", COUNTY_HEAD + " | 2:2 0:2 | 0:4"),
+      pad_a: ch("mixolydian", [0, 0, 3, 3, 4, 4, 0, 0], "whole"),
+      bass_a: bl("mixolydian", [0, 0, 3, 3, 4, 4, 0, 0], "root"),
+      tannoy: "x.......x.......",
+      rest: "................"
+    },
+    tracks: [
+      { id: "lead", inst: "marimba", oct: 2, vol: 0.8, pan: -0.1, send: 0.25, seq: "lead_a lead_b lead_c lead_a lead_b lead_c" },
+      { id: "pad", inst: "pad", oct: 0, vol: 0.7, send: 0.3, seq: "pad_a pad_a pad_a" },
+      { id: "bass", inst: "sub", oct: -1, vol: 0.85, seq: "bass_a bass_a bass_a" },
+      { id: "tannoy", inst: "drums", vol: 0.35, seq: "tannoy rest*7 tannoy rest*7 tannoy rest*7" }
+    ]
+  });
+
 })();
