@@ -72,7 +72,7 @@
   c.set("g", 29, 20, "k"); c.set("g", 31, 21, "k"); c.set("g", 28, 22, "l"); c.set("g", 30, 19, "o");
   c.set("g", 29, 22, "q");
   // the island in the widened pound
-  c.fill("g", 16, 36, 8, 5, "~");
+  c.fill("g", 16, 36, 6, 5, "~");
   c.fill("g", 18, 37, 4, 3, ".");
   c.set("g", 19, 38, "j");
   c.fill("g", 18, 37, 4, 1, '"');
@@ -136,7 +136,7 @@
     spawnPoint: { x: 9, y: 12 },
     encounters: { grass: "route_macc_bollington_island_grass", water: null },
     fishing: "fish_route_macc_bollington",
-    warps: [{ x: 9, y: 12, to: "route_macc_bollington", tx: 22, ty: 38, dir: "right", kind: "door" }],
+    warps: [{ x: 9, y: 12, to: "route_macc_bollington", tx: 23, ty: 38, dir: "right", kind: "door" }],
     items: [
       { x: 8, y: 6, item: "silk_cocoon", n: 1, flag: "item_route_macc_bollington_island_1" },
       { x: 13, y: 9, item: "capsule_mesh", n: 2, hidden: true, flag: "item_route_macc_bollington_island_2" }
@@ -409,6 +409,7 @@
   c.fill("g", 30, 2, 8, 4, "c");
   c.fill("g", 28, 2, 2, 4, "C");
   B.trees(c, "r32", 24, 1, 1, 20, 20, "P", "p", ["."]);
+  c.fill("g", 4, 1, 5, 3, "+");
   c.set("g", 8, 5, "S"); c.set("g", 18, 25, "S");
   c.set("g", 14, 15, "q"); c.set("g", 22, 8, "M");
   route("route_macc_teggs", {

@@ -152,5 +152,24 @@
   // Fill the whole map, useful before carving.
   B.solidFill = function (c, ch) { return c.fill("g", 0, 0, c.w, c.h, ch); };
 
+  // Shared east-town legend. Every char resolves to an MQ.Tiles id.
+  const TOWN = {
+    ".": "grass", ",": "grass_dark", '"': "grass_tall", "l": "flowers_yellow", "o": "flowers_red",
+    "=": "path_cobble", "-": "pavement", "_": "path_flag", "+": "path_dirt", "r": "road", "k": "kerb",
+    "s": "steps", "t": "towpath", "~": "water_canal", "e": "water_edge", "x": "bridge_stone",
+    "T": "tree_oak", "y": "tree_oak_top", "B": "tree_birch", "b": "tree_birch_top",
+    "#": "wall_brick_red", "X": "wall_brick_dark", "R": "roof_slate", "^": "roof_over",
+    "W": "window", "D": "door_wood", "@": "door_red", "S": "door_shop", "m": "chimney",
+    "M": "chimney_mill", "V": "mill_wall", "v": "mill_window", "Z": "mill_wheel",
+    "c": "church_wall", "C": "church_window", "d": "church_door", "p": "church_spire", "g": "gravestone",
+    "N": "sign", "P": "sign_post", "n": "noticeboard", "O": "postbox", "j": "phonebox", "u": "bus_stop",
+    "L": "lamp_victorian", "H": "bench", "I": "bin", "F": "fence_iron", "f": "fence_wood",
+    "w": "wall_garden", "h": "hedge", "A": "market_stall", "a": "market_stall_top",
+    "q": "statue", "i": "war_memorial", "/": "fountain", "*": "planter", "z": "rock",
+    "%": "shop_awning", "&": "silk_bolt", "G": "gate_iron", "K": "canal_lock", "'": "flowers_white",
+    " ": null
+  };
+  B.TOWN = TOWN;
+
   MQ.EastBuild = B;
 })();
