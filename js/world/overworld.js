@@ -341,7 +341,11 @@
     player.bob = -Math.sin(k * Math.PI) * 16;
     player.animT += dt;
     player.frame = 1;
-    if (k >= 1) { player.hop = null; player.bob = 0; syncTile(true); }
+    if (k >= 1) {
+      player.hop = null; player.bob = 0;
+      for (let i = 0; i < 5; i++) emitParticle(player.px + (i - 2) * 5, player.py, 2, (i - 2) * 26, -40, 300);
+      syncTile(true);
+    }
   }
 
   // Ledge in front? (auto-hop, down-only unless the tile says otherwise)
@@ -398,6 +402,7 @@
       player.animT += dt * (player.running ? 1.5 : 1);
       player.frame = MQ.NPC.FRAMES[Math.floor(player.animT / 120) % 4];
       footstep(dt);
+      walkParticles(dt);
     } else {
       player.frame = MQ.NPC.FRAMES[Math.floor((player.animT += dt * 0.4) / 200) % 4];
       bumpHint(dir);
@@ -842,6 +847,46 @@
     }
   }
   O.cats = function () { return cats; };
+  O.getCat = function (which) { return catById(which); };
+
+  // MEADOW Squeeze: send the small cat through a `k` gap to fetch what's
+  // behind it (SIDE-CONTENT §3, DESIGN-INDEX §3).
+  O.sendCat = function (x, y, which) {
+    const gap = MQ.World.catGapAt(map, x, y);
+    if (!gap) return Promise.resolve(false);
+    const cat = catById(which || "meadow") || cats[0];
+    if (!cat) return Promise.resolve(false);
+    if (gap.flag && MQ.Flags.get(gap.flag)) {
+      return (MQ.Dialog ? MQ.Dialog.say("Nothing left through there but cobwebs.") : Promise.resolve()).then(function () { return false; });
+    }
+    const v = U.dirVec[player.dir] || [0, 1];
+    const beyond = { x: x + v[0], y: y + v[1] };
+    hold();
+    const gen = function* (ctx) {
+      const S = ctx.S;
+      MQ.NPC.emote(cat, "!", 600);
+      if (MQ.Audio && MQ.Audio.sfx) MQ.Audio.sfx("cat_meow");
+      yield O.moveEntity(cat.id, [{ x: x, y: y }], { speed: 5 });
+      yield S.wait(220);
+      yield O.moveEntity(cat.id, [beyond], { speed: 5 });
+      yield S.wait(700);
+      MQ.NPC.emote(cat, "paw", 900);
+      yield S.wait(400);
+      yield O.moveEntity(cat.id, [{ x: x, y: y }, { x: player.x, y: player.y }], { speed: 5 });
+      if (gap.flag) MQ.Flags.set(gap.flag, true);
+      if (gap.item) yield S.giveItem(gap.item, gap.n || 1);
+      if (gap.lever) MQ.Events.emit("lever", { map: map.id, id: gap.lever });
+      if (gap.tile) O.setTile(gap.tx === undefined ? x : gap.tx, gap.ty === undefined ? y : gap.ty, gap.tile);
+      MQ.Events.emit("catgap:done", { map: map.id, x: x, y: y, gap: gap });
+      yield S.say(gap.say || ["MEADOW slips through, has a good long think about it, and comes back with something."]);
+      return true;
+    };
+    return MQ.Script.run(gen, { map: map, player: player, S: MQ.Script.cmds }).then(function (r) {
+      cat.scriptCtl = null;
+      release();
+      return r;
+    }, function (e) { cat.scriptCtl = null; release(); MQ.warn("[Overworld] cat errand failed", e); return false; });
+  };
   O.refreshCats = resetCats;
   O.catSit = function () { for (let i = 0; i < cats.length; i++) { cats[i].sitting = true; cats[i].idleT = 3000; } };
 
@@ -925,7 +970,12 @@
       if (!updateNpcScriptMove(e, dt)) MQ.NPC.update(e, dt, w);
     }
     MQ.NPC.trailPush(player.px, player.py, player.dir);
-    for (let i = 0; i < cats.length; i++) MQ.NPC.updateFollower(cats[i], dt, w);
+    for (let i = 0; i < cats.length; i++) {
+      const c = cats[i];
+      if (c.scriptCtl) updateNpcScriptMove(c, dt);
+      else MQ.NPC.updateFollower(c, dt, w);
+    }
+    updateParticles(dt);
     if (!locked) checkSightLines();
     updateCamera(dt);
   };
@@ -1125,6 +1175,23 @@
       const off = (timeAcc / 26) % 8;
       for (let y = -8 + off; y < vh; y += 8) ctx.fillRect(0, y, vw, 1);
       ctx.globalAlpha = 1;
+      // …and, at strength, a shimmer over the tiles that are hiding something
+      if (sig > 0.3) {
+        const r = 7;
+        const x0 = Math.max(0, player.x - r), x1 = Math.min(rt.w - 1, player.x + r);
+        const y0 = Math.max(0, player.y - r), y1 = Math.min(rt.h - 1, player.y + r);
+        ctx.fillStyle = "#7cf0d8";
+        for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) {
+          if (!rt.zone[ty * rt.w + tx]) continue;
+          const phase = ((tx * 7 + ty * 13) % 10) / 10;
+          const a = Math.sin(timeAcc / 420 + phase * 6.28);
+          if (a < 0.55) continue;
+          ctx.globalAlpha = (a - 0.55) * sig * 0.7;
+          ctx.fillRect(tx * T + 8 - ox, ty * T + 8 - oy, 3, 3);
+          ctx.fillRect(tx * T + 20 - ox, ty * T + 18 - oy, 2, 2);
+        }
+        ctx.globalAlpha = 1;
+      }
     }
   }
 
@@ -1141,6 +1208,51 @@
       if (lightBuf.length >= 40) return lightBuf;
     }
     return lightBuf;
+  }
+
+  // ---- particles ---------------------------------------------------------
+  // A fixed pool: grass rustle, running dust, the puff of a ledge landing.
+  const PN = 28;
+  const pX = new Float32Array(PN), pY = new Float32Array(PN), pVX = new Float32Array(PN), pVY = new Float32Array(PN);
+  const pL = new Float32Array(PN), pM = new Float32Array(PN), pK = new Uint8Array(PN);
+  let pNext = 0;
+  function emitParticle(x, y, kind, vx, vy, ms) {
+    const i = pNext = (pNext + 1) % PN;
+    pX[i] = x; pY[i] = y; pVX[i] = vx || 0; pVY[i] = vy || 0;
+    pL[i] = ms || 320; pM[i] = pL[i]; pK[i] = kind;
+  }
+  O.emitParticle = emitParticle;
+  function updateParticles(dt) {
+    for (let i = 0; i < PN; i++) {
+      if (pL[i] <= 0) continue;
+      pL[i] -= dt;
+      pX[i] += pVX[i] * dt / 1000;
+      pY[i] += pVY[i] * dt / 1000;
+      pVY[i] += 90 * dt / 1000;
+    }
+  }
+  function drawParticles(ctx, ox, oy) {
+    for (let i = 0; i < PN; i++) {
+      if (pL[i] <= 0) continue;
+      const k = pL[i] / pM[i];
+      ctx.globalAlpha = U.clamp(k, 0, 1) * 0.8;
+      ctx.fillStyle = pK[i] === 1 ? "#8ad06a" : pK[i] === 2 ? "#c8b48a" : "#dfe7ef";
+      const s = pK[i] === 1 ? 3 : 2;
+      ctx.fillRect(Math.round(pX[i] - ox), Math.round(pY[i] - oy), s, s);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  let rustleAcc = 0;
+  function walkParticles(dt) {
+    rustleAcc += dt;
+    if (rustleAcc < (player.running ? 110 : 190)) return;
+    rustleAcc = 0;
+    const i = MQ.World.idx(map, player.x, player.y);
+    if (i < 0) return;
+    const spread = (Math.random() - 0.5) * 26;
+    if (rt.slow[i]) emitParticle(player.px + spread, player.py - 2, 1, spread * 0.6, -34, 380);
+    else if (player.running) emitParticle(player.px + spread * 0.4, player.py, 2, spread * 0.5, -18, 260);
   }
 
   // ---- mini-map ----------------------------------------------------------
@@ -1270,6 +1382,7 @@
     drawLayer(ctx, "deco", ox, oy);
     drawItems(ctx, ox, oy);
     drawEntities(ctx, ox, oy);
+    drawParticles(ctx, ox, oy);
     drawLayer(ctx, "over", ox, oy);
     drawWeather(ctx, lastDt, ox, oy);
     if (!hudHidden) drawHud(ctx);
@@ -1324,6 +1437,14 @@
     }
   };
 
+  // Fast travel (rail, beacons, the Anderton lift): drop in at the spawn point.
+  O.warpTo = function (mapId, opts) {
+    const m = MQ.World.get(mapId);
+    if (!m) return Promise.resolve(false);
+    const sp = MQ.World.spawnOf(m);
+    return O.warp(mapId, sp.x, sp.y, "down", opts || { fade: true });
+  };
+
   // Party wipe / faint: back to the last care centre (or the map's heal point).
   O.recover = function () {
     const r = O.state.respawn || (map && map.healPoint ? { map: map.id, x: map.healPoint.x, y: map.healPoint.y, dir: "down" } : null);
@@ -1333,6 +1454,31 @@
       if (MQ.Dialog) MQ.Dialog.say("You come round on a bench with a cup of tea you don't remember accepting.");
     });
   };
+
+  // A lost battle walks you back to the last place that had a kettle.
+  MQ.Events.on("battle:end", function (d) {
+    if (!d || d.outcome !== "lose") return;
+    if (MQ.Scenes.top() !== O && !MQ.Scenes.has(O.id)) return;
+    O.recover();
+  });
+
+  // Weather turning is worth a line — it changes how you walk and what spawns.
+  const WEATHER_LINES = {
+    rain: "Rain sets in. The path turns to soup.",
+    fog: "Fog comes down off the moss. You can hear more than you can see.",
+    wind: "The wind gets up. Somewhere a gate bangs.",
+    snow: "Snow, of all things. It won't lie long.",
+    sun: "The cloud breaks. Cheshire, briefly, in colour.",
+    clear: "The weather settles."
+  };
+  MQ.Events.on("weather", function (d) {
+    if (!d || !map || map.outdoor === false) return;
+    if (MQ.Scenes.top() !== O || hudHidden) return;
+    if (d.zone && map.weatherZone && d.zone !== map.weatherZone) return;
+    const line = WEATHER_LINES[d.weather];
+    if (line && MQ.Dialog) MQ.Dialog.notify(line);
+    if (MQ.Audio && MQ.Audio.sfx && (d.weather === "rain" || d.weather === "wind")) MQ.Audio.sfx(d.weather);
+  });
 
   // Jim's own palette — a walker's jacket, not a random NPC's.
   (function () {

@@ -96,14 +96,15 @@
     npc.busy = true;
     const ctx = { npc: npc, map: world.map, player: world.player, world: world, S: MQ.Script.cmds };
     let chain;
+    const tdata = (npc.trainer && MQ.Data && MQ.Data.trainers && MQ.Data.trainers[npc.trainer]) || null;
     if (npc.trainer && !MQ.NPC.isBeaten(npc)) {
       chain = I.trainerBattle(world, npc, false);
     } else if (npc.script && MQ.Story && MQ.Story.npcScripts && MQ.Story.npcScripts[npc.script]) {
       chain = MQ.Script.runNpc(npc.script, ctx);
     } else if (npc.def.shop) {
       chain = I.openShop(world, npc.def.shop, npc);
-    } else if (npc.def.after && npc.trainer && MQ.NPC.isBeaten(npc)) {
-      chain = say(npc.def.after, { name: npc.def.name });
+    } else if (npc.trainer && MQ.NPC.isBeaten(npc) && ((tdata && tdata.after) || npc.def.after)) {
+      chain = say((tdata && tdata.after) || npc.def.after, { name: (tdata && tdata.name) || npc.def.name });
     } else if (npc.say) {
       chain = say(npc.say, { name: npc.def.name, portrait: npc.def.portrait || npc.sprite });
     } else if (npc.def.kind && I.handlers[npc.def.kind]) {
@@ -206,7 +207,18 @@
 
   H.item = function (d, world) { return I.pickUp(world, d.item, d.item.hidden); };
 
+  H.catgap = function (d, world) {
+    const O = MQ.Overworld;
+    if (!O.state.abilities.has("squeeze")) return say("A gap in the railings. A cat could manage it; you could not.");
+    if (!O.cats().length) return say("You'd want a cat with you for that.");
+    return O.sendCat(d.x, d.y, "meadow");
+  };
+
   H.sign = function (d, world) {
+    if (d.tile === "noticeboard" || d.tile === "bus_stop") {
+      const b = has("Bounties.open");
+      if (b && MQ.Flags.get("bounty_board_open")) return P(b(world.map.id));
+    }
     const text = d.sign ? d.sign.text : null;
     if (text) return say(text, { position: "bottom", style: "paper" });
     const tile = d.tile || MQ.World.groundAt(world.map, d.x, d.y);

@@ -135,6 +135,7 @@ function fixtures(MQ) {
     encounters: { grass: "we_field_grass", water: null, cave: null },
     fishing: "fish_we_field",
     restPoints: [{ x: 13, y: 6, flag: "we_rested" }],
+    catGaps: [{ x: 19, y: 6, item: "potion", n: 1, flag: "we_gap_1", say: ["MEADOW comes back with a dusty little box."] }],
     spawnPoint: { x: 13, y: 9 },
     healPoint: { x: 13, y: 9 },
     landmark: { name: "The Test Field", x: 13, y: 9 }
@@ -648,6 +649,79 @@ module.exports = function (t, assert) {
     assert.strictEqual(O.state.map, "we_field");
     assert.ok(O.getNpc("we_extra"), "the spawned NPC came back");
     assert.strictEqual(MQ.Save.providers.overworld === undefined, true, "Boot registers it; we don't double-register");
+  });
+
+  t("cat gaps: MEADOW squeezes through and fetches what's behind", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    const m = O.currentMap();
+    assert.strictEqual(MQ.World.isCatGap(m, 19, 6), true);
+    assert.strictEqual(MQ.World.interactAt(m, 19, 6), "catgap");
+    assert.strictEqual(MQ.World.blocked(m, 19, 6, O.state.abilities), true, "a person cannot get through");
+    const said = [];
+    const realSay = MQ.Dialog.say;
+    MQ.Dialog.say = function (pages, opts) { said.push(Array.isArray(pages) ? pages.join(" ") : String(pages)); return realSay.call(MQ.Dialog, pages, opts); };
+    // no squeeze, no cat: just a remark
+    const p1 = MQ.Interact.run({ map: m, player: O.player }, { kind: "catgap", x: 19, y: 6 });
+    return Promise.all([p1, pump(env, 6)]).then(function () {
+      assert.ok(said.join(" ").indexOf("cat could manage") >= 0, said.join(" | "));
+      MQ.Flags.set("cats_joined", true);
+      O.refreshCats();
+      O.unlock("squeeze");
+      O.place(19, 7, "up");
+      said.length = 0;
+      const p2 = MQ.Interact.run({ map: m, player: O.player }, { kind: "catgap", x: 19, y: 6 });
+      return Promise.all([p2, pump(env, 200)]);
+    }).then(function (r) {
+      MQ.Dialog.say = realSay;
+      assert.strictEqual(r[0], true, "the errand completed");
+      assert.strictEqual(MQ.Flags.get("we_gap_1"), true, "the gap is marked done");
+      assert.strictEqual(MQ.Flags.get("item_potion"), 1, "MEADOW brought back the goods");
+      assert.strictEqual(O.frozen(), false);
+      assert.strictEqual(O.getCat("meadow").scriptCtl, null);
+    }, function (e) { MQ.Dialog.say = realSay; throw e; });
+  });
+
+  t("warpTo drops you at a map's spawn point (rail, beacons, the lift)", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    return O.warpTo("we_house", { fade: false }).then(function () {
+      const sp = MQ.World.spawnOf(MQ.World.get("we_house"));
+      assert.strictEqual(O.state.map, "we_house");
+      assert.strictEqual(O.player.x, sp.x);
+      assert.strictEqual(O.player.y, sp.y);
+      assert.strictEqual(O.warpTo("no_such_map") instanceof Promise, true);
+    });
+  });
+
+  t("a lost battle walks you back to the last kettle", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    O.state.respawn = { map: "we_house", x: 7, y: 12, dir: "down" };
+    MQ.Events.emit("battle:end", { outcome: "lose" });
+    return pump(env, 60).then(function () {
+      assert.strictEqual(O.state.map, "we_house", "recovered indoors");
+      assert.strictEqual(O.player.x, 7);
+    });
+  });
+
+  t("weather changes announce themselves and slow the walk", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    MQ.UI.toasts.length = 0;
+    MQ.Clock.setWeather("rain", "east");
+    assert.ok(MQ.UI.toasts.length > 0, "the player was told");
+    assert.ok(MQ.UI.toasts[0].text.indexOf("Rain") >= 0, MQ.UI.toasts[0].text);
+    O.place(10, 9, "up");
+    let wet;
+    env.key("ArrowUp");
+    return pump(env, 30).then(function () {
+      wet = 9 * 32 + 16 - O.player.py;
+      MQ.Clock.setWeather("clear", "east");
+      O.place(10, 9, "up");
+      return pump(env, 30);
+    }).then(function () {
+      env.key("ArrowUp", false);
+      const dry = 9 * 32 + 16 - O.player.py;
+      assert.ok(wet < dry, "rain slowed the walk: " + wet.toFixed(1) + " < " + dry.toFixed(1));
+      assert.ok(wet > dry * 0.8, "…by about a tenth");
+    });
   });
 
   t("freeze and hideHud gate input and chrome", function () {

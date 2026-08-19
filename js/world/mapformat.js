@@ -325,8 +325,9 @@
     const cg = map.catGaps || [];
     for (let k = 0; k < cg.length; k++) {
       const c = cg[k], i = c.y * w + c.x;
-      if (i >= 0 && i < n) { rt.catgap[i] = 1; if (c.solid !== false) rt.solid[i] = 1; }
+      if (i >= 0 && i < n) { rt.catgap[i] = 1; if (c.solid !== false) rt.solid[i] = 1; rt.catGapDefs = rt.catGapDefs || {}; rt.catGapDefs[i] = c; }
     }
+    for (let i = 0; i < n; i++) if (rt.catgap[i]) rt.interact[i] = "catgap";
     // lookup grids
     const warps = World.allWarps(map);
     for (let k = 0; k < warps.length; k++) { const wp = warps[k]; rt.warpGrid[wp.y * w + wp.x] = wp; }
@@ -399,6 +400,11 @@
   World.itemAt = function (map, x, y) { const rt = World.prepare(map), i = World.idx(map, x, y); return i < 0 ? null : (rt.itemGrid[i] || null); };
   World.isSlow = function (map, x, y) { const rt = World.prepare(map), i = World.idx(map, x, y); return i < 0 ? false : !!rt.slow[i]; };
   World.isCatGap = function (map, x, y) { const rt = World.prepare(map), i = World.idx(map, x, y); return i < 0 ? false : !!rt.catgap[i]; };
+  World.catGapAt = function (map, x, y) {
+    const rt = World.prepare(map), i = World.idx(map, x, y);
+    if (i < 0 || !rt.catgap[i]) return null;
+    return (rt.catGapDefs && rt.catGapDefs[i]) || { x: x, y: y };
+  };
 
   // grid-aware warp lookup (own warps + generated edge warps)
   const _warpAt = World.warpAt;
