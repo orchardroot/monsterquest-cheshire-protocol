@@ -397,7 +397,13 @@
   Inv.buffs = {};        // key → {value, until (real ms) | battles}
   Inv.order = [];        // insertion order, for a stable bag
 
-  Inv.count = function (id) { return Inv.items[id] || 0; };
+  Inv.count = function (id) {
+    if (Inv.items[id]) return Inv.items[id];
+    // Fall back to the `item_<id>` counter MQ.Script writes when the bag is
+    // not up yet, so `item.<id>` conditions read the same either way.
+    const f = flagGet("item_" + id);
+    return typeof f === "number" ? f : 0;
+  };
   Inv.has = function (id, n) { return Inv.count(id) >= (n || 1); };
   Inv.add = function (id, n, opts) {
     n = n === undefined ? 1 : n;
@@ -1147,6 +1153,28 @@
   provide("settings", St.saveProvider);
   MQ.Settings = St;
   St.load();
+
+  // =============================================================
+  // Flag resolvers — MQ.Flags.resolvers is documented as extendable; these
+  // let quest/dialogue conditions read the content layer directly.
+  // =============================================================
+  if (MQ.Flags && MQ.Flags.resolvers) {
+    const RS = MQ.Flags.resolvers;
+    RS.badges = function () {
+      if (Tr.badges && Tr.badges.size) return Tr.badges.size;
+      const f = flagGet("badges");
+      return typeof f === "number" ? f : (Tr.badges ? Tr.badges.size : 0);
+    };
+    RS.marks = function () { return Inv.marks; };
+    RS.chips = function () { return Inv.chips; };
+    RS.trust = function (rest) { return MQ.Cats ? MQ.Cats.trust(rest) : 0; };
+    RS.perk = function (rest) { return MQ.Progression ? MQ.Progression.has("perk_" + rest) || MQ.Progression.has(rest) : false; };
+    RS.ach = function (rest) { return MQ.Achievements ? MQ.Achievements.has(rest.indexOf("ach_") === 0 ? rest : "ach_" + rest) : false; };
+    RS.stat = function (rest) { return Tr.stat(rest); };
+    RS.level = function () { return Tr.level; };
+    RS.dex = function (rest) { return rest === "caught" ? Tr.caughtCount() : rest === "seen" ? Tr.seenCount() : Tr.dexTotal(); };
+    RS.rank = function () { return Tr.rank().id; };
+  }
 
   // =============================================================
   // wiring

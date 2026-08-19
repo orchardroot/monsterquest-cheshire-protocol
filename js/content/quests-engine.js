@@ -39,7 +39,16 @@
     return Q.states[id];
   }
   Q.state = function (id) { return Q.states[id] || null; };
-  Q.stage = function (id) { const s = Q.states[id]; return s ? (s.done ? Q.stages(id).length : s.stage) : -1; };
+  // Stage index, or -1. With no definition we fall back to the `quest_<id>`
+  // flag that MQ.Script writes in its degraded mode, so conditions still read.
+  Q.stage = function (id) {
+    const s = Q.states[id];
+    if (!s) {
+      const v = flagGet("quest_" + id);
+      return typeof v === "number" ? v : -1;
+    }
+    return s.done ? Math.max(s.stage, Q.stages(id).length) : s.stage;
+  };
   Q.isStarted = function (id) { return !!(Q.states[id] && Q.states[id].started); };
   Q.isActive = function (id) { const s = Q.states[id]; return !!(s && s.started && !s.done && !s.failed); };
   Q.isDone = function (id) { return !!(Q.states[id] && Q.states[id].done); };
@@ -141,7 +150,10 @@
       }
       s.stage++;
       flagSet("quest_" + id, s.stage);
-      if (!stages.length || s.stage >= stages.length) { Q.complete(id); break; }
+      // With no definition (a script driving an id the data has not shipped
+      // yet) we keep counting rather than closing the case.
+      if (stages.length && s.stage >= stages.length) { Q.complete(id); break; }
+      if (!stages.length) { emit("quest:stage", { id: id, stage: s.stage, state: s }); break; }
       runStageHook(id, s.stage, "onStart");
       emit("quest:stage", { id: id, stage: s.stage, state: s });
       const next = stages[s.stage];
