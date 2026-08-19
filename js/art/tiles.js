@@ -1983,3 +1983,320 @@
     ".....!0!0!......", "......!0!.......", ".......0........", ".......!........",
     "......@@@@......", ".....@!00!@.....", "......@@@@......", "................"
   ]]));
+
+  // ---------------------------------------------------------------
+  // INTERIORS — counters, machines, furniture
+  // ---------------------------------------------------------------
+  function wood(ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); }
+  function stoneF(ctx, f, s) { flags(ctx, s, "#909098", "#75757f", "#a8a8b2", "#63636d"); }
+  function tileF(ctx, f, s) { tileFloor(ctx, s, "#d8d0c0", "#bdb4a2"); }
+
+  P("counter", deco(wood, [
+    "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "OP>>>>>>>>>>>>PO", "OPPPPPPPPPPPPPPO",
+    "OOOOOOOOOOOOOOOO", "O>oooooooooooo>O", "O>o>>>>>>>>>>o>O", "O>oooooooooooo>O",
+    "O>o>>>>>>>>>>o>O", "O>oooooooooooo>O", "O>o>>>>>>>>>>o>O", "O>oooooooooooo>O",
+    "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO", "................"
+  ]));
+  P("counter_top", deco(wood, [
+    "PPPPPPPPPPPPPPPP", "cccccccccccccccc", "CCCCCCCCCCCCCCCC", "OOOOOOOOOOOOOOOO",
+    "O>oooooooooooo>O", "O>oooooooooooo>O", "OOOOOOOOOOOOOOOO", "O>oooooooooooo>O",
+    "O>oooooooooooo>O", "OOOOOOOOOOOOOOOO", "O>oooooooooooo>O", "O>oooooooooooo>O",
+    "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO", "................"
+  ]));
+  P("shelf", deco(wood, [
+    "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "O>oo>oo>oo>oo>>O", "O>1155331177>>>O",
+    "O>1155331177>>>O", "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "O>33771155>>>>>O",
+    "O>33771155>>>>>O", "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "O>55113377>>>>>O",
+    "O>55113377>>>>>O", "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "OOOOOOOOOOOOOOOO"
+  ]));
+  P("shelf_books", deco(wood, [
+    "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "O1.2.5.e.{.3.1.O", "O1.2.5.e.{.3.1.O",
+    "O1.2.5.e.{.3.1.O", "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "O2.1.3.{.e.5.2.O",
+    "O2.1.3.{.e.5.2.O", "O2.1.3.{.e.5.2.O", "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO",
+    "O5.e.1.3.2.{.5.O", "O5.e.1.3.2.{.5.O", "OOOOOOOOOOOOOOOO", "................"
+  ]));
+  P("bookcase", deco(wood, [
+    "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "O>1.5.2.e.{.3.>O", "O>1.5.2.e.{.3.>O",
+    "O>1.5.2.e.{.3.>O", "OOOOOOOOOOOOOOOO", "O>3.{.1.5.e.2.>O", "O>3.{.1.5.e.2.>O",
+    "O>3.{.1.5.e.2.>O", "OOOOOOOOOOOOOOOO", "O>2.e.5.{.3.1.>O", "O>2.e.5.{.3.1.>O",
+    "O>2.e.5.{.3.1.>O", "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO"
+  ]));
+  P("lab_bench", deco(function (ctx, f, s) { fill(ctx, "#c0d8e0"); }, [
+    "cccccccccccccccc", "CCCCCCCCCCCCCCCC", "llllllllllllllll", "lnnnnnnnnnnnnnnl",
+    "ln7l..0..l..7lnl", "ln8l.@0@.l..8lnl", "ln7l..0..l..7lnl", "lnnnnnnnnnnnnnnl",
+    "llllllllllllllll", "lNNNNNNNNNNNNNNl", "lNllllllllllllNl", "lNlNNNNNNNNNNlNl",
+    "lNllllllllllllNl", "lNNNNNNNNNNNNNNl", "llllllllllllllll", "................"
+  ]));
+  P("capsule_case", deco(function (ctx, f, s) { fill(ctx, "#c0d8e0"); }, [
+    "llllllllllllllll", "l88888888888888l", "l8kkkkkkkkkkkk8l", "l8k1177ee7711k8l",
+    "l8k1177ee7711k8l", "l8kcccccccccck8l", "l8k5577{{7755k8l", "l8k5577{{7755k8l",
+    "l8kcccccccccck8l", "l8kkkkkkkkkkkk8l", "l88888888888888l", "llllllllllllllll",
+    "lNNNNNNNNNNNNNNl", "lNllllllllllllNl", "lNNNNNNNNNNNNNNl", "................"
+  ]));
+  P("pc", decoAnim(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [[
+    "................", "..llllllllllll..", "..lkkkkkkkkkkl..", "..lk{{{{{{{{kl..",
+    "..lk}88}88}8kl..", "..lk}8}}8}}8kl..", "..lk}88}88}8kl..", "..lk{{{{{{{{kl..",
+    "..lkkkkkkkkkkl..", "..llllllllllll..", "..lNNNNNNNNNNl..", "..lnnnnnnnnnnl..",
+    "..lnkkkkkkkknl..", "..lnnnnnnnnnnl..", "..llllllllllll..", "................"
+  ], [
+    "................", "..llllllllllll..", "..lkkkkkkkkkkl..", "..lk{{{{{{{{kl..",
+    "..lk}8}}8}}8kl..", "..lk}88}88}8kl..", "..lk}8}}8}}8kl..", "..lk{{{{{{{{kl..",
+    "..lkkkkkkkkkkl..", "..llllllllllll..", "..lNNNNNNNNNNl..", "..lnnnnnnnnnnl..",
+    "..lnkkkkkkkknl..", "..lnnnnnnnnnnl..", "..llllllllllll..", "................"
+  ]]));
+  P("box_pc", decoAnim(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [[
+    "................", "..{{{{{{{{{{{{..", "..{}}}}}}}}}}{..", "..{}kkkkkkkk}{..",
+    "..{}k888888k}{..", "..{}k877778k}{..", "..{}k877778k}{..", "..{}k888888k}{..",
+    "..{}kkkkkkkk}{..", "..{}}}}}}}}}}{..", "..{}5}}}}}}}}{..", "..{{{{{{{{{{{{..",
+    "..{}}}}}}}}}}{..", "..{{{{{{{{{{{{..", "................", "................"
+  ], [
+    "................", "..{{{{{{{{{{{{..", "..{}}}}}}}}}}{..", "..{}kkkkkkkk}{..",
+    "..{}k888888k}{..", "..{}k877778k}{..", "..{}k877778k}{..", "..{}k888888k}{..",
+    "..{}kkkkkkkk}{..", "..{}}}}}}}}}}{..", "..{}}}}}}}}5}{..", "..{{{{{{{{{{{{..",
+    "..{}}}}}}}}}}{..", "..{{{{{{{{{{{{..", "................", "................"
+  ]]));
+  P("healer", decoAnim(function (ctx, f, s) { fill(ctx, "#d8d0c0"); }, [[
+    "................", "..cccccccccccc..", "..cCCCCCCCCCCc..", "..cC11111111Cc..",
+    "..cC1cc11cc1Cc..", "..cC1cc11cc1Cc..", "..cC11111111Cc..", "..cCCCCCCCCCCc..",
+    "..cllllllllllc..", "..cl11111111lc..", "..cl1kkkkkk1lc..", "..cl1k5..5k1lc..",
+    "..cl11111111lc..", "..cllllllllllc..", "..cccccccccccc..", "................"
+  ], [
+    "................", "..cccccccccccc..", "..cCCCCCCCCCCc..", "..cC11111111Cc..",
+    "..cC1cc11cc1Cc..", "..cC1cc11cc1Cc..", "..cC11111111Cc..", "..cCCCCCCCCCCc..",
+    "..cllllllllllc..", "..cl11111111lc..", "..cl1kkkkkk1lc..", "..cl1k..5.k1lc..",
+    "..cl11111111lc..", "..cllllllllllc..", "..cccccccccccc..", "................"
+  ]]));
+  P("machine", deco(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [
+    "................", "..llllllllllll..", "..lNNNNNNNNNNl..", "..lNkkkkkkkkNl..",
+    "..lNk0!00!0kNl..", "..lNk!00!00kNl..", "..lNkkkkkkkkNl..", "..lNNNNNNNNNNl..",
+    "..lN11NN33NNNl..", "..lNNNNNNNNNNl..", "..lNkkkkkkkkNl..", "..lNkKKKKKKkNl..",
+    "..lNkkkkkkkkNl..", "..lNNNNNNNNNNl..", "..llllllllllll..", "................"
+  ]));
+  P("brew_vat", decoAnim(function (ctx, f, s) { stoneF(ctx, f, s); }, [[
+    "................", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..O>44444444>O..",
+    "..O4333333334O..", "..O4344444434O..", "..O4344444434O..", "..O4333333334O..",
+    "..O>44444444>O..", "..OPPPPPPPPPPO..", "..OiiiiiiiiiiO..", "..OPPPPPPPPPPO..",
+    "..OOOOOOOOOOOO..", "...O>......>O...", "...OO......OO...", "................"
+  ], [
+    "................", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..O>44444444>O..",
+    "..O4344444434O..", "..O4333333334O..", "..O4333333334O..", "..O4344444434O..",
+    "..O>44444444>O..", "..OPPPPPPPPPPO..", "..OiiiiiiiiiiO..", "..OPPPPPPPPPPO..",
+    "..OOOOOOOOOOOO..", "...O>......>O...", "...OO......OO...", "................"
+  ]]));
+  P("cash_till", deco(wood, [
+    "................", "................", "....llllllll....", "....lNNNNNNl....",
+    "....lNkkkkNl....", "....lNk88kNl....", "....lNkkkkNl....", "...llllllllll...",
+    "...lNNNNNNNNl...", "...lNiiiiiiNl...", "...lNi1155iNl...", "...lNi3377iNl...",
+    "...lNiiiiiiNl...", "...lNNNNNNNNl...", "...llllllllll...", "................"
+  ]));
+
+  P("table", deco(wood, [
+    "................", "..PPPPPPPPPPPP..", ".PccccccccccccP.", ".PcCCCCCCCCCCcP.",
+    ".PcCoooooooo CP.".slice(0, 16), ".PcCoooooooocCP.", ".PcCoooooooocCP.", ".PcCCCCCCCCCCcP.",
+    ".PccccccccccccP.", "..PPPPPPPPPPPP..", "..OO........OO..", "..O>........O>..",
+    "..O>........O>..", "..OO........OO..", "................", "................"
+  ]));
+  P("table_round", deco(wood, [
+    "................", ".....PPPPPP.....", "...PPcccccePP...", "..PcccccccccccP.",
+    ".PcccCCCCCCcccP.", ".PccCoooooo CccP".slice(0, 16), ".PccCooooooCccP.", ".PccCooooooCccP.",
+    ".PcccCCCCCCcccP.", "..PcccccccccccP.", "...PPccccccPP...", ".....PPPPPP.....",
+    "......O>>O......", "......O>>O......", ".....OOOOOO.....", "................"
+  ]));
+  P("chair", deco(wood, [
+    "................", "................", "....OOOOOOOO....", "....OPPPPPPO....",
+    "....O>oooo>O....", "....OPPPPPPO....", "....O>oooo>O....", "....OPPPPPPO....",
+    "...OOOOOOOOOO...", "...OPPPPPPPPO...", "...OOOOOOOOOO...", "...O>......>O...",
+    "...OO......OO...", "...O>......>O...", "...OO......OO...", "................"
+  ]));
+  P("stool", deco(wood, [
+    "................", "................", "................", "................",
+    "................", "....OOOOOOOO....", "...OPPPPPPPPO...", "...OOOOOOOOOO...",
+    "....O>....>O....", "....O>....>O....", "....O>....>O....", "...OO......OO...",
+    "...O>......>O...", "...OO......OO...", "................", "................"
+  ]));
+  P("bed", deco(wood, [
+    "cccccccccccccccc", "cCCCCCCCCCCCCCCc", "c11111111111111c", "c12222222222221c",
+    "c11111111111111c", "c12222222222221c", "c11111111111111c", "c12222222222221c",
+    "c11111111111111c", "c12222222222221c", "c11111111111111c", "cCCCCCCCCCCCCCCc",
+    "cccccccccccccccc", "OOOOOOOOOOOOOOOO", "O>............>O", "OOOOOOOOOOOOOOOO"
+  ]));
+  P("bed_head", deco(wood, [
+    "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "O>OOOOOOOOOOOO>O", "O>O>>>>>>>>>>O>O",
+    "O>OOOOOOOOOOOO>O", "OPPPPPPPPPPPPPPO", "OOOOOOOOOOOOOOOO", "cccccccccccccccc",
+    "ccccccccccccccCc", "cCcccccccccccccc", "cCCCCCCCCCCCCCCc", "c22222222222222c",
+    "c11111111111111c", "c12222222222221c", "c11111111111111c", "c12222222222221c"
+  ]));
+  P("tv", deco(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [
+    "................", "................", "..kkkkkkkkkkkk..", "..k::::::::::k..",
+    "..k:88888888:k..", "..k:8{{{{{{8:k..", "..k:8{cccc{8:k..", "..k:8{cccc{8:k..",
+    "..k:8{{{{{{8:k..", "..k:88888888:k..", "..k::::::::::k..", "..kkkkkkkkkkkk..",
+    "...k::5::5::k...", "...kkkkkkkkkk...", "....k......k....", "................"
+  ]));
+  P("plant_pot", deco(null, [
+    "................", "......^^........", "....^^e^e^......", "...^ee^^^ee^....",
+    "..^^eeeeeee^^...", "...^eee^eee^....", "....^^eee^^.....", "......^e^.......",
+    ".......e........", "....11111111....", "....12222221....", "....11111111....",
+    "....12222221....", ".....111111.....", "......1111......", "................"
+  ]));
+  P("fireplace", decoAnim(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [[
+    "nnnnnnnnnnnnnnnn", "nllllllllllllllN", "nlNNNNNNNNNNNNlN", "nlNkkkkkkkkkkNlN",
+    "nlNkKKKKKKKKkNlN", "nlNkK111111KkNlN", "nlNkK155551KkNlN", "nlNkK156651KkNlN",
+    "nlNkK155551KkNlN", "nlNkK111111KkNlN", "nlNkKOO>>OOKkNlN", "nlNkkkkkkkkkkNlN",
+    "nlNNNNNNNNNNNNlN", "nllllllllllllllN", "nnnnnnnnnnnnnnnn", "................"
+  ], [
+    "nnnnnnnnnnnnnnnn", "nllllllllllllllN", "nlNNNNNNNNNNNNlN", "nlNkkkkkkkkkkNlN",
+    "nlNkKKKKKKKKkNlN", "nlNkK122211KkNlN", "nlNkK155551KkNlN", "nlNkK165561KkNlN",
+    "nlNkK156651KkNlN", "nlNkK111111KkNlN", "nlNkKO>>OOOKkNlN", "nlNkkkkkkkkkkNlN",
+    "nlNNNNNNNNNNNNlN", "nllllllllllllllN", "nnnnnnnnnnnnnnnn", "................"
+  ], [
+    "nnnnnnnnnnnnnnnn", "nllllllllllllllN", "nlNNNNNNNNNNNNlN", "nlNkkkkkkkkkkNlN",
+    "nlNkKKKKKKKKkNlN", "nlNkK112211KkNlN", "nlNkK156551KkNlN", "nlNkK155551KkNlN",
+    "nlNkK166651KkNlN", "nlNkK111111KkNlN", "nlNkKOO>>O>KkNlN", "nlNkkkkkkkkkkNlN",
+    "nlNNNNNNNNNNNNlN", "nllllllllllllllN", "nnnnnnnnnnnnnnnn", "................"
+  ], [
+    "nnnnnnnnnnnnnnnn", "nllllllllllllllN", "nlNNNNNNNNNNNNlN", "nlNkkkkkkkkkkNlN",
+    "nlNkKKKKKKKKkNlN", "nlNkK111121KkNlN", "nlNkK155661KkNlN", "nlNkK156551KkNlN",
+    "nlNkK155551KkNlN", "nlNkK111111KkNlN", "nlNkKO>OO>OKkNlN", "nlNkkkkkkkkkkNlN",
+    "nlNNNNNNNNNNNNlN", "nllllllllllllllN", "nnnnnnnnnnnnnnnn", "................"
+  ]]));
+  P("stove", deco(tileF, [
+    "................", "iiiiiiiiiiiiiiii", "iIIIIIIIIIIIIIIi", "iI::::::::::::Ii",
+    "iI:kk::kk::::.Ii", "iI:kk::kk::::.Ii", "iI::::::::::::Ii", "iIIIIIIIIIIIIIIi",
+    "iI::::::::::::Ii", "iI:8888888888:Ii", "iI:8kkkkkkkk8:Ii", "iI:8k111111k8:Ii",
+    "iI:8kkkkkkkk8:Ii", "iI:8888888888:Ii", "iIIIIIIIIIIIIIIi", "iiiiiiiiiiiiiiii"
+  ]));
+  P("sink", deco(tileF, [
+    "................", "................", "......LL........", "......LU........",
+    "......LU........", "cccccccccccccccc", "cCCCCCCCCCCCCCCc", "cCzzzzzzzzzzzzCc",
+    "cCzZZZZZZZZZZzCc", "cCzZ88888888ZzCc", "cCzZ87777778ZzCc", "cCzZ88888888ZzCc",
+    "cCzZZZZZZZZZZzCc", "cCzzzzzzzzzzzzCc", "cCCCCCCCCCCCCCCc", "cccccccccccccccc"
+  ]));
+  P("fridge", deco(tileF, [
+    "cccccccccccccccc", "cCCCCCCCCCCCCCCc", "cCzzzzzzzzzzzzCc", "cCzzzzzzzzzzzzCc",
+    "cCzzzzzzzzzLzzCc", "cCzzzzzzzzzUzzCc", "cCCCCCCCCCCCCCCc", "cCzzzzzzzzzzzzCc",
+    "cCzzzzzzzzzLzzCc", "cCzzzzzzzzzUzzCc", "cCzzzzzzzzzzzzCc", "cCzzzzzzzzzzzzCc",
+    "cCzzzzzzzzzzzzCc", "cCCCCCCCCCCCCCCc", "cccccccccccccccc", "................"
+  ]));
+  P("wardrobe", deco(wood, [
+    "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "OP>>>>>>>>>>>>PO", "OP>oooooo>ooo>PO",
+    "OP>o>>>>o>o>o>PO", "OP>o>oo>o>o>o>PO", "OP>o>oo>o>o>o>PO", "OP>o>>>>o5o>o>PO",
+    "OP>oooooo>ooo>PO", "OP>o>>>>o>o>o>PO", "OP>o>oo>o>o>o>PO", "OP>o>>>>o>o>o>PO",
+    "OP>oooooo>ooo>PO", "OP>>>>>>>>>>>>PO", "OPPPPPPPPPPPPPPO", "OOOOOOOOOOOOOOOO"
+  ]));
+  P("piano", deco(wood, [
+    "................", "kkkkkkkkkkkkkkkk", "kKKKKKKKKKKKKKKk", "kK5555555555555k",
+    "kKKKKKKKKKKKKKKk", "kcccccccccccccck", "kckckkckckckkcck", "kckckkckckckkcck",
+    "kcccccccccccccck", "kKKKKKKKKKKKKKKk", "kkkkkkkkkkkkkkkk", "kK..........KKkk",
+    "kK..........KKkk", "kkk........kkkkk", "................", "................"
+  ]));
+  P("bar", deco(wood, [
+    "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "OPccccccccccccPO", "OPcCCCCCCCCCCcPO",
+    "OPccccccccccccPO", "OOOOOOOOOOOOOOOO", "O>oooooooooooo>O", "O>o>>>>>>>>>>o>O",
+    "O>oooooooooooo>O", "O>o>3>>>>>3>>o>O", "O>oooooooooooo>O", "O>o>>>>>>>>>>o>O",
+    "O>oooooooooooo>O", "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO"
+  ]));
+  P("bar_taps", deco(wood, [
+    "................", "................", "....5......5....", "....5......5....",
+    "...555....555...", "...5L5....5L5...", "....L......L....", "....L......L....",
+    "..LLLLLLLLLLLL..", "..LUUUUUUUUUUL..", "..LLLLLLLLLLLL..", "OOOOOOOOOOOOOOOO",
+    "OPccccccccccccPO", "OPcCCCCCCCCCCcPO", "OOOOOOOOOOOOOOOO", "................"
+  ]));
+  P("dartboard", deco(function (ctx, f, s) { fill(ctx, "#f0e8d8"); }, [
+    "................", "................", ".....kkkkkk.....", "...kk111111kk...",
+    "..k11cc11cc11k..", "..k1c1c11c1c1k..", ".k11c11cc11c11k.", ".k1c1c1221c1c1k.",
+    ".k1c1c1221c1c1k.", ".k11c11cc11c11k.", "..k1c1c11c1c1k..", "..k11cc11cc11k..",
+    "...kk111111kk...", ".....kkkkkk.....", "................", "................"
+  ]));
+  P("fruit_machine", decoAnim(function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); }, [[
+    "................", "..3333333333333.".slice(0, 16), "..3111111111113.", "..31kkkkkkkkk13.",
+    "..31k555k555k13.", "..31k5e5k515k13.", "..31k555k555k13.", "..31kkkkkkkkk13.",
+    "..3111111111113.", "..3555333555513.", "..3111111111113.", "..31kk1111kk113.",
+    "..3111111111113.", "..3333333333333.", "................", "................"
+  ], [
+    "................", "..3333333333333.", "..3111111111113.", "..31kkkkkkkkk13.",
+    "..31k111k555k13.", "..31k1e1k5e5k13.", "..31k111k555k13.", "..31kkkkkkkkk13.",
+    "..3111111111113.", "..3555555333313.", "..3111111111113.", "..31kk1111kk113.",
+    "..3111111111113.", "..3333333333333.", "................", "................"
+  ]]));
+  P("stairs", function (ctx, f, s) {
+    for (let y = 0; y < ART; y += 4) {
+      rect(ctx, 0, y, ART, 3, "#a08060");
+      rect(ctx, 0, y, ART, 1, "#c2a582");
+      rect(ctx, 0, y + 3, ART, 1, "#6d5238");
+    }
+    rect(ctx, 0, 0, 1, ART, "#6d5238"); rect(ctx, 15, 0, 1, ART, "#6d5238");
+  });
+  P("carpet_stairs", function (ctx, f, s) {
+    for (let y = 0; y < ART; y += 4) {
+      rect(ctx, 0, y, ART, 3, "#a08060");
+      rect(ctx, 2, y, 12, 3, "#a03040");
+      rect(ctx, 2, y, 12, 1, "#c04a58");
+      rect(ctx, 0, y + 3, ART, 1, "#6d5238");
+      rect(ctx, 2, y + 3, 12, 1, "#7a2030");
+    }
+  });
+  P("mat", deco(wood, [
+    "................", "................", "................", "..]]]]]]]]]]]]..",
+    "..]AAAAAAAAAA]..", "..]A]]]]]]]]A]..", "..]A]AAAAAA]A]..", "..]A]A]]]]A]A]..",
+    "..]A]AAAAAA]A]..", "..]A]]]]]]]]A]..", "..]AAAAAAAAAA]..", "..]]]]]]]]]]]]..",
+    "................", "................", "................", "................"
+  ]));
+  P("mat_welcome", deco(wood, [
+    "................", "................", "................", "..OOOOOOOOOOOO..",
+    "..OaaaaaaaaaaO..", "..Oa]]]]]]]]aO..", "..Oa]aaaaaa]aO..", "..Oa]a]a]a]]aO..",
+    "..Oa]aa]a]a]aO..", "..Oa]aaaaaa]aO..", "..Oa]]]]]]]]aO..", "..OaaaaaaaaaaO..",
+    "..OOOOOOOOOOOO..", "................", "................", "................"
+  ]));
+  P("gym_badge_stand", deco(function (ctx, f, s) { boards(ctx, s, "#d0a860", "#a8823f", "#e2c184", "h", 8); }, [
+    "................", ".....555555.....", "....54444445....", "....5455554 5...".slice(0, 16),
+    "....5451154 5...".slice(0, 16), "....5455554 5...".slice(0, 16), "....54444445....", ".....555555.....",
+    "......5555......", "......5445......", ".....555555.....", "....OOOOOOOO....",
+    "....OPPPPPPO....", "...OOOOOOOOOO...", "...O>>>>>>>>O...", "................"
+  ]));
+  P("gym_statue", deco(function (ctx, f, s) { boards(ctx, s, "#d0a860", "#a8823f", "#e2c184", "h", 8); }, [
+    "................", "......nlN.......", ".....nlllN......", ".....nlllN......",
+    "......nlN.......", "....nnlllnn.....", "...nlllllllN....", "...nlN.l.NlN....",
+    "....n..l..N.....", "......lll.......", ".....lllll......", "....nlllllN.....",
+    "...nnnnnnnnn....", "...NNNNNNNNN....", "................", "................"
+  ]));
+  P("mirror", deco(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [
+    "................", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..OP88888888PO..",
+    "..OP87777778PO..", "..OP87ccc7778PO.".slice(0, 16), "..OP87cc77778PO.".slice(0, 16), "..OP87777778PO..",
+    "..OP87777778PO..", "..OP87777778PO..", "..OP87777778PO..", "..OP88888888PO..",
+    "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "................", "................"
+  ]));
+  P("painting", deco(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [
+    "................", "..5555555555555.".slice(0, 16), "..5444444444445.", "..54wwwwwwwww45.",
+    "..54wwwwwwwww45.", "..54wwwwwwwww45.", "..54ggggggggg45.", "..54gvgggvgggg45".slice(0, 16),
+    "..54gvvgvvggg45.", "..54GGGGGGGGG45.", "..5444444444445.", "..5555555555555.",
+    "................", "................", "................", "................"
+  ]));
+  P("clock_wall", decoAnim(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [[
+    "................", "................", "....OOOOOOOO....", "...OcccccccсO...".replace("с", "c"),
+    "..Occcccccccc O.".slice(0, 16), "..OccckcccccccO.".slice(0, 16), "..Occcccccccc O.".slice(0, 16), "..OccckkkccccO..",
+    "..Occccckcccc O.".slice(0, 16), "..Occccckkccc O.".slice(0, 16), "..OcccccccccсO..".replace("с", "c"), "...OccccccccO...",
+    "....OOOOOOOO....", "................", "................", "................"
+  ], [
+    "................", "................", "....OOOOOOOO....", "...OccccccccO...",
+    "..OccccccccccO..", "..Occcccccccc O.".slice(0, 16), "..OcccccccccccO.".slice(0, 16), "..OccckkkkkccO..",
+    "..OcccccccccccO.".slice(0, 16), "..OccccccccccO..", "..OccccccccccO..", "...OccccccccO...",
+    "....OOOOOOOO....", "................", "................", "................"
+  ]]));
+  P("cat_bed", deco(wood, [
+    "................", "................", "................", "................",
+    "....((((((((....", "...()))))))(....", "..()((((((()) ..".slice(0, 16), "..()(aaaaaa()...",
+    "..()(aaaaaa()...", "..()(aaaaaa()...", "..())))))))()...", "...(((((((((....",
+    "....))))))))....", "................", "................", "................"
+  ]));
+  P("cat_bowl", deco(wood, [
+    "................", "................", "................", "................",
+    "................", "................", "......cccc......", ".....cCCCCc.....",
+    "....cCzzzzCc....", "....cCzppzCc....", "....cCzzzzCc....", ".....cCCCCc.....",
+    "......cccc......", "................", "................", "................"
+  ]));
+  P("shadow", function (ctx) {
+    const g = ctx.globalAlpha;
+    ctx.globalAlpha = 0.22; ctx.fillStyle = "#000";
+    Art.shadow(ctx, 8, 8, 7, 4, 0.28);
+    ctx.globalAlpha = g;
+  });
