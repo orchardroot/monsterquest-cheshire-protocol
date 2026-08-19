@@ -959,3 +959,245 @@
     "..iIIIIIIIIIIi..", "..iiiiiiiiiiii..", "...i..........i.", "..iIi........iIi",
     "..iIi........iIi", "...i..........i.", "................", "................"
   ]));
+
+  // ---- ledges: hop down only, with a chevron so the direction reads ----
+  function ledge(dir) {
+    return function (ctx, f, s) {
+      turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "lg" + dir);
+      const face = "#9a8a68", dk = "#71634a", lt = "#bcab86";
+      if (dir === "down") {
+        rect(ctx, 0, 9, ART, 7, face); strataBand(ctx, s, 9, face, dk, lt);
+        rect(ctx, 0, 8, ART, 1, "#2c6427"); rect(ctx, 0, 9, ART, 1, lt);
+        for (let x = 2; x < ART; x += 6) { rect(ctx, x, 12, 3, 1, dk); px(ctx, x + 1, 13, dk); }
+      } else if (dir === "up") {
+        rect(ctx, 0, 0, ART, 6, face); strataBand2(ctx, s, 0, 6, face, dk, lt);
+        rect(ctx, 0, 5, ART, 1, dk); rect(ctx, 0, 0, ART, 1, lt);
+        for (let x = 2; x < ART; x += 6) { px(ctx, x + 1, 2, dk); rect(ctx, x, 3, 3, 1, dk); }
+      } else if (dir === "left") {
+        rect(ctx, 0, 0, 6, ART, face);
+        for (let y = 0; y < ART; y++) rect(ctx, 0, y, 6, 1, (y % 4 === 0) ? dk : (y % 4 === 2 ? lt : face));
+        rect(ctx, 5, 0, 1, ART, dk); rect(ctx, 0, 0, 1, ART, lt);
+        for (let y = 2; y < ART; y += 6) { rect(ctx, 1, y, 1, 3, dk); px(ctx, 2, y + 1, dk); }
+      } else {
+        rect(ctx, 10, 0, 6, ART, face);
+        for (let y = 0; y < ART; y++) rect(ctx, 10, y, 6, 1, (y % 4 === 0) ? dk : (y % 4 === 2 ? lt : face));
+        rect(ctx, 10, 0, 1, ART, dk); rect(ctx, 15, 0, 1, ART, lt);
+        for (let y = 2; y < ART; y += 6) { rect(ctx, 14, y, 1, 3, dk); px(ctx, 13, y + 1, dk); }
+      }
+    };
+  }
+  function strataBand2(ctx, seed, y0, h, face, dk, lt) {
+    const r = rnd("sb2" + face, seed);
+    for (let y = y0; y < y0 + h; y++) { const q = r(); rect(ctx, 0, y, ART, 1, q < 0.25 ? dk : (q > 0.78 ? lt : face)); }
+  }
+  P("ledge_down", ledge("down"));
+  P("ledge_up", ledge("up"));
+  P("ledge_left", ledge("left"));
+  P("ledge_right", ledge("right"));
+
+  // ---------------------------------------------------------------
+  // BUILDINGS — walls, roofs, doors, windows, signs, fences
+  // ---------------------------------------------------------------
+  P("wall_brick_red", function (ctx, f, s) { brickWall(ctx, s, C.brick, C.brickDk, C.brickLt, C.mortar, 8, 4); });
+  P("wall_brick_dark", function (ctx, f, s) { brickWall(ctx, s, "#703028", "#4e1e18", "#8a4238", "#a89076", 8, 4); });
+  P("mill_wall", function (ctx, f, s) {
+    brickWall(ctx, s, "#8a4030", "#5f2820", "#a55545", "#b8a084", 8, 4);
+    // soot wash down the courses
+    const g = ctx.globalAlpha; ctx.globalAlpha = 0.14; ctx.fillStyle = "#1b1720";
+    ctx.fillRect(0, 0, ART, 6); ctx.globalAlpha = g;
+  });
+  P("wall_stone_sandstone", function (ctx, f, s) { stoneWall(ctx, s, C.sand, C.sandDk, C.sandLt, "#a58a63", 5); });
+  P("wall_stone_grey", function (ctx, f, s) { stoneWall(ctx, s, C.stone, C.stoneDk, C.stoneLt, "#6c6c76", 5); });
+  P("wall_stone_grit", function (ctx, f, s) { stoneWall(ctx, s, C.grit, C.gritDk, C.gritLt, "#4e4b45", 4); });
+  P("wall_garden", function (ctx, f, s) {
+    stoneWall(ctx, s, "#a89078", "#87705a", "#c4ae94", "#7a6552", 4);
+    rect(ctx, 0, 0, ART, 2, "#8d7a64"); rect(ctx, 0, 0, ART, 1, "#c8b69c");
+  });
+  P("fence_stone", function (ctx, f, s) {
+    turf(ctx, s, C.grass, C.grassDk, C.grassLt, 2, "fs");
+    Art.stonework(ctx, { x: 0, y: 2, w: ART, h: 13, bh: 4, face: "#8a8a80", dark: "#67675e", light: "#a8a89c", mortar: "#5e5e56", rnd: rnd("fsw", s) });
+    rect(ctx, 0, 2, ART, 1, "#b4b4a6");
+    Art.edge(ctx, "s", "#000", 0.22);
+  });
+
+  P("wall_tudor", function (ctx, f, s) {
+    fill(ctx, "#f0e8d8");
+    dither(ctx, 0, 0, ART, ART, "#e2d8c2", 4);
+    const r = rnd("tud", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#fbf6ec", "#d8ccb2"], 12);
+    rect(ctx, 0, 0, ART, 2, C.tudor); rect(ctx, 0, 14, ART, 2, C.tudor);
+    rect(ctx, 0, 2, ART, 1, "#4a3c30"); rect(ctx, 0, 13, ART, 1, "#4a3c30");
+  });
+  P("wall_tudor_beam", function (ctx, f, s) {
+    fill(ctx, "#f0e8d8");
+    rect(ctx, 0, 0, ART, 2, C.tudor); rect(ctx, 0, 14, ART, 2, C.tudor);
+    rect(ctx, 6, 0, 4, ART, C.tudor);
+    rect(ctx, 6, 0, 1, ART, "#3d322a"); rect(ctx, 9, 0, 1, ART, "#100c0a");
+    const r = rnd("tdb", s);
+    for (let i = 0; i < 5; i++) px(ctx, 7 + ((r() * 2) | 0), (r() * ART) | 0, "#3a2e26");
+  });
+  P("pub_wall", function (ctx, f, s) {
+    fill(ctx, "#f0e8d8");
+    dither(ctx, 0, 0, ART, ART, "#e2d8c2", 4);
+    rect(ctx, 0, 0, ART, 2, C.tudor);
+    rect(ctx, 0, 7, ART, 2, C.tudor);
+    rect(ctx, 3, 2, 2, 5, C.tudor); rect(ctx, 11, 9, 2, 7, C.tudor);
+    rect(ctx, 0, 14, ART, 2, C.tudor);
+  });
+  P("wall_render_white", function (ctx, f, s) {
+    fill(ctx, "#ecece4");
+    dither(ctx, 0, 0, ART, ART, "#dedcd0", 3);
+    const r = rnd("rw", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#f8f8f2", "#d2d0c4"], 14);
+    rect(ctx, 0, 0, ART, 1, "#fbfbf6"); rect(ctx, 0, 15, ART, 1, "#c8c6ba");
+  });
+  P("wall_render_cream", function (ctx, f, s) {
+    fill(ctx, "#e8dcb8");
+    dither(ctx, 0, 0, ART, ART, "#d8caa2", 3);
+    const r = rnd("rc", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#f4ecd0", "#c9b992"], 14);
+    rect(ctx, 0, 0, ART, 1, "#f6eed4"); rect(ctx, 0, 15, ART, 1, "#c2b28c");
+  });
+  P("wall_glass", function (ctx, f, s) {
+    fill(ctx, "#a0d0e0");
+    for (let y = 0; y < ART; y += 5) rect(ctx, 0, y, ART, 1, "#6f9fb6");
+    for (let x = 0; x < ART; x += 5) rect(ctx, x, 0, 1, ART, "#6f9fb6");
+    rect(ctx, 1, 1, 3, 3, "#d6eef8"); rect(ctx, 11, 6, 3, 3, "#c8e6f4");
+    rect(ctx, 6, 11, 3, 3, "#c8e6f4");
+  });
+  P("greenhouse_wall", function (ctx, f, s) {
+    fill(ctx, "#b0e0e8");
+    for (let y = 0; y < ART; y += 4) rect(ctx, 0, y, ART, 1, "#7fb8c2");
+    rect(ctx, 7, 0, 1, ART, "#7fb8c2");
+    rect(ctx, 1, 1, 2, 2, "#e2f6fa"); rect(ctx, 9, 9, 2, 2, "#e2f6fa");
+    // hint of green behind the glass
+    const g = ctx.globalAlpha; ctx.globalAlpha = 0.25; ctx.fillStyle = "#3f8a34";
+    ctx.fillRect(2, 10, 4, 5); ctx.fillRect(10, 4, 4, 4); ctx.globalAlpha = g;
+  });
+
+  P("wall_castle", function (ctx, f, s) {
+    stoneWall(ctx, s, "#7a7a80", "#575760", "#98989e", "#4e4e56", 5);
+    Art.edge(ctx, "s", "#000", 0.22);
+  });
+  P("wall_castle_top", function (ctx, f, s) {
+    stoneWall(ctx, s, "#8a8a90", "#65656e", "#a8a8ae", "#585860", 5);
+    // battlements
+    rect(ctx, 0, 0, ART, 5, "#8a8a90");
+    for (let x = 0; x < ART; x += 6) { rect(ctx, x, 0, 4, 5, "#9c9ca2"); rect(ctx, x, 0, 4, 1, "#c0c0c6"); rect(ctx, x + 3, 0, 1, 5, "#63636c"); }
+    rect(ctx, 0, 5, ART, 1, "#4e4e56");
+  });
+  P("castle_tower", function (ctx, f, s) {
+    stoneWall(ctx, s, "#6a6a70", "#4a4a52", "#88888e", "#42424a", 5);
+    rect(ctx, 0, 0, 2, ART, "#4a4a52"); rect(ctx, 14, 0, 2, ART, "#4a4a52");
+    rect(ctx, 7, 3, 2, 6, "#1b1720"); px(ctx, 7, 3, "#33333c");
+  });
+  P("wall_city", function (ctx, f, s) {
+    stoneWall(ctx, s, "#b89060", "#937046", "#d2ac7e", "#8a6a44", 5);
+    Art.edge(ctx, "s", "#000", 0.2);
+  });
+  P("wall_city_walk", function (ctx, f, s) {
+    flags(ctx, s, "#c8a878", "#a88a5c", "#e0c496", "#94764c");
+    rect(ctx, 0, 0, ART, 1, "#8a6a44"); rect(ctx, 0, 15, ART, 1, "#8a6a44");
+  });
+  P("wall_interior", function (ctx, f, s) {
+    fill(ctx, "#c8b8a0");
+    dither(ctx, 0, 0, ART, ART, "#b8a88f", 3);
+    const r = rnd("wi", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#d6c8b2"], 8);
+    rect(ctx, 0, 0, ART, 1, "#dccfba");
+  });
+  P("wall_interior_top", function (ctx, f, s) {
+    fill(ctx, "#8a7a68");
+    dither(ctx, 0, 0, ART, ART, "#786a5a", 4);
+    rect(ctx, 0, 12, ART, 2, "#6a5c4c");
+    rect(ctx, 0, 14, ART, 2, "#c8b8a0");
+    rect(ctx, 0, 0, ART, 1, "#9d8c78");
+  });
+  P("wall_wainscot", function (ctx, f, s) {
+    fill(ctx, "#c8b8a0");
+    rect(ctx, 0, 8, ART, 8, "#a08060");
+    Art.planks(ctx, { x: 0, y: 8, w: ART, h: 8, face: "#a08060", dark: "#7d5f42", light: "#bd9a76", dir: "v", pw: 4, rnd: rnd("wsc", s) });
+    rect(ctx, 0, 7, ART, 1, "#8a6a4a"); rect(ctx, 0, 8, ART, 1, "#c8a882");
+  });
+  P("church_wall", function (ctx, f, s) {
+    stoneWall(ctx, s, "#9a9a90", "#77776e", "#b6b6ac", "#6b6b62", 6);
+    Art.edge(ctx, "s", "#000", 0.18);
+  });
+  P("church_spire", function (ctx, f, s) {
+    fill(ctx, "#7a7a80");
+    ascii(ctx, [
+      ".......n........", "......nln.......", "......nln.......", ".....nlNln......",
+      ".....nlNln......", "....nlNNNln.....", "....nlNNNln.....", "...nlNNNNNln....",
+      "...nlNNNNNln....", "..nlNNNNNNNln...", "..nlNNNNNNNln...", ".nlNNNNNNNNNln..",
+      ".nlNNNNNNNNNln..", "nlNNNNNNNNNNNln.", "nlNNNNNNNNNNNln.", "nnNNNNNNNNNNNnn."
+    ], PAL);
+  });
+  P("mill_window", function (ctx, f, s) {
+    brickWall(ctx, s, "#8a4030", "#5f2820", "#a55545", "#b8a084", 8, 4);
+    ascii(ctx, [
+      "..kkkkkkkkkkkk..", "..kBBBBBBBBBBk..", "..k7799779977k..", "..k7799779977k..",
+      "..kkkkkkkkkkkk..", "..k7799779977k..", "..k7799779977k..", "..kkkkkkkkkkkk..",
+      "..k7799779977k..", "..k7799779977k..", "..kkkkkkkkkkkk..", "..k7799779977k..",
+      "..k7799779977k..", "..kBBBBBBBBBBk..", "..kkkkkkkkkkkk..", "................"
+    ], PAL);
+  });
+
+  // ---- roofs ----
+  P("roof_slate", function (ctx, f, s) { roofOf(ctx, s, "slate", C.slate, C.slateDk, C.slateLt, "#26263a"); });
+  P("roof_slate_edge", function (ctx, f, s) {
+    roofOf(ctx, s, "slate", "#3a3a48", "#26263a", "#4e4e60", "#1c1c2c");
+    rect(ctx, 0, 12, ART, 2, "#5a5a6c"); rect(ctx, 0, 14, ART, 2, "#22222e");
+    rect(ctx, 0, 12, ART, 1, "#7a7a8c");
+  });
+  P("roof_over", function (ctx, f, s) {
+    roofOf(ctx, s, "slate", C.slate, C.slateDk, C.slateLt, "#26263a");
+    rect(ctx, 0, 13, ART, 2, "#5a5a6c"); rect(ctx, 0, 15, ART, 1, "#1e1e2a");
+  });
+  P("roof_tile_red", function (ctx, f, s) { roofOf(ctx, s, "tile", "#b04a3a", "#7f3026", "#c9694f", "#6a2a20"); });
+  P("roof_thatch", function (ctx, f, s) {
+    roofOf(ctx, s, "thatch", "#c8a860", "#9c7f3c", "#e0c684", "#8a6d2e");
+    rect(ctx, 0, 0, ART, 2, "#a98b46");
+    const r = rnd("thr", s);
+    for (let i = 0; i < 10; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#f0dda0");
+  });
+  P("roof_glass", function (ctx, f, s) {
+    fill(ctx, "#b0e0f0");
+    for (let x = 0; x < ART; x += 4) rect(ctx, x, 0, 1, ART, "#7fb4c8");
+    for (let y = 0; y < ART; y += 8) rect(ctx, 0, y, ART, 1, "#8ec2d4");
+    rect(ctx, 1, 1, 2, 5, "#e4f6ff"); rect(ctx, 9, 9, 2, 5, "#dcf2fc");
+  });
+  P("roof_metal", function (ctx, f, s) { roofOf(ctx, s, "metal", "#7a8a90", "#5b6a70", "#9db0b6"); });
+
+  P("chimney", deco(null, [
+    "..bbbbbbbbbbbb..", "..brrrrrrrrrrb..", "..mmmmmmmmmmmm..", "..bBbbbBbbbBbb..",
+    "..bbbbbbbbbbbb..", "..mmmmmmmmmmmm..", "..bbBbbbBbbbBb..", "..bbbbbbbbbbbb..",
+    "..mmmmmmmmmmmm..", "..bBbbbBbbbBbb..", "..bbbbbbbbbbbb..", "..mmmmmmmmmmmm..",
+    "..bbbbbbbbbbbb..", "..bbBbbbBbbbBb..", "..mmmmmmmmmmmm..", "..BBBBBBBBBBBB.."
+  ]));
+  P("chimney_mill", deco(null, [
+    "....BBBBBBBB....", "....BrrrrrrB....", "....BmmmmmmB....", "....BbbbbbbB....",
+    "....BbBbbBbB....", "....BmmmmmmB....", "....BbbbbbbB....", "...BbbbbbbbbB...",
+    "...BmmmmmmmmB...", "...BbbBbbBbbbB..", "...BbbbbbbbbB...", "...BmmmmmmmmB...",
+    "..BbbbbbbbbbbB..", "..BbbBbbbbBbbB..", "..BmmmmmmmmmmB..", "..BBBBBBBBBBBB.."
+  ]));
+  P("chimney_smoke", decoAnim(null, [[
+    "................", "................", "................", ".......~~.......",
+    "......~~~~......", "......~~~.......", ".......~~.......", ".......~~.......",
+    "........~~......", "........~~......", ".......~~.......", ".......~~.......",
+    "................", "................", "................", "................"
+  ], [
+    "................", "................", "......~~~.......", ".....~~~~~......",
+    ".....~~~~.......", "......~~~.......", "......~~........", ".......~~.......",
+    ".......~~.......", "........~.......", "........~~......", ".......~~.......",
+    "................", "................", "................", "................"
+  ], [
+    "................", ".....~~~........", "....~~~~~.......", "....~~~~~.......",
+    ".....~~~........", "......~~........", "......~~........", "......~~........",
+    ".......~........", ".......~~.......", "........~.......", "........~.......",
+    "................", "................", "................", "................"
+  ], [
+    "....~~~.........", "...~~~~~........", "...~~~~~........", "....~~~.........",
+    ".....~..........", ".....~~.........", "......~.........", "......~~........",
+    ".......~........", ".......~........", "........~.......", "........~.......",
+    "................", "................", "................", "................"
+  ]]));
