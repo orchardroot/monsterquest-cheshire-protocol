@@ -123,7 +123,7 @@ function fixtures(MQ) {
     },
     warps: [{ x: 6, y: 3, to: "we_house", tx: 5, ty: 8, dir: "up", kind: "door" }],
     signs: [{ x: 13, y: 6, text: ["TEST FIELD", "Ledges south. Pond west. Mind the cat."] }],
-    items: [{ x: 9, y: 6, item: "potion", n: 1, flag: "item_we_field_1" }],
+    items: [{ x: 9, y: 6, item: "salve", n: 1, flag: "item_we_field_1" }],
     npcs: [
       { id: "we_greeter", x: 8, y: 12, dir: "down", sprite: "npc_walker", behaviour: "still", script: "we_greeter" },
       { id: "we_wanderer", x: 17, y: 6, dir: "down", sprite: "npc_kid", behaviour: "wander", radius: 2, say: ["Lovely day."] },
@@ -135,7 +135,7 @@ function fixtures(MQ) {
     encounters: { grass: "we_field_grass", water: null, cave: null },
     fishing: "fish_we_field",
     restPoints: [{ x: 13, y: 6, flag: "we_rested" }],
-    catGaps: [{ x: 19, y: 6, item: "potion", n: 1, flag: "we_gap_1", say: ["MEADOW comes back with a dusty little box."] }],
+    catGaps: [{ x: 19, y: 6, item: "salve", n: 1, flag: "we_gap_1", say: ["MEADOW comes back with a dusty little box."] }],
     spawnPoint: { x: 13, y: 9 },
     healPoint: { x: 13, y: 9 },
     landmark: { name: "The Test Field", x: 13, y: 9 }
@@ -251,7 +251,7 @@ module.exports = function (t, assert) {
       triggers: [{ x: 8, y: 4, w: 4, h: 4, script: "we_trigger" }],
       catGaps: [{ x: 99, y: 1 }],
       restPoints: [{ x: 4, y: 99 }],
-      items: [{ x: 1, y: 0, item: "potion", flag: "dupe" }, { x: 2, y: 0, item: "potion", flag: "dupe" }],
+      items: [{ x: 1, y: 0, item: "salve", flag: "dupe" }, { x: 2, y: 0, item: "salve", flag: "dupe" }],
       fishing: "fish_nowhere",
       encounters: { swamp: "we_field_grass" },
       spawnPoint: { x: 0, y: 4 }
