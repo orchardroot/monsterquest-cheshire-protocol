@@ -753,3 +753,209 @@
     ".nlleeeennNNNn..", "nnlleeeeennNNnn.", "nNnleeeeeennNnn.", "nNNneeeeennNNnn.",
     ".NNNneeeennNNn..", "..NNNNNNNNNNn...", "................", "................"
   ]));
+
+  // ---------------------------------------------------------------
+  // ROCK, CLIFF, LEDGE, CAVE, MINE
+  // ---------------------------------------------------------------
+  // Bedded sandstone/gritstone face: horizontal strata with vertical joints.
+  function strata(ctx, seed, face, dk, lt, key) {
+    const r = rnd(key || "str", seed);
+    fill(ctx, face);
+    for (let y = 0; y < ART; y++) {
+      const q = r();
+      rect(ctx, 0, y, ART, 1, q < 0.22 ? dk : (q > 0.8 ? lt : face));
+    }
+    for (let b = 0; b < 4; b++) rect(ctx, 0, (r() * ART) | 0, ART, 1, U.shade(dk, 0.86));
+    for (let j = 0; j < 3; j++) {
+      const x = (r() * ART) | 0, y0 = (r() * 10) | 0;
+      rect(ctx, x, y0, 1, 5 + ((r() * 6) | 0), U.shade(dk, 0.8));
+      rect(ctx, x + 1, y0, 1, 3, lt);
+    }
+    speckle(ctx, r, 0, 0, ART, ART, [dk, lt], 14);
+  }
+
+  P("cliff_face", function (ctx, f, s) { strata(ctx, s, "#6a5a48", "#4b3f31", "#8a7a62", "cff"); Art.edge(ctx, "ew", "#000", 0.22); });
+  P("cliff_top", function (ctx, f, s) {
+    turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "clt");
+    rect(ctx, 0, 10, ART, 6, "#8a7a60");
+    strataBand(ctx, s, 10, "#8a7a60", "#6a5a44", "#a8977a");
+    rect(ctx, 0, 9, ART, 1, "#2c6427");
+    rect(ctx, 0, 10, ART, 1, "#b8a888");
+  });
+  function strataBand(ctx, seed, y0, face, dk, lt) {
+    const r = rnd("sb" + face, seed);
+    for (let y = y0; y < ART; y++) { const q = r(); rect(ctx, 0, y, ART, 1, q < 0.25 ? dk : (q > 0.78 ? lt : face)); }
+    speckle(ctx, r, 0, y0, ART, ART - y0, [dk, lt], 10);
+  }
+  P("cliff_left", function (ctx, f, s) {
+    strata(ctx, s, "#7a6a50", "#584a36", "#98876a", "cfl");
+    rect(ctx, 0, 0, 3, ART, "#4b3f31"); rect(ctx, 3, 0, 1, ART, "#3c3226");
+    rect(ctx, 14, 0, 2, ART, "#98876a");
+  });
+  P("cliff_right", function (ctx, f, s) {
+    strata(ctx, s, "#7a6a50", "#584a36", "#98876a", "cfr");
+    rect(ctx, 13, 0, 3, ART, "#4b3f31"); rect(ctx, 12, 0, 1, ART, "#3c3226");
+    rect(ctx, 0, 0, 2, ART, "#98876a");
+  });
+  P("cliff_corner", function (ctx, f, s) {
+    strata(ctx, s, "#6a5a48", "#463a2c", "#8a7a62", "cfc");
+    rect(ctx, 0, 0, 3, ART, "#463a2c");
+    rect(ctx, 0, 0, ART, 2, "#8a7a62");
+    rect(ctx, 0, 2, ART, 1, "#3c3226");
+    Art.edge(ctx, "e", "#000", 0.2);
+  });
+  P("cliff_climb", function (ctx, f, s) {
+    strata(ctx, s, "#9a8a68", "#74674c", "#b8a67f", "cfk");
+    // hand-holds & a trailing rope
+    const r = rnd("climb", s);
+    for (let i = 0; i < 5; i++) {
+      const x = 2 + ((r() * 11) | 0), y = 1 + i * 3;
+      rect(ctx, x, y, 3, 1, "#4e4335"); rect(ctx, x, y + 1, 3, 1, "#c6b58c");
+    }
+    rect(ctx, 7, 0, 1, ART, "#b8895a"); rect(ctx, 8, 0, 1, ART, "#8a6238");
+    for (let y = 1; y < ART; y += 3) px(ctx, 7, y, "#e0c090");
+  });
+  P("crag", function (ctx, f, s) {
+    strata(ctx, s, "#5a5058", "#3d363f", "#7a7078", "crg");
+    const r = rnd("crgs", s);
+    for (let i = 0; i < 4; i++) {
+      const x = (r() * 12) | 0, y = (r() * 12) | 0;
+      rect(ctx, x, y, 4, 3, "#4a4249"); rect(ctx, x, y, 4, 1, "#6e6470");
+    }
+    Art.edge(ctx, "n", "#8a8090", 0.5);
+    Art.edge(ctx, "s", "#000", 0.3);
+  });
+
+  function rockPile(bg) {
+    return decoVar(bg, [[
+      "................", "................", "................", ".......nnn......",
+      ".....nnlllnn....", "....nlllllnnn...", "...nllllllnnNn..", "...nlllllnnNNn..",
+      "..nlllllnnNNNn..", "..nllllnnNNNNn..", "..nlllnnNNNNnn..", "...nnnnNNNNnn...",
+      "....nNNNNNNn....", ".....NNNNNn.....", "................", "................"
+    ], [
+      "................", "................", "......nnn.......", ".....nlln.......",
+      "....nlllnn..nn..", "...nllllnn.nlln.", "..nllllnnn.nlNn.", "..nlllnnNn.nNNn.",
+      "..nlllnNNnnNNn..", "..nllnnNNNNNNn..", "...nnnNNNNNNn...", "....nNNNNNNn....",
+      "....nNNNNNn.....", ".....NNNNn......", "................", "................"
+    ]]);
+  }
+  P("rock", rockPile(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "rk"); foot(ctx, 8, 14, 6); }));
+  P("rock_moor", function (ctx, f, s) {
+    turf(ctx, s, C.moorGrass, "#6b7a36", "#a8b662", 3, "rmg"); foot(ctx, 8, 14, 6);
+    ascii(ctx, (s | 0) % 2 ? GRIT_B : GRIT_A, PAL);
+  });
+  const GRIT_A = sheet([
+    "................", "................", "................", "....qqqqqq......",
+    "...q????qqq.....", "..q??????qqQ....", "..q?????qqQQQ...", ".q?????qqQQQQq..",
+    ".q????qqQQQQQq..", "q????qqQQQQQQq..", "q???qqQQQQQQqq..", "qqqqqQQQQQQqq...",
+    ".qQQQQQQQQQq....", "..QQQQQQQQq.....", "................", "................"
+  ]);
+  const GRIT_B = sheet([
+    "................", "................", "...qqq..........", "..q??qq...qqq...",
+    "..q???qq.q???q..", ".q????qq.q??qQ..", ".q???qqQ.q?qQQ..", "q???qqQQqqqQQQ..",
+    "q??qqQQQQQQQQq..", "q?qqQQQQQQQQqq..", "qqqQQQQQQQQqq...", ".qQQQQQQQQQq....",
+    "..QQQQQQQQq.....", "...QQQQQq.......", "................", "................"
+  ]);
+  P("rock_small", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "rks"); foot(ctx, 8, 13, 4); }, [
+    "................", "................", "................", "................",
+    "................", "................", "......nnn.......", ".....nlllnn.....",
+    "....nllllnNn....", "....nlllnNNn....", "....nllnNNNn....", "....nnNNNNn.....",
+    ".....NNNNn......", "................", "................", "................"
+  ]));
+
+  P("boulder", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 2, "bld"); foot(ctx, 8, 15, 7); }, [
+    "................", "................", "....nnnnnn......", "..nnllllllnn....",
+    ".nlllllllllnn...", "nlllllllllllnn..", "nlllllllllllNn..", "nllllllllllNNn..",
+    "nlllllllllNNNn..", "nllllllllNNNNn..", "nlllllllNNNNNn..", ".nlllllNNNNNn...",
+    "..nnlllNNNNn....", "...nnNNNNNn.....", ".....nnnnn......", "................"
+  ]));
+
+  P("cave_wall", function (ctx, f, s) {
+    strata(ctx, s, "#3a3040", "#231c2a", "#544a5c", "cw");
+    const r = rnd("cwr", s);
+    for (let i = 0; i < 5; i++) {
+      const x = (r() * 13) | 0, y = (r() * 13) | 0;
+      rect(ctx, x, y, 3, 2, "#2c2434"); rect(ctx, x, y, 3, 1, "#4a4054");
+    }
+    Art.edge(ctx, "n", "#5b5168", 0.45);
+    Art.edge(ctx, "s", "#000", 0.35);
+  });
+  P("cave_wall_top", function (ctx, f, s) {
+    strata(ctx, s, "#2a2030", "#170f1e", "#3f3448", "cwt");
+    Art.edge(ctx, "nsew", "#000", 0.3);
+  });
+  P("cave_entrance", function (ctx, f, s) {
+    strata(ctx, s, "#3a3040", "#231c2a", "#544a5c", "ce");
+    // dark arch
+    ascii(ctx, [
+      "................", "................", ".....KKKKK......", "....KkkkkkK.....",
+      "...Kkkkkkkkk....", "..Kkkkkkkkkkk...", "..kkkkkkkkkkk...", "..kkkkkkkkkkk...",
+      "..kkkkkkkkkkk...", "..kkkkkkkkkkk...", "..kkkkkkkkkkk...", "..kkkkkkkkkkk...",
+      "..kkkkkkkkkkk...", "..kkkkkkkkkkk...", "..kkkkkkkkkkk...", "..kkkkkkkkkkk..."
+    ], PAL);
+  });
+
+  P("stalag", decoVar(function (ctx, f, s) { grit(ctx, s, "#6a6070", "#4d4557", "#867c8e", 20, "stg"); }, [[
+    "................", ".......l........", "......lnl.......", "......lnl.......",
+    ".....lnnnl......", ".....lnnnl......", "....lnnnnnl.....", "....lnnnnnl.....",
+    "...lnnnnnnnl....", "...lnnnnnnnl....", "..lnnnnnnnnnl...", "..lnnnnnnnnnl...",
+    ".lnnnnnnnnnnnl..", ".lNNNNNNNNNNNl..", "................", "................"
+  ], [
+    "................", "...l.......l....", "...ln.....lnl...", "..lnnl....lnl...",
+    "..lnnl...lnnnl..", ".lnnnnl..lnnnl..", ".lnnnnl.lnnnnnl.", "lnnnnnnllnnnnnl.",
+    "lnnnnnnnlnnnnnl.", "lnnnnnnnnnnnnnl.", "lnnnnnnnnnnnnnl.", "lnnnnnnnnnnnnnl.",
+    "lNNNNNNNNNNNNNl.", "lNNNNNNNNNNNNNl.", "................", "................"
+  ]]));
+
+  P("ore", function (ctx, f, s) {
+    strata(ctx, s, "#4a4050", "#332c3c", "#655a6e", "ore");
+    const r = rnd("orev", s);
+    for (let i = 0; i < 6; i++) {
+      const x = 1 + ((r() * 13) | 0), y = 1 + ((r() * 13) | 0);
+      px(ctx, x, y, "#c0a040"); px(ctx, x + 1, y, "#e8cc70"); px(ctx, x, y + 1, "#8a6c1e");
+      px(ctx, x + 1, y + 1, "#c0a040");
+    }
+    for (let i = 0; i < 4; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#f4e2a0");
+    Art.edge(ctx, "s", "#000", 0.3);
+  });
+
+  P("crystal", decoAnim(function (ctx, f, s) { grit(ctx, s, "#3a3040", "#231c2a", "#544a5c", 18, "cry"); }, [[
+    "................", "................", "..........8.....", ".........878....",
+    "....8....8778...", "...878...8778...", "...877)..8778...", "..87778..8778...",
+    "..87778.887788..", "..87778.877787..", "..877788777787..", "..877787777777..",
+    "...9777777777...", "....99999999....", "................", "................"
+  ], [
+    "................", "................", "..........7.....", ".........787....",
+    "....7....7887...", "...787...7887...", "...788)..7887...", "..78887..7887...",
+    "..78887.778877..", "..78887.788878..", "..788877888878..", "..788878888888..",
+    "...9888888888...", "....99999999....", "................", "................"
+  ]], { ")": "#bfe6f6" }));
+
+  P("mine_prop", deco(function (ctx, f, s) { grit(ctx, s, "#5a5048", "#413931", "#786c60", 18, "mp"); }, [
+    "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO", "..OO........OO..",
+    "..O>........O>..", "..O>........O>..", "..O>........O>..", "..O>........O>..",
+    "..O>........O>..", "..O>........O>..", "..O>........O>..", "..O>........O>..",
+    "..O>........O>..", "..OO........OO..", "..O>........O>..", "..OO........OO.."
+  ]));
+
+  function railBed(ctx, seed, base) {
+    grit(ctx, seed, base || "#7a6a5a", "#5c4f42", "#96866f", 18, "rb");
+  }
+  P("mine_cart_rail_h", function (ctx, f, s) {
+    railBed(ctx, s);
+    for (let x = 0; x < ART; x += 4) rect(ctx, x, 4, 3, 8, "#5f5347");
+    rect(ctx, 0, 5, ART, 2, "#8f8f98"); rect(ctx, 0, 5, ART, 1, "#c2c2cc");
+    rect(ctx, 0, 10, ART, 2, "#8f8f98"); rect(ctx, 0, 10, ART, 1, "#c2c2cc");
+  });
+  P("mine_cart_rail_v", function (ctx, f, s) {
+    railBed(ctx, s);
+    for (let y = 0; y < ART; y += 4) rect(ctx, 4, y, 8, 3, "#5f5347");
+    rect(ctx, 5, 0, 2, ART, "#8f8f98"); rect(ctx, 5, 0, 1, ART, "#c2c2cc");
+    rect(ctx, 10, 0, 2, ART, "#8f8f98"); rect(ctx, 10, 0, 1, ART, "#c2c2cc");
+  });
+  P("mine_cart", deco(function (ctx, f, s) { railBed(ctx, s); rect(ctx, 0, 5, ART, 2, "#8f8f98"); rect(ctx, 0, 10, ART, 2, "#8f8f98"); }, [
+    "................", "................", "..iiiiiiiiiiii..", "..iIIIIIIIIIIi..",
+    "..iI::::::::Ii..", "..iI:pppppp:Ii..", "..iI:pppppp:Ii..", "..iI::::::::Ii..",
+    "..iIIIIIIIIIIi..", "..iiiiiiiiiiii..", "...i..........i.", "..iIi........iIi",
+    "..iIi........iIi", "...i..........i.", "................", "................"
+  ]));
