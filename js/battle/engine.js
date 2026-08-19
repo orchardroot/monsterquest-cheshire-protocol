@@ -321,13 +321,17 @@
       if (NS.Flags && NS.Flags.get) return Number(NS.Flags.get("trust_" + which)) || 0;
       return 0;
     };
+    // The meter is hidden and inert before Badge 1 (SYSTEMS-SPEC §7);
+    // on the enemy side only greedy/smart trainers and bosses build it.
     b.overdriveActive = function (mon) {
       if (b.rules.overdriveOff) return false;
       if (b.isPlayerSide(mon)) {
-        if (NS.Flags && NS.Flags.get && !NS.Flags.get("overdrive_unlocked")) return false;
-        if (NS.Flags && !NS.Flags.get && !b.opts.overdrive) return true;
+        if (b.opts.overdrive === true) return true;
+        if (NS.Flags && NS.Flags.get) return !!NS.Flags.get("overdrive_unlocked");
+        return true;
       }
-      return true;
+      if (b.kind === "boss") return true;
+      return b.sides[1].ai !== "random";
     };
     b.setWeather = function (w, turns, setter) {
       if (!w) return;
@@ -467,6 +471,7 @@
       b.msg("The salt drew the poison out of " + b.name(mon) + ".");
     }
     if (mon.species === "meadow" && b.catTrust("meadow") >= 3 && !b.meadowDodged) v.dodgeOnce = true;
+    if (sideIndex === 1 && b.house) houseOnEnemyEnter(b, mon);
     if (b.kind === "wild" && sideIndex === 0 && b.perk("perk_triage_ambush") && b.turn <= 1) BE.addStage(b, mon, "spe", 1, mon, {});
     BE.hook(b, mon, "onEnter", {});
     return mon;
@@ -722,6 +727,18 @@
         BE.hook(b, target, "onHitTaken", { move: move, user: user, damage: dealt, category: move.cat });
         BE.hook(b, user, "onAfterHit", { move: move, target: target, damage: dealt, category: move.cat });
 
+        // House rule: the leader's contact hits carry a condition.
+        if (b.house && b.house.contactStatus && b.sideIndexOf(user) === 1 && move.flags && move.flags.contact) {
+          const cs = b.house.contactStatus;
+          if (b.rng() * 100 < (cs.chance === undefined ? 20 : cs.chance)) BE.applyStatus(b, target, cs.status, user, { quiet: true });
+        }
+        // House rule: agents come back the moment you land something super-effective.
+        if (b.jamUntilSuper && b.sideIndexOf(user) === 0 && r.eff > 1) {
+          b.jamUntilSuper = false;
+          b.agentsJammed = 0;
+          b.emit("agent", { jammed: 0 });
+          b.msg("That got through. Your agents are back.");
+        }
         // Freeze thaws on a fire hit.
         if (move.type === "fire" && target.status === "frz") {
           BE.cureStatus(b, target, false);
@@ -1424,7 +1441,6 @@
       move = moveData(v.chargeMoveId || (slot && slot.id));
     }
     let pri = move.priority || 0;
-    pri += BE.hookMul === null ? 0 : 0;
     const a = BE.abilityImpl(BE.abilityOf(b, mon));
     if (a && a.onModifyPriority) { const r = a.onModifyPriority(b, mon, { move: move }); if (typeof r === "number") pri += r; }
     const v2 = b.vol(mon);
@@ -1490,6 +1506,64 @@
   }
 
   // =============================================================
+  // Gym house rules (SYSTEMS-SPEC §9). Data shape (NEW, trainer.house):
+  //   { weather, terrain, permanent, screens:'phys'|'spec',
+  //     reboot:true, contactStatus:{status,chance},
+  //     jamAgent:{id,turns}, jamUntilSuper:true, note:'door sign text' }
+  // =============================================================
+  function applyHouseRules(b) {
+    const t = b.sides[1].trainer;
+    if (!t || !t.house) return;
+    const h = t.house;
+    b.house = h;
+    if (h.note) b.msg("The gym door says: " + h.note);
+    if (h.weather) { b.setWeather(h.weather, h.permanent ? 999 : (h.turns || 5), null); if (h.permanent) b.field.weatherTurns = 999; }
+    if (h.terrain) { b.setTerrain(h.terrain, h.permanent ? 999 : (h.turns || 5), null); if (h.permanent) b.field.terrainTurns = 999; }
+    if (h.reboot) b.sides[1].rebootLeft = 1;
+    if (h.jamAgent) {
+      b.sides[0].agentCooldowns[h.jamAgent.id] = h.jamAgent.turns || 3;
+      b.emit("cooldown", { agent: h.jamAgent.id, turns: h.jamAgent.turns || 3, house: true });
+      b.msg("This arena will not let " + (AGENTS[h.jamAgent.id] ? AGENTS[h.jamAgent.id].name : h.jamAgent.id) + " through.");
+    }
+    if (h.jamUntilSuper) {
+      b.agentsJammed = 999;
+      b.jamUntilSuper = true;
+      b.emit("agent", { jammed: 999, untilSuper: true });
+      b.msg("Every agent is jammed. Land something they cannot resist and they will be back.");
+    }
+  }
+  // The house `screens` rule re-applies to each of the leader's monsters.
+  function houseOnEnemyEnter(b, mon) {
+    const h = b.house;
+    if (!h) return;
+    if (h.screens) {
+      b.sides[1].screens[h.screens] = 5;
+      b.emit("field", { side: 1, screen: h.screens, turns: 5 });
+      b.msg("House rules: " + (h.screens === "phys" ? "a physical" : "a special") + " screen is already up.");
+    }
+  }
+  // Ada's Sysadmin's Reboot: a free +3-priority action, once per battle.
+  function maybeReboot(b) {
+    const side = b.sides[1];
+    if (!side.rebootLeft) return;
+    const mon = b.activesOf(1)[0];
+    if (!mon || mon.hp <= 0) return;
+    const v = b.vol(mon);
+    let bad = 0, dry = 0;
+    for (let i = 0; i < BE.STAGE_STATS.length; i++) if (v.stages[BE.STAGE_STATS[i]] < 0) bad++;
+    const moves = mon.moves || [];
+    for (let i = 0; i < moves.length; i++) if (moves[i].pp <= 0) dry++;
+    if (bad < 2 && dry < 2) return;
+    side.rebootLeft = 0;
+    b.msg("Sysadmin's Reboot. Everything back to how she left it.");
+    BE.clearStages(b, mon, "negative");
+    for (let i = 0; i < moves.length; i++) {
+      moves[i].pp = moves[i].ppMax;
+      b.emit("pp", { side: 1, uid: mon.uid, move: moves[i].id, pp: moves[i].pp, max: moves[i].ppMax });
+    }
+  }
+
+  // =============================================================
   // The main flow
   // =============================================================
   function* flow(b) {
@@ -1497,12 +1571,15 @@
       kind: b.kind, trainer: b.sides[1].trainer ? { id: b.sides[1].trainer.id, name: b.sides[1].trainer.name, cls: b.sides[1].trainer.cls, sprite: b.sides[1].trainer.sprite } : null,
       doubles: !!b.rules.doubles, weather: b.field.weather, terrain: b.field.terrain,
       music: b.opts.music || (b.kind === "boss" ? "battle_boss" : b.sides[1].trainer ? (b.sides[1].trainer.leader ? "battle_gym" : "battle_trainer") : "battle_wild"),
-      canRun: b.rules.canRun, canCatch: b.rules.canCatch, escort: !!b.escort, difficulty: b.difficulty
+      canRun: b.rules.canRun, canCatch: b.rules.canCatch, escort: !!b.escort, difficulty: b.difficulty,
+      bossPhases: b.boss && b.boss.phases ? b.boss.phases.length : 0,
+      house: b.sides[1].trainer && b.sides[1].trainer.house ? b.sides[1].trainer.house : null
     });
     if (b.sides[1].trainer && b.sides[1].trainer.intro) {
       const intro = b.sides[1].trainer.intro;
       for (let i = 0; i < intro.length; i++) b.msg(intro[i]);
     }
+    applyHouseRules(b);
 
     // Send out.
     const slots0 = Math.min(b.sides[0].slots, b.sides[0].party.filter(function (m) { return m.hp > 0; }).length) || 1;
@@ -1532,6 +1609,7 @@
     while (!b.over && guard++ < 500) {
       b.turn++;
       b.emit("turn", { n: b.turn, weather: b.field.weather, terrain: b.field.terrain });
+      maybeReboot(b);
 
       const queue = [];
       // Player side chooses.
@@ -1585,13 +1663,12 @@
     yield* finish(b);
   }
 
-  function firstHealthy(side, skip) {
-    let seen = 0;
+  // First party member that can fight and is not already on the field.
+  function firstHealthy(side) {
     for (let i = 0; i < side.party.length; i++) {
       const m = side.party[i];
       if (!m || m.hp <= 0) continue;
       if (side.activeUids.indexOf(m.uid) >= 0) continue;
-      if (seen++ < 0) continue;
       return i;
     }
     return -1;
@@ -1771,7 +1848,7 @@
         kind: "action", slot: req.slot, mon: mon, moves: moves, switches: switches,
         canRun: b.rules.canRun && b.kind === "wild" && !(v && v.trapped > 0),
         canCatch: b.rules.canCatch && !b.rules.noItems,
-        canItems: !b.rules.noItems && side.itemsUsed < (b.diff.bagLimit === undefined ? Infinity : b.diff.bagLimit),
+        canItems: !b.rules.noItems && (b.kind === "wild" || side.itemsUsed < (b.diff.bagLimit === undefined ? Infinity : b.diff.bagLimit)),
         canGuard: !!b.escort,
         agents: Battle.agentList(b),
         overdrive: mon && mon.overdrive >= 100 && b.overdriveActive(mon) && BE.gearOf(b, mon) !== "kevlar_waistcoat",
@@ -1928,6 +2005,7 @@
     return out;
   }
   Battle.buildTrainerParty = buildTrainerParty;
+  Battle.itemDataOf = itemData;
   Battle.switchIn = switchIn;
   Battle.useItem = useItem;
   Battle.grantXp = grantXp;

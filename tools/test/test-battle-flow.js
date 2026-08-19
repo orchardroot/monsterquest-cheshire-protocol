@@ -441,4 +441,59 @@ module.exports = function (t, assert) {
     assert.ok(engine.request, "the engine is still waiting");
     assert.ok(!engine.choose({ type: "move", index: 0 }).error, "a legal action still works");
   });
+
+  t("gym house rules: permanent weather, entry screens, Reboot and a jammed agent", function () {
+    MQ.Flags.set("agent_vigil", true);
+    const me = F.mon(MQ, "t_fire", 40, ["t_ember", "t_growl"]);
+    const a1 = F.mon(MQ, "t_water", 30, ["t_water_gun"]);
+    const a2 = F.mon(MQ, "t_water", 30, ["t_water_gun"]);
+    const engine = MQ.Battle.create({
+      kind: "trainer", seed: 88, playerParty: [me], enemyParty: [a1, a2],
+      trainer: {
+        id: "leader_nell", name: "Brine Nell", ai: "greedy", payout: 500,
+        leader: { badge: "badge_token", type: "water" },
+        house: { note: "It rains here. Dress for it.", weather: "rain", permanent: true, screens: "spec", reboot: true, jamAgent: { id: "vigil", turns: 3 } }
+      }
+    });
+    engine.start();
+    assert.strictEqual(engine.b.field.weather, "rain");
+    assert.strictEqual(engine.b.field.weatherTurns, 999, "permanent");
+    assert.strictEqual(engine.b.sides[1].screens.spec, 5, "screens up on entry");
+    const vigil = engine.options().agents.filter(function (x) { return x.id === "vigil"; })[0];
+    assert.strictEqual(vigil.ok, false);
+    assert.strictEqual(vigil.turns, 3, "VIGIL is locked out for three turns");
+    assert.ok(engine.b.log.some(function (x) { return x.type === "msg" && /Dress for it/.test(x.text); }));
+    const r = drive(engine, alwaysFirstMove, 300);
+    assert.ok(r.outcome === "win" || r.outcome === "lose");
+    assert.strictEqual(engine.b.field.weather, "rain", "the rain never lets up");
+  });
+
+  t("Mo's rule: all agents jammed until a super-effective hit lands", function () {
+    MQ.Flags.set("agent_sleet", true);
+    const me = F.mon(MQ, "t_water", 50, ["t_water_gun", "t_growl"]);
+    const foe = F.mon(MQ, "t_iron", 50, ["t_growl"]);
+    const engine = MQ.Battle.create({
+      kind: "trainer", seed: 90, playerParty: [me], enemyParty: [foe],
+      trainer: { id: "leader_mo", name: "Netrunner Mo", ai: "greedy", house: { jamUntilSuper: true } }
+    });
+    engine.start();
+    assert.strictEqual(engine.options().agents[0].why, "jammed");
+    engine.choose({ type: "move", index: 0 });      // Water vs Rock: super effective
+    assert.strictEqual(engine.b.agentsJammed, 0, "the jam broke");
+    assert.ok(engine.b.log.some(function (x) { return x.type === "msg" && /agents are back/.test(x.text); }));
+  });
+
+  t("the intro event tells the scene how many boss phases to expect", function () {
+    const me = F.mon(MQ, "t_fire", 50, ["t_ember"]);
+    const boss = F.mon(MQ, "t_iron", 50, ["t_tackle"]);
+    const engine = MQ.Battle.create({
+      kind: "boss", seed: 91, playerParty: [me], enemyParty: [boss],
+      trainer: { id: "boss_intro", name: "Boss", ai: "smart", boss: { phases: [{ hpFrac: 0.66, events: [] }, { hpFrac: 0.33, events: [] }] } }
+    });
+    engine.start();
+    const intro = engine.b.log[0];
+    assert.strictEqual(intro.type, "intro");
+    assert.strictEqual(intro.bossPhases, 2);
+    assert.strictEqual(intro.kind, "boss");
+  });
 };

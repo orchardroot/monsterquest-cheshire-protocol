@@ -151,6 +151,7 @@
       S.field = { weather: null, terrain: null, screens: [{}, {}] };
       S.menuIndex = 0; S.moveIndex = 0; S.partyIndex = 0; S.bagIndex = 0; S.agentIndex = 0;
       S.bagTab = 0;
+      S.bossPhases = 0; S.bossPhase = 0;
       S.result = null;
       S.finished = false;            // the scene is a singleton: reset every battle
       S.forcedSwitch = false;
@@ -211,6 +212,8 @@
       switch (e.type) {
         case "intro":
           S.intro = e;
+          S.bossPhases = e.bossPhases || 0;
+          S.bossPhase = 0;
           song(e.music);
           break;
         case "msg":
@@ -301,6 +304,8 @@
           if (e.sfx) sfx(e.sfx);
           break;
         case "phase":
+          S.bossPhase = e.index;
+          S.bossPhases = e.total || S.bossPhases;
           S.flashScreen = ms(200);
           S.shakeScreen = ms(300);
           sfx("oracle_tag");
@@ -741,22 +746,32 @@
     ctx.restore();
   };
 
+  // Gradients are cached by (what they depend on) so the draw loop
+  // allocates nothing per frame.
+  const gradCache = {};
+  function gradient(ctx, key, x0, y0, x1, y1, c0, c1) {
+    const k = key + "|" + Math.round(y0) + "|" + Math.round(y1);
+    let g = gradCache[k];
+    if (!g) {
+      g = ctx.createLinearGradient(x0, y0, x1, y1);
+      g.addColorStop(0, c0);
+      g.addColorStop(1, c1);
+      gradCache[k] = g;
+    }
+    return g;
+  }
+
   Scene.drawBackground = function (ctx, L) {
     const S = this;
     const w = S.field.weather || "none";
     const pal = SKY[w] || SKY.none;
-    const g = ctx.createLinearGradient(0, 0, 0, L.boxY);
-    g.addColorStop(0, pal[0]);
-    g.addColorStop(1, pal[1]);
-    ctx.fillStyle = g;
+    ctx.fillStyle = gradient(ctx, "sky:" + w, 0, 0, 0, L.boxY, pal[0], pal[1]);
     ctx.fillRect(0, 0, L.w, L.boxY);
     // terrain band
-    const ground = GROUND[S.field.terrain || "none"] || GROUND.none;
+    const tr = S.field.terrain || "none";
+    const ground = GROUND[tr] || GROUND.none;
     const gy = L.boxY - L.h * 0.30;
-    const g2 = ctx.createLinearGradient(0, gy, 0, L.boxY);
-    g2.addColorStop(0, U.shade ? U.shade(ground, -0.15) : ground);
-    g2.addColorStop(1, ground);
-    ctx.fillStyle = g2;
+    ctx.fillStyle = gradient(ctx, "ground:" + tr, 0, gy, 0, L.boxY, U.shade ? U.shade(ground, -0.15) : ground, ground);
     ctx.fillRect(0, gy, L.w, L.boxY - gy);
     // horizon hedgerow: Cheshire, obviously
     ctx.fillStyle = "rgba(30,50,30,0.20)";
@@ -847,6 +862,15 @@
     const gy = y + 32, gw = w - 24;
     const ratio = U.clamp(vm.hpShown / Math.max(1, vm.max), 0, 1);
     UI.gauge(ctx, x + 12, gy, gw, 10, ratio, {});
+    // Boss phase ticks: the player can see the breaks coming.
+    if (!isPlayer && S.bossPhases > 0) {
+      ctx.fillStyle = "rgba(20,20,28,0.85)";
+      for (let i = 1; i <= S.bossPhases; i++) {
+        const px = x + 12 + gw * (1 - i / (S.bossPhases + 1));
+        ctx.fillRect(Math.round(px), gy, 2, 10);
+      }
+      if (S.bossPhase > 0) T.draw(ctx, "PHASE " + S.bossPhase + "/" + (S.bossPhases + 1), x + 12, gy + 14, { size: "s", color: "#ff9d5c" });
+    }
     const showNumbers = isPlayer || (S.engine && S.engine.b && S.engine.b.revealHp) || vm.revealed;
     if (showNumbers) {
       T.draw(ctx, Math.ceil(vm.hpShown) + "/" + vm.max, x + w - 12, gy + 12, { size: "s", color: "#d8d8c8", align: "right" });
