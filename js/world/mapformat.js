@@ -538,6 +538,87 @@
     return null;
   };
 
+  // ---- extra validation for the runtime fields the overworld consumes -----
+  const ZONES = ["grass", "water", "cave"];
+  const WARP_KINDS = ["door", "edge", "stairs", "cave", "look", "gate", "lift", "rail"];
+  const BEHAVIOURS = ["still", "wander", "path", "look", "follow"];
+  const _validate = World.validate;
+  World.validate = function (opts) {
+    const errors = _validate(opts);
+    const err = function (m) { errors.push(m); };
+    const D = MQ.Data;
+    const encTables = (D && D.encounters) || {};
+    const haveTables = Object.keys(encTables).length > 0;
+    const items = (D && D.items) || {};
+    const haveItems = Object.keys(items).length > 0;
+    World.each(function (m, id) {
+      const P = "map " + id + ": ";
+      if (!m.layers || !m.layers.ground) return;
+      // encounter zones
+      if (m.encounters) {
+        const ks = Object.keys(m.encounters);
+        for (let i = 0; i < ks.length; i++) if (ZONES.indexOf(ks[i]) < 0) err(P + "encounter zone '" + ks[i] + "' is not grass/water/cave");
+      }
+      if (m.fishing && haveTables && !encTables[m.fishing]) err(P + "fishing table '" + m.fishing + "' undefined");
+      // a map with encounter tiles but no table is almost always a mistake
+      if (!m.encounters && haveTables) {
+        const rt = World.prepare(m);
+        let zoneCells = 0;
+        for (let i = 0; i < rt.n; i++) if (rt.zone[i]) zoneCells++;
+        // an explicit `encounters: {grass:null}` means "nothing spawns here";
+        // no block at all next to 37 tiles of long grass is an oversight.
+        if (zoneCells > 8) err(P + zoneCells + " encounter tiles but no `encounters` block");
+      }
+      // warps
+      const ws = m.warps || [];
+      for (let i = 0; i < ws.length; i++) {
+        if (ws[i].kind && WARP_KINDS.indexOf(ws[i].kind) < 0) err(P + "warp #" + i + " unknown kind '" + ws[i].kind + "'");
+        if (ws[i].cond) { try { MQ.Flags.parse(ws[i].cond); } catch (e) { err(P + "warp #" + i + " bad cond: " + e.message); } }
+      }
+      // npcs
+      const ns = m.npcs || [];
+      for (let i = 0; i < ns.length; i++) {
+        const np = ns[i], NP = P + "npc " + (np.id || "#" + i) + ": ";
+        if (np.behaviour && BEHAVIOURS.indexOf(np.behaviour) < 0) err(NP + "unknown behaviour '" + np.behaviour + "'");
+        if (np.behaviour === "path" || np.path) {
+          if (!np.path || !np.path.length) err(NP + "behaviour 'path' needs a path");
+          else for (let k = 0; k < np.path.length; k++) {
+            const wp = np.path[k];
+            const x = wp[0] !== undefined ? wp[0] : wp.x, y = wp[1] !== undefined ? wp[1] : wp.y;
+            if (!World.inBounds(m, x, y)) err(NP + "path point " + k + " out of bounds");
+            else if (World.isSolid(m, x, y)) err(NP + "path point " + k + " (" + x + "," + y + ") is solid");
+          }
+        }
+        if (np.trainer && np.sight !== undefined && (np.sight < 0 || np.sight > 12)) err(NP + "sight " + np.sight + " out of range 0-12");
+      }
+      // triggers with an area
+      const trs = m.triggers || [];
+      for (let i = 0; i < trs.length; i++) {
+        const tr = trs[i];
+        if (!World.inBounds(m, tr.x + (tr.w || 1) - 1, tr.y + (tr.h || 1) - 1)) err(P + "trigger #" + i + " extends out of bounds");
+      }
+      // cat gaps and rest points
+      const cg = m.catGaps || [];
+      for (let i = 0; i < cg.length; i++) {
+        if (!World.inBounds(m, cg[i].x, cg[i].y)) err(P + "catGap #" + i + " out of bounds");
+        if (cg[i].item && haveItems && !items[cg[i].item]) err(P + "catGap #" + i + " item '" + cg[i].item + "' undefined");
+      }
+      const rp = m.restPoints || [];
+      for (let i = 0; i < rp.length; i++) if (!World.inBounds(m, rp[i].x, rp[i].y)) err(P + "restPoint #" + i + " out of bounds");
+      if (m.landmark && !World.inBounds(m, m.landmark.x, m.landmark.y)) err(P + "landmark out of bounds");
+      // duplicate pickup flags would make one item unobtainable
+      const its = m.items || [];
+      const seen = {};
+      for (let i = 0; i < its.length; i++) {
+        const f = its[i].flag;
+        if (!f) continue;
+        if (seen[f]) err(P + "item #" + i + " reuses flag '" + f + "'");
+        seen[f] = true;
+      }
+    });
+    return errors;
+  };
+
   World.stats = function () {
     let cells = 0, prepared = 0;
     World.each(function (m) { cells += m.width * m.height; if (m.__rt) prepared++; });

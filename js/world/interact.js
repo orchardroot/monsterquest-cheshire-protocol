@@ -103,6 +103,8 @@
       chain = MQ.Script.runNpc(npc.script, ctx);
     } else if (npc.def.shop) {
       chain = I.openShop(world, npc.def.shop, npc);
+    } else if (npc.trainer && MQ.NPC.isBeaten(npc) && tdata && tdata.rematch && has("Rematches.offer")) {
+      chain = P(has("Rematches.offer")(npc.trainer, { npc: npc.id, map: world.map.id }));
     } else if (npc.trainer && MQ.NPC.isBeaten(npc) && ((tdata && tdata.after) || npc.def.after)) {
       chain = say((tdata && tdata.after) || npc.def.after, { name: (tdata && tdata.name) || npc.def.name });
     } else if (npc.say) {
@@ -341,7 +343,8 @@
     MQ.Flags.set(flag, steps);
     MQ.Events.emit("gather", { map: world.map.id, x: d.x, y: d.y, tile: d.tile });
     const add = has("Inventory.add");
-    if (add) add("hedgerow_berry", 1); else MQ.Flags.add("item_hedgerow_berry", 1);
+    const berry = (world.map.berry) || "blackberry";
+    if (add) add(berry, 1); else MQ.Flags.add("item_" + berry, 1);
     return say("You pick a handful. Fingers purple, conscience clear.");
   };
 
@@ -350,7 +353,7 @@
     if (MQ.Flags.get(flag)) return say("Nothing left up there but a wasp with opinions.");
     MQ.Flags.set(flag, true);
     const add = has("Inventory.add");
-    if (add) add("orchard_apple", 2); else MQ.Flags.add("item_orchard_apple", 2);
+    if (add) add("apple", 2); else MQ.Flags.add("item_apple", 2);
     return say("Two apples down, one off your head. Fair trade.");
   };
 
@@ -374,7 +377,8 @@
     if (MQ.Flags.get(flag)) return say("Worked out. The green's gone from it.");
     MQ.Flags.set(flag, true);
     const add = has("Inventory.add");
-    if (add) add("copper_nugget", 1); else MQ.Flags.add("item_copper_nugget", 1);
+    const ore = (world.map.ore) || "copper_wire";
+    if (add) add(ore, 1); else MQ.Flags.add("item_" + ore, 1);
     return say("A green-blue nugget comes away in your hand. Copper, and old.");
   };
 

@@ -235,6 +235,52 @@ module.exports = function (t, assert) {
     assert.strictEqual(errs.length, 0, errs.join("\n"));
   });
 
+  t("validation catches the runtime fields the overworld relies on", function () {
+    const env = H.load(); const MQ = env.MQ; fixtures(MQ);
+    const W = MQ.World;
+    W.defineMap("we_bad", {
+      name: "Bad", region: "east", outdoor: true,
+      legend: { ".": "grass", "w": "grass_tall", "T": "tree_oak" },
+      layers: { ground: ["..........", ".wwwwwwww.", ".wwwwwwww.", "..........", ".........."] },
+      warps: [{ x: 0, y: 0, to: "we_field", tx: 13, ty: 9, kind: "trapdoor" }],
+      npcs: [
+        { id: "bad_pather", x: 2, y: 3, behaviour: "path", say: ["…"] },
+        { id: "bad_behaviour", x: 3, y: 3, behaviour: "moonwalk", say: ["…"] },
+        { id: "bad_sight", x: 4, y: 3, behaviour: "still", trainer: "tr_we_field_1", sight: 40 }
+      ],
+      triggers: [{ x: 8, y: 4, w: 4, h: 4, script: "we_trigger" }],
+      catGaps: [{ x: 99, y: 1 }],
+      restPoints: [{ x: 4, y: 99 }],
+      items: [{ x: 1, y: 0, item: "potion", flag: "dupe" }, { x: 2, y: 0, item: "potion", flag: "dupe" }],
+      fishing: "fish_nowhere",
+      encounters: { swamp: "we_field_grass" },
+      spawnPoint: { x: 0, y: 4 }
+    });
+    const errs = W.validate();
+    const hit = function (frag) { return errs.some(function (e) { return e.indexOf(frag) >= 0; }); };
+    assert.ok(hit("unknown kind 'trapdoor'"), errs.join("\n"));
+    assert.ok(hit("behaviour 'path' needs a path"));
+    assert.ok(hit("unknown behaviour 'moonwalk'"));
+    assert.ok(hit("sight 40 out of range"));
+    assert.ok(hit("trigger #0 extends out of bounds"));
+    assert.ok(hit("catGap #0 out of bounds"));
+    assert.ok(hit("restPoint #0 out of bounds"));
+    assert.ok(hit("reuses flag 'dupe'"));
+    assert.ok(hit("fishing table 'fish_nowhere' undefined"));
+    assert.ok(hit("encounter zone 'swamp'"));
+    delete W.maps.we_bad;
+    // and a map with long grass but no encounters block at all
+    W.defineMap("we_bad2", {
+      name: "Bad 2", region: "east", outdoor: true,
+      legend: { "w": "grass_tall" },
+      layers: { ground: ["wwwwwwwwww", "wwwwwwwwww"] },
+      spawnPoint: { x: 0, y: 0 }
+    });
+    assert.ok(W.validate().some(function (e) { return e.indexOf("no `encounters` block") >= 0; }));
+    delete W.maps.we_bad2;
+    assert.strictEqual(W.validate().length, 0, W.validate().join("\n"));
+  });
+
   t("A* routes around obstacles and refuses the impossible", function () {
     const env = H.load(); const MQ = env.MQ; fixtures(MQ);
     const W = MQ.World, m = W.get("we_field");

@@ -403,6 +403,11 @@
       player.frame = MQ.NPC.FRAMES[Math.floor(player.animT / 120) % 4];
       footstep(dt);
       walkParticles(dt);
+      if (!O.state.boating) {
+        const g = rt.ground[MQ.World.idx(map, player.x, player.y)] || "";
+        const cycleway = g === "towpath" || g === "path_tarmac" || g === "road" || g === "rail_track_h";
+        player.sprite = (player.running && O.state.abilities.has("bike") && cycleway) ? "player_bike" : "player";
+      }
     } else {
       player.frame = MQ.NPC.FRAMES[Math.floor((player.animT += dt * 0.4) / 200) % 4];
       bumpHint(dir);
