@@ -95,6 +95,7 @@ function load(opts) {
       t.createBuffer = function (ch, len) { return { getChannelData: function () { return new Float32Array(len); }, length: len }; };
       return t;
     },
+    PointerEvent: function () {},
     Image: function () { return { addEventListener: function () {}, set src(v) { this._src = v; } }; },
     __rafQueue: rafQueue,
     __listeners: listeners,
