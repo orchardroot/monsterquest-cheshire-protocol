@@ -180,8 +180,10 @@
 
   E.on("step", function (d) {
     const n = (d && d.n) || 1;
+    const hadEgg = !!D.egg;
     D.tick(n);
-    if (D.egg && D.egg.steps < D.egg.need) {
+    // An egg laid on this very step does not also start hatching on it.
+    if (hadEgg && D.egg && D.egg.steps < D.egg.need) {
       D.egg.steps += n;
       if (D.egg.steps >= D.egg.need) { emit("daycare:egghatchable", { egg: D.egg }); toast("The egg has started to move."); }
     }
