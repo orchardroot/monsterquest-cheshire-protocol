@@ -42,10 +42,12 @@
 
     sc.layout = function () {
       const V = MQ.View;
-      const w = Math.min(V.w - 20, 940);
+      // leave room for the canvas-drawn A/B buttons when touch controls are showing
+      const touchPad = (MQ.Input && MQ.Input.touchVisible) ? 170 : 0;
+      const w = Math.min(V.w - 20 - touchPad - V.safe.left - V.safe.right, 940);
       const h = 142;
       sc.box.w = w; sc.box.h = h;
-      sc.box.x = Math.round((V.w - w) / 2);
+      sc.box.x = touchPad ? Math.round(10 + V.safe.left) : Math.round((V.w - w) / 2);
       sc.box.y = opts.position === "top" ? Math.round(V.safe.top + 12) : Math.round(V.h - V.safe.bottom - h - 10);
       sc.box.tx = 26 + (opts.portrait ? 110 : 0);
       sc.repage();
