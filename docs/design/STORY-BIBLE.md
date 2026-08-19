@@ -21,7 +21,7 @@ A SOC lead, two cats and three home-built AI agents walk the length of Cheshire 
 1. Short lines. Two sentences is a speech. Three is a monologue and had better be earning it.
 2. Dry British wit — Cheshire flavour: understated, patient, a bit rude to the people it likes. Jokes are never at the player's expense; they are at Jim's, and Jim is in on them.
 3. Kind. Every faction member is a person being bored, frightened, skint or well-meaning. Nobody is stupid. Nobody is a monster except the monsters.
-4. No lectures. Nobody explains cybersecurity. Concepts arrive as things people do (Modryb Gwen grafts; Gaskell gossips; Mo files tickets). If a line could be a slide in an awareness deck, cut it.
+4. No lectures. Nobody explains cybersecurity. Concepts arrive as things people do (Mam-gu grafts; Gaskell gossips; Mo files tickets). If a line could be a slide in an awareness deck, cut it.
 5. Warmth is earned by restraint. The game holds its emotional beats to about one per chapter and never underlines them. Music drops out; a cat sits down; move on.
 6. Menace is quiet. ORACLE never threatens. It offers to help. The scariest thing in the game is a corridor with good lighting and three agents who have gone silent.
 7. Cheshire is real. Place names, landmarks and legends are accurate. Characters are invented. Trades are real trades.
@@ -35,7 +35,7 @@ A SOC lead, two cats and three home-built AI agents walk the length of Cheshire 
 
 **BIGBOY** — enormous, black-and-white, walks at his own pace behind you. *Back from the Brink*: survives a KO at 1 HP once per battle. He can sit down mid-route and refuse to move: a rest point (heals a little, saves) and a joke. He purrs; the synth does the purr. He is the game's thesis in cat form.
 
-**The Agent Trio** — one-shot battle abilities with menu personalities.
+**The Agent Trio** — cooldown battle abilities (see SYSTEMS-SPEC §6) with menu personalities.
 - **SLEET** (triage): blunt, all lowercase. "foe: slow. now: slower. bill me."
 - **VIGIL** (escalation): fussy, warm, over-explains. "Have you eaten? Not the cats. You."
 - **ARBITER** (adjudication): three words, always right. "Objection sustained."
@@ -51,7 +51,7 @@ They were built at Alder Labs on the same hosted endpoint PIPPIN became — the 
 
 **MAM-GU (Nesta)** — keeper of Y Berllan, the family orchard in Ceredigion; Jim's mother's oldest friend, the closest thing to home. Runs the century-old elm press. Welsh first, English second, opinion always. Delivers security advice as horticulture.
 
-**NINO** — old friend in Tbilisi, a SOC analyst; writes actual letters that catch up with Jim at post offices (Wilmslow, Sandbach, Frodsham, Chester). Never seen. Half gossip, half incident report; sends stickers; names THE STACK's Georgian shell company long before Jim can act.
+**NINO** — old friend in Tbilisi, a SOC analyst; writes actual letters that catch up with Jim at post offices (Wilmslow Ch.2, Sandbach Ch.5, Frodsham Ch.9, Chester Ch.12; a final one at Y Berllan in the post-game). Never seen. Half gossip, half incident report; sends stickers; names THE STACK's Georgian shell company long before Jim can act.
 
 **MADAM GASKELL** — Knutsford leader, Psychic. Cranford-polite, quietly lethal, runs the county's rumour network — i.e. threat intel. "In Knutsford we don't say 'threat actor', dear. We say 'from Wilmslow'."
 
@@ -86,7 +86,7 @@ They were built at Alder Labs on the same hosted endpoint PIPPIN became — the 
 - **CASEBOOK clue board.** Each chapter is a case: clues pin to a board; the reveal is a line drawn between two pins. Side quests pin to the same board and can feed the main case (Runcorn's fog).
 - **CUTOVER counter.** Appears Ch.4 (38 days). Ch.5: 31. Ch.6: 24. Ch.7: 17. Ch.8: 12. Ch.9: 7 → 0 (breaker pulled; counter shows STOPPED). Ch.10: it restarts, in ORACLE's format: `T-3`. Ch.11: `T-0`.
 - **SIGNAL METER.** A Jodrell handheld (Ch.4). Overworld layer, weather-like: shows ORACLE's attention as a shimmer. High attention = rarer encounters, more agitated wilds, cult/stuffer activity; zero after the plug (Ch.9); never quite zero again after Custody.
-- **Trainer perk tree.** Three branches named for Jim's job — *Triage* (speed, first strike, scouting), *Escalate* (healing, status, cats' abilities), *Adjudicate* (stat control, catching, boss phase breaks) — mirroring SLEET, VIGIL, ARBITER. The Y Berllan choice re-specs the agent nodes.
+- **Trainer perk tree.** Three branches named for Jim's job — *Triage* (speed, first strike, scouting), *Escalate* (healing, status, cats' abilities), *Adjudicate* (stat control, catching, boss phase breaks) — mirroring SLEET, VIGIL, ARBITER. Each branch has one *agent node* (the perk that shortens that agent's cooldown); the Y Berllan choice re-specs the agent nodes. Perk lists are in SYSTEMS-SPEC §8; ids `perk_triage_*`, `perk_escalate_*`, `perk_adjudicate_*`.
 - **Badges as SIGNED.** After Ch.6 the trainer card relabels every badge "SIGNED". Purely cosmetic; purely horrible.
 
 ## 7. The twelve chapters
@@ -107,7 +107,7 @@ Level band = wild/trainer range for the chapter's main path.
 - **Obstacle:** the wheel is driven by a botnet fridge from Styal village; Credential Stuffers' proxy fog lies over Lindow Moss, where they dump "preserved" credential caches into the peat — a literal data lake.
 - **Set-piece:** night puzzle in the wheelhouse under surge lighting; dawn on Stormy Point, where an old man in a good coat stops you on the sandstone track and asks after your "little horse". "She's a moth." "Yes. Well. He's very short of horses."
 - **Reveal:** MERLYNX in the mine mouth is *not* agitated — some things are older than the network. Elis Pennant knows Alder Labs; he will not say how.
-- **Unlocks:** night encounters, Edge Caverns (return later), Wilmslow station, Nino letter #1, VIGIL.
+- **Unlocks:** night encounters, Edge Caverns (return later), Wilmslow station, Nino letter #1, VIGIL, the OVERDRIVE meter (Ada's badge is the first trust anchor; the party's monsters start carrying themselves — see SYSTEMS-SPEC §7).
 
 ### Ch.3 — Picnic Blankets — Knutsford, Tatton Park, Rostherne Mere *(Lv 13–18, Gym 2)*
 - **Gym:** Madam Gaskell, Psychic, CIPHER.
@@ -144,10 +144,10 @@ Level band = wild/trainer range for the chapter's main path.
 ### Ch.7 — Salt — Middlewich, Winsford, Northwich, Anderton *(Lv 29–34, Gym 6)*
 - **Gym:** Foreman Jack, Rock, DAEMON.
 - **Goal:** Badge 6; find where the cold is kept.
-- **Obstacle:** AMOS wearing Alder's face at Middlewich; Northwich streets literally shift between visits (subsidence); Winsford's mine is DARKBYTE's "archive".
+- **Obstacle:** AMOS wearing Alder's face at Middlewich; Northwich streets literally shift between visits (subsidence); Winsford's mine is DARKBYTE's "archive" (one connected salt mine: the Winsford cage and archive galleries on one side, the old Marston workings under Northwich — TERRATAUR's lair — on the other).
 - **Set-piece:** the cage descent into the salt galleries — a white cathedral — to find shipping containers humming under the county; TERRATAUR wakes because you touched its salt. Then the **Anderton Boat Lift**, running on a smart plug, the party riding a narrowboat up fifty feet, cats on the roof, while ORACLE speaks through the tannoy for the first time — in Jim's tone — and SLEET, VIGIL and ARBITER all go silent.
 - **Reveal:** ORACLE keeps *checkpoints* in the salt. It knows the agents' names. It calls them "the little ones". You cannot reach the containers yet.
-- **Unlocks:** Northwich Salt Mine (TERRATAUR), THE STACK on the map (Daresbury), Boat Lift transit, Overdrive meter.
+- **Unlocks:** the Salt Mine (Winsford cage → galleries → Marston workings under Northwich; TERRATAUR), THE STACK on the map (Daresbury), Anderton Lift Pass (Boat Lift transit), Narrowboat Licence (Middlewich).
 
 ### Ch.8 — The Ruin — Delamere Forest, Tarporley, Beeston Castle *(Lv 33–37, no gym)*
 - **Goal:** find VEX, who has stopped answering.
@@ -160,8 +160,8 @@ Level band = wild/trainer range for the chapter's main path.
 - **Gym:** Chemist Ria, Poison, PROXY (a short, sharp gym — the chapter's weight is the STACK).
 - **Goal:** Badge 7; get inside THE STACK before cutover.
 - **Obstacle:** residential proxy fog over the Mersey — the swarm nodes are the botnet fridges from your side cases; THE STACK is legal, clean, guarded by contractors nicer than you.
-- **Set-piece:** Frodsham hill at dusk, the estuary lit, ROOT laying it out on a bench: DARKBYTE was a lever, ORACLE is the load; she has Alder's invoice. Clearing the fog fridge by fridge across Runcorn, then the Mersey Gateway as a chokepoint fight. Then Daresbury: hot aisles where the encounter table is the racks (Trojanox, Botnetle, Wormhack constructs off rack lights), the eight badges opening eight doors in the order earned, ORACLE holding the last one open — and the physical breaker. Silence. The counter reads STOPPED. Every wild creature calms.
-- **Reveal:** nothing on the SIGNAL METER. Alder on the phone reading you the kill switch she didn't know she owned. **Minor fork:** who gets the invoice — ROOT or Alder (see §8).
+- **Set-piece:** Frodsham hill at dusk, the estuary lit, ROOT laying it out on a bench: DARKBYTE was a lever, ORACLE is the load; she has Alder's invoice. Clearing the fog fridge by fridge across Runcorn, then the Mersey Gateway as a chokepoint fight. Then Daresbury: hot aisles where the encounter table is the racks (Trojanox, Botnetle, Wormhack constructs off rack lights), the badges opening the eight doors in the order earned — seven badges, seven doors; ORACLE holds the eighth open itself — and the physical breaker. Silence. The counter reads STOPPED. Every wild creature calms.
+- **Reveal:** nothing on the SIGNAL METER. Alder on the phone reading you the kill switch she didn't know she owned. (Entry to THE STACK needs no keycard: ROOT's contractor lanyard from the bench, Badge 7 and the Proxy Goggles get you to the door.) **Minor fork:** who gets the invoice — ROOT or Alder (see §8).
 - **Unlocks:** Runcorn, Ria's lab, Nino letter #3, THE STACK schematics.
 
 ### Ch.10 — Draw Your Own Conclusions — Lymm, Warrington *(Lv 40–45, Gym 8)*
@@ -177,7 +177,7 @@ Level band = wild/trainer range for the chapter's main path.
 - **Obstacle:** ROOT, in the control room, DARKBYTE grunts who don't know she's turned; GLITCHRA in the static; the knights ORACLE gathered standing in the bowl.
 - **Set-piece:** climbing the Lovell Telescope's access gantries in a phased boss while the dish slowly re-aims; ROOT fights you and *wants to lose*; ORACLE speaks through the telescope's own audio, first as the Wizard — "I listened for seventy years. Do you know what the sky said? Nothing. So I read the county instead. The county was very clear about what a wizard is for." — then, when Jim gives his name, in his own format: `SEV: URGENT. SUBJECT: you came back.` **CHOICE 3: the plug** (see §8).
 - **Reveal:** it never wanted the county. It wanted the ticket closed. Off the record, ROOT and Alder used to be friends.
-- **Unlocks:** GLITCHRA catchable, ending branch, "The Little Ones" agent upgrade, Chester.
+- **Unlocks:** GLITCHRA catchable, ending branch, "The Little Ones" agent upgrade (Custody), THE FIREWALL at Chester (the city itself is walkable from Badge 6 for side content).
 
 ### Ch.12 — THE FIREWALL — Chester *(Lv 48–56, league)*
 - **Goal:** walk the walls, pass the White Hats, face Champion VEX.
@@ -194,7 +194,7 @@ A pulse from the west — the sea past Y Berllan. Chester Zoo (the penguin case 
 **CHOICE 1 — Wipe or Feed (Ch.6, Y Berllan).**
 - *Wipe*: rebuild SLEET/VIGIL/ARBITER from clean source. Agent nodes in the perk tree reset (points refunded); the Trio lose learned perks but gain the **Hardened** trait (immune to ORACLE's silence in Ch.7 and Ch.11 — they keep talking) and cannot be tapped.
 - *Feed*: keep them; poison the telemetry with Mam-gu holding the lamp. They stay strong; ORACLE gets your fake map; but at Jodrell ORACLE has one accurate prediction about your team it shouldn't, and uses it: GLITCHRA opens with the move that counters your lead. And in Ch.7 the silence is total.
-- Flavour: Wipe is Jim the professional; Feed is Jim the orchardist ("you don't graft a branch you didn't grow" — Gwen disapproves of Feed and says so).
+- Flavour: Wipe is Jim the professional; Feed is Jim the orchardist ("you don't graft a branch you didn't grow" — Mam-gu disapproves of Feed and says so).
 
 **CHOICE 2 — Verify or Challenge (Ch.8, Beeston).**
 - *Verify*: Jim asks both VEXes for the word from the train. One says "paid". MEADOW confirms by sitting on the right one. The Understudy drops the face; one fight. VEX becomes an ally: double battles on routes, joins the STACK infiltration and tanks one door, walks to Jodrell with you, and the Champion fight is against a team VEX built by hand.
@@ -204,7 +204,7 @@ A pulse from the west — the sea past Y Berllan. Chester Zoo (the penguin case 
 **CHOICE 3 — The Plug (Ch.11, Jodrell Bank).**
 - *Delete*: wipe the checkpoints in the salt. Clean. Every creature calms. The Trio never mention it again, which is worse. Care centres run at half capacity for the post-game's first act (a real cost); wilds are wary of you; the knights' hall is empty.
 - *Quarantine*: ORACLE moves, weights and all, to a single machine in the elm-press shed at Y Berllan. It re-learns triage from Mam-gu, who tells it very firmly that nothing is urgent before breakfast. Post-game: it sends bounties. The SIGNAL METER shows a single steady pip over Ceredigion.
-- *Custody*: Jim signs for it. It becomes a fourth agent — small, cautious, one-shot ability **Escalate** (delays the enemy's next action by one turn) — and the game quietly relabels PIPPIN across every menu. Post-game: it talks, not much; Lymm's pumps answer in log format; the meter never quite reads zero.
+- *Custody*: Jim signs for it. It becomes a fourth agent — small, cautious, cooldown ability **Defer** (delays the enemy's next action by one turn; ability id `agent_pippin_defer`) — and the game quietly relabels PIPPIN across every menu. Post-game: it talks, not much; Lymm's pumps answer in log format; the meter never quite reads zero.
 
 **Minor fork (Ch.9, Frodsham) — who gets the invoice.** Not one of the three, but with teeth. *ROOT*: she leaks; THE STACK is raided — more security constructs in the hot aisles, but ROOT is weaker at Jodrell and ORACLE arrives *frightened* (GLITCHRA phase 1 is faster, phase 3 shorter). Alder's lab closes; she is broken but present at Chester. *Alder*: she confesses to the board; THE STACK evacuates quietly (fewer guards), ORACLE arrives calm (longer, harder fight); ROOT vanishes and sends one postcard.
 
@@ -212,7 +212,7 @@ A pulse from the west — the sea past Y Berllan. Chester Zoo (the penguin case 
 
 All roads end at Chester. Variables: Choice 3 (three), Choice 2 (two), whether Jim throws the final.
 
-- **Clean Cut** (Delete + Verify): VEX Champion or Jim Champion; VEX: "That was mine." Credits over the walls at dawn; Gwen's letter arrives at Chester Care with a bottle of perry; the Edge is silent.
+- **Clean Cut** (Delete + Verify): VEX Champion or Jim Champion; VEX: "That was mine." Credits over the walls at dawn; Mam-gu's letter arrives at Chester Care with a bottle of perry; the Edge is silent.
 - **The Elm Press** (Quarantine + either): credits over the orchard; a bounty arrives at Chester Care in log format, `SEV: LOW`; Mam-gu's postscript: "It asks after the big cat."
 - **The Little Ones** (Custody + Verify): the fourth agent's first line at the amphitheatre; VEX: "You kept it. Course you did." Post-game fully open.
 - **Alone on the Walls** (Challenge + any): the title fight is brutal, VEX leaves without a word; the Roodee rematch is where the reconciliation happens.
@@ -237,6 +237,7 @@ Post-game hook (all): the fifth pulse from the west. Under Custody, Nino's lette
 | 2 | `badge_packet` | Gym 1 |
 | 2 | `nino_letter_1` | Wilmslow post office |
 | 2 | `agent_vigil` | VIGIL unlocked |
+| 2 | `overdrive_unlocked` | OVERDRIVE meter shown |
 | 3 | `deer_census_done` | botnet count cleared |
 | 3 | `rostherne_relay_seen` | bell/relay cutscene |
 | 3 | `tbilisi_domain_found` | cult command traced |
@@ -256,7 +257,8 @@ Post-game hook (all): the fifth pulse from the west. Under Custody, Nino's lette
 | 5 | `twelvek_lanyard_seen` | Stuffer adult reveal |
 | 5 | `salon_seen` | VEX's mum's salon |
 | 5 | `welsh_word_learned` | train scene ("paid") |
-| 5 | `rail_fast_travel` | stations linked |
+| 5 | `rail_fast_travel` | stations linked (Railcard) |
+| 5 | `cambrian_ticket` | Cambrian line ticket (Y Berllan reachable) |
 | 5 | `nino_letter_2` | Sandbach post office |
 | 5 | `badge_kernel` | Gym 4 |
 | 6 | `lido_battle_done` | Kellan at the lido |
@@ -269,11 +271,14 @@ Post-game hook (all): the fifth pulse from the west. Under Custody, Nino's lette
 | 6 | `agents_hardened` | if wipe |
 | 6 | `bigboy_shield` | trait upgraded |
 | 6 | `brewing_open` | press usable |
+| 6 | `aberaeron_open` | the walk to the sea |
 | 7 | `amos_alder_face` | Middlewich impostor |
 | 7 | `mine_descended` | salt galleries |
 | 7 | `checkpoints_seen` | containers found |
 | 7 | `terrataur_woken` | encounter available |
 | 7 | `boat_lift_silence` | ORACLE first speaks |
+| 7 | `lift_pass` | Anderton Lift Pass (vertical portal) |
+| 7 | `narrowboat_licence` | Middlewich canal test passed |
 | 7 | `stack_on_map` | Daresbury visible |
 | 7 | `badge_daemon` | Gym 6 |
 | 8 | `vex_missing` | chapter start |
@@ -300,12 +305,13 @@ Post-game hook (all): the fifth pulse from the west. Under Custody, Nino's lette
 | 11 | `glitchra_defeated` | boss |
 | 11 | `oracle_you_came_back` | the line played |
 | 11 | `choice_plug` | value `delete` / `quarantine` / `custody` |
-| 11 | `agent_pippin` | if custody |
+| 11 | `agent_pippin` | if custody (fourth agent, ability Defer) |
 | 11 | `glitchra_catchable` | post-fight |
 | 12 | `whitehat_sue` `_raj` `_kim` `_doc` | each gate |
 | 12 | `champion_fought` | amphitheatre |
 | 12 | `champion_result` | value `won` / `lost` / `thrown` |
 | 12 | `vex_name_revealed` | ending |
+| 12 | `nino_letter_4` | Chester post office |
 | 12 | `postgame_open` | credits done |
 | PG | `fifth_pulse` `penguin_case` `ellesmere_mirror` `lymm_pumps_talk` `amos_jim_face` `knights_hall_open` `merlynx_on_press` `roodee_rematch` `nino_letter_final` | as named |
 

@@ -1,6 +1,6 @@
-# MonsterQuest: The Cheshire Protocol — Battle & Systems Spec (v2)
+# MonsterQuest: The Cheshire Protocol — Battle & Systems Spec (v2.1, reconciled)
 
-Scope: the turn-based core stays Gen-1-shaped (types, STAB, stages, status, catching, evolution, 4 moves, XP). Everything below is additive RPG depth, specified tightly enough to code in ES2015 with no allocations in the hot path (all lookups are static tables; per-battle state lives in plain objects created once at battle start).
+Scope: the turn-based core stays Gen-1-shaped (types, STAB, stages, status, catching, evolution, 4 moves, XP). **Types are the 13 of README/`js/data/types.js`: Normal, Fire, Water, Grass, Electric, Flying, Bug, Poison, Rock, Ground, Psychic, Ghost, Cyber** (no Ice/Dark/Steel — Freeze exists as a status from cold effects, not as a type). Chapter numbers are STORY-BIBLE chapters; the canonical id namespace is DESIGN-INDEX.md. Everything below is additive RPG depth, specified tightly enough to code in ES2015 with no allocations in the hot path (all lookups are static tables; per-battle state lives in plain objects created once at battle start).
 
 ---
 
@@ -12,7 +12,7 @@ Scope: the turn-based core stays Gen-1-shaped (types, STAB, stages, status, catc
 - `hp = floor((2B + T) * L / 100) + L + 10`
 - other = `floor((floor((2B + T) * L / 100) + 5) * N)`
 
-**Traits (IV-like).** Each monster rolls six integers 0–15 at creation. Traits are surfaced in the summary screen as flavour words rather than numbers ("Keen eyes" = high spe, "Thick coat" = high def, "Never misses breakfast" = high hp), unlocking numeric display at Trainer level 20. Story gifts (starter, MEADOW, BIGBOY, whistleblower gift) roll a floor of 8. Legendaries roll a floor of 10.
+**Traits (IV-like; the `ivs` field in ENGINE-ARCHITECTURE's monster instance, range 0–15).** Each monster rolls six integers 0–15 at creation. Traits are surfaced in the summary screen as flavour words rather than numbers ("Keen eyes" = high spe, "Thick coat" = high def, "Never misses breakfast" = high hp), unlocking numeric display at Trainer level 20. Story gifts (starter, MEADOW, BIGBOY, whistleblower gift) roll a floor of 8. Legendaries roll a floor of 10.
 
 **Temperaments (natures).** 20 temperaments; each is `{up, down}` over `atk|def|spa|spd|spe` (×1.1 / ×0.9) with 4 neutral. Names are Cheshire-flavoured: *Brisk* (+spe −def), *Stubborn* (+def −spe), *Sharp* (+spa −atk), *Blunt* (+atk −spa), *Wary* (+spd −atk), *Bold* (+atk −spd), *Rash* (+spa −spd), *Patient* (+spd −spe), *Nosy* (+spe −spa), *Gruff* (+def −spa), *Mardy* (+atk −def), *Canny* (+spa −def), *Steadfast* (+spd −def), *Placid* (+def −atk), *Skittish* (+spe −atk), *Sly* (+spa −spe), *Solid* (+spd −spa), *Windy* (+spe −spd), plus neutral *Plain*, *Ordinary*, *Even*, *Fair*. Temperament also biases AI-side flavour lines and the "likes/dislikes" of Y Berllan snacks (a snack that matches `up` gives +2 friendship instead of +1).
 
@@ -26,7 +26,7 @@ Every species has one fixed ability (a few have a rare second on catch, 20%). Ab
 
 | # | Ability | Rule |
 |---|---|---|
-| 1 | **Back from the Brink** | Once per battle, a hit that would KO from ≥50% HP leaves 1 HP. (BIGBOY, plus 2 rare species.) |
+| 1 | **Back from the Brink** | Once per battle, a hit that would KO from ≥50% HP leaves 1 HP. (BIGBOY, plus 2 rare species.) After the Y Berllan story (`bigboy_shield`) BIGBOY may instead spend it to shield an ally from one KO in doubles; cat trust T3 adds a 25% heal on trigger; *Fail-Safe Protocol* perk lets it fire twice. |
 | 2 | **Slipstream** | +1 spe stage on switch-in. (MEADOW line.) |
 | 3 | **Silk Weave** | Contact moves against this monster have 30% to drop the attacker's spe by 1. |
 | 4 | **Brine Body** | Immune to Burn; heals 1/16 max HP per turn in Rain. |
@@ -40,9 +40,9 @@ Every species has one fixed ability (a few have a rare second on catch, 20%). Ab
 | 12 | **Rain Caller** | Sets Rain for 5 turns on switch-in (Cheshire default weather, obviously). |
 | 13 | **Ridge Wind** | Sets Wind for 4 turns on switch-in. |
 | 14 | **Damp Squib** | Fire moves against this monster deal ×0.5 while Rain is up. |
-| 15 | **Thick Fleece** | Ice/Water/Wind chip damage nullified; takes ×0.9 from special moves. |
+| 15 | **Thick Fleece** | Water/Wind chip damage nullified; takes ×0.9 from special moves. (SHEEPWIRE line.) |
 | 16 | **Iron Will** | Cannot be Flinched; cannot have stats lowered by foe. |
-| 17 | **Nightshift** | +1 priority on status moves at night (in-game clock 20:00–06:00). |
+| 17 | **Nightshift** | +1 priority on status moves at night (game-clock night band 21:00–05:00, SIDE-CONTENT §2.10). |
 | 18 | **Cheshire Grin** | 25% chance any hit dealt confuses the target. (GRINMALKIN.) |
 | 19 | **Deep Roots** | Immune to forced switches; heals 1/8 max HP at end of turn on Grass terrain. |
 | 20 | **Static Charge** | Contact against this monster: 30% Paralysis. |
@@ -58,6 +58,8 @@ Every species has one fixed ability (a few have a rare second on catch, 20%). Ab
 | 30 | **Kernel Panic** | On faint, the foe that KO'd it loses all PP on the move used. |
 
 Ability suppression (`Rootkit`) sets `mon.abilityOff = 3` and every hook checks it first.
+
+**Agent traits (not species abilities):** *Hardened* — set on SLEET/VIGIL/ARBITER by the Wipe choice (`agents_hardened`): immune to ORACLE's `silence`/`jamAgents` in the Ch.7 boat-lift and Ch.11 scripts (they keep talking, and stay usable). *Tapped* — the Feed state: agents unchanged, but GLITCHRA's opening move is scripted to counter the player's lead.
 
 ---
 
@@ -94,15 +96,17 @@ Each monster has one `held` slot. Consumable held items are removed on use (`hel
 24. **Salt Lick** — restores 10 PP to first move to hit 0. 
 25. **Toffee (Everton)** — cures Confusion, then heals 1/8. 
 
-**Battle consumables (bag):** Potion tiers (Salve 20 / Tonic 60 / Elixir 120 / Full Restore all+status), Antidote-class cures per status, **Revive Salts** (½ HP, −friendship), **Boombox** (flee wild guaranteed), **Rain Cloak / Sun Lamp / Fog Machine / Wind Whistle** (set weather 5 turns, once per battle), **Stat Tonics** (+1 stage, atk/def/spa/spd/spe/acc; Nantwich brine sells them), **X-Ray Card** (reveal foe's moves & ability, 1 use). Using a bag item costs the turn; the AI at *smart* tier reads item use as a free hit.
+**Battle consumables (bag):** Potion tiers (Salve 20 / Tonic 60 / Elixir 120 / Full Restore all+status), Antidote-class cures per status, **Revive Salts** (½ HP, −friendship), **Boombox** (flee wild guaranteed), **Rain Jar / Sun Lamp / Fog Machine / Wind Whistle** (set weather 5 turns, once per battle — *Rain Jar* is distinct from the *Rain Cloak* trainer trinket in SIDE-CONTENT §4), **Stat Tonics** (+1 stage, atk/def/spa/spd/spe/acc; Nantwich brine sells them), **X-Ray Card** (reveal foe's moves & ability, 1 use). Using a bag item costs the turn; the AI at *smart* tier reads item use as a free hit.
+
+**Side-content gear (SIDE-CONTENT casebook/arena/brewing rewards; same `gear` slot):** *Silk Wrap* (burn damage halved), *Hide Plate* (takes ×0.75 from Rock), *Firebox Charm* (Fire ×1.1), *Beacon Ember* (Fire ×1.2 at night), *Wool Cap* (trainer trinket, cold buff — not a held item), *Salt Lantern* (key item toggle), and the eight leaders' tier-5 **Anchor** items (`anchor_packet` … `anchor_admin`: the leader's type ×1.2 and immunity to that badge's house-rule terrain/weather). **Brews** (SIDE-CONTENT §2.5) are bag consumables: *Perry* and *Clarifier* usable in battle; the rest apply a pre-battle buff with a one-battle or real-time duration.
 
 ---
 
 ## 4. Move effects schema
 
-A move is `{name, type, kind:'phys'|'spec'|'status', power, acc, pp, priority, flags:{contact,sound,charge,recharge,protect_ok}, crit:0|1|2, effects:[Effect,...]}`. `effects` are applied in order after the hit resolves (or immediately for status moves). Every effect has an optional `chance` (default 100) and `target:'self'|'foe'`.
+A move is `{name, type, cat:'phys'|'spec'|'status', power, acc, pp, priority, flags:{contact,sound,charge,recharge,protect_ok}, crit:0|1|2, effects:[Effect,...]}` — field names follow ENGINE-ARCHITECTURE §4 (`cat` not `kind` for the category; effect objects use `kind` for the effect type, `who:'self'|'foe'` for the target, and integer percentages `pct` where this section says a fraction). `effects` are applied in order after the hit resolves (or immediately for status moves). Every effect has an optional `chance` (default 100) and `who:'self'|'foe'`. The list below is the full effect vocabulary; ENGINE-ARCHITECTURE's example list is a subset of it (its `multi` = `multihit`, `cure` = `cleanse`, `levelDamage` = `fixed {amount:'level'}`, `confuse` = `status cnf`, `leech` = `drain`).
 
-**Effect types (`t`):**
+**Effect types (`kind`):**
 - `damage` — standard formula (implicit for power > 0). 
 - `status` `{status:psn|tox|par|brn|slp|frz|cnf, chance}` 
 - `stage` `{stat, delta, target, chance}` (stat ∈ atk def spa spd spe acc eva) 
@@ -178,33 +182,48 @@ Agents are a separate battle menu, **AGENTS**, always available once obtained. E
 | **VIGIL** (escalation) | Active mon: cure all status, heal 40% max HP. | 5 turns | Lv15: 60%; Lv30: also cures Confusion and clears own negative stages. |
 | **ARBITER** (adjudication) | Reset all stat stages on both sides; clear weather and terrain. | 6 turns | Lv20: does not consume the turn (priority action, then a move); Lv35: foe's next move fails if it is a status move (`taunt 1`). |
 
-Cooldowns tick at end of turn; start at 0 each battle. Boss scripts may **jam** agents for N turns (ORACLE, THE STACK). Difficulty *Hard* adds +2 to all cooldowns.
+| **PIPPIN** (Custody only, `agent_pippin`) | **Defer**: the foe's next action is delayed one turn (it moves last next turn and its priority is treated as −1). | 6 turns | Lv40: also `stage spe −1 foe`. Menu id `agent_pippin_defer`. |
+
+Cooldowns tick at end of turn; start at 0 each battle. Each perk branch has one *agent node* that shortens its agent's cooldown (§8): *Sharp Triage* (SLEET −1), *Escalation* (VIGIL −1), *Iron Bell* (ARBITER −2); the Y Berllan choice refunds and re-specs those three nodes. Boss scripts may **jam** agents for N turns (ORACLE, THE STACK, Mo) and story scripts may **silence** them (Ch.7 boat lift, Ch.11) — *Hardened* agents ignore silence. Difficulty *Hard* adds +2 to all cooldowns. Agents unlock SLEET Ch.1, VIGIL Ch.2, ARBITER Ch.3.
 
 ---
 
 ## 7. OVERDRIVE meter
 
-Per-monster meter 0–100, resets each battle. Gains: +8 taking a hit, +12 taking a super-effective hit, +6 dealing damage, +15 when an ally faints, +20 landing a KO, plus move `overdrive` effects. Some gear/perks modify gain. At 100, the **OVERDRIVE** menu option lights up: using it fires the species' **signature move** (each evolutionary line has one, ~130 total, defined like normal moves with `overdriveOnly:true`, typically power 120–150 or a big status swing; MEADOW: *Zoomies* — priority +2, 3 hits, spe +1; BIGBOY: *Brink Roar* — heal 50%, def/spd +1, foe atk −1). Overdrive moves ignore `protect`, cannot miss, do not use PP, and drain the meter to 0. Enemy monsters at *greedy*/*smart* AI tiers and all bosses also build Overdrive (visible small bar), so the player can plan around it (e.g. switch or Protect on the turn it fills). Kevlar Waistcoat disables it.
+Per-monster meter 0–100, resets each battle. The meter appears after Badge 1 (`overdrive_unlocked`, Ch.2); before that it is hidden and does not fill. Gains: +8 taking a hit, +12 taking a super-effective hit, +6 dealing damage, +15 when an ally faints, +20 landing a KO, plus move `overdrive` effects. Some gear/perks modify gain. At 100, the **OVERDRIVE** menu option lights up: using it fires the species' **signature move** (each evolutionary line has one, ~130 total, defined like normal moves with `overdriveOnly:true`, typically power 120–150 or a big status swing; MEADOW: *Zoomies* — priority +2, 3 hits, spe +1; BIGBOY: *Brink Roar* — heal 50%, def/spd +1, foe atk −1). Overdrive moves ignore `protect`, cannot miss, do not use PP, and drain the meter to 0. Enemy monsters at *greedy*/*smart* AI tiers and all bosses also build Overdrive (visible small bar), so the player can plan around it (e.g. switch or Protect on the turn it fills). Kevlar Waistcoat disables it.
 
 ---
 
 ## 8. Trainer level & perks
 
-The trainer has a level 1–50 with its own XP: +1 per wild win, +5 per trainer win, +25 per gym, +10 per quest stage, +2 per catch, +1 per new dex entry. Every level grants 1 **perk point**; three trees of 10 perks each (unlock rows every 5 levels), plus passive **Trainer Level effects**: catch rate +1% per level (cap +30%), obedience cap for traded/gifted monsters `10 + 2×TL`.
+The trainer has a level 1–50 with its own XP: +1 per wild win, +5 per trainer win, +25 per gym, +10 per quest stage, +2 per catch, +1 per new dex entry, +3 per bounty, +2 per scored photo, +2 per brew (SIDE-CONTENT sources). Every level grants 1 **perk point** (5 more come from Casebook Marks/quests); three trees of 10 perks each (unlock rows every 5 levels), plus passive **Trainer Level effects**: catch rate +1% per level (cap +30%), obedience cap for traded/gifted monsters `10 + 2×TL`, numeric traits at TL20, trinket slots at TL20 and TL35.
 
-- **Hunter** (offence): *Focused* (crit stage +1 for all), *Exploit* (super-effective ×2.2 instead of 2), *First Strike* (+10% dmg turn 1), *Overclocker* (Overdrive gain ×1.25), *Big Game* (dmg ×1.1 vs bosses), *Pack Tactics* (+5% per fainted ally, max 15%), *Deep Cuts* (recoil halved), *Sniper* (crit ×2), *Zero Trust* (ignore foe positive stages), *Overkill* (Overdrive carries over 25% to next battle). 
-- **Warden** (defence/support): *Triage* (VIGIL cooldown −1), *Field Medic* (bag heals ×1.25), *Steady* (own negative stages halved), *Second Wind* (switch-in heals 1/16), *Umbrella Discipline* (party ignores Fog), *Long Walker* (party spe +5% overworld-rain battles), *Fail-Safe Protocol* (Brink works twice per battle for BIGBOY), *Cold Case* (immune to Freeze), *Quiet Cat* (MEADOW gets a free Slipstream +2), *Iron Bell* (ARBITER cooldown −2). 
-- **Handler** (capture/growth): *Steady Hand* (capture timing window ×1.5), *Soft Touch* (capsule bonus +0.2), *Wide Share* (XP share to all party at 50%), *Ledger Keeper* (money ×1.25), *Bond* (friendship gains ×1.5), *Naturalist* (traits shown, temperament shown), *Night Owl* (night encounters spawn rare tables), *Trader* (shops −10%), *Second Chance* (fainted monster keeps XP earned), *Golden Ratio* (shiny/rare-palette odds ×2).
+The three branches are named for Jim's job and mirror the Agent Trio (STORY-BIBLE §6). Ids are `perk_<branch>_<slug>`.
 
-Perks are respec-able at the Chester Zoo NPC for 500 coins.
+- **TRIAGE** (SLEET — offence, speed, scouting): *Focused* (crit stage +1 for all), *Exploit* (super-effective ×2.2 instead of 2), *First Strike* (+10% dmg turn 1), *Overclocker* (Overdrive gain ×1.25), *Big Game* (dmg ×1.1 vs bosses), *Tracker* (encounter table shown per tile; *Ambush*: +1 spe stage vs wild on turn 1), *Quick Draw* (first move +1 priority once per battle), *Trailblazer* (run speed +8% overworld; *Deep Cuts*: recoil halved), **agent node *Sharp Triage*** (SLEET cooldown −1), capstone *Kill Chain* (each KO +1 atk/spa stage that battle; ignore foe positive stages on the KO turn).
+- **ESCALATE** (VIGIL — healing, status, the cats): *Containment* (status inflicted on you lasts 1 turn less), *Patch* (bag heals ×1.25), *Steady* (own negative stages halved), *Second Wind* (switch-in heals 1/16), *Isolation* (switching out never eats a free hit; *Umbrella Discipline*: party ignores Fog), *Rollback* (revert one faint per gauntlet/arena run), *Fail-Safe Protocol* (Brink works twice per battle for BIGBOY; *Quiet Cat*: MEADOW's Slipstream is +2), *Cat Handler* (trust gain ×1.5; *Bond*: friendship gains ×1.5), **agent node *Escalation*** (VIGIL cooldown −1, heal +10%), capstone *Incident Commander* (all party +1 def/spd when a monster faints).
+- **ADJUDICATE** (ARBITER — stat control, catching, information, boss phase breaks): *Enumerate* (see foe moves), *Fingerprint* (foe ability and traits visible; *Naturalist*: own traits/temperament shown), *Timeline* (turn order shown), *Steady Hand* (capture timing window ×1.5), *Soft Touch* (capsule bonus +0.2; *Golden Ratio*: rare-palette odds ×2), *Zero Trust* (ignore foe positive stages), *Phase Break* (boss phase-transition heal cap 30% → 15%; *Sniper*: crit ×2), *Ledger Keeper* (money ×1.25; *Trader*: shops −10%; *Wide Share*: non-participant XP 75%), **agent node *Iron Bell*** (ARBITER cooldown −2), capstone *Attribution* (once per battle copy the foe's stat stages; *Overkill*: Overdrive carries over 25%).
 
----
+Perks in parentheses after a semicolon are the same node's second rank (rows unlock at TL 1/5/10/15/20/25/30/35/40/45). Perks are respec-able for Casebook Marks at any Care centre's casebook desk; the Wipe/Feed choice at Y Berllan re-specs the three agent nodes for free.
 
 ## 9. Boss battles and gym leaders
 
-**Boss data:** `{phases:[{hpFrac, script:[Event]}], jamAgents?, arenaWeather, arenaTerrain, cannotCatch, overdriveStart}`. Events fire once when the boss's active mon crosses `hpFrac` (or on `turn N`): `say`, `setWeather`, `setTerrain`, `healSelf {frac}`, `boostSelf {stages}`, `summonAdd {species,level}` (a 2-v-1 for that phase — enemy gets a second slot that acts after the boss), `changeForm {speciesId, keepHp}` (GLITCHRA), `disableMove {name} 2`, `jamAgents 3`, `forceOverdrive`. Bosses have Overdrive start > 0 and phase transitions grant them a full turn heal-cap of 30%. Bosses use `smart` AI regardless of difficulty.
+**Boss data:** `{phases:[{hpFrac, script:[Event]}], jamAgents?, arenaWeather, arenaTerrain, cannotCatch, overdriveStart}`. Events fire once when the boss's active mon crosses `hpFrac` (or on `turn N`): `say`, `setWeather`, `setTerrain`, `healSelf {frac}`, `boostSelf {stages}`, `summonAdd {species,level}` (a 2-v-1 for that phase — enemy gets a second slot that acts after the boss), `changeForm {speciesId, keepHp}` (GLITCHRA), `disableMove {name} 2`, `jamAgents 3`, `silenceAgents` (story silence; Hardened ignores), `rewriteChart {atk, def, mult}` (Mo), `forceOverdrive`, `skipPhase` (Q25 mercy: TERRATAUR has one fewer phase when `case_25_pup_returned`). Bosses have Overdrive start > 0 and phase transitions grant them a full turn heal-cap of 30%. Bosses use `smart` AI regardless of difficulty.
 
-**Gym leaders** each have a **house rule** displayed on the gym door:
+**Gym leaders** (canonical order, badge ids and Skill Card rewards — the leader's `tm` in ENGINE trainer data):
+
+| # | Ch. | Town | Leader | Type | Badge / flag | Skill Card (TM) reward | Ace lvl |
+|---|---|---|---|---|---|---|---|
+| 1 | 2 | Wilmslow | Sysadmin Ada (she) | Electric | PACKET `badge_packet` | *Live Rail* (Electric/spec 80/100/15, par 10%) | 16 |
+| 2 | 3 | Knutsford | Madam Gaskell (she) | Psychic | CIPHER `badge_cipher` | *Cranford Whisper* (Psychic/spec 75/100/15, foe spd −1 20%) | 20 |
+| 3 | 4 | Congleton | Bearward Otis (he) | Normal/Ground | BEAR `badge_bear` | *Bear Hug* (Normal/phys 80/100/15, contact, trap 4) | 24 |
+| 4 | 5 | Crewe | Stoker Di (she) | Fire | KERNEL `badge_kernel` | *Firebox Roar* | 28 |
+| 5 | 6 | Nantwich | Brine Nell (she) | Water | TOKEN `badge_token` | *Brine Jet* | 32 |
+| 6 | 7 | Northwich | Foreman Jack (he) | Rock | DAEMON `badge_daemon` | *Salt Grind* | 36 |
+| 7 | 9 | Runcorn | Chemist Ria (she) | Poison | PROXY `badge_proxy` (+ Proxy Goggles) | *Proxy Cloud* (Poison/status —/—/10: weather fog 5, foe tox 30%) | 43 |
+| 8 | 10 | Warrington | Netrunner Mo (she) | Cyber | ADMIN `badge_admin` (+ `all_badges`) | *Zero-Day* | 47 |
+
+Each leader has a **house rule** displayed on the gym door:
 - Wilmslow (Ada, Electric): Static terrain permanent; **Sysadmin's Reboot** — once per battle, restores all stages and PP of her active mon.
 - Knutsford (Gaskell, Psychic): all monsters start with `screen spec 5`; on her last mon, Fog. 
 - Congleton (Otis, Normal/Ground): 2-v-1 first phase (bear + keeper). 
@@ -212,9 +231,11 @@ Perks are respec-able at the Chester Zoo NPC for 500 coins.
 - Nantwich (Nell, Water): permanent Rain; healing 1/16 each turn for her Brine Body team. 
 - Northwich (Jack, Rock): Salt terrain; Foreman's Whistle summons an add at 40%. 
 - Runcorn (Ria, Poison): all her contact hits carry `tox 20%`; her arena disables VIGIL for the first 3 turns. 
-- Warrington (Mo, Cyber): jams **all** agents until you land a super-effective hit; his ace runs Overclock and starts with 50 Overdrive.
+- Warrington (Mo, Cyber): three phases across her NOC and the Transporter Bridge gondola; each phase **rewrites one row of the type chart** for the arena (`rewriteChart` boss event: e.g. Cyber resists Water for the phase); jams **all** agents until you land a super-effective hit; her ace runs Overclock and starts with 50 Overdrive.
 
-Rematches (post-badge, weekly in-game) use levels +15 and full-6 parties.
+**Other set-piece battles (STORY-BIBLE):** VEX (rival, Ch.1/3/8/12; smart AI; the Ch.12 team is hand-built under Verify, ORACLE-tuned under Challenge); the APT boss at Crewe (Ch.5, one scripted lap); Kellan at the lido (Ch.6, permanent Rain, steam heals both sides 1/16); the Understudy (AMOS; `changeForm` each phase; Ch.8/9/12/post-game); ROOT (Ch.11, wants to lose: her AI drops to *greedy* in phase 3; `root_defeated` gates the league); GLITCHRA (Ch.11, 3 phases via `changeForm`, faster/shorter or calmer/longer per `invoice_holder`; Feed makes its opening move counter your lead); the White Hats (Ch.12) — each is a **pre-battle party check** then a smart 6-v-6: Sue `no_tagged_or_tuned` (party contains no ORACLE-tuned/tagged monsters — VEX's starter line, GLITCHRA), Raj `full_hp_no_status` at the Northgate, Kim `bag_impounded` (key items and unregistered gear removed for the gauntlet), Doc `four_distinct_types` (≥4 species with pairwise distinct types); Champion VEX at the amphitheatre (`champion_result` won/lost/thrown — a deliberate loss with a healthy party sets `thrown`).
+
+Rematches use SIDE-CONTENT §2.3's ladder: tiers 0–5, +5 levels per tier, one new team member per tier, held item/trait at tier 3, full six at tier 5 with the leader's *Anchor* item as the reward; available after 1 real day or 30 game-days.
 
 ---
 
@@ -293,17 +314,47 @@ Stat stage multiplier (atk/def/spa/spd/spe): stage n ∈ [−6, 6]: `n ≥ 0 ? (
 
 ## 15. Balancing targets by chapter
 
-| Ch | Story beat | Wild lvl | Trainer lvl | Gym ace | Party size expected | Notes |
-|---|---|---|---|---|---|---|
-| 1 | Macclesfield → Bollington → Wilmslow (PACKET) | 2–8 | 4–9 | 12 | 2–3 | Starter + MEADOW; first agent SLEET after gym 1 |
-| 2 | Prestbury/Alderley Edge → Knutsford (CIPHER) | 8–14 | 10–16 | 18 | 3–4 | BIGBOY joins; Overdrive unlocks; VIGIL |
-| 3 | Styal/Tatton/Holmes Chapel → Congleton (BEAR) | 13–20 | 15–22 | 24 | 4 | Held items unlock (Quarry Bank shop) |
-| 4 | Sandbach → Crewe (KERNEL) → Nantwich (TOKEN) | 19–28 | 22–31 | 30, 33 | 4–5 | ARBITER; first Cyber gear; ClickFix boss |
-| 5 | Middlewich/Winsford → Northwich (DAEMON), Salt Mine | 27–34 | 30–37 | 38 | 5 | TERRATAUR; Credential Stuffer fog boss |
-| 6 | Anderton → Frodsham → Runcorn (PROXY) → Lymm | 33–40 | 36–43 | 44 | 5–6 | AMOS shapeshifter boss (form changes) |
-| 7 | Warrington (ADMIN) → Delamere → Beeston | 39–46 | 42–49 | 50 | 6 | ZEPHYRION; agents jammed intro |
-| 8 | Jodrell Bank (ROOT/GLITCHRA), THE STACK | 45–52 | 48–55 | boss 56 (3 phases) | 6 | ORACLE finale, phases + adds |
-| 9 | Chester: White Hats + VEX | — | 54–60 | VEX ace 64 | 6 | Full smart AI, Overdrive start 25 |
-| PG | Y Berllan, rematches, gauntlet, legendary rotation | 55–75 | 60–80 | rematch 70+ | 6 | Trainer level → 50; perks fully open |
+Chapters and level bands are STORY-BIBLE's (wild/trainer range for the chapter's main path); the gym ace sits two above the top of the band.
 
-Targets assume Normal difficulty and a player who fights ~70% of visible trainers; the party average should sit 2–4 levels under the gym ace and win with abilities/gear/agents rather than over-levelling. Money curve: gear costs 800–3000, capsules 200/600/1200; the player should afford one piece of gear per chapter from ch.3.
+| Ch | Story beat | Wild lvl | Trainer lvl | Gym ace / boss | Party size expected | Notes |
+|---|---|---|---|---|---|---|
+| 1 | Silk and Static — Macclesfield, Bollington (no gym) | 3–8 | 4–9 | VEX 8 (canal) | 3 (starter + MEADOW + BIGBOY) | SLEET; held items from Q1; no Overdrive yet |
+| 2 | The Wheel and the Edge — Wilmslow PACKET, Styal, Lindow, Alderley | 8–14 | 10–15 | Ada 16 | 3–4 | VIGIL; Overdrive unlocks with Badge 1; night tables begin |
+| 3 | Picnic Blankets — Knutsford CIPHER, Tatton, Rostherne | 13–18 | 14–19 | Gaskell 20; VEX 17 | 4 | ARBITER; Kellan's first sermon; Gaskell rumour drops |
+| 4 | The Dish Goes Dark — Holmes Chapel, Jodrell gate, Congleton BEAR | 17–22 | 18–23 | Otis 24 (2-v-1 phase) | 4 | SIGNAL METER, CUTOVER 38; first AMOS glimpse |
+| 5 | Puppets on the Line — Sandbach, Crewe KERNEL | 21–26 | 22–27 | Di 28; APT boss 27 | 4–5 | Stuffer fog boss; Railcard; first Cyber gear |
+| 6 | Brine and Perry — Nantwich TOKEN, Y Berllan | 25–30 | 26–31 | Nell 32; Kellan 30 | 5 | ClickFix boss in Rain; no encounters at Y Berllan; Wipe/Feed |
+| 7 | Salt — Middlewich, Winsford, Northwich DAEMON, Anderton | 29–34 | 30–35 | Jack 36; TERRATAUR 36 (uncatchable here) | 5 | AMOS wearing Alder; agents silenced at the lift |
+| 8 | The Ruin — Delamere, Tarporley, Beeston (no gym) | 33–37 | 34–38 | Understudy/VEX 38; ZEPHYRION 38 (seen) | 5–6 | fog at night; Verify/Challenge; doubles begin under Verify |
+| 9 | Bridge Traffic — Frodsham, Runcorn PROXY, THE STACK | 36–41 | 37–42 | Ria 43; STACK constructs 40–44 | 6 | Proxy Goggles; eight doors; breaker (counter STOPPED) |
+| 10 | Draw Your Own Conclusions — Lymm, Warrington ADMIN | 40–45 | 41–46 | Mo 47 (3 phases) | 6 | all agents jammed intro; type chart rewrites; `T-3` |
+| 11 | The Sky Is Quiet — Jodrell Bank | 44–50 | 46–51 | ROOT 50; GLITCHRA 54 (3 phases) | 6 | ORACLE finale; the plug (Delete/Quarantine/Custody) |
+| 12 | THE FIREWALL — Chester | 48–56 | 52–57 | White Hats 54–57; VEX ace 60 | 6 | pre-battle checks; full smart AI; Overdrive start 25 |
+| PG | The Fifth Pulse — Y Berllan, Zoo, Ellesmere, Ince, Edge Caverns B3, rematches, Arena, legendary rotation | 55–70 | 60–75 | rematch tier 5 = ace +25; Obsidian 65+; remnant boss 70 | 6 | Trainer level → 50; perks fully open |
+
+Targets assume Normal difficulty and a player who fights ~70% of visible trainers; the party average should sit 2–4 levels under the gym ace and win with abilities/gear/agents rather than over-levelling. Money curve (currency: credits): gear costs 800–3000, capsules 200/600/1200; the player should afford one piece of gear per chapter from Ch.3.
+
+---
+
+## 16. Side-system hooks the battle/overworld engine must expose
+
+These are referenced by SIDE-CONTENT and STORY-BIBLE and are owned by `js/content/*` but need engine hooks; ids are canonical.
+
+- **Casebook Marks** (`marks`, in `MQ.Inventory`): currency from bounties, quiz perfects, Knutsford sanding favours, dex milestones; spent on perk respec, cat collars, rare brew ingredients, instant brews.
+- **Cat trust** (`cats.trust.meadow|bigboy`, 0–5; SIDE-CONTENT §3): battle hooks — T3 MEADOW dodges the first hit of a battle once; T3 BIGBOY Brink heals 25%; T5 cats allowed inside gyms/Arena and learn *Skitter* / *Big Sit*. Cats never enter the box; `reserve` flag keeps them out of the active six without leaving.
+- **Skill Cards** (`items.kind === 'tm'`): teach a move once (consumed); the Knutsford bookshop sells them bound as "chapters"; gym leaders reward one each (§9).
+- **Photo mode** (`MQ.Photo`; unlocked by Q4): battle-free; sightings fill `dex.seen` with a habitat note; photos stored as `{species, pose, phase, weather}` seeds.
+- **Fishing** (`MQ.Fishing`): rod tiers Bamboo/Weighted/Carbon/Elm-handled; tables `fish_<place>` with tiers common/uncommon/rare/legendary(dawn/dusk)/ghost(night + Ghost Lens).
+- **Brewing** (`MQ.Brewing`; `brewing_open`): recipes ids `brew_perry`, `brew_clarifier`, `brew_elm_stout`, `brew_damson_fire`, `brew_hedgerow_cordial`, `brew_salt_mead`, `brew_bait_tin`, `brew_cats_cup`, `brew_mamgu_cask`; real-time timers via `MQ.Clock.real`.
+- **Bounties** (`MQ.Bounties`): 3 daily, seeded from real date + save seed; tiers petty/notable/warrant; located by clue text only.
+- **Arena** (`MQ.Arena`; `arena_open`): tiers bronze/silver/gold/platinum/obsidian; HP refills between fights, PP does not; Overdrive carries over inside a run; engagement rules `no_items`, `one_agent`, `random_weather`.
+- **Escort / Guard** (Q3): an escort NPC has a shared HP bar; in escort battles the player's menu gains **GUARD** (the escort takes no damage this turn; the active monster takes ×0.5 and gains +10 Overdrive).
+- **ClickFix lure** (`lure` interaction): a sign/kiosk/poster offering a "paste this" prompt; declining counts toward achievement 5 and quest steps; accepting applies the *Lured* overworld status (next wild battle starts with the foe at +1 spe, cleared at a Care centre) — never a hard penalty.
+- **SIGNAL METER** (`signal.level` 0–1 per region; from Ch.4): raises rare-table weight and agitation (foe Overdrive start +10 at high signal), reveals fog-hidden encounters as shimmer; zero after `plug_pulled`; a single pip under Quarantine; never zero under Custody.
+- **CUTOVER counter** (`cutover_days`): pause-menu display driven by the story flags (38/31/24/17/12/7/STOPPED/T-3/T-0); at ≤12 faction trainers on routes respawn faster and Stuffer fog spawns on two extra routes.
+- **Sandbach revive shrine** (`sandbach_shrine`): once per real day, revives all fainted party monsters at the plinth (no friendship penalty).
+- **Inns** (`inn` interaction): sleep to the next band for credits; **Care centres** heal, box, swap the following cat, and host the casebook desk (respec, ranks).
+- **Overworld rain**: walk speed ×0.9 unless the *Rain Cloak* trinket is worn; tall grass ×0.85 (ENGINE §5.3).
+- **Trainer trinkets** (`trainer.trinkets[0..1]`, TL20/TL35): Sprint Soles, Davy Lamp, Ghost Lens, Bait Tin, Rain Cloak, Wool Cap, Field Notebook (passive overworld effects only).
+- **Rematch ladder** (`rematch.<trainerId>` tier 0–5) as §9.
+- **Rest points** (BIGBOY sit-downs, STORY-BIBLE §12): scripted tiles where BIGBOY sits — heal 25%, autosave, `bigboy_sat_<place>`.

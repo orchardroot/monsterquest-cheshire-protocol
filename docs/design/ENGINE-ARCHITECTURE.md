@@ -127,7 +127,7 @@ The platform owner writes index.html listing every file that exists in the tree 
 - Conditions in data use `MQ.Flags.test(expr)` where expr = string like `"badge_3 && !met_vex_2 && quest.brine_bandits>=2"` (grammar: identifiers → flag values, `quest.<id>` → stage index or -1, `item.<id>` → count, `badges` → count, `chapter` → number, `party.has(<species>)`, `time.night`, `weather.rain`; operators `&& || ! == != >= <= > < ( )`).
 
 ### 3.8 Flags/Clock/Save
-- `MQ.Flags.get(id)`, `set(id, val=true)`, `add(id,n)`, `test(expr)`, `chapter` accessor. Flag ids: snake_case, defined in DESIGN-INDEX (story) or `<system>_<thing>` for systems.
+- `MQ.Flags.get(id)`, `set(id, val=true)`, `add(id,n)`, `test(expr)`, `chapter` accessor. Flag ids: snake_case, defined in docs/design/DESIGN-INDEX.md (story flags, map ids, character/system ids) or `<system>_<thing>` for systems.
 - `MQ.Clock`: game clock advances 1 game-minute per real second while in overworld (configurable); phases `dawn|day|dusk|night`; `MQ.Clock.phase`, `MQ.Clock.minutes`; weather state machine per outdoor region (`clear|rain|fog|wind|sun|snow` with transitions); `MQ.Clock.real` exposes real date/day-of-week/month for events. Emits `'phase'`, `'weather'`.
 - `MQ.Save`: `MQ.Save.register(key, {save():any, load(obj)})`; `MQ.Save.write(slot)`, `read(slot)`, `slots()` (3 slots + autosave), `autosave()` after battles/warps/quests; envelope `{version: 2, ts, playtime, summary:{name, badges, chapter, party:[species...], map}, data:{...}}`; version < 2 → offer new game (never crash). Storage key `mq2_slot_<n>`.
 
@@ -153,10 +153,10 @@ MQ.Data.typeMultiplier(atkType, defTypes[]) → number
 { name, price, kind:'heal'|'cure'|'capsule'|'gear'|'key'|'consumable'|'ingredient'|'evo'|'tm', amount, cures:[...], catchBonus, gearEffect:{...}, desc, usableInBattle, usableInField, sellable }
 // species.js
 { name, types:[..], base:{hp,atk,def,spa,spd,spe}, catchRate, baseExp, growth:'fast'|'medium'|'slow', abilities:[id,id], hiddenAbility?,
-  learnset:[[level, moveId],...], tms:[moveId...], evolutions:[{to:id, method:'level'|'item'|'friendship'|'location'|'time'|'trade'|'overdrive', level?, item?, map?, phase?}],
+  learnset:[[level, moveId],...], tms:[moveId...], evolutions:[{to:id, method:'level'|'item'|'friendship'|'location'|'time'|'trade'|'move'|'weather', level?, item?, map?, phase?, move?, weather?}]  // methods per SYSTEMS-SPEC §12,
   gen:{body, size, feats, palette} | art:'key in MQ.MonsterArt', dex:{genus, height, weight, text}, habitat:'silk'|'salt'|'rail'|'forest'|'water'|'cave'|'urban'|'moor'|'cyber'|'orchard'..., rarity:'common'|'uncommon'|'rare'|'legendary', cry:{...} }
 // Monster instance (MQ.Data.makeMonster(speciesId, level, opts))
-{ uid, species, nickname, level, exp, hp, stats:{hp,atk,def,spa,spd,spe}, ivs:{...0-31}, temperament, ability, gear:null|itemId, friendship:0-255, status:null|'psn'|'par'|'brn'|'slp'|'frz', statusTurns, moves:[{id,pp,ppMax}], overdrive:0-100, metAt:{map,level,ts}, shiny:false, ribbons:[] }
+{ uid, species, nickname, level, exp, hp, stats:{hp,atk,def,spa,spd,spe}, ivs:{...0-15 (SYSTEMS-SPEC 'traits')}, temperament, ability, gear:null|itemId, friendship:0-255, status:null|'psn'|'par'|'brn'|'slp'|'frz', statusTurns, moves:[{id,pp,ppMax}], overdrive:0-100, metAt:{map,level,ts}, shiny:false, ribbons:[] }
 // encounters.js
 MQ.Data.define('encounters', 'route_bollington_grass', {zone:'grass', rate:0.12, table:[{species:'silkmoth', min:3,max:6, w:30, time:['day','dusk']?, weather:['rain']?}, ...]})
 // trainers.js
