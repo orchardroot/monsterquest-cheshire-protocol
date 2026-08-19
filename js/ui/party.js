@@ -364,6 +364,7 @@
     if (res) {
       if (res.cancel) { Theme.sfx("ui_back"); MQ.Scenes.pop(null); return; }
       if (res.selected !== undefined) {
+        if (sc.filter && !sc.filter(sc.mons[res.selected])) { Theme.sfx("ui_error"); Theme.toast("Not that one."); return; }
         if (sc.mode === "select") { Theme.sfx("ui_select"); MQ.Scenes.pop(res.selected); return; }
         sc.actions(res.selected);
         return;

@@ -62,7 +62,9 @@ module.exports = function (t, assert) {
     const slots = MQ.Save.slots();
     assert.strictEqual(slots[0].legacy, true);
     assert.strictEqual(slots[1].corrupt, true);
-    assert.strictEqual(MQ.UI.Title.hasSave, false, "Continue stays shut");
+    assert.strictEqual(MQ.UI.Title.loadable, false, "nothing can actually be loaded");
+    assert.strictEqual(MQ.UI.Title.hasSave, true, "but the slots are still shown rather than hidden");
+    assert.strictEqual(MQ.UI.Title.items[0].disabled, false);
   });
 
   t("a version 2 slot enables Continue and shows its summary", function () {
@@ -72,6 +74,7 @@ module.exports = function (t, assert) {
     MQ.Scenes.push(MQ.UI.Title); MQ.Scenes.flush();
     env.step(1);
     assert.strictEqual(MQ.UI.Title.hasSave, true);
+    assert.strictEqual(MQ.UI.Title.loadable, true);
     assert.strictEqual(MQ.UI.Title.items[0].disabled, false);
     assert.strictEqual(MQ.UI.Title.st.cursor, 0, "starts on Continue");
     env.render();

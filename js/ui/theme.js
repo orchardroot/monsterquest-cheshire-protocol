@@ -73,12 +73,19 @@
   Theme.buzz = function (ms) { if (MQ.Input && MQ.Input.vibrate) MQ.Input.vibrate(ms || 10); };
 
   // ---- backgrounds -------------------------------------------------
+  const gradCache = { key: "", g: null };
+  Theme.gradient = function (ctx, h, top, bot) {
+    const key = h + "|" + top + "|" + bot;
+    if (gradCache.key === key && gradCache.g) return gradCache.g;
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, top); g.addColorStop(1, bot);
+    gradCache.key = key; gradCache.g = g;
+    return g;
+  };
   Theme.backdrop = function (ctx, o) {
     const m = Theme.m();
     const top = (o && o.top) || "#1b1730", bot = (o && o.bottom) || "#0d1a18";
-    const g = ctx.createLinearGradient(0, 0, 0, m.h);
-    g.addColorStop(0, top); g.addColorStop(1, bot);
-    ctx.fillStyle = g; ctx.fillRect(0, 0, m.w, m.h);
+    ctx.fillStyle = Theme.gradient(ctx, m.h, top, bot); ctx.fillRect(0, 0, m.w, m.h);
     // faint loom-weave lattice — Macclesfield silk, cheap to draw
     ctx.strokeStyle = "rgba(255,255,255,0.035)"; ctx.lineWidth = 1;
     const step = 48;
@@ -167,6 +174,7 @@
   Theme.FOOTER_H = 30;
   Theme.footer = function (ctx, hints) {
     if (!hints || !hints.length) return 0;
+    if (UI.Settings && UI.Settings.get && UI.Settings.get("hints") === false) return 0;
     const m = Theme.m();
     const h = Math.round(Theme.FOOTER_H * m.k);
     const y = m.b - h;
@@ -199,7 +207,11 @@
     ctx.restore();
     return h;
   };
-  Theme.footerTop = function () { const m = Theme.m(); return m.b - Math.round(Theme.FOOTER_H * m.k) - 8; };
+  Theme.footerTop = function () {
+    const m = Theme.m();
+    if (UI.Settings && UI.Settings.get && UI.Settings.get("hints") === false) return m.b - 4;
+    return m.b - Math.round(Theme.FOOTER_H * m.k) - 8;
+  };
 
   // Pooled hint arrays so screens don't allocate per frame.
   Theme.hints = function (spec) { return spec; };

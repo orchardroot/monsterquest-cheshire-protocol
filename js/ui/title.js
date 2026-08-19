@@ -311,10 +311,16 @@
 
   function loadableSlots() {
     const list = (MQ.Save && MQ.Save.slots) ? MQ.Save.slots() : [];
-    let any = false;
-    for (let i = 0; i < list.length; i++) if (!list[i].empty && !list[i].legacy && !list[i].corrupt) any = true;
+    let any = false, used = false;
+    for (let i = 0; i < list.length; i++) {
+      if (!list[i].empty) used = true;
+      if (!list[i].empty && !list[i].legacy && !list[i].corrupt) any = true;
+    }
     Title.slots = list;
-    Title.hasSave = any;
+    Title.loadable = any;
+    // A damaged or ancient slot still gets shown: hiding it would be a lie,
+    // and picking it funnels honestly into a new game.
+    Title.hasSave = used;
     return list;
   }
 
@@ -465,10 +471,14 @@
   };
 
   // ---- drawing -------------------------------------------------
+  let skyGrad = null, skyH = 0;
   function drawSky(ctx, m) {
-    const g = ctx.createLinearGradient(0, 0, 0, m.h);
-    g.addColorStop(0, "#0a0a1e"); g.addColorStop(0.55, "#1a1533"); g.addColorStop(1, "#2a1f2e");
-    ctx.fillStyle = g; ctx.fillRect(0, 0, m.w, m.h);
+    if (!skyGrad || skyH !== m.h) {
+      skyGrad = ctx.createLinearGradient(0, 0, 0, m.h);
+      skyGrad.addColorStop(0, "#0a0a1e"); skyGrad.addColorStop(0.55, "#1a1533"); skyGrad.addColorStop(1, "#2a1f2e");
+      skyH = m.h;
+    }
+    ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, m.w, m.h);
     for (let i = 0; i < STAR_N; i++) {
       const s = stars[i];
       const tw = 0.35 + 0.35 * Math.sin(Title.t / 700 + s.tw);
@@ -584,6 +594,7 @@
     // corner furniture
     T.draw(ctx, "v" + (MQ.VERSION || "2.0.0"), m.r, m.b - 18, { size: "s", align: "right", color: "rgba(160,158,190,0.55)" });
     if (!Title.hasSave) T.draw(ctx, "No saved runs found.", mx + 4, my - 20, { size: "s", color: C.textDim });
+    else if (!Title.loadable) T.draw(ctx, "Saved data found, but not readable.", mx + 4, my - 20, { size: "s", color: C.warn });
     Theme.footer(ctx, HINTS);
   };
 
