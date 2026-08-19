@@ -232,6 +232,15 @@
     else if (sc.mode === "give") sc.pocket = pocketOf("gear");
     else if (sc.mode === "battle") sc.pocket = pocketOf("heal");
     sc.rebuild();
+    // land on a pocket with something in it rather than an empty one
+    if (!sc.rows.length) {
+      for (let i = 0; i < POCKETS.length; i++) {
+        const p = (sc.pocket + 1 + i) % POCKETS.length;
+        sc.pocket = p;
+        sc.rebuild();
+        if (sc.rows.length) break;
+      }
+    }
     TH().sfx("ui_open");
   };
   sc.resume = function () { sc.busy = false; sc.rebuild(); };
