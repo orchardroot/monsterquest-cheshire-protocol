@@ -1460,6 +1460,29 @@
     setV(bus.amb.gain, A.vol.ambience, t);
   };
 
+  // MQ.Settings.apply() (js/content/state.js) reaches for these two by name,
+  // and the pause menu passes 0-10 sliders, so accept either scale.
+  function volArg(v) {
+    v = +v;
+    if (isNaN(v)) return null;
+    if (v > 1.5) v = v / 10;
+    return Math.max(0, Math.min(1, v));
+  }
+  A.setMusicVolume = function (v) {
+    const n = volArg(v);
+    if (n === null) return false;
+    A.setVolume("music", n);
+    return true;
+  };
+  A.setSfxVolume = function (v) {
+    const n = volArg(v);
+    if (n === null) return false;
+    A.setVolume("sfx", n);
+    A.setVolume("cry", Math.min(1, n * 1.05));
+    A.setVolume("ambience", n * 0.5);
+    return true;
+  };
+
   // MQ.Settings is owned by the ui/content teams; read it defensively.
   A.applySettings = function () {
     const S = MQ.Settings;

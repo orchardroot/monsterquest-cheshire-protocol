@@ -472,6 +472,14 @@ module.exports = function (t, assert) {
     assert.strictEqual(A.getVolume("sfx"), 0.8, "0-10 scales are normalised");
     assert.strictEqual(A.getVolume("master"), 0.9);
     delete MQ.Settings;
+    // MQ.Settings.apply() in js/content/state.js calls these two by name
+    assert.strictEqual(typeof A.setMusicVolume, "function");
+    assert.strictEqual(A.setMusicVolume(0.4), true);
+    assert.strictEqual(A.getVolume("music"), 0.4);
+    A.setSfxVolume(6);                       // pause-menu slider scale
+    assert.strictEqual(A.getVolume("sfx"), 0.6, "0-10 sliders normalise");
+    assert.strictEqual(A.setMusicVolume("nonsense"), false);
+    assert.strictEqual(A.getVolume("music"), 0.4, "rubbish leaves the mixer alone");
   });
 
   t("save provider round-trips the mixer", function () {
