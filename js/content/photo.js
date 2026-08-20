@@ -231,6 +231,14 @@
     out.sort(function (a, b) { return b.score - a.score; });
     return out.slice(0, 12);
   };
+  // What the Dex's "Photographs" panel asks for (js/ui/dex.js).
+  P.photosOf = function (species) {
+    const out = [];
+    for (let i = 0; i < P.state.records.length; i++) if (P.state.records[i].sp === species) out.push(P.state.records[i]);
+    out.sort(function (a, b) { return b.score - a.score; });
+    return out;
+  };
+  P.of = P.photosOf;
   P.bestFor = function (species) {
     let best = null;
     for (let i = 0; i < P.state.records.length; i++) {

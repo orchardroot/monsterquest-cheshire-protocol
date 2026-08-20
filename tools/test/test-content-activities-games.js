@@ -458,6 +458,8 @@ module.exports = function (t, assert) {
     assert.ok(MQ.Photo.habitatNote("flitchick").length > 10);
     assert.strictEqual(MQ.Photo.records.length, 1, "MQ.Photo.records is the album");
     assert.strictEqual(MQ.Photo.bestFor("flitchick").score, rec.score);
+    assert.strictEqual(MQ.Photo.photosOf("flitchick").length, 1, "the Dex's photo panel can find it");
+    assert.strictEqual(MQ.Photo.photosOf("nibbit").length, 0);
     const p = MQ.Achievements.progress("ach_12");
     assert.strictEqual(p.have, 1);
     assert.strictEqual(p.need, 50);
