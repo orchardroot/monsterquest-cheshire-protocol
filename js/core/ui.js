@@ -301,7 +301,12 @@
   // ---- toasts ---------------------------------------------------
   const toasts = [];
   UI.toast = function (text, ms) {
-    toasts.push({ text: String(text), ms: ms || 2200, t: 0 });
+    const str = String(text);
+    // Walking into the same wall twice should not stack two identical bars;
+    // repeating a live toast just restarts its clock.
+    const last = toasts.length ? toasts[toasts.length - 1] : null;
+    if (last && last.text === str) { last.t = 0; last.ms = ms || 2200; return; }
+    toasts.push({ text: str, ms: ms || 2200, t: 0 });
     if (toasts.length > 4) toasts.shift();
   };
   UI.toasts = toasts;
