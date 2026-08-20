@@ -144,6 +144,18 @@
     cyber:    [[1,"bit_blast"],[6,"phish_hook"],[10,"ddos"],[14,"data_stream"],[18,"encrypt"],[22,"rootkit_bite"],[26,"pixel_tripwire"],[30,"hack_slash"],[33,"honeytoken"],[37,"firewall_up"],[41,"packet_storm"],[45,"glitch_burst"],[49,"threat_hunt"],[53,"rtr_deploy"]]
   };
   const TIER_SCALE = { low: 1, mid: 1.14, high: 1.3, legendary: 1.35 };
+  // Tier scaling stretches only the *late* half of a pool. Scaling the
+  // whole pool used to push an evolved form's early moves out past the
+  // level it is first obtainable at, so a freshly built SPINDRAKE:16
+  // walked in with one attacking move. Below level 10 nobody waits.
+  function tierLevel(lv, s) { return lv <= 10 ? lv : 10 + (lv - 10) * s; }
+  function isAttack(mv) { const m = D.moves[mv]; return !!m && m.cat !== "status" && m.power > 0; }
+  // Split a pool into damaging and status rows, order preserved.
+  function splitPool(pool) {
+    const atk = [], sts = [];
+    for (let i = 0; i < pool.length; i++) (isAttack(pool[i][1]) ? atk : sts).push(pool[i]);
+    return { atk: atk, sts: sts };
+  }
 
   function buildLearnset(types, tier, extras, seedId) {
     const s = TIER_SCALE[tier] || 1;
@@ -153,27 +165,40 @@
       if (byMove[mv] === undefined || byMove[mv] > lv) byMove[mv] = lv;
     };
     const prim = POOL[types[0]] || POOL.normal;
-    for (let i = 0; i < prim.length; i++) push(prim[i][0] * s, prim[i][1]);
+    for (let i = 0; i < prim.length; i++) push(tierLevel(prim[i][0], s), prim[i][1]);
+    // Off-type coverage takes damaging rows first: sampling a pool every
+    // other index used to hand GRASS secondaries four status moves and
+    // one attack (the reason seven species reached level 30 with nothing
+    // to hit with).
     if (types[1]) {
-      const sec = POOL[types[1]] || [];
-      for (let i = 0; i < sec.length; i += 2) push(sec[i][0] * s + 2, sec[i][1]);
+      const sec = splitPool(POOL[types[1]] || []);
+      for (let i = 0; i < sec.atk.length; i += 2) push(tierLevel(sec.atk[i][0], s) + 2, sec.atk[i][1]);
+      if (sec.sts.length) {
+        const mid = sec.sts[Math.floor(sec.sts.length / 2)];
+        push(tierLevel(mid[0], s) + 2, mid[1]);
+      }
     } else {
       // single-type lines get a couple of Normal staples for coverage
-      const nrm = POOL.normal;
-      for (let i = 2; i < nrm.length; i += 4) push(nrm[i][0] * s + 3, nrm[i][1]);
+      const nrm = splitPool(POOL.normal);
+      for (let i = 1; i < nrm.atk.length; i += 2) push(tierLevel(nrm.atk[i][0], s) + 3, nrm.atk[i][1]);
+      if (nrm.sts.length) push(tierLevel(nrm.sts[1] ? nrm.sts[1][0] : nrm.sts[0][0], s) + 3, (nrm.sts[1] || nrm.sts[0])[1]);
     }
     for (let i = 0; i < (extras || []).length; i++) push(extras[i][0], extras[i][1]);
     let list = Object.keys(byMove).map(function (mv) { return [byMove[mv], mv]; });
     list.sort(function (a, b) { return a[0] - b[0] || (a[1] < b[1] ? -1 : 1); });
-    // thin the middle deterministically if we overflow 14
+    // Thin to 14 by dropping the most crowded entry, not the first one
+    // we come to: the old sweep always ate indices 3,4,5… and left
+    // GALEWING with nothing new between level 3 and level 18.
     if (list.length > 14) {
       const keep = {};
       for (let i = 0; i < (extras || []).length; i++) keep[extras[i][1]] = true;
       const rnd = U.rng(seedId + "|learn");
       while (list.length > 14) {
-        let idx = -1;
-        for (let i = 3; i < list.length - 2; i++) {
-          if (!keep[list[i][1]] && (idx < 0 || rnd() < 0.4)) { idx = i; break; }
+        let idx = -1, best = Infinity;
+        for (let i = 3; i < list.length; i++) {
+          if (keep[list[i][1]]) continue;
+          const gap = list[i][0] - list[i - 1][0] + rnd() * 0.5;
+          if (gap <= best) { best = gap; idx = i; }
         }
         if (idx < 0) idx = list.length - 1;
         list.splice(idx, 1);
@@ -183,7 +208,108 @@
     // guarantee a second level-1 or level-3 move so a fresh catch has options
     if (list.length > 1 && list[1][0] > 5) list[1] = [Math.max(3, Math.round(list[1][0] * 0.35)), list[1][1]];
     list.sort(function (a, b) { return a[0] - b[0]; });
-    return list;
+    // Half a learnset has to be attacks or the last-four window cannot
+    // hold two of them. Mono-Normal lines came out 5 status / 6 attacks
+    // before their extras, which is how GRINKIT reached level 40 with
+    // one attack and three buffs.
+    const keepExtra = {};
+    for (let i = 0; i < (extras || []).length; i++) keepExtra[extras[i][1]] = true;
+    const nAttacks = function () { let c = 0; for (let i = 0; i < list.length; i++) if (isAttack(list[i][1])) c++; return c; };
+    while (list.length > 8 && nAttacks() * 2 < list.length) {
+      let idx = -1;
+      for (let i = list.length - 1; i > 2; i--) {
+        if (!keepExtra[list[i][1]] && !isAttack(list[i][1])) { idx = i; break; }
+      }
+      if (idx < 0) break;
+      list.splice(idx, 1);
+    }
+    return repairWindows(list, extras, types);
+  }
+
+  // D.movesAtLevel() hands the engine the last FOUR moves learnt, so a
+  // run of status moves in the middle of a learnset leaves a monster
+  // with nothing to attack with. This keeps every id and every level
+  // exactly as built and only reorders which id sits on which level,
+  // so that any four consecutive entries hold at least two attacks and
+  // at least one of the species' own types. Hand-written `extras` are
+  // pinned where the species author put them.
+  function repairWindows(list, extras, types) {
+    if (list.length < 3) return list;
+    const pinned = {};
+    for (let i = 0; i < (extras || []).length; i++) pinned[extras[i][1]] = true;
+    const n = list.length;
+    const levels = [], fixedId = [], atk = [], sts = [];
+    for (let i = 0; i < n; i++) {
+      levels.push(list[i][0]);
+      if (pinned[list[i][1]]) fixedId.push(list[i][1]);
+      else { fixedId.push(null); (isAttack(list[i][1]) ? atk : sts).push(list[i][1]); }
+    }
+    const isStab = function (mv) { const m = D.moves[mv]; return !!m && types.indexOf(m.type) >= 0; };
+
+    // 1. Decide the shape of every free slot: "A" a same-type attack,
+    //    "a" an off-type attack, "S" a status move. Pinned signature
+    //    moves are read off as they are; the look-ahead treats an
+    //    undecided slot as an "A" it could still put there.
+    const shape = [];
+    for (let i = 0; i < n; i++) {
+      if (!fixedId[i]) { shape.push(null); continue; }
+      if (!isAttack(fixedId[i])) shape.push("S");
+      else shape.push(isStab(fixedId[i]) ? "A" : "a");
+    }
+    const windowsOk = function (at) {
+      for (let lo = Math.max(0, at - 3); lo <= at && lo < n; lo++) {
+        const hi = Math.min(n - 1, lo + 3);
+        const span = hi - lo + 1;
+        if (span < 2) continue;
+        let hits = 0, stab = 0, unknown = 0;
+        for (let k = lo; k <= hi; k++) {
+          const c = shape[k];
+          if (c === "A") { hits++; stab++; } else if (c === "a") hits++;
+          else if (c === null) unknown++;
+        }
+        if (hits + unknown < Math.min(2, span)) return false;
+        if (stab + unknown < 1) return false;
+      }
+      return true;
+    };
+    let freeStab = 0;
+    for (let i = 0; i < atk.length; i++) if (isStab(atk[i])) freeStab++;
+    let freeOff = atk.length - freeStab;
+    let freeS = sts.length, lastStab = false;
+    // Off-type attacks alternate with same-type ones rather than piling
+    // up at the end, or a Grass line finishes on Quick Dash and Slam.
+    const takeAttack = function (i) {
+      if (lastStab && freeOff > 0) { shape[i] = "a"; freeOff--; lastStab = false; }
+      else if (freeStab > 0) { shape[i] = "A"; freeStab--; lastStab = true; }
+      else if (freeOff > 0) { shape[i] = "a"; freeOff--; lastStab = false; }
+      else return false;
+      return true;
+    };
+    for (let i = 0; i < n; i++) {
+      if (shape[i] !== null) { if (shape[i] !== "S") lastStab = shape[i] === "A"; continue; }
+      if (freeStab + freeOff <= 0) { shape[i] = "S"; freeS--; continue; }
+      if (freeS <= 0 || i === 0) { takeAttack(i); continue; }
+      shape[i] = "S";
+      if (windowsOk(i)) { freeS--; continue; }
+      if (!takeAttack(i)) { freeS--; }
+    }
+
+    // 2. Fill the shape. Attacks and statuses each keep their own
+    //    ascending order, so power still grows with level.
+    const stabPool = [], offPool = [];
+    for (let i = 0; i < atk.length; i++) (isStab(atk[i]) ? stabPool : offPool).push(atk[i]);
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      if (fixedId[i]) { out.push(fixedId[i]); continue; }
+      const c = shape[i];
+      if (c === "A") out.push((stabPool.length ? stabPool : offPool).shift());
+      else if (c === "a") out.push((offPool.length ? offPool : stabPool).shift());
+      else if (sts.length) out.push(sts.shift());
+      else out.push((stabPool.length ? stabPool : offPool).shift());
+    }
+    const res = [];
+    for (let i = 0; i < out.length; i++) res.push([levels[i], out[i]]);
+    return res;
   }
 
   // TM (Skill Card) compatibility: type match, Normal cards for everyone,
@@ -290,31 +416,31 @@
   }
 
   // ---- 1a. Starters, cats, gifts ---------------------------------
-  SP(1,"silkin","SILKIN","bug/grass",[45,45,50,55,50,45],45,62,"medium","silk_weave",[L("spindrake",16)],"silk","unique","low","jacquard_weave",
+  SP(1,"silkin","SILKIN","bug/grass",[68,57,58,45,58,49],45,62,"medium","silk_weave",[L("spindrake",16)],"silk","unique","low","jacquard_weave",
     {b:"worm",p:"silk",f:["thread","segments","mulberry-stain"]},[[1,"string_shot"],[7,"mulberry_leaf"],[13,"silk_bind"]],
     {g:"Silkworm",h:0.3,w:1.4,t:"Fed on mulberry from Paradise Mill. Spins one thread its whole life and refuses, absolutely, to let go of the end of it."});
-  SP(2,"spindrake","SPINDRAKE","bug/grass",[60,60,65,75,70,65],45,142,"medium","silk_weave",[L("loomoth",34)],"silk","rare","mid","jacquard_weave",
+  SP(2,"spindrake","SPINDRAKE","bug/grass",[88,60,70,75,77,65],45,142,"medium","silk_weave",[L("loomoth",34)],"silk","rare","mid","jacquard_weave",
     {b:"moth",p:"silk",f:["bobbin-cocoon","furred-thorax","wings"]},[[18,"cocoon"],[24,"bollin_flutter"],[30,"razor_leaf"]],
     {g:"Bobbin",h:0.8,w:11,t:"Sleeps in a bobbin it winds itself. The Bollington morph comes out honey-coloured, which locals will tell you about at length."});
-  SP(3,"loomoth","LOOMOTH","bug/grass",[80,75,85,105,95,85],45,236,"medium","silk_weave",null,"silk","unique","high","jacquard_weave",
+  SP(3,"loomoth","LOOMOTH","bug/grass",[108,75,90,105,102,85],45,236,"medium","silk_weave",null,"silk","unique","high","jacquard_weave",
     {b:"moth",p:"silk",f:["punchcard-wings","great-span","glowing-eyes"],s:1.15},[[36,"hive_swarm"],[42,"petal_storm"],[48,"elm_press"]],
     {g:"Jacquard",h:1.6,w:34,t:"The pattern on its wings is a punch-card, and it is a real one. Nobody at the Silk Museum will say what it prints."});
-  SP(4,"brinewt","BRINEWT","water",[50,50,45,50,50,45],45,62,"medium","brine_body",[L("saltander",16)],"brine","unique","low","brine_tide",
+  SP(4,"brinewt","BRINEWT","water",[62,45,53,45,54,46],45,62,"medium","brine_body",[L("saltander",16)],"brine","unique","low","brine_tide",
     {b:"newt",p:"brine",f:["crusted-skin","frill","damp-sheen"]},[[7,"harden"],[13,"salt_spray"],[19,"mud_shot"]],
     {g:"Salt Newt",h:0.4,w:3.2,t:"From the springs under Nantwich. Crusts over white when frightened, which it finds embarrassing and does anyway."});
-  SP(5,"saltander","SALTANDER","water/ground",[70,70,65,65,65,60],45,142,"medium","brine_body",[L("halosaur",34)],"brine","unique","mid","brine_tide",
+  SP(5,"saltander","SALTANDER","water/ground",[85,64,70,60,70,60],45,142,"medium","brine_body",[L("halosaur",34)],"brine","unique","mid","brine_tide",
     {b:"salamander",p:"brine",f:["salt-ridges","broad-tail","clawed-feet"]},[[20,"peat_press"],[26,"salt_grind"],[32,"claw_smash"]],
     {g:"Brine Walker",h:0.9,w:31,t:"Leaves white footprints on a wet pavement for three days. Councils have written letters about it."});
-  SP(6,"halosaur","HALOSAUR","water/ground",[95,95,90,85,85,75],45,236,"medium","brine_body",null,"brine","unique","high","brine_tide",
+  SP(6,"halosaur","HALOSAUR","water/ground",[110,95,90,85,85,75],45,236,"medium","brine_body",null,"brine","unique","high","brine_tide",
     {b:"salamander",p:"brine",f:["halite-crown","gill-fans","heavy-limbs"],s:1.2},[[38,"weaver_surge"],[44,"quake"],[50,"crag_crush"]],
     {g:"Halite Lord",h:2,w:190,t:"Brine runs from its gills at a steady rate all day. It is, technically, a small industry."});
-  SP(7,"kindlin","KINDLIN","fire",[45,55,45,55,45,45],45,62,"medium","firebox",[L("stokerel",16)],"mill","unique","low","firebox_overload",
+  SP(7,"kindlin","KINDLIN","fire",[58,55,47,55,45,45],45,62,"medium","firebox",[L("stokerel",16)],"mill","unique","low","firebox_overload",
     {b:"imp",p:"ember",f:["ember-eyes","coal-dust","stubby-horns"]},[[7,"soot_cloud"],[13,"quick_dash"],[19,"cinder_kick"]],
     {g:"Boiler Imp",h:0.4,w:6,t:"Lives on coal dust and gossip. It is not clear which it needs more, and the Mill's boiler house provides both."});
-  SP(8,"stokerel","STOKEREL","fire",[65,80,65,70,60,55],45,142,"medium","firebox",[L("furnacore",34)],"mill","unique","mid","firebox_overload",
+  SP(8,"stokerel","STOKEREL","fire",[80,80,65,70,60,55],45,142,"medium","firebox",[L("furnacore",34)],"mill","unique","mid","firebox_overload",
     {b:"imp",p:"ember",f:["furnace-door-chest","shovel-hands","soot-mane"]},[[20,"stoke"],[26,"flame_burst"],[33,"slam"]],
     {g:"Stoker",h:1.1,w:64,t:"Shovels its own coal, refuses help, and will make a point of it if you offer."});
-  SP(9,"furnacore","FURNACORE","fire/electric",[85,105,85,90,80,80],45,236,"medium","firebox",null,"mill","unique","high","firebox_overload",
+  SP(9,"furnacore","FURNACORE","fire/electric",[100,105,85,90,80,80],45,236,"medium","firebox",null,"mill","unique","high","firebox_overload",
     {b:"engine",p:"ember",f:["firebox-torso","flywheel","arcing-brushes"],s:1.2},[[38,"boiler_burst"],[44,"third_rail"],[50,"pylon_arc"]],
     {g:"Mill Engine",h:2.3,w:410,t:"A beam engine that got up. Runs at a steady forty-two revolutions a minute whatever the situation calls for."});
   SP(10,"meadow","MEADOW","normal",[55,60,45,50,50,110],3,150,"medium","slipstream",null,"town","unique","mid","zoomies",
@@ -550,7 +676,7 @@
   SP(84,"bruinhall","BRUINHALL","normal/ground",[110,115,95,55,75,50],45,246,"slow","iron_will",null,"town","rare","high","bruin_maul",
     {b:"bear",p:"rust",f:["broad-back","chain-collar","muzzle-scar"],s:1.25},[[34,"bear_hug"],[42,"quake"],[50,"hyper_fang"]],
     {g:"The Congleton Bear",h:2.2,w:480,t:"Otis's ace and the town crest, in that order, and both of them will tell you so."});
-  SP(85,"runestane","RUNESTANE","rock/psychic",[65,60,85,70,70,35],150,70,"medium","stonemason",[L("dolmenor",30)],"moor","uncommon","low","od_rock",
+  SP(85,"runestane","RUNESTANE","rock/psychic",[65,60,75,60,60,35],150,70,"medium","stonemason",[L("dolmenor",30)],"moor","uncommon","low","od_rock",
     {b:"stone",p:"stone",f:["carved-spirals","lichen","humming-seam"]},[[10,"rune_read"],[19,"stone_skin"],[27,"confusion"]],
     {g:"Rune Rock",h:1.1,w:640,t:"Hums in fog at a pitch that gives you a headache in the left eye only. The Bridestones do not apologise."});
   SP(86,"dolmenor","DOLMENOR","rock/psychic",[95,85,120,95,95,30],45,242,"slow","iron_will",null,"moor","rare","high","od_rock",
@@ -691,7 +817,7 @@
   SP(129,"wormhack","WORMHACK","cyber/poison",[85,100,80,95,80,90],60,240,"slow","rootkit",null,"cyber","uncommon","high","od_cyber",
     {b:"worm",p:"chem",f:["lateral-limbs","credential-teeth","chitin-scales"],s:1.1},[[36,"hack_slash"],[44,"ransom_note"],[52,"rtr_deploy"]],
     {g:"Lateral Worm",h:2,w:64,t:"A DARKBYTE construct. Gets from one host to the next in about eleven seconds and leaves the door open behind it."});
-  SP(130,"phishfin","PHISHFIN","cyber/water",[60,60,55,70,60,70],150,76,"medium","honeypot",[L("spearphish",28)],"mere","uncommon","low","od_cyber",
+  SP(130,"phishfin","PHISHFIN","cyber/water",[60,60,55,60,60,65],150,76,"medium","honeypot",[L("spearphish",28)],"mere","uncommon","low","od_cyber",
     {b:"lurefish",p:"cyber",f:["tracker-tag","lure-barbel","chrome-scales"]},[[10,"phish_hook"],[20,"bubble_jet"],[28,"pixel_tripwire"]],
     {g:"Lure Fish",h:0.4,w:3,t:"Wears a tracker tag from a fish that is no longer using it. The tag still reports, which is somebody's problem."});
   SP(131,"spearphish","SPEARPHISH","cyber/water",[85,105,75,90,75,95],60,242,"slow","honeypot",null,"mere","uncommon","high","od_cyber",
@@ -764,7 +890,7 @@
   SP(152,"sludgeon","SLUDGEON","water/poison",[115,100,90,90,90,45],45,246,"slow","sandbox",null,"river","rare","high","od_poison",
     {b:"sturgeon",p:"chem",f:["scute-ridges","sludge-sheen","barbels"],s:1.3},[[36,"sludge"],[44,"weaver_surge"],[52,"reagent_mix"]],
     {g:"Mersey Sturgeon",h:2.8,w:210,t:"The Mersey was the dirtiest river in Europe and then it wasn't. This did not get the second memo."});
-  SP(153,"grinkit","GRINKIT","normal",[60,60,50,65,60,85],120,84,"medium","slipstream",[FR("grinmalkin",200,"night")],"town","uncommon","low","grin_remains",
+  SP(153,"grinkit","GRINKIT","normal",[55,55,50,60,60,80],120,84,"medium","slipstream",[FR("grinmalkin",200,"night")],"town","uncommon","low","grin_remains",
     {b:"kitten",p:"heather",f:["wide-grin","stripe-coat","half-there"]},[[12,"skitter"],[22,"quick_dash"],[30,"wisp_lure"],[38,"agility"]],
     {g:"Grinning Kit",h:0.2,w:2.2,t:"Mostly grin. Eleven of them are hidden across the county and all eleven were there before you looked."});
   SP(154,"grinmalkin","GRINMALKIN","normal/psychic",[95,90,80,125,105,110],45,252,"slow","cheshire_grin",null,"town","rare","high","grin_remains",
@@ -773,7 +899,7 @@
   SP(155,"mirrorling","MIRRORLING","psychic/ghost",[80,70,80,115,100,80],45,244,"slow","kernel_panic",null,"town","rare","high","od_psychic",
     {b:"mirror",p:"ghost",f:["leaded-frame","reversed-face","silver-edge"]},[[32,"mirror_glass"],[42,"mind_blast"],[50,"cheshire_fade"],[56,"haunt"]],
     {g:"Window Creature",h:1.2,w:26,t:"Lives in the Alice windows at Daresbury and copies you at a two-second delay, badly, and then better."});
-  SP(156,"quarkling","QUARKLING","cyber/electric",[60,60,55,80,60,85],150,80,"medium","overclock",[L("hadronaut",36)],"cyber","uncommon","low","od_cyber",
+  SP(156,"quarkling","QUARKLING","cyber/electric",[55,55,50,65,60,75],150,80,"medium","overclock",[L("hadronaut",36)],"cyber","uncommon","low","od_cyber",
     {b:"particle",p:"cyber",f:["beam-trail","charge-halo","spin-flicker"]},[[12,"bit_blast"],[22,"static_shock"],[30,"data_stream"]],
     {g:"Beam Sprite",h:0.2,w:0.05,t:"Escapes the Daresbury beamline about twice a shift. Physics has stopped considering this remarkable."});
   SP(157,"hadronaut","HADRONAUT","cyber/electric",[95,110,95,105,90,95],45,252,"slow","overclock",null,"cyber","rare","high","od_cyber",
@@ -782,7 +908,7 @@
   SP(158,"firewaul","FIREWAUL","cyber/fire",[100,115,95,120,95,85],45,254,"slow","overclock",null,"cyber","rare","high","od_cyber",
     {b:"beast",p:"ember",f:["hot-aisle-vents","rule-table-mane","port-eyes"],s:1.2},[[42,"glitch_burst"],[50,"boiler_burst"],[56,"rtr_deploy"]],
     {g:"Firewall Beast",h:2.4,w:420,t:"Lives in the hot aisle at forty-one degrees. Mo's ace. Denies inbound by default and means it."});
-  SP(159,"droneling","DRONELING","cyber/flying",[60,60,55,70,55,90],150,80,"medium","payload",[L("datadrake",30)],"cyber","uncommon","low","od_cyber",
+  SP(159,"droneling","DRONELING","cyber/flying",[55,55,50,65,50,85],150,80,"medium","payload",[L("datadrake",30)],"cyber","uncommon","low","od_cyber",
     {b:"drone",p:"slate",f:["quad-rotors","camera-gimbal","status-light"]},[[12,"gust"],[22,"pixel_tripwire"],[30,"bit_blast"]],
     {g:"Rotor Chick",h:0.3,w:0.9,t:"Hovers at head height, records everything, and has a battery life of nine minutes, which is the only mercy here."});
   SP(160,"datadrake","DATADRAKE","cyber/flying",[95,105,85,115,85,115],45,252,"slow","payload",null,"cyber","rare","high","od_cyber",
@@ -802,7 +928,7 @@
   SP(164,"glitchra","GLITCHRA","cyber/ghost",[110,110,100,135,110,120],3,340,"medium","kernel_panic",null,"sky","legendary","legendary","static_scream",
     {b:"herald",p:"cyber",f:["static-outline","torn-silhouette","scan-lines"],s:1.4},[[36,"glitch_burst"],[46,"night_pulse"],[54,"threat_hunt"],[60,"rtr_deploy"]],
     {g:"Static Herald",h:3.4,w:0,t:"An outline in the dish where nothing is standing. Photographs of it are all slightly different and all slightly wrong."});
-  SP(165,"legionet","LEGIONET","ghost",[65,70,65,60,60,60],150,84,"medium","nightshift",[L("centurigeist",40)],"roman","common","low","od_ghost",
+  SP(165,"legionet","LEGIONET","ghost",[60,65,60,55,60,60],150,84,"medium","nightshift",[L("centurigeist",40)],"roman","common","low","od_ghost",
     {b:"legionary",p:"roman",f:["scutum","segmented-plate","dust-legs"]},[[12,"shade_bolt"],[24,"lick"],[32,"possess"]],
     {g:"Legion Ghost",h:1.6,w:0,t:"Still marching the line of a road that stopped being a road in 410. Steps over the kerb where the kerb used to be."});
   SP(166,"centurigeist","CENTURIGEIST","ghost/rock",[100,105,105,80,90,55],45,250,"slow","iron_will",null,"roman","uncommon","high","od_ghost",
