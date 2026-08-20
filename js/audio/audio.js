@@ -958,11 +958,32 @@
         inst: tr.inst || "pulse25", drums: isDrums, vol: tr.vol === undefined ? 1 : tr.vol,
         pan: tr.pan || 0, send: tr.send || 0, layer: tr.layer || 0,
         only: tr.only || null, not: tr.not || null, params: tr.params || null,
-        name: tr.id || tr.inst || ("t" + ti), evs: evs, bars: null, len: beat
+        name: tr.id || tr.inst || ("t" + ti), evs: evs, bars: null, len: beat, raw: beat
       });
     }
     let bars = song.bars || Math.ceil((maxBeat - 1e-6) / beats);
     if (bars < 1) bars = 1;
+    // A track whose sequence is shorter than the song cycles to fill it
+    // (tracker-style ostinato); a longer one is truncated at the song end.
+    const songBeats = bars * beats;
+    for (let ti3 = 0; ti3 < tracks.length; ti3++) {
+      const t3 = tracks[ti3];
+      if (!(t3.len > 0) || t3.len >= songBeats - 1e-6) continue;
+      const cycle = t3.len;
+      const base = t3.evs.length;
+      for (let off = cycle; off < songBeats - 1e-6; off = round6(off + cycle)) {
+        for (let e = 0; e < base; e++) {
+          const ev = t3.evs[e];
+          const b = round6(ev.b + off);
+          if (b >= songBeats - 1e-6) continue;
+          const copy = { b: b, dur: ev.dur, vel: ev.vel };
+          if (ev.drum) copy.drum = ev.drum; else { copy.notes = ev.notes; if (ev.glide !== undefined) copy.glide = ev.glide; }
+          t3.evs.push(copy);
+        }
+      }
+      t3.evs.sort(function (a, b) { return a.b - b.b; });
+      t3.len = songBeats;
+    }
     const loop = song.loop === false ? null : {
       from: (song.loop && song.loop.from) || 0,
       to: (song.loop && song.loop.to) || bars
@@ -1101,6 +1122,8 @@
   };
 
   Playback.prototype.start = function (t, fadeMs) {
+    this.t0 = t;
+    this.sched = 0;
     this.nextTime = t;
     const p = this.bus.gain;
     setV(p, fadeMs ? 0.0001 : 1, t);
@@ -1115,21 +1138,25 @@
     // Catch-up: a suspended tab can leave nextTime far in the past. Skip
     // whole bars (keeping the loop shape) rather than scheduling backwards.
     if (this.nextTime < nowT - 0.02) {
-      let skip = Math.ceil((nowT + 0.02 - this.nextTime) / bd);
+      const skip = Math.ceil((nowT + 0.02 - this.nextTime) / bd);
       if (skip > 0) {
         for (let i = 0; i < skip; i++) {
           const nb = nextBar(comp, this.bar);
           if (nb < 0) { this.finish(this.nextTime); return; }
           this.bar = nb;
         }
-        this.nextTime = round6(this.nextTime + skip * bd);
+        // Stay on the exact bar grid: the horizon is always t0 + n*barDur,
+        // never an accumulation of rounded additions.
+        this.sched += skip;
+        this.nextTime = this.t0 + this.sched * bd;
       }
     }
     let barsQueued = Math.max(0, Math.floor((this.nextTime - nowT) / bd));
     let guard = 0;
     while ((barsQueued < A.MIN_BARS_AHEAD || this.nextTime < nowT + A.LOOKAHEAD) && guard++ < 96) {
       this.scheduleBar(this.bar, this.nextTime);
-      this.nextTime = round6(this.nextTime + bd);
+      this.sched++;
+      this.nextTime = this.t0 + this.sched * bd;
       barsQueued++;
       const nb = nextBar(comp, this.bar);
       if (nb < 0) { this.finish(this.nextTime); return; }
@@ -1344,6 +1371,7 @@
   A.fanfare = A.jingle;
 
   A.songBar = function () { return playing ? playing.bar : -1; };
+  A.playback = function () { return playing; };   // test/debug hook
   A.playingId = function () { return playing ? playing.id : null; };
   A.isPlaying = function (id) { return !!playing && (!id || playing.id === id); };
 

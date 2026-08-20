@@ -243,7 +243,7 @@
     },
     tracks: [
       { id: "pad", inst: "pad", oct: 0, vol: 1.1, send: 0.35, seq: "pad_i pad_a pad_b pad_a pad_b" },
-      { id: "lead", inst: "flute", oct: 2, vol: 1.0, pan: -0.15, send: 0.3, layer: 0, seq: "_ _ _ _ _ _ _ _ lead_a lead_b lead_c lead_a lead_b lead_c lead_a lead_b" },
+      { id: "lead", inst: "flute", oct: 2, vol: 1.0, pan: -0.15, send: 0.3, layer: 0, seq: "_*8 lead_a lead_b lead_c lead_a lead_b lead_c" },
       { id: "harp", inst: "harp", oct: 1, vol: 0.75, pan: 0.25, seq: "harp_i harp_a harp_b harp_a harp_b" },
       { id: "bass", inst: "sub", oct: -1, vol: 1.0, seq: "bass_i bass_a bass_b bass_a bass_b" },
       { id: "rain", inst: "drums", vol: 0.5, step: 0.25, seq: "rain rain2 rain rain2 rain rain2 rain rain2 rain rain2 rain rain2 rain rain2 rain rain2 rain rain2 rain rain2 rain rain2 rain rain2 rain rain2 rain rain2 rain rain2 rain rain2 rain rain2 rain rain2 rain rain2 rain rain2" }
@@ -275,8 +275,8 @@
       hats: D_HAT8
     },
     tracks: [
-      { id: "lead", inst: "pulse25", oct: 2, vol: 1.0, pan: -0.12, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
-      { id: "counter", inst: "pulse12", oct: 1, vol: 0.55, pan: 0.3, layer: 1, seq: "_ _ _ _ _ _ _ _ _ _ _ _ lead_a lead_b lead_c lead_d _ _ _ _" },
+      { id: "lead", inst: "pulse25", oct: 2, vol: 1.0, pan: -0.12, seq: "_*4 lead_a lead_b lead_c lead_d lead_a lead_b lead_c lead_d lead_a" },
+      { id: "counter", inst: "pulse12", oct: 1, vol: 0.55, pan: 0.3, layer: 1, seq: "_*12 lead_a lead_b lead_c lead_d _*12" },
       { id: "brass", inst: "brass", oct: 0, vol: 0.9, seq: "brass_a brass_a brass_b brass_a brass_b" },
       { id: "bass", inst: "bass", oct: -1, vol: 1.0, seq: "bass_a bass_a bass_b bass_a bass_b" },
       { id: "loom", inst: "drums", vol: 0.7, seq: "loom loom loom loom2 loom loom loom loom2 loom loom loom loom2 loom loom loom loom2 loom loom loom loom2 loom loom loom loom2 loom loom loom loom2 loom loom loom loom2 loom loom loom loom2 loom loom loom loom2" },
@@ -366,9 +366,9 @@
       kit2: "k..hs..hk.h.s.hh"
     },
     tracks: [
-      { id: "lead", inst: "fm", oct: 2, vol: 0.95, pan: -0.1, params: { ratio: 2, index: 1.6 }, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "lead", inst: "fm", oct: 2, vol: 0.95, pan: -0.1, params: { ratio: 2, index: 1.6 }, seq: "_*4 lead_a lead_b lead_c lead_d lead_a lead_b lead_c lead_d lead_a" },
       { id: "pad", inst: "pulse12", oct: 1, vol: 0.5, pan: 0.3, seq: "pad_a pad_a pad_b pad_a pad_b pad_a pad_b pad_a pad_b pad_a" },
-      { id: "marimba", inst: "marimba", oct: 1, vol: 0.6, layer: 1, seq: "_ _ _ _ lead_a lead_b _ _ lead_a lead_b" },
+      { id: "marimba", inst: "marimba", oct: 1, vol: 0.6, layer: 1, seq: "_*4 lead_a lead_b _*4 lead_a lead_b _*4 lead_a lead_b _*4" },
       { id: "bass", inst: "bass", oct: -1, vol: 1.0, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
       { id: "clicks", inst: "drums", vol: 0.45, seq: "clicks*3 clicks2 clicks*3 clicks2 clicks*3 clicks2 clicks*3 clicks2 clicks*3 clicks2 clicks*3 clicks2 clicks*3 clicks2 clicks*3 clicks2 clicks*3 clicks2 clicks*3 clicks2" },
       { id: "kit", inst: "drums", vol: 0.8, seq: "kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2" }
@@ -397,7 +397,7 @@
       { id: "drone", inst: "drone", oct: -1, vol: 1.1, send: 0.4, seq: "drone_a drone_a drone_a drone_a" },
       { id: "copper", inst: "pad", oct: 0, vol: 0.8, send: 0.3, seq: "cop_a cop_b cop_a cop_b" },
       { id: "bell", inst: "bell", oct: 2, vol: 0.9, pan: 0.25, send: 0.5, seq: "bell_a bell_b bell_a bell_b" },
-      { id: "lead", inst: "glass", oct: 1, vol: 0.8, pan: -0.2, send: 0.4, layer: 1, seq: "lead_a lead_b lead_a lead_b" },
+      { id: "lead", inst: "glass", oct: 1, vol: 0.8, pan: -0.2, send: 0.4, layer: 1, seq: "lead_a lead_b lead_b lead_a lead_b lead_b" },
       { id: "bass", inst: "sub", oct: -2, vol: 0.9, seq: "bass_a bass_b bass_a bass_b" },
       { id: "drip", inst: "drums", vol: 0.5, send: 0.6, seq: "drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2 drip drip2" }
     ]
@@ -482,9 +482,9 @@
       steamrest: "................"
     },
     tracks: [
-      { id: "lead", inst: "reed", oct: 2, vol: 0.95, pan: -0.12, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "lead", inst: "reed", oct: 2, vol: 0.95, pan: -0.12, seq: "_*4 lead_a lead_b lead_c lead_d lead_a lead_b lead_c lead_d lead_a" },
       { id: "whistle", inst: "reed", oct: 3, vol: 0.5, pan: 0.35, layer: 1, seq: "whistle whistle whistle whistle whistle whistle whistle whistle whistle whistle" },
-      { id: "brass", inst: "brass", oct: 0, vol: 0.6, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "brass", inst: "brass", oct: 0, vol: 0.6, seq: "_*4 lead_a lead_b lead_c lead_d lead_a lead_b lead_c lead_d lead_a" },
       { id: "bass", inst: "bass", oct: -1, vol: 1.05, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
       { id: "rail", inst: "drums", vol: 0.6, seq: "rail*3 rail2 rail*3 rail2 rail*3 rail2 rail*3 rail2 rail*3 rail2 rail*3 rail2 rail*3 rail2 rail*3 rail2 rail*3 rail2 rail*3 rail2" },
       { id: "kit", inst: "drums", vol: 0.85, seq: "kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2" },
@@ -592,7 +592,7 @@
       shake: D_SHAKE
     },
     tracks: [
-      { id: "lead", inst: "fm", oct: 2, vol: 0.95, pan: -0.1, params: { ratio: 3, index: 1.4 }, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "lead", inst: "fm", oct: 2, vol: 0.95, pan: -0.1, params: { ratio: 3, index: 1.4 }, seq: "_*4 lead_a lead_b lead_c lead_d lead_a lead_b lead_c lead_d lead_a" },
       { id: "stab", inst: "pulse25", oct: 1, vol: 0.55, pan: 0.28, seq: "stab_a stab_a stab_b stab_a stab_b stab_a stab_b stab_a stab_b stab_a" },
       { id: "bass", inst: "bass", oct: -1, vol: 1.1, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
       { id: "kit", inst: "drums", vol: 0.85, seq: "kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2" },
@@ -708,8 +708,8 @@
       hats: D_HAT8
     },
     tracks: [
-      { id: "lead", inst: "flute", oct: 2, vol: 0.95, pan: -0.12, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_e lead_a" },
-      { id: "chip", inst: "pulse25", oct: 2, vol: 0.5, pan: 0.2, layer: 1, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_e lead_a" },
+      { id: "lead", inst: "flute", oct: 2, vol: 0.95, pan: -0.12, seq: "_*4 lead_a lead_b lead_c lead_d lead_e lead_a lead_b lead_c lead_d" },
+      { id: "chip", inst: "pulse25", oct: 2, vol: 0.5, pan: 0.2, layer: 1, seq: "_*4 lead_a lead_b lead_c lead_d lead_e lead_a lead_b lead_c lead_d" },
       { id: "pad", inst: "pulse12", oct: 1, vol: 0.4, pan: 0.3, seq: "pad_a pad_a pad_b pad_a pad_b pad_a pad_b pad_a pad_b pad_a" },
       { id: "bass", inst: "bass", oct: -1, vol: 1.05, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
       { id: "kit", inst: "drums", vol: 0.85, seq: "kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2" },
@@ -735,9 +735,9 @@
       kit2: "k..hs..hk.hks.sh"
     },
     tracks: [
-      { id: "lead", inst: "flute", oct: 2, vol: 0.9, pan: -0.12, send: 0.2, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "lead", inst: "flute", oct: 2, vol: 0.9, pan: -0.12, send: 0.2, seq: "_*4 lead_a lead_b lead_c lead_d lead_a lead_b lead_c lead_d lead_a" },
       { id: "strings", inst: "strings", oct: 0, vol: 0.85, send: 0.3, seq: "str_a str_a str_b str_a str_b str_a str_b str_a str_b str_a" },
-      { id: "harp", inst: "harp", oct: 1, vol: 0.5, pan: 0.3, layer: 1, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "harp", inst: "harp", oct: 1, vol: 0.5, pan: 0.3, layer: 1, seq: "_*4 lead_a lead_b lead_c lead_d lead_a lead_b lead_c lead_d lead_a" },
       { id: "bass", inst: "bass", oct: -1, vol: 1.0, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
       { id: "kit", inst: "drums", vol: 0.8, seq: "kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2" }
     ]
@@ -762,7 +762,7 @@
       snare2: "k.x.s.x.k.xxs.sx"
     },
     tracks: [
-      { id: "lead", inst: "pulse25", oct: 2, vol: 0.95, pan: -0.12, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_e lead_a" },
+      { id: "lead", inst: "pulse25", oct: 2, vol: 0.95, pan: -0.12, seq: "_*4 lead_a lead_b lead_c lead_d lead_e lead_a lead_b lead_c lead_d" },
       { id: "strings", inst: "strings", oct: 0, vol: 0.9, send: 0.28, seq: "str_a str_a str_b str_a str_b str_a str_b str_a str_b str_a" },
       { id: "bass", inst: "bass", oct: -1, vol: 1.05, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
       { id: "kit", inst: "drums", vol: 0.85, seq: "snare*3 snare2 snare*3 snare2 snare*3 snare2 snare*3 snare2 snare*3 snare2 snare*3 snare2 snare*3 snare2 snare*3 snare2 snare*3 snare2 snare*3 snare2" }
@@ -788,7 +788,7 @@
       kick: "k...k...k...k..k"
     },
     tracks: [
-      { id: "lead", inst: "pulse12", oct: 2, vol: 0.95, pan: -0.1, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "lead", inst: "pulse12", oct: 2, vol: 0.95, pan: -0.1, seq: "_*4 lead_a lead_b lead_c lead_d lead_a lead_b lead_c lead_d lead_a" },
       { id: "pad", inst: "pulse25", oct: 1, vol: 0.45, pan: 0.28, seq: "pad_a pad_a pad_b pad_a pad_b pad_a pad_b pad_a pad_b pad_a" },
       { id: "strings", inst: "strings", oct: 0, vol: 0.55, layer: 1, send: 0.2, seq: "pad_a pad_a pad_b pad_a pad_b pad_a pad_b pad_a pad_b pad_a" },
       { id: "bass", inst: "bass", oct: -1, vol: 1.05, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
@@ -815,7 +815,7 @@
       kit2: "k.dhs..dk.hds.dd"
     },
     tracks: [
-      { id: "lead", inst: "marimba", oct: 2, vol: 0.95, pan: -0.1, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "lead", inst: "marimba", oct: 2, vol: 0.95, pan: -0.1, seq: "_*4 lead_a lead_b lead_c lead_d lead_a lead_b lead_c lead_d lead_a" },
       { id: "mar", inst: "marimba", oct: 1, vol: 0.6, pan: 0.25, seq: "mar_a mar_a mar_b mar_a mar_b mar_a mar_b mar_a mar_b mar_a" },
       { id: "pad", inst: "pad", oct: 0, vol: 0.55, send: 0.3, layer: 1, seq: "mar_a mar_a mar_b mar_a mar_b mar_a mar_b mar_a mar_b mar_a" },
       { id: "bass", inst: "bass", oct: -1, vol: 1.0, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
@@ -843,7 +843,7 @@
     },
     tracks: [
       { id: "pad", inst: "pad", oct: 0, vol: 1.0, send: 0.4, seq: "pad_a pad_a pad_b pad_a pad_b pad_a pad_b pad_a pad_b pad_a" },
-      { id: "lead", inst: "flute", oct: 2, vol: 0.85, pan: -0.15, send: 0.3, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "lead", inst: "flute", oct: 2, vol: 0.85, pan: -0.15, send: 0.3, seq: "_*4 lead_a lead_b lead_c lead_d lead_a lead_b lead_c lead_d lead_a" },
       { id: "turbine", inst: "pulse12", oct: 1, vol: 0.35, pan: 0.32, seq: "turb turb turb turb turb turb turb turb turb turb" },
       { id: "bass", inst: "bass", oct: -1, vol: 1.0, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
       { id: "kit", inst: "drums", vol: 0.75, seq: "kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2 kit*3 kit2" }
@@ -870,7 +870,7 @@
       kit2: "k..hs..hk.khs.sh"
     },
     tracks: [
-      { id: "lead", inst: "pulse25", oct: 2, vol: 0.9, pan: -0.12, seq: "_ _ _ _ lead_a lead_b lead_c lead_d lead_a lead_b" },
+      { id: "lead", inst: "pulse25", oct: 2, vol: 0.9, pan: -0.12, seq: "_*4 lead_a lead_b lead_c lead_d lead_a lead_b lead_c lead_d lead_a" },
       { id: "brass", inst: "brass", oct: 0, vol: 0.7, seq: "brass_a brass_a brass_b brass_a brass_b brass_a brass_b brass_a brass_b brass_a" },
       { id: "pad", inst: "pad", oct: 0, vol: 0.6, send: 0.35, seq: "pad_a pad_a pad_b pad_a pad_b pad_a pad_b pad_a pad_b pad_a" },
       { id: "bass", inst: "bass", oct: -1, vol: 1.05, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
@@ -1088,7 +1088,7 @@
     tracks: [
       { id: "lead", inst: "pulse25", oct: 2, vol: 1.0, pan: -0.12, seq: "intro lead_a lead_b lead_c lead_d lead_a lead_b lead_c lead_d lead_a" },
       { id: "counter", inst: "pulse12", oct: 1, vol: 0.5, pan: 0.3, seq: "cnt_a cnt_a cnt_a cnt_a cnt_a cnt_a cnt_a cnt_a cnt_a cnt_a" },
-      { id: "brass", inst: "brass", oct: 0, vol: 0.5, layer: 1, seq: "_ _ _ _ lead_b lead_c _ _ lead_b lead_c" },
+      { id: "brass", inst: "brass", oct: 0, vol: 0.5, layer: 1, seq: "_*4 lead_b lead_c _*4 lead_b lead_c _*4 lead_b lead_c _*4" },
       { id: "bass", inst: "bass", oct: -1, vol: 1.15, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
       { id: "kit", inst: "drums", vol: 0.95, seq: "kit*3 fill kit2*3 fill kit*3 fill kit2*3 fill kit*3 fill kit2*3 fill kit*3 fill kit2*3 fill kit*3 fill kit2*3 fill" },
       { id: "cym", inst: "drums", vol: 0.55, seq: "cym rest*3 cym rest*3 cym rest*3 cym rest*3 cym rest*3 cym rest*3 cym rest*3 cym rest*3 cym rest*3 cym rest*3" }
@@ -1120,7 +1120,7 @@
     tracks: [
       { id: "lead", inst: "pulse25", oct: 2, vol: 1.05, pan: -0.1, seq: "tag lead_a lead_b lead_c lead_d lead_e lead_a lead_b lead_c lead_d lead_e" },
       { id: "organ", inst: "organ", oct: 0, vol: 0.55, layer: 1, seq: "stab_a stab_a stab_b stab_a stab_b stab_a stab_b stab_a stab_b stab_a stab_b" },
-      { id: "brass", inst: "brass", oct: 1, vol: 0.6, pan: 0.25, seq: "_ tag _ _ _ tag _ _ _ _ tag" },
+      { id: "brass", inst: "brass", oct: 1, vol: 0.6, pan: 0.25, seq: "_ tag _*7 tag _*7 tag _*7 tag _*6" },
       { id: "bass", inst: "bass", oct: -1, vol: 1.15, seq: "bass_a bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b" },
       { id: "kit", inst: "drums", vol: 0.95, seq: "kit*3 fill kit2*3 fill kit*3 fill kit2*3 fill kit*3 fill kit2*3 fill kit*3 fill kit2*3 fill kit*3 fill kit2*3 fill kit*3 fill" },
       { id: "cym", inst: "drums", vol: 0.55, seq: "cym rest*3 cym rest*3 cym rest*3 cym rest*3 cym rest*3 cym rest*3 cym rest*3 cym rest*3 cym rest*3 cym rest*3 cym rest*3" }
@@ -1233,7 +1233,7 @@
       lead_a: m("ionian", COUNTY_A),
       lead_b: m("ionian", COUNTY_B),
       lead_c: m("ionian", "7:0.5 6:0.5 4:1 2:0.5 4:0.5 6:1 | 7:1.5 9:0.5 7:2 | 6:0.5 4:0.5 2:1 4:1 6:1 | 4:4"),
-      cats: m("ionian", MEADOW + " " + MEADOW + " | " + BIGBOY + " | " + MEADOW + " 9:1 | " + BIGBOY),
+      cats: m("ionian", MEADOW + " " + MEADOW + " | " + BIGBOY + " | " + MEADOW + " 9:2 | " + BIGBOY),
       org_a: ch("ionian", PROG_COUNTY, "push"),
       org_b: ch("ionian", [4, 5, 3, 4, 2, 5, 4, 0], "push"),
       bass_a: bl("ionian", PROG_COUNTY, "pump"),
@@ -1246,8 +1246,8 @@
     },
     tracks: [
       { id: "brass", inst: "brass", oct: 2, vol: 1.05, pan: -0.1, seq: "fan fan2 lead_a lead_b lead_c fan2 lead_a lead_b lead_c fan fan2 lead_a" },
-      { id: "lead", inst: "pulse25", oct: 2, vol: 0.7, pan: 0.2, layer: 1, seq: "_ _ lead_a lead_b lead_c _ lead_a lead_b lead_c _ _ lead_a" },
-      { id: "cats", inst: "bell", oct: 2, vol: 0.55, pan: 0.35, send: 0.35, layer: 1, seq: "_ _ _ _ cats _ _ _ cats _ _ _" },
+      { id: "lead", inst: "pulse25", oct: 2, vol: 0.7, pan: 0.2, layer: 1, seq: "_*4 lead_a lead_b lead_c _*4 lead_a lead_b lead_c _*4 lead_a lead_b lead_c" },
+      { id: "cats", inst: "bell", oct: 2, vol: 0.55, pan: 0.35, send: 0.35, layer: 1, seq: "_*4 cats _*4 cats _*4 cats _*4 cats _*4 cats _*4 cats" },
       { id: "organ", inst: "organ", oct: 0, vol: 0.55, seq: "org_a org_b org_a org_b org_a org_b org_a org_b org_a org_b org_a org_b" },
       { id: "bass", inst: "bass", oct: -1, vol: 1.15, seq: "bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b bass_a bass_b" },
       { id: "kit", inst: "drums", vol: 0.95, seq: "kit*3 fill kit2*3 fill kit*3 fill kit2*3 fill kit*3 fill kit2*3 fill kit*3 fill kit2*3 fill kit*3 fill kit2*3 fill kit*3 fill kit2*3 fill" },
@@ -1267,15 +1267,15 @@
     loop: { from: 0, to: 16 },
     patterns: {
       hush: m("phrygian", "0:16 | 0:16 | -2:16 | 0:16"),
-      tag: ORACLE_TAG_SLOW + " | .:4 | .:4 | .:4 | .:4 | .:4 | .:4 | .:4 | .:4 | .:4 | .:4",
-      spark: m("phrygian", ".:8 | .:4 | 7:1 .:3 | .:4 | .:4 | .:4 | .:2 6:1 .:1 | .:4 | .:4 | .:4 | .:4 | .:4 | .:4"),
-      quiet: "................"
+      tag: ORACLE_TAG_SLOW + " .:48",
+      spark: m("phrygian", ".:8 | 7:1 .:3 | .:4 | .:4 | .:2 6:1 .:1 | .:4 | .:4 | .:4"),
+      quiet: "z..............."
     },
     tracks: [
       { id: "hush", inst: "drone", oct: -1, vol: 0.8, send: 0.5, seq: "hush hush hush hush" },
-      { id: "tag", inst: "fm", oct: 1, vol: 0.9, send: 0.6, params: { ratio: 1.41, index: 3.5 }, seq: "tag tag" },
-      { id: "spark", inst: "glass", oct: 2, vol: 0.5, pan: 0.3, send: 0.7, seq: "spark spark" },
-      { id: "quiet", inst: "drums", vol: 0.15, seq: "quiet*16" }
+      { id: "tag", inst: "fm", oct: 1, vol: 0.9, send: 0.6, params: { ratio: 1.41, index: 3.5 }, seq: "tag*4" },
+      { id: "spark", inst: "glass", oct: 2, vol: 0.5, pan: 0.3, send: 0.7, seq: "spark*2" },
+      { id: "heart", inst: "drums", vol: 0.14, seq: "quiet*16" }
     ]
   });
 
@@ -1329,11 +1329,11 @@
       kit: "k...s...k...s...",
       kit2: "k...s...k..ks..s",
       hum: m("ionian", "0+4:8 | 5+2:8 | 3+0:8 | 4+1:8"),
-      cats: m("ionian", MEADOW + " " + MEADOW + " | " + BIGBOY + " | " + MEADOW + " 9:1 | " + BIGBOY),
-      tag: ORACLE_TAG_SLOW + " | .:4 | .:4 | .:4"
+      cats: m("ionian", MEADOW + " " + MEADOW + " | " + BIGBOY + " | " + MEADOW + " 9:2 | " + BIGBOY),
+      tag: ORACLE_TAG_SLOW + " .:48"
     },
     tracks: [
-      { id: "lead", inst: "flute", oct: 2, vol: 0.95, pan: -0.12, send: 0.25, seq: "_ _ lead_a lead_b lead_c lead_d lead_a lead_b lead_e lead_c lead_d lead_a lead_b lead_e lead_c lead_d" },
+      { id: "lead", inst: "flute", oct: 2, vol: 0.95, pan: -0.12, send: 0.25, seq: "_*4 lead_a lead_b lead_c lead_d lead_a lead_b lead_e lead_c lead_d lead_a lead_b lead_e lead_c lead_d lead_a" },
       { id: "strings", inst: "strings", oct: 0, vol: 0.9, send: 0.3, seq: "intro str_a str_b str_a str_b str_a str_b str_a" },
       { id: "harp", inst: "harp", oct: 1, vol: 0.65, pan: 0.28, seq: "harp_a harp_b harp_a harp_b harp_a harp_b harp_a harp_b" },
       { id: "bass", inst: "bass", oct: -1, vol: 1.0, seq: "bass_i bass_a bass_b bass_a bass_b bass_a bass_b bass_a" },
