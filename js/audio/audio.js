@@ -958,11 +958,32 @@
         inst: tr.inst || "pulse25", drums: isDrums, vol: tr.vol === undefined ? 1 : tr.vol,
         pan: tr.pan || 0, send: tr.send || 0, layer: tr.layer || 0,
         only: tr.only || null, not: tr.not || null, params: tr.params || null,
-        name: tr.id || tr.inst || ("t" + ti), evs: evs, bars: null, len: beat
+        name: tr.id || tr.inst || ("t" + ti), evs: evs, bars: null, len: beat, raw: beat
       });
     }
     let bars = song.bars || Math.ceil((maxBeat - 1e-6) / beats);
     if (bars < 1) bars = 1;
+    // A track whose sequence is shorter than the song cycles to fill it
+    // (tracker-style ostinato); a longer one is truncated at the song end.
+    const songBeats = bars * beats;
+    for (let ti3 = 0; ti3 < tracks.length; ti3++) {
+      const t3 = tracks[ti3];
+      if (!(t3.len > 0) || t3.len >= songBeats - 1e-6) continue;
+      const cycle = t3.len;
+      const base = t3.evs.length;
+      for (let off = cycle; off < songBeats - 1e-6; off = round6(off + cycle)) {
+        for (let e = 0; e < base; e++) {
+          const ev = t3.evs[e];
+          const b = round6(ev.b + off);
+          if (b >= songBeats - 1e-6) continue;
+          const copy = { b: b, dur: ev.dur, vel: ev.vel };
+          if (ev.drum) copy.drum = ev.drum; else { copy.notes = ev.notes; if (ev.glide !== undefined) copy.glide = ev.glide; }
+          t3.evs.push(copy);
+        }
+      }
+      t3.evs.sort(function (a, b) { return a.b - b.b; });
+      t3.len = songBeats;
+    }
     const loop = song.loop === false ? null : {
       from: (song.loop && song.loop.from) || 0,
       to: (song.loop && song.loop.to) || bars
@@ -1101,6 +1122,8 @@
   };
 
   Playback.prototype.start = function (t, fadeMs) {
+    this.t0 = t;
+    this.sched = 0;
     this.nextTime = t;
     const p = this.bus.gain;
     setV(p, fadeMs ? 0.0001 : 1, t);
@@ -1115,21 +1138,25 @@
     // Catch-up: a suspended tab can leave nextTime far in the past. Skip
     // whole bars (keeping the loop shape) rather than scheduling backwards.
     if (this.nextTime < nowT - 0.02) {
-      let skip = Math.ceil((nowT + 0.02 - this.nextTime) / bd);
+      const skip = Math.ceil((nowT + 0.02 - this.nextTime) / bd);
       if (skip > 0) {
         for (let i = 0; i < skip; i++) {
           const nb = nextBar(comp, this.bar);
           if (nb < 0) { this.finish(this.nextTime); return; }
           this.bar = nb;
         }
-        this.nextTime = round6(this.nextTime + skip * bd);
+        // Stay on the exact bar grid: the horizon is always t0 + n*barDur,
+        // never an accumulation of rounded additions.
+        this.sched += skip;
+        this.nextTime = this.t0 + this.sched * bd;
       }
     }
     let barsQueued = Math.max(0, Math.floor((this.nextTime - nowT) / bd));
     let guard = 0;
     while ((barsQueued < A.MIN_BARS_AHEAD || this.nextTime < nowT + A.LOOKAHEAD) && guard++ < 96) {
       this.scheduleBar(this.bar, this.nextTime);
-      this.nextTime = round6(this.nextTime + bd);
+      this.sched++;
+      this.nextTime = this.t0 + this.sched * bd;
       barsQueued++;
       const nb = nextBar(comp, this.bar);
       if (nb < 0) { this.finish(this.nextTime); return; }
@@ -1344,6 +1371,7 @@
   A.fanfare = A.jingle;
 
   A.songBar = function () { return playing ? playing.bar : -1; };
+  A.playback = function () { return playing; };   // test/debug hook
   A.playingId = function () { return playing ? playing.id : null; };
   A.isPlaying = function (id) { return !!playing && (!id || playing.id === id); };
 
@@ -1430,6 +1458,29 @@
     setV(bus.sfx.gain, A.vol.sfx, t);
     setV(bus.cry.gain, A.vol.cry, t);
     setV(bus.amb.gain, A.vol.ambience, t);
+  };
+
+  // MQ.Settings.apply() (js/content/state.js) reaches for these two by name,
+  // and the pause menu passes 0-10 sliders, so accept either scale.
+  function volArg(v) {
+    v = +v;
+    if (isNaN(v)) return null;
+    if (v > 1.5) v = v / 10;
+    return Math.max(0, Math.min(1, v));
+  }
+  A.setMusicVolume = function (v) {
+    const n = volArg(v);
+    if (n === null) return false;
+    A.setVolume("music", n);
+    return true;
+  };
+  A.setSfxVolume = function (v) {
+    const n = volArg(v);
+    if (n === null) return false;
+    A.setVolume("sfx", n);
+    A.setVolume("cry", Math.min(1, n * 1.05));
+    A.setVolume("ambience", n * 0.5);
+    return true;
   };
 
   // MQ.Settings is owned by the ui/content teams; read it defensively.
@@ -1583,19 +1634,40 @@
     if (sp && sp.base) weight = ((sp.base.hp || 60) + (sp.base.atk || 60) + (sp.base.def || 60)) / 3;
     const size = weight ? Math.max(-14, Math.min(10, (70 - weight) * 0.22)) : (rnd() * 10 - 5);
     const segs = Math.max(2, F.seg + Math.floor(rnd() * 3) - 1);
-    const total = 0.34 + rnd() * 0.3 + (opts.dur ? 0 : 0);
-    const plan = { type: type, wave: F.w, segs: [], dur: opts.dur || total, noise: F.noise, ratio: F.ratio + rnd() * 0.8, rough: F.rough };
-    let note = F.base + size + Math.floor(rnd() * 7) - 3;
+    // The data team hands every species a `cry` block (ROSTER §1: wave, base
+    // Hz, len ms, slide Hz, noise, vib, gain). Honour it when it is there and
+    // let the type flavour only colour the bends; fall back to the derived
+    // shape when a species (or a test stub) has none.
+    const cd = (sp && sp.cry) ? sp.cry : null;
+    const total = cd && cd.len ? Math.max(0.16, Math.min(1.1, cd.len / 1000)) : 0.34 + rnd() * 0.3;
+    const plan = {
+      type: type, wave: (cd && cd.wave) || F.w, segs: [], dur: opts.dur || total,
+      noise: cd ? (cd.noise * 0.65 + F.noise * 0.35) : F.noise,
+      ratio: F.ratio + rnd() * 0.8, rough: F.rough,
+      vib: cd && cd.vib ? cd.vib : 0,
+      gain: cd && cd.gain ? Math.max(0.55, Math.min(1.45, cd.gain / 0.3)) : 1
+    };
+    let note = clampNote(cd
+      ? midiOfFreq(cd.base) + Math.floor(rnd() * 3) - 1
+      : F.base + size + Math.floor(rnd() * 7) - 3);
+    // A positive `slide` rises, a negative one droops; walk there over the segs.
+    const target = cd && cd.slide ? clampNote(midiOfFreq(Math.max(55, cd.base + cd.slide))) : null;
     const dseg = plan.dur / segs;
     for (let i = 0; i < segs; i++) {
       const dir = i === 0 ? 1 : (rnd() < 0.55 ? 1 : -1);
       const jump = Math.round((rnd() * F.bend * dir) * 0.7);
-      const nn = Math.max(28, Math.min(104, note + (i === 0 ? 0 : jump)));
-      plan.segs.push({ n: nn, t: i * dseg, d: dseg * (0.85 + rnd() * 0.5), v: 0.55 - i * 0.045 + rnd() * 0.1 });
+      let nn;
+      if (i === 0) nn = note;
+      else if (target !== null) nn = clampNote(Math.round(note + (target - note) / (segs - i) + jump * 0.45));
+      else nn = clampNote(note + jump);
+      plan.segs.push({ n: nn, t: i * dseg, d: dseg * (0.85 + rnd() * 0.5), v: (0.55 - i * 0.045 + rnd() * 0.1) * plan.gain });
       note = nn;
     }
     return plan;
   };
+
+  function clampNote(n) { return Math.max(28, Math.min(104, Math.round(n))); }
+  function midiOfFreq(hz) { return 69 + 12 * Math.log(Math.max(20, hz) / 440) / Math.LN2; }
 
   A.cry = function (speciesId, opts) {
     if (!speciesId) return false;
@@ -1613,7 +1685,8 @@
       grains.push({
         i: plan.rough > 0.45 ? "fm" : "osc", w: plan.wave, n: s.n, to: next ? next.n : s.n - 2,
         t: s.t, d: s.d, v: s.v * 0.7, ratio: plan.ratio, index: plan.rough * 3,
-        vib: plan.rough > 0.3 ? 20 * plan.rough : 0, vibHz: 9 + plan.rough * 12, a: 0.006
+        vib: plan.vib ? 6 + plan.vib * 2.4 : (plan.rough > 0.3 ? 20 * plan.rough : 0),
+        vibHz: 9 + plan.rough * 12, a: 0.006
       });
     }
     if (plan.noise > 0.08) {

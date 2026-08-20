@@ -28,6 +28,7 @@ const ASSETS = [
   "js/art/fx.js",
   "js/audio/audio.js",
   "js/audio/songs.js",
+  "js/audio/sfx.js",
   "js/data/types.js",
   "js/data/moves.js",
   "js/data/abilities.js",
