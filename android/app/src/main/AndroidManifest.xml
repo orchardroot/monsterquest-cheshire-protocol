@@ -1,22 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Fully offline: the entire game ships inside the APK, no permissions needed. -->
+    <!-- Fully offline: the entire game ships inside the APK, so the app asks
+         for no permissions at all and declares no network access. -->
+
+    <!-- Fire tablets and older phones: a touchscreen is expected but the game
+         also plays fine from a keyboard or gamepad, so nothing is required. -->
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <uses-feature android:name="android.hardware.gamepad" android:required="false" />
 
     <application
         android:label="MonsterQuest"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/AppTheme"
         android:allowBackup="true"
+        android:largeHeap="true"
         android:hardwareAccelerated="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             android:screenOrientation="sensorLandscape"
-            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize">
+            android:resizeableActivity="false"
+            android:immersive="true"
+            android:windowSoftInputMode="adjustNothing"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation|uiMode|density|fontScale|layoutDirection|locale">
+            <!-- The long configChanges list matters: any config change this
+                 activity does NOT handle would tear it down and rebuild the
+                 WebView, reloading the game from the title screen and losing
+                 whatever had not been written to localStorage. Flags newer
+                 than API 21 (density, layoutDirection) are simply ignored by
+                 Fire OS 5 rather than being an error. -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <!-- Fire tablets surface apps through the Amazon launcher,
+                     which uses the standard LAUNCHER category. -->
             </intent-filter>
         </activity>
     </application>

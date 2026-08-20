@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main", "master", "claude/pokemon-style-game-q728v6"]
+    branches: ["main", "master", "v2"]
   workflow_dispatch:
 
 permissions:

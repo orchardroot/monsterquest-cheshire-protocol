@@ -41,11 +41,52 @@ android {
     }
 }
 
+// -----------------------------------------------------------------------
 // Bundle the web game into the APK's assets before every build.
-tasks.register('copyWebAssets', Copy) {
-    from(rootProject.projectDir.parentFile) {
-        include 'index.html', 'manifest.webmanifest', 'sw.js', 'js/**', 'icons/**'
+//
+// Sync (not Copy) is deliberate: it mirrors the source tree, so a file that
+// has been renamed or deleted in the repo also disappears from
+// src/main/assets/www instead of lingering there from an earlier build and
+// getting shipped as a ghost. That directory is git-ignored and is owned
+// entirely by this task — nothing else should ever write into it.
+//
+// The include list is the whole runtime web tree. js/** covers every
+// subpackage (core, art, audio, data, world, world/maps, battle, content,
+// ui, story, story/chapters), so new files are picked up automatically;
+// css/**, icons/**, index.html, sw.js and manifest.webmanifest are the rest
+// of what index.html actually references. Everything else in the repo
+// (docs/, tools/, android/, README) stays out of the APK.
+// -----------------------------------------------------------------------
+def webRoot = rootProject.projectDir.parentFile
+def wwwDir = layout.projectDirectory.dir('src/main/assets/www')
+
+tasks.register('copyWebAssets', Sync) {
+    description = 'Mirrors the web game into the APK assets directory.'
+    from(webRoot) {
+        include 'index.html'
+        include 'manifest.webmanifest'
+        include 'sw.js'
+        include 'js/**'
+        include 'css/**'
+        include 'icons/**'
+        // Housekeeping that must never reach a device.
+        exclude '**/.DS_Store'
+        exclude '**/*.map'
+        exclude '**/node_modules/**'
     }
-    into layout.projectDirectory.dir('src/main/assets/www')
+    into wwwDir
+    // Fail loudly rather than shipping an APK with no game in it.
+    doLast {
+        def index = wwwDir.file('index.html').asFile
+        if (!index.exists()) {
+            throw new GradleException("copyWebAssets produced no index.html — is ${webRoot} the repo root?")
+        }
+    }
 }
+
 preBuild.dependsOn copyWebAssets
+
+// `gradle clean` should also take the mirrored assets with it.
+tasks.matching { it.name == 'clean' }.configureEach {
+    delete wwwDir
+}
