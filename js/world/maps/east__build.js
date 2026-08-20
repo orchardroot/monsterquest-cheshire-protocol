@@ -43,8 +43,8 @@
     for (let j = y; j < y + h; j++) { this.set(l, x, j, ch); this.set(l, x + w - 1, j, ch); }
     return this;
   };
-  P.h = function (l, x, y, n, ch) { for (let i = 0; i < n; i++) this.set(l, x + i, y, ch); return this; };
-  P.v = function (l, x, y, n, ch) { for (let i = 0; i < n; i++) this.set(l, x, y + i, ch); return this; };
+  P.hline = function (l, x, y, n, ch) { for (let i = 0; i < n; i++) this.set(l, x + i, y, ch); return this; };
+  P.vline = function (l, x, y, n, ch) { for (let i = 0; i < n; i++) this.set(l, x, y + i, ch); return this; };
   // Stamp an array of strings; `skip` chars (default space) pass through.
   P.stamp = function (l, x, y, rows, skip) {
     skip = skip === undefined ? " " : skip;
@@ -115,13 +115,13 @@
     const rh = o.rh === undefined ? 2 : o.rh;
     const roof = o.roof || "R", wall = o.wall || "#", win = o.win === null ? null : (o.win || "W");
     const door = o.door || "D";
-    for (let j = 0; j < rh; j++) c.h("g", x, y + j, w, roof);
-    for (let j = rh; j < h; j++) c.h("g", x, y + j, w, wall);
+    for (let j = 0; j < rh; j++) c.hline("g", x, y + j, w, roof);
+    for (let j = rh; j < h; j++) c.hline("g", x, y + j, w, wall);
     if (win) for (let j = rh; j < h - 1; j++) for (let i = 1; i < w - 1; i += 2) c.set("g", x + i, y + j, win);
     const dx = o.doorX === undefined ? x + Math.floor(w / 2) : x + o.doorX;
     c.set("g", dx, y + h - 1, door);
     if (o.doors) for (let k = 0; k < o.doors.length; k++) c.set("g", x + o.doors[k], y + h - 1, door);
-    if (o.over) c.h("o", x, y, w, o.over);
+    if (o.over) c.hline("o", x, y, w, o.over);
     if (o.chimney !== undefined) c.set("g", x + o.chimney, y, o.chimneyCh || "M");
     return { door: { x: dx, y: y + h - 1 }, front: { x: dx, y: y + h } };
   };
@@ -151,6 +151,25 @@
 
   // Fill the whole map, useful before carving.
   B.solidFill = function (c, ch) { return c.fill("g", 0, 0, c.w, c.h, ch); };
+
+  // Shared east-town legend. Every char resolves to an MQ.Tiles id.
+  const TOWN = {
+    ".": "grass", ",": "grass_dark", '"': "grass_tall", "l": "flowers_yellow", "o": "flowers_red",
+    "=": "path_cobble", "-": "pavement", "_": "path_flag", "+": "path_dirt", "r": "road", "k": "kerb",
+    "s": "steps", "t": "towpath", "~": "water_canal", "e": "water_edge", "x": "bridge_stone",
+    "T": "tree_oak", "y": "tree_oak_top", "B": "tree_birch", "b": "tree_birch_top",
+    "#": "wall_brick_red", "X": "wall_brick_dark", "R": "roof_slate", "^": "roof_over",
+    "W": "window", "D": "door_wood", "@": "door_red", "S": "door_shop", "m": "chimney",
+    "M": "chimney_mill", "V": "mill_wall", "v": "mill_window", "Z": "mill_wheel",
+    "c": "church_wall", "C": "church_window", "d": "church_door", "p": "church_spire", "g": "gravestone",
+    "N": "sign", "P": "sign_post", "n": "noticeboard", "O": "postbox", "j": "phonebox", "u": "bus_stop",
+    "L": "lamp_victorian", "H": "bench", "I": "bin", "F": "fence_iron", "f": "fence_wood",
+    "w": "wall_garden", "h": "hedge", "A": "market_stall", "a": "market_stall_top",
+    "q": "statue", "i": "war_memorial", "/": "fountain", "*": "planter", "z": "rock",
+    "%": "shop_awning", "&": "silk_bolt", "G": "gate_iron", "K": "canal_lock", "'": "flowers_white",
+    " ": null
+  };
+  B.TOWN = TOWN;
 
   MQ.EastBuild = B;
 })();
