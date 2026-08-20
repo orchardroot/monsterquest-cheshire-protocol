@@ -121,7 +121,7 @@
     ],
     items: [
       { x: 44, y: 4, item: "capsule_night", n: 3, flag: "item_lindow_1" },
-      { x: 4, y: 5, item: "elixir", n: 1, hidden: true, flag: "item_lindow_2" },
+      { x: 8, y: 10, item: "elixir", n: 1, hidden: true, flag: "item_lindow_2" },
       { x: 14, y: 30, item: "toxic_sachet", n: 1, hidden: true, flag: "item_lindow_3" },
       { x: 39, y: 27, item: "capsule_net", n: 2, flag: "item_lindow_4" },
       { x: 8, y: 13, item: "cipher_chip", n: 1, hidden: true, flag: "item_lindow_5" },
