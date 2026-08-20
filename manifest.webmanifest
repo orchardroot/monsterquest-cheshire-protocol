@@ -1,13 +1,19 @@
 {
-  "name": "MonsterQuest",
+  "id": ".",
+  "name": "MonsterQuest: The Cheshire Protocol",
   "short_name": "MonsterQuest",
-  "description": "A retro monster-catching RPG. Explore 5 towns, earn 4 badges, and become Champion.",
+  "description": "A widescreen monster-catching RPG set across the real towns and landmarks of Cheshire, England. Walk the routes, catch the wildlife, take eight gym badges off the county's trades and find out what ORACLE wants with them.",
+  "categories": ["games", "entertainment"],
+  "lang": "en-GB",
+  "dir": "ltr",
   "start_url": ".",
   "scope": ".",
   "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
   "orientation": "landscape",
   "background_color": "#181820",
   "theme_color": "#181820",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icons/icon-192.png",
