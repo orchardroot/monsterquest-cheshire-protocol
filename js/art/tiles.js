@@ -1,15 +1,24 @@
-// STUB — owned by art (painters) / world (catalogue names + properties).
-// Foundation ships the full NAMED catalogue with correct properties and
-// flat-colour placeholder painters. The art workstream replaces painters
-// (keep ids and properties stable; maps depend on them).
 // =============================================================
-// MonsterQuest v2 — MQ.Tiles: named tile catalogue + painters
+// MonsterQuest v2 — MQ.Tiles: the named tile catalogue + painters
+// Owned by: art (painters, helpers) — the catalogue ids/properties are
+// the world workstream's contract and are kept byte-stable below.
+//
+// Every tile is 16x16 source pixel art baked once into an offscreen
+// canvas and drawn by the overworld at 2x (MQ.TILE = 32). Painters use
+// fillRect only (via MQ.Art helpers) so they bake identically in a
+// browser and in headless test contexts.
+//
+// Palette: Cheshire. Red brick, sandstone, slate, salt white, canal
+// green, pine dark, moor purple, silk-mill mustard, rail steel.
 // =============================================================
 (function () {
   "use strict";
   const MQ = window.MQ;
   const U = MQ.U;
   const ART = MQ.ART;
+  const Art = MQ.Art;
+  const C = Art.C;
+  const PAL = Art.PAL;
 
   const defs = {};
   const cache = {};        // id|frame|variant → canvas
@@ -33,66 +42,2381 @@
   Tiles.count = function () { return Object.keys(defs).length; };
   Tiles.isSolid = function (id) { const d = defs[id]; return !!(d && (d.solid || d.water)); };
   Tiles.frames = function (id) { const d = defs[id]; return d && d.anim ? d.anim.length : 1; };
+  Tiles.variants = function (id) { const d = defs[id]; return d ? d.variants : 0; };
 
-  // Placeholder painter: flat colour with a little seeded texture and a
-  // recognisable mark for the tile class (solid = darker rim, water = waves...)
-  function placeholder(ctx, d, frame, seed) {
-    const rnd = U.rng(d.id + ":" + seed);
-    ctx.fillStyle = d.color;
-    ctx.fillRect(0, 0, ART, ART);
-    const dark = U.shade(d.color, 0.82), light = U.shade(d.color, 1.15);
-    for (let i = 0; i < 10; i++) {
-      ctx.fillStyle = rnd() < 0.5 ? dark : light;
-      ctx.fillRect(Math.floor(rnd() * ART), Math.floor(rnd() * ART), 1 + Math.floor(rnd() * 2), 1);
-    }
-    if (d.water) {
-      ctx.fillStyle = light;
-      const off = (frame || 0) % 4;
-      for (let y = 2; y < ART; y += 5) { ctx.fillRect((y + off * 2) % ART, y, 3, 1); ctx.fillRect((y + 8 + off * 2) % ART, y + 2, 2, 1); }
-    } else if (d.grass) {
-      ctx.fillStyle = dark;
-      for (let i = 0; i < 6; i++) { const x = 1 + Math.floor(rnd() * 14), y = 2 + Math.floor(rnd() * 12); ctx.fillRect(x, y, 1, 3); ctx.fillRect(x + 1, y - 1, 1, 2); }
-    } else if (d.solid) {
-      ctx.fillStyle = U.shade(d.color, 0.6);
-      ctx.fillRect(0, 0, ART, 1); ctx.fillRect(0, 0, 1, ART); ctx.fillRect(0, ART - 1, ART, 1); ctx.fillRect(ART - 1, 0, 1, ART);
-    }
-    if (d.ledge) {
-      ctx.fillStyle = U.shade(d.color, 0.5);
-      ctx.fillRect(0, ART - 4, ART, 2);
-    }
-    if (d.interact) {
-      ctx.fillStyle = "#fff"; ctx.globalAlpha = 0.5;
-      ctx.fillRect(6, 6, 4, 4);
-      ctx.globalAlpha = 1;
+  // =============================================================
+  // PAINTER LIBRARY
+  // Helpers below are deliberately small and composable: a background
+  // family (grass / path / floor / wall) plus an ascii overlay covers
+  // almost every tile, and the odd landmark gets a bespoke painter.
+  // =============================================================
+  const px = Art.px, rect = Art.rect, fill = Art.fill, ascii = Art.ascii;
+  const dither = Art.dither, speckle = Art.speckle, bevel = Art.bevel;
+  const vgrad = Art.vgrad, hgrad = Art.hgrad, tuft = Art.tuft;
+
+  function rnd(id, seed) { return U.rng(id + "#" + (seed | 0)); }
+
+  // ---- ground beds --------------------------------------------------
+  // Turf: dithered base + seeded blades. Variants shuffle the blades so a
+  // field of grass never shows an obvious grid.
+  function turf(ctx, seed, base, dk, lt, blades, key) {
+    const r = rnd(key || "turf", seed);
+    fill(ctx, base);
+    dither(ctx, 0, 0, ART, ART, dk, 4);
+    dither(ctx, 0, 0, ART, ART, lt, 2);
+    speckle(ctx, r, 0, 0, ART, ART, [dk, lt, base], 16);
+    for (let i = 0; i < blades; i++) {
+      const x = 1 + ((r() * 14) | 0), y = 3 + ((r() * 13) | 0);
+      tuft(ctx, x, y, dk, base, lt, 2 + ((r() * 2) | 0));
     }
   }
 
-  // get(id, frame, variantSeed) → cached 16×16 canvas
+  // Loose ground: soil, gravel, sand, salt — grain, no blades.
+  function grit(ctx, seed, base, dk, lt, n, key) {
+    const r = rnd(key || "grit", seed);
+    fill(ctx, base);
+    dither(ctx, 0, 0, ART, ART, dk, 3);
+    dither(ctx, 0, 0, ART, ART, lt, 2);
+    speckle(ctx, r, 0, 0, ART, ART, [dk, lt], n);
+  }
+
+  // Cobbles / setts: staggered rounded blocks with a joint colour.
+  function cobbles(ctx, seed, face, dk, lt, joint, cw, ch) {
+    const r = rnd("cob" + face, seed);
+    cw = cw || 4; ch = ch || 4;
+    fill(ctx, joint);
+    let row = 0;
+    for (let y = 0; y < ART; y += ch, row++) {
+      const ox = (row & 1) ? -((cw / 2) | 0) : 0;
+      for (let bx = ox; bx < ART; bx += cw) {
+        const q = r();
+        const c = q < 0.25 ? dk : (q > 0.75 ? lt : face);
+        const x0 = Math.max(bx, 0), x1 = Math.min(bx + cw - 1, ART);
+        if (x1 <= x0) continue;
+        rect(ctx, x0, y, x1 - x0, ch - 1, c);
+        rect(ctx, x0, y, x1 - x0, 1, U.shade(c, 1.16));
+        rect(ctx, x0, y + ch - 2, x1 - x0, 1, U.shade(c, 0.86));
+      }
+    }
+  }
+
+  // Flagstones: big irregular slabs.
+  function flags(ctx, seed, face, dk, lt, joint) {
+    const r = rnd("flag" + face, seed);
+    fill(ctx, joint);
+    const cuts = [[0, 0, 9, 7], [9, 0, 7, 7], [0, 7, 6, 9], [6, 7, 10, 9]];
+    for (let i = 0; i < cuts.length; i++) {
+      const s = cuts[i], q = r();
+      const c = q < 0.3 ? dk : (q > 0.7 ? lt : face);
+      rect(ctx, s[0], s[1], s[2] - 1, s[3] - 1, c);
+      rect(ctx, s[0], s[1], s[2] - 1, 1, U.shade(c, 1.12));
+      speckle(ctx, r, s[0], s[1], s[2] - 1, s[3] - 1, [U.shade(c, 0.9)], 3);
+    }
+  }
+
+  // Timber floor / decking.
+  function boards(ctx, seed, face, dk, lt, dir, pw) {
+    const r = rnd("brd" + face, seed);
+    Art.planks(ctx, { x: 0, y: 0, w: ART, h: ART, face: face, dark: dk, light: lt, grain: U.shade(face, 0.82), dir: dir || "h", pw: pw || 5, rnd: r });
+  }
+
+  // Water body. `o` carries the colour set; frame drives the ripple drift.
+  function pond(ctx, frame, o) {
+    Art.ripples(ctx, frame, {
+      w: ART, h: ART, face: o.face, top: o.top || U.shade(o.face, 1.08),
+      dark: o.dark, light: o.light, hi: o.hi || o.light, dither: true, len: o.len || 4, phase: o.phase || 0
+    });
+  }
+
+  // ---- masonry ------------------------------------------------------
+  function brickWall(ctx, seed, face, dk, lt, mortar, bw, bh) {
+    Art.bricks(ctx, {
+      x: 0, y: 0, w: ART, h: ART, bw: bw || 8, bh: bh || 4,
+      face: face, dark: dk, light: lt, mortar: mortar, rnd: rnd("brk" + face, seed)
+    });
+    Art.edge(ctx, "n", U.shade(face, 1.25), 0.5);
+    Art.edge(ctx, "s", "#000", 0.16);
+  }
+
+  function stoneWall(ctx, seed, face, dk, lt, mortar, bh) {
+    Art.stonework(ctx, { x: 0, y: 0, w: ART, h: ART, bh: bh || 5, face: face, dark: dk, light: lt, mortar: mortar, rnd: rnd("stw" + face, seed) });
+    Art.edge(ctx, "s", "#000", 0.18);
+  }
+
+  function roofOf(ctx, seed, style, face, dk, lt, shadow) {
+    Art.roof(ctx, { x: 0, y: 0, w: ART, h: ART, style: style, face: face, dark: dk, light: lt, shadow: shadow || dk, rnd: rnd("rf" + face, seed) });
+  }
+
+  // Dev-time sanity check: every ascii tile sheet is 16 rows of 16 chars.
+  function checkRows(rows) {
+    if (!MQ.DEV) return rows;
+    if (rows.length !== ART) MQ.warn("tiles: ascii sheet has " + rows.length + " rows: " + rows[0]);
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].length !== ART) MQ.warn("tiles: ascii row " + i + " is " + rows[i].length + " chars: \"" + rows[i] + "\"");
+    }
+    return rows;
+  }
+  const sheet = checkRows;
+
+  // Render an ascii sheet over a background painter.
+  // bg = function(ctx, frame, seed) | colour string | null (transparent)
+  function deco(bg, rows, palOver) {
+    checkRows(rows);
+    const p = palOver ? Art.pal(palOver) : PAL;
+    return function (ctx, frame, seed) {
+      if (typeof bg === "function") bg(ctx, frame, seed);
+      else if (bg) fill(ctx, bg);
+      ascii(ctx, rows, p);
+    };
+  }
+
+  // Same, but the ascii sheet is chosen by animation frame.
+  function decoAnim(bg, frames, palOver) {
+    for (let i = 0; i < frames.length; i++) checkRows(frames[i]);
+    const p = palOver ? Art.pal(palOver) : PAL;
+    return function (ctx, frame, seed) {
+      if (typeof bg === "function") bg(ctx, frame, seed);
+      else if (bg) fill(ctx, bg);
+      ascii(ctx, frames[(frame | 0) % frames.length], p);
+    };
+  }
+
+  // Same, but the ascii sheet is chosen by variant seed.
+  function decoVar(bg, sheets, palOver) {
+    for (let i = 0; i < sheets.length; i++) checkRows(sheets[i]);
+    const p = palOver ? Art.pal(palOver) : PAL;
+    return function (ctx, frame, seed) {
+      if (typeof bg === "function") bg(ctx, frame, seed);
+      else if (bg) fill(ctx, bg);
+      ascii(ctx, sheets[(seed | 0) % sheets.length], p);
+    };
+  }
+
+  // ---- shared backgrounds -------------------------------------------
+  const BG = {};
+  BG.grass = function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 5, "g"); };
+  BG.grassQuiet = function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 2, "gq"); };
+  BG.moor = function (ctx, f, s) { turf(ctx, s, C.moorGrass, "#6b7a36", "#a4b25e", 4, "mo"); };
+  BG.dirt = function (ctx, f, s) { grit(ctx, s, C.dirt, C.dirtDk, C.dirtLt, 20, "di"); };
+  BG.cobble = function (ctx, f, s) { cobbles(ctx, s, "#9a9aa8", "#7a7a88", "#b6b6c2", "#68687a"); };
+  BG.pave = function (ctx, f, s) { flags(ctx, s, "#b0b0b8", "#95959f", "#c8c8d0", "#7e7e88"); };
+  BG.floorWood = function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); };
+  BG.floorStone = function (ctx, f, s) { flags(ctx, s, "#909098", "#75757f", "#a8a8b2", "#63636d"); };
+  BG.floorTile = function (ctx, f, s) { tileFloor(ctx, s, "#d8d0c0", "#bdb4a2"); };
+  BG.cave = function (ctx, f, s) { grit(ctx, s, "#6a6070", "#4d4557", "#867c8e", 26, "cv"); };
+  BG.none = null;
+
+  function tileFloor(ctx, seed, face, dk) {
+    const r = rnd("tf" + face, seed);
+    fill(ctx, face);
+    for (let y = 0; y < ART; y += 8) for (let x = 0; x < ART; x += 8) {
+      const c = ((x + y) % 16 === 0) ? face : U.shade(face, 0.96);
+      rect(ctx, x, y, 7, 7, c);
+      rect(ctx, x, y, 7, 1, U.shade(c, 1.06));
+    }
+    rect(ctx, 7, 0, 1, ART, dk); rect(ctx, 15, 0, 1, ART, dk);
+    rect(ctx, 0, 7, ART, 1, dk); rect(ctx, 0, 15, ART, 1, dk);
+    speckle(ctx, r, 0, 0, ART, ART, [U.shade(face, 1.05)], 6);
+  }
+
+  // Contact shadow at the foot of an object, so it sits on the ground.
+  function foot(ctx, cx, cy, w) { Art.shadow(ctx, cx, cy, w || 5, 2, 0.22); }
+
+  // =============================================================
+  // PAINTERS — keyed by tile id.
+  // =============================================================
+  const PAINT = {};
+  function P(id, fn) { PAINT[id] = fn; return fn; }
+
+  // ---------------------------------------------------------------
+  // GROUND — turf, moor, paths, floors
+  // ---------------------------------------------------------------
+  P("grass", function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 5, "g"); });
+  P("grass_dark", function (ctx, f, s) { turf(ctx, s, "#3f8a34", "#2b6926", "#59a844", 4, "gd"); });
+
+  P("grass_tall", function (ctx, f, s) {
+    turf(ctx, s, "#3d9a3a", "#2a6f28", "#55b84c", 0, "gt");
+    const r = rnd("tall", s);
+    const lean = (f | 0) & 1;
+    for (let i = 0; i < 14; i++) {
+      const x = (r() * ART) | 0, h = 6 + ((r() * 7) | 0);
+      const c = r() < 0.35 ? "#67c95c" : "#43a63c";
+      const dark = U.shade(c, 0.72);
+      for (let j = 0; j < h; j++) {
+        const tip = j > h - 4;
+        const dx = tip ? (lean ? 1 : 0) : 0;
+        px(ctx, (x + dx) & 15, 15 - j, tip ? c : dark);
+      }
+      px(ctx, (x + (lean ? 2 : 1)) & 15, 15 - h, "#7ad86a");
+    }
+  });
+
+  P("grass_moor", function (ctx, f, s) {
+    turf(ctx, s, C.moorGrass, "#6b7a36", "#a8b662", 6, "gm");
+    const r = rnd("moorg", s);
+    for (let i = 0; i < 5; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, C.bracken);
+  });
+
+  P("moor_heather", function (ctx, f, s) {
+    turf(ctx, s, "#5f6b34", "#454e26", "#77854a", 3, "mh");
+    const r = rnd("heath", s);
+    for (let i = 0; i < 11; i++) {
+      const x = (r() * ART) | 0, y = 2 + ((r() * 13) | 0);
+      rect(ctx, x, y, 1, 3, "#4a5a2c");
+      px(ctx, x, y - 1, C.heather);
+      px(ctx, (x + 1) & 15, y, r() < 0.5 ? C.heatherLt : C.heather);
+      px(ctx, (x - 1 + 16) & 15, y + 1, C.heatherDk);
+    }
+  });
+
+  P("moor_bog", function (ctx, f, s) {
+    grit(ctx, s, C.peat, "#33291c", "#63523c", 22, "bog");
+    const r = rnd("bogp", s);
+    for (let i = 0; i < 3; i++) {
+      const x = 2 + ((r() * 10) | 0), y = 3 + ((r() * 9) | 0);
+      rect(ctx, x, y, 4, 3, "#2c2a20");
+      rect(ctx, x, y, 4, 1, "#4a4c3a");
+      px(ctx, x + 1, y + 1, "#5b6050");
+    }
+    for (let i = 0; i < 4; i++) {
+      const x = (r() * ART) | 0;
+      rect(ctx, x, 4 + ((r() * 8) | 0), 1, 4, C.moorGrass);
+    }
+    Art.edge(ctx, "ns", "#000", 0.18);
+  });
+
+  function flowerBed(petal, petal2, centre) {
+    return function (ctx, f, s) {
+      turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "fl");
+      const r = rnd("flow" + petal, s);
+      for (let i = 0; i < 6; i++) {
+        const x = 1 + ((r() * 13) | 0), y = 2 + ((r() * 12) | 0);
+        const p = r() < 0.5 ? petal : petal2;
+        px(ctx, x, y - 1, p); px(ctx, x - 1, y, p); px(ctx, x + 1, y, p); px(ctx, x, y + 1, p);
+        px(ctx, x, y, centre);
+        px(ctx, x, y + 2, C.grassDk);
+      }
+    };
+  }
+  P("flowers_yellow", flowerBed("#f0e04c", "#e8c832", "#8a6a10"));
+  P("flowers_red", flowerBed("#e05050", "#c03434", "#f0d060"));
+  P("flowers_blue", flowerBed("#6a86e8", "#4c62c8", "#e8e0a0"));
+  P("flowers_white", flowerBed("#f4f4ee", "#dcdcd2", "#e8c040"));
+
+  P("path_dirt", function (ctx, f, s) {
+    grit(ctx, s, C.dirt, C.dirtDk, C.dirtLt, 24, "pd");
+    const r = rnd("pdr", s);
+    for (let i = 0; i < 3; i++) rect(ctx, (r() * 12) | 0, (r() * ART) | 0, 3, 1, U.shade(C.dirtDk, 0.9));
+    for (let i = 0; i < 4; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#8f8f86");
+  });
+
+  P("path_cobble", function (ctx, f, s) { cobbles(ctx, s, "#9a9aa8", "#7a7a88", "#b6b6c2", "#68687a"); });
+  P("path_flag", function (ctx, f, s) { flags(ctx, s, "#a8a090", "#8c8578", "#c0b8a6", "#77715f"); });
+  P("path_gravel", function (ctx, f, s) {
+    grit(ctx, s, "#b0a898", "#8e876f", "#cdc6b4", 34, "pg");
+    const r = rnd("grv", s);
+    for (let i = 0; i < 10; i++) rect(ctx, (r() * 15) | 0, (r() * 15) | 0, 2, 1, r() < 0.5 ? "#d6d0c0" : "#847d68");
+  });
+
+  P("path_tarmac", function (ctx, f, s) {
+    grit(ctx, s, "#505058", "#3d3d45", "#66666e", 30, "tar");
+    const r = rnd("tarc", s);
+    let x = (r() * ART) | 0;
+    for (let y = 0; y < ART; y++) { px(ctx, x, y, "#3a3a42"); if (r() < 0.35) x = (x + (r() < 0.5 ? 1 : 15)) & 15; }
+  });
+
+  P("path_wet", function (ctx, f, s) {
+    grit(ctx, s, "#7a8a70", "#5e6c56", "#94a189", 20, "pw");
+    const r = rnd("wet", s);
+    for (let i = 0; i < 3; i++) {
+      const x = 1 + ((r() * 9) | 0), y = 2 + ((r() * 10) | 0), w = 4 + ((r() * 3) | 0);
+      rect(ctx, x, y, w, 3, "#6d8496");
+      rect(ctx, x + 1, y, w - 2, 1, "#93b0c4");
+      px(ctx, x + 1, y + 1, "#c4dbe8");
+    }
+  });
+
+  P("sand", function (ctx, f, s) {
+    grit(ctx, s, "#e8d8a0", "#c9b57e", "#f6ecc4", 26, "sd");
+    const r = rnd("sdr", s);
+    for (let i = 0; i < 4; i++) rect(ctx, (r() * 11) | 0, (r() * ART) | 0, 5, 1, "#d8c78e");
+  });
+
+  P("mud", function (ctx, f, s) {
+    grit(ctx, s, C.mud, "#4c331a", "#8a6640", 28, "md");
+    const r = rnd("mdr", s);
+    for (let i = 0; i < 4; i++) {
+      const x = (r() * 13) | 0, y = (r() * 13) | 0;
+      rect(ctx, x, y, 3, 2, "#4a3a26"); px(ctx, x + 1, y, "#7d6a4c");
+    }
+  });
+
+  P("snow", function (ctx, f, s) {
+    fill(ctx, "#f0f4ff");
+    dither(ctx, 0, 0, ART, ART, "#dde4f4", 5);
+    const r = rnd("snw", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#ffffff", "#cfd8ee"], 18);
+    for (let i = 0; i < 3; i++) rect(ctx, (r() * 10) | 0, (r() * ART) | 0, 5, 1, "#d5def2");
+  });
+
+  P("salt_flat", function (ctx, f, s) {
+    fill(ctx, "#e8e8f0");
+    dither(ctx, 0, 0, ART, ART, "#d6d8e6", 4);
+    const r = rnd("slt", s);
+    // polygonal crust cracks
+    const cx = 4 + ((r() * 8) | 0), cy = 4 + ((r() * 8) | 0);
+    rect(ctx, 0, cy, ART, 1, "#c3c6d8");
+    rect(ctx, cx, 0, 1, cy, "#c3c6d8");
+    rect(ctx, (cx + 6) & 15, cy, 1, ART - cy, "#c3c6d8");
+    speckle(ctx, r, 0, 0, ART, ART, ["#ffffff", "#cdd0e0"], 14);
+  });
+
+  P("salt_crust", function (ctx, f, s) {
+    fill(ctx, "#d8d8e8");
+    const r = rnd("sltc", s);
+    for (let i = 0; i < 5; i++) {
+      const x = (r() * 12) | 0, y = 2 + ((r() * 10) | 0), w = 3 + ((r() * 4) | 0);
+      rect(ctx, x, y, w, 3, "#eef0fa");
+      rect(ctx, x, y + 3, w, 1, "#b9bcd0");
+      rect(ctx, x, y, w, 1, "#ffffff");
+    }
+    speckle(ctx, r, 0, 0, ART, ART, ["#ffffff", "#b7bacd"], 16);
+    Art.edge(ctx, "s", "#000", 0.2);
+  });
+
+  P("orchard_grass", function (ctx, f, s) {
+    turf(ctx, s, "#6ab04c", "#4d8c36", "#8ccb66", 4, "orc");
+    const r = rnd("orcp", s);
+    for (let i = 0; i < 3; i++) { const x = (r() * 15) | 0, y = (r() * 15) | 0; px(ctx, x, y, "#c8d84a"); px(ctx, x + 1, y, "#e0e878"); }
+  });
+
+  P("pine_needles", function (ctx, f, s) {
+    grit(ctx, s, "#6a5a3a", "#4c3f26", "#8a7a52", 18, "pn");
+    const r = rnd("pnl", s);
+    for (let i = 0; i < 14; i++) {
+      const x = (r() * 14) | 0, y = (r() * 15) | 0;
+      rect(ctx, x, y, 2, 1, r() < 0.4 ? "#3e4a2c" : "#7d6b44");
+    }
+    for (let i = 0; i < 3; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#2f4a2a");
+  });
+
+  P("cave_floor", function (ctx, f, s) {
+    grit(ctx, s, "#6a6070", "#4d4557", "#867c8e", 26, "cf");
+    const r = rnd("cfr", s);
+    for (let i = 0; i < 4; i++) {
+      const x = (r() * 13) | 0, y = (r() * 13) | 0;
+      rect(ctx, x, y, 3, 2, "#5a5165"); rect(ctx, x, y, 3, 1, "#7b7186");
+    }
+    Art.edge(ctx, "ns", "#000", 0.12);
+  });
+  P("cave_floor_dark", function (ctx, f, s) {
+    grit(ctx, s, "#4a4050", "#332c3c", "#615668", 22, "cfd");
+    Art.edge(ctx, "nsew", "#000", 0.2);
+  });
+  P("mine_floor", function (ctx, f, s) {
+    grit(ctx, s, "#5a5048", "#413931", "#786c60", 24, "mf");
+    const r = rnd("mfr", s);
+    for (let i = 0; i < 3; i++) rect(ctx, 0, (r() * ART) | 0, ART, 1, "#4a423a");
+    for (let i = 0; i < 4; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#8e8474");
+  });
+
+  P("floor_wood", function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); });
+  P("floor_wood_dark", function (ctx, f, s) { boards(ctx, s, "#8a6038", "#65431f", "#a37b4c", "v", 5); });
+  P("floor_stone", function (ctx, f, s) { flags(ctx, s, "#909098", "#75757f", "#a8a8b2", "#63636d"); });
+  P("floor_tile", function (ctx, f, s) { tileFloor(ctx, s, "#d8d0c0", "#bdb4a2"); });
+  P("floor_tile_check", function (ctx, f, s) {
+    Art.checker(ctx, 0, 0, ART, ART, "#d8d8dc", "#3c3c46", 8);
+    rect(ctx, 0, 0, 8, 1, "#eaeaee"); rect(ctx, 8, 8, 8, 1, "#eaeaee");
+    rect(ctx, 8, 0, 8, 1, "#4e4e5a"); rect(ctx, 0, 8, 8, 1, "#4e4e5a");
+    rect(ctx, 0, 7, ART, 1, "#9a9aa2"); rect(ctx, 0, 15, ART, 1, "#9a9aa2");
+  });
+  P("floor_carpet", function (ctx, f, s) {
+    fill(ctx, "#a04040");
+    dither(ctx, 0, 0, ART, ART, "#8d3636", 6);
+    dither(ctx, 0, 0, ART, ART, "#b25050", 3);
+    const r = rnd("crp", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#8a3232", "#b85858"], 20);
+  });
+  P("floor_lab", function (ctx, f, s) {
+    fill(ctx, "#c0d8e0");
+    rect(ctx, 0, 7, ART, 1, "#a3bfc9"); rect(ctx, 0, 15, ART, 1, "#a3bfc9");
+    rect(ctx, 7, 0, 1, ART, "#a3bfc9"); rect(ctx, 15, 0, 1, ART, "#a3bfc9");
+    rect(ctx, 0, 0, 7, 1, "#dcecf2"); rect(ctx, 8, 8, 7, 1, "#dcecf2");
+    const r = rnd("lab", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#d4e6ec"], 6);
+  });
+  P("floor_gym", function (ctx, f, s) {
+    boards(ctx, s, "#d0a860", "#a8823f", "#e2c184", "h", 8);
+    rect(ctx, 0, 0, ART, 1, "#8f6c2e");
+    rect(ctx, 2, 2, 12, 12, null);
+    // pale court markings
+    rect(ctx, 1, 3, 14, 1, "#f2e6c8"); rect(ctx, 1, 12, 14, 1, "#f2e6c8");
+  });
+  P("rug", function (ctx, f, s) {
+    fill(ctx, "#c03030");
+    Art.frame(ctx, 0, 0, ART, ART, "#8f1f1f");
+    Art.frame(ctx, 2, 2, 12, 12, "#e8c060");
+    Art.checker(ctx, 4, 4, 8, 8, "#c03030", "#a82828", 2);
+    px(ctx, 7, 7, "#e8c060"); px(ctx, 8, 8, "#e8c060");
+  });
+  P("rug_edge", function (ctx, f, s) {
+    fill(ctx, "#a02828");
+    rect(ctx, 0, 0, ART, 2, "#8f1f1f");
+    for (let x = 0; x < ART; x += 2) rect(ctx, x, ART - 3, 1, 3, "#e8c060");
+    dither(ctx, 0, 2, ART, 11, "#b53232", 6);
+  });
+
+  P("platform", function (ctx, f, s) {
+    flags(ctx, s, "#a8a0a0", "#8b8484", "#c2baba", "#767070");
+    const r = rnd("plt", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#bab2b2"], 8);
+  });
+  P("platform_edge", function (ctx, f, s) {
+    flags(ctx, s, "#a8a0a0", "#8b8484", "#c2baba", "#767070");
+    rect(ctx, 0, 10, ART, 4, "#e0d060");
+    rect(ctx, 0, 10, ART, 1, "#f4e894");
+    rect(ctx, 0, 13, ART, 1, "#a8912f");
+    rect(ctx, 0, 14, ART, 2, "#5a5a60");
+    for (let x = 1; x < ART; x += 4) rect(ctx, x, 11, 1, 2, "#c8b64e");
+  });
+
+  P("void", function (ctx) { fill(ctx, "#08080c"); dither(ctx, 0, 0, ART, ART, "#101018", 3); });
+
+  // ---------------------------------------------------------------
+  // WATER — canal green, mere silver, brine turquoise
+  // ---------------------------------------------------------------
+  function waterPainter(o) { return function (ctx, f) { pond(ctx, f, o); }; }
+
+  P("water", waterPainter({ face: "#4a8ad8", top: "#5f9ce4", dark: "#2f65ab", light: "#8dc0f2", hi: "#cfe6ff" }));
+  P("water_deep", waterPainter({ face: "#25538f", top: "#2d6099", dark: "#173c69", light: "#4b83c4", hi: "#8fb9e4", len: 3 }));
+  P("water_canal", waterPainter({ face: "#3f6a63", top: "#4b7a70", dark: "#26443f", light: "#699e8f", hi: "#a9cfc0", len: 5, phase: 2 }));
+  P("water_river", waterPainter({ face: "#4a90c8", top: "#57a0d6", dark: "#2f6a9a", light: "#8ec4e8", hi: "#d0ecfa", len: 6 }));
+  P("water_flash", waterPainter({ face: "#5a80a8", top: "#6a90b6", dark: "#3d5f83", light: "#93b4cf", hi: "#c9dde9", len: 3, phase: 1 }));
+  P("water_pond", waterPainter({ face: "#4a7ab0", top: "#578ac0", dark: "#325a89", light: "#83aed6", hi: "#c4dcef", len: 4, phase: 3 }));
+  P("brine_pool", waterPainter({ face: "#7ac8c0", top: "#8ad8cf", dark: "#4e9a94", light: "#a9e6de", hi: "#e2f8f4", len: 5 }));
+  P("zoo_pool", waterPainter({ face: "#5aa0d0", top: "#6bb0dc", dark: "#3b7aa8", light: "#95cbe8", hi: "#d6effa", len: 4, phase: 2 }));
+  P("fish_spot", function (ctx, f, s) {
+    pond(ctx, f, { face: "#3a7ac0", top: "#4587cc", dark: "#255a99", light: "#7cb0e2", hi: "#c2e0f8", len: 4 });
+    // concentric rise-ring, expanding with the frame
+    const r = 2 + ((f | 0) % 4);
+    const g = ctx.globalAlpha; ctx.globalAlpha = 0.55 - ((f | 0) % 4) * 0.1;
+    ctx.fillStyle = "#dff0ff";
+    ctx.fillRect(8 - r, 8, r * 2, 1); ctx.fillRect(8, 8 - r, 1, r * 2);
+    ctx.fillRect(8 - r + 1, 8 - r + 1, 1, 1); ctx.fillRect(8 + r - 1, 8 + r - 1, 1, 1);
+    ctx.fillRect(8 - r + 1, 8 + r - 1, 1, 1); ctx.fillRect(8 + r - 1, 8 - r + 1, 1, 1);
+    ctx.globalAlpha = g;
+  });
+
+  P("shallows", function (ctx, f) {
+    pond(ctx, f, { face: "#8ac0e0", top: "#98cbe8", dark: "#6ba2c4", light: "#bfe0f4", hi: "#eaf8ff", len: 5 });
+    const r = rnd("shal", 0);
+    speckle(ctx, r, 0, 0, ART, ART, ["#c9a978", "#a8916a"], 8);
+  });
+
+  // Bank / shallows edge: dry bank at the top, water below, foam between.
+  P("water_edge", function (ctx, f, s) {
+    grit(ctx, s, "#c9b184", "#a58f65", "#e0cca4", 16, "bank");
+    for (let i = 0; i < 6; i++) rect(ctx, (i * 3) % ART, 2 + (i % 4), 2, 1, "#8f7a52");
+    pondBand(ctx, f, 9);
+  });
+  function pondBand(ctx, f, y0) {
+    Art.ripples(ctx, f, { x: 0, y: y0, w: ART, h: ART - y0, face: "#5f9ce4", top: "#4c86cd", dark: "#3d76bd", light: "#9ac8f2", hi: "#d8ecff", rows: [1, 3, 5], len: 4 });
+    rect(ctx, 0, y0 - 1, ART, 1, "#e8f4ff");
+    const r = rnd("foam", 0);
+    for (let i = 0; i < 5; i++) px(ctx, (r() * ART) | 0, y0 - 2, "#f2f9ff");
+  }
+
+  const REED_PAL = Art.pal({});
+  const REEDS_A = sheet([
+    "................", "......V.........", ".....V..V...V...", "....V.VV.V..VV..",
+    "...V.VV.VV.VVV..", "...V.V..V..V.V..", "...V.V..V..V.V..", "..V..V..V..V.V..",
+    "..V..V..V..V.V..", "..V..V..V..V.V..", "..V..V..V..V.V..", "..V..V..V..V.V..",
+    "..v..v..v..v.v..", "..v..v..v..v.v..", "................", "................"
+  ]);
+  const REEDS_B = sheet([
+    "................", ".......V........", "....V...V....V..", "...VV..VV...VV..",
+    "..VVV.VV.V.VV...", "...V..V..V..V...", "...V..V..V..V...", "...V..V..V..V...",
+    "..V...V..V..V...", "..V...V..V..V...", "..V...V..V..V...", "..V...V..V..V...",
+    "..v...v..v..v...", "..v...v..v..v...", "................", "................"
+  ]);
+  P("water_reeds", function (ctx, f, s) {
+    pond(ctx, f, { face: "#3f6a63", top: "#4b7a70", dark: "#26443f", light: "#699e8f", hi: "#a9cfc0", len: 4 });
+    ascii(ctx, (f | 0) % 2 ? REEDS_B : REEDS_A, REED_PAL);
+  });
+  P("lake_reeds", function (ctx, f, s) {
+    grit(ctx, s, "#5a9a70", "#3f7351", "#7fba90", 16, "reedb");
+    rect(ctx, 0, 11, ART, 5, "#41705a");
+    ascii(ctx, (f | 0) % 2 ? REEDS_A : REEDS_B, REED_PAL);
+    Art.edge(ctx, "s", "#000", 0.2);
+  });
+
+  P("waterfall", function (ctx, f) {
+    const fr = (f | 0) & 3;
+    fill(ctx, "#6fa8d8");
+    for (let x = 0; x < ART; x++) {
+      const c = (x % 4 === 0) ? "#eaf6ff" : (x % 4 === 2 ? "#a0d0f0" : "#7cb6e0");
+      rect(ctx, x, 0, 1, ART, c);
+    }
+    for (let i = 0; i < 6; i++) {
+      const y = (i * 3 + fr * 3) % ART;
+      rect(ctx, (i * 3) % ART, y, 1, 3, "#ffffff");
+      rect(ctx, (i * 3 + 5) % ART, (y + 6) % ART, 1, 2, "#d6ecff");
+    }
+    rect(ctx, 0, 0, ART, 1, "#b8dcf4");
+  });
+
+  P("hot_spring", function (ctx, f) {
+    pond(ctx, f, { face: "#c0e0f0", top: "#d2ecf8", dark: "#93bfd4", light: "#e8f8ff", hi: "#ffffff", len: 3 });
+    const fr = (f | 0) & 3;
+    const g = ctx.globalAlpha; ctx.globalAlpha = 0.45;
+    ctx.fillStyle = "#ffffff";
+    for (let i = 0; i < 4; i++) {
+      const x = 2 + i * 4, y = (12 - fr * 2 - i * 3 + 16) % 16;
+      ctx.fillRect(x, y, 2, 1); ctx.fillRect(x + 1, y - 1 < 0 ? 15 : y - 1, 1, 1);
+    }
+    ctx.globalAlpha = g;
+  });
+
+  P("bridge_wood", function (ctx, f, s) {
+    boards(ctx, s, "#a07840", "#6d4a22", "#c39a60", "v", 4);
+    rect(ctx, 0, 0, ART, 1, "#7a5628");
+    rect(ctx, 0, ART - 1, ART, 1, "#5c3f1c");
+    const r = rnd("brdg", s);
+    for (let i = 0; i < 6; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#4a3116");
+  });
+  P("bridge_stone", function (ctx, f, s) {
+    flags(ctx, s, "#8a8a90", "#6e6e76", "#a6a6ae", "#5c5c64");
+    rect(ctx, 0, 0, ART, 1, "#6a6a72"); rect(ctx, 0, ART - 1, ART, 1, "#565660");
+  });
+  P("bridge_rail", deco(null, [
+    "................", "................", "................", "................",
+    "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..O>>>>>>>>>>O..", "..O>........O>..",
+    "..OO........OO..", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..O>>>>>>>>>>O..",
+    "..O>........O>..", "..OO........OO..", "..O>........O>..", "................"
+  ]));
+
+  P("boat_dock", function (ctx, f, s) {
+    boards(ctx, s, "#8a6a40", "#5f4522", "#a9854f", "h", 4);
+    rect(ctx, 1, 0, 2, ART, "#6d4a22"); rect(ctx, 13, 0, 2, ART, "#6d4a22");
+    rect(ctx, 0, 14, ART, 2, "#4a3116");
+    // mooring ring
+    Art.frame(ctx, 6, 4, 5, 5, "#33333c"); px(ctx, 8, 4, "#5c5c68");
+  });
+
+  // ---------------------------------------------------------------
+  // VEGETATION — oak, pine, birch, apple, willow, autumn, hedges
+  // Two-tile trees: the `_top` id is the crown, drawn on the over
+  // layer so the player walks behind it.
+  // ---------------------------------------------------------------
+  function treeGround(ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "tg"); foot(ctx, 8, 14, 6); }
+
+  const OAK_TOP = sheet([
+    "....kkkkkkk.....", "..kkEEEEEEEkk...", ".kEEEeeeeeEEEEk.", "kEEee^^^^^eeEEEk",
+    "kEee^^^^^^^^eeEk", "kEe^^^^^^^^^^eEk", "kEe^^^^^^^^^^eEk", "kEee^^^^^^^^eeEk",
+    "kEEee^^^^^^eeEEk", ".kEEeeee^^eeeEk.", ".kkEEEeeeeeEEkk.", "..kkEEEEEEEkkk..",
+    "....kkkkkkk.....", "................", "................", "................"
+  ]);
+  // The crown gets a seeded dapple so a wood is never a stamped grid.
+  P("tree_oak_top", function (ctx, f, s) {
+    ascii(ctx, OAK_TOP, PAL);
+    const r = rnd("oakt", s);
+    for (let i = 0; i < 9; i++) px(ctx, 3 + ((r() * 10) | 0), 3 + ((r() * 8) | 0), r() < 0.5 ? "#71c455" : "#2a6a24");
+  });
+  P("tree_oak", deco(treeGround, [
+    ".kEEeeeeeeeeEEk.", "..kEEEeeeeeEEEk.", "...kkEEEEEEEkk..", ".....kkOOOkk....",
+    "......O>OO......", "......OO>O......", "......O>OO......", "......OO>O......",
+    "......O>OO......", ".....OO>OOO.....", "....OO>OOOO>O...", "...O>OOOOOOO>O..",
+    "................", "................", "................", "................"
+  ]));
+
+  const PINE_TOP = sheet([
+    ".......v........", "......vVv.......", "......vVv.......", ".....vvVVv......",
+    ".....vVVVv......", "....vvVVVVv.....", "....vVVVVVv.....", "...vvVVVVVVv....",
+    "...vVVVVVVVv....", "..vvVVVVVVVVv...", "..vVVVVVVVVVv...", ".vvVVVVVVVVVVv..",
+    ".vVVVVVVVVVVVv..", "vvVVVVVVVVVVVVv.", "vVVVVVVVVVVVVVv.", "................"
+  ]);
+  P("tree_pine_top", function (ctx, f, s) {
+    ascii(ctx, PINE_TOP, PAL);
+    const r = rnd("pinet", s);
+    for (let i = 0; i < 10; i++) {
+      const y = 3 + ((r() * 12) | 0), half = 1 + ((y * 7) / 15) | 0;
+      px(ctx, 7 + ((r() * (half * 2 + 1)) | 0) - half, y, r() < 0.55 ? "#3f8f4c" : "#123018");
+    }
+  });
+  P("tree_pine", deco(treeGround, [
+    ".vvVVVVVVVVVVv..", "vvVVVVVVVVVVVVv.", "vVVVVVVVVVVVVVVv", "vvVVVVVVVVVVVVv.",
+    ".vvVVVVVVVVVVv..", "..vvVVVVVVVVv...", "...vvVVVVVVv....", "....vvVVVVv.....",
+    ".....vvVVv......", "......O>O.......", "......O>O.......", "......O>O.......",
+    ".....OO>OO......", "....O>OOO>O.....", "................", "................"
+  ]));
+
+  P("tree_birch_top", deco(null, [
+    "...^^^..^^^^....", "..^^^^^^^^^^^...", ".^^h^^^^h^^^^^..", "^^^^h^^^^^h^^^^.",
+    "^h^^^^^h^^^^^h^^", "^^^^h^^^^^h^^^^^", ".^^^^^^h^^^^^^^.", ".^^h^^^^^^^h^^..",
+    "..^^^^^^^^^^^^..", "...^^^^h^^^^^...", "....^^^^^^^.....", ".....^^c^^......",
+    "......ccC.......", "......cCC.......", "......ckC.......", "......cCC......."
+  ]));
+  P("tree_birch", deco(treeGround, [
+    "...^^^^ccC^^^^..", "..^^^^^ckC^^^^^.", "...^^^^cCC^^^^..", ".....^^ccC^^....",
+    "......ccC.......", "......ckC.......", "......ccC.......", "......cCC.......",
+    "......ckC.......", "......ccC.......", "......cCC.......", "......ccC.......",
+    ".....CccCC......", "....CCcccCC.....", "................", "................"
+  ]));
+
+  P("tree_apple_top", deco(null, [
+    "....kkkkkkk.....", "..kkEEeeeeEkk...", ".kEEeee^1eeEEEk.", "kEEee^^^^^eeEEEk",
+    "kEee^^1^^^^1eeEk", "kEe^^^^^^^^^^eEk", "kEe^^1^^^^^^1eEk", "kEee^^^^1^^^eeEk",
+    "kEEee^^^^^^eeEEk", ".kEEee1^^1eeeEk.", ".kkEEEeeeeeEEkk.", "..kkEEEEEEEkkk..",
+    "....kkkkkkk.....", "................", "................", "................"
+  ]));
+  P("tree_apple", function (ctx, f, s) {
+    treeGround(ctx, f, s);
+    ascii(ctx, APPLE_BASE, PAL);
+    // a windfall in the grass
+    px(ctx, 3, 14, C.red); px(ctx, 4, 14, "#e06a5a"); px(ctx, 3, 15, C.redDk);
+  });
+  const APPLE_BASE = sheet([
+    ".kEEee1eeee1EEk.", "..kEEEeeeeeEEEk.", "...kkEEEEEEEkk..", ".....kkOOOkk....",
+    "......O>OO......", "......OO>O......", "......O>OO......", "......OO>O......",
+    "......O>OO......", ".....OO>OOO.....", "....OO>OOOO>O...", "...O>OOOOOOO>O..",
+    "................", "................", "................", "................"
+  ]);
+
+  P("tree_dead", deco(treeGround, [
+    "...>.....>......", "....>...>.......", ".....>.>>.......", "..>...>>........",
+    "...>>.O>........", "......O>........", "....>>O>>>......", "......O>..>.....",
+    "......O>........", "......O>........", "......O>........", ".....OO>>.......",
+    "....O>OO>>......", "...O>OOOO>......", "................", "................"
+  ]));
+
+  P("tree_willow", deco(treeGround, [
+    "...;;;;;;;;;;...", "..;;V;;;;;;V;;..", ".;;;;;;;;;;;;;;.", ";;;V;;;;;;;;V;;;",
+    ";.;.;.;.;.;.;.;.", ".;.;.;O>.;.;.;..", ";.;.;.O>;.;.;.;.", ".;.;..O>.;..;.;.",
+    ";.;...O>...;.;..", ".;....O>....;...", "......O>........", "......O>........",
+    ".....OO>>.......", "....O>OOO>......", "................", "................"
+  ]));
+
+  P("tree_autumn", deco(treeGround, [
+    "....kk///kk.....", "..kk//5///kk....", ".k///5///5//k...", "k//5//////5//k..",
+    "k/////5///////k.", "k//5////5////Ok.", "k////////5//O>k.", ".k//5//////O>k..",
+    "..k//////O>k....", "...kk///O>k.....", "......O>O.......", "......O>O.......",
+    ".....OO>OO......", "....O>OOOO>.....", "................", "................"
+  ]));
+
+  // Clipped hedges — procedural so a long run reads as one hedge.
+  function hedgeBody(ctx, seed, top, key) {
+    const r = rnd(key, seed);
+    fill(ctx, C.hedgeDk);
+    dither(ctx, 0, 0, ART, ART, C.hedge, 8);
+    dither(ctx, 0, 0, ART, ART, "#3f9436", 3);
+    speckle(ctx, r, 0, 0, ART, ART, ["#1a4a1c", "#4f9c3f", "#57a63f"], 30);
+    rect(ctx, 0, top, ART, 1, "#4f9c3f");
+    rect(ctx, 0, top + 1, ART, 1, "#3d8a30");
+    for (let i = 0; i < 7; i++) px(ctx, (r() * ART) | 0, top + ((r() * 2) | 0), "#6cbb52");
+    Art.edge(ctx, "s", "#000", 0.28);
+  }
+  P("hedge", function (ctx, f, s) { hedgeBody(ctx, s, 0, "hg"); });
+  P("hedge_low", function (ctx, f, s) {
+    turf(ctx, s, C.grass, C.grassDk, C.grassLt, 2, "hl");
+    const r = rnd("hlb", s);
+    rect(ctx, 0, 4, ART, 11, C.hedgeDk);
+    dither(ctx, 0, 4, ART, 11, C.hedge, 8);
+    speckle(ctx, r, 0, 4, ART, 11, ["#1a4a1c", "#4f9c3f"], 20);
+    rect(ctx, 0, 4, ART, 1, "#4f9c3f");
+    for (let i = 0; i < 6; i++) px(ctx, (r() * ART) | 0, 4 + ((r() * 2) | 0), "#6cbb52");
+    Art.edge(ctx, "s", "#000", 0.24);
+  });
+
+  P("bush", deco(treeGround, [
+    "................", "................", ".....EEEEE......", "...EEeeeeeEE....",
+    "..EEee^^^eeEE...", ".Eee^^^^^^^eeE..", ".Ee^^^^^^^^^eE..", "Eee^^^^^^^^^eeE.",
+    "Eee^^^^^^^^^^eE.", "Ee^^^^^^^^^^^eE.", "EEee^^^^^^^^eEE.", ".EEeeee^^eeeEE..",
+    "..EEEEeeeeEEE...", "....EEEEEEE.....", "................", "................"
+  ]));
+  P("berry_bush", deco(treeGround, [
+    "................", "................", ".....EEEEE......", "...EEee1eeEE....",
+    "..EEee^^^ee1E...", ".Eee^1^^^^^eeE..", ".Ee^^^^^1^^^eE..", "Eee1^^^^^^^^eeE.",
+    "Eee^^^^^1^^^^eE.", "Ee^^1^^^^^^1^eE.", "EEee^^^^1^^^eEE.", ".EEeee1^^eeeEE..",
+    "..EEEEeeeeEEE...", "....EEEEEEE.....", "................", "................"
+  ]));
+
+  P("mushroom", deco(null, [
+    "................", "................", "................", "................",
+    "................", "................", "................", "................",
+    "..........1.....", ".....111.121....", "....11211.[[....", "....11111.[[....",
+    ".....[[[..[[....", ".....[][..]]....", "................", "................"
+  ]));
+
+  P("stump", deco(treeGround, [
+    "................", "................", "................", "................",
+    "................", "................", "....OOOOOOOO....", "...O>PPPPPP>O...",
+    "..O>PPoooPPP>O..", "..O>PPoooPPP>O..", "...O>PPPPPP>O...", "...OOOOOOOOOO...",
+    "...O>>OOO>>OO...", "....OO>>OO>O....", "................", "................"
+  ]));
+
+  P("log", deco(treeGround, [
+    "................", "................", "................", "................",
+    "................", "................", "..OOOOOOOOOOOO..", ".OPPoPPPPPoPPPO.",
+    "OPo>PPoPPPPoPPPO", "OPoPPPPPPoPPPPPO", ".O>OOO>OOOO>OOO.", "..OOOOOOOOOOOO..",
+    "................", "................", "................", "................"
+  ]));
+
+  P("moss_rock", deco(treeGround, [
+    "................", "................", "................", ".....nnnn.......",
+    "...nnllllnn.....", "..nllllllnnn....", "..nlllllnnnNn...", ".nllleelnnNNNn..",
+    ".nlleeeennNNNn..", "nnlleeeeennNNnn.", "nNnleeeeeennNnn.", "nNNneeeeennNNnn.",
+    ".NNNneeeennNNn..", "..NNNNNNNNNNn...", "................", "................"
+  ]));
+
+  // ---------------------------------------------------------------
+  // ROCK, CLIFF, LEDGE, CAVE, MINE
+  // ---------------------------------------------------------------
+  // Bedded sandstone/gritstone face: horizontal strata with vertical joints.
+  function strata(ctx, seed, face, dk, lt, key) {
+    const r = rnd(key || "str", seed);
+    fill(ctx, face);
+    for (let y = 0; y < ART; y++) {
+      const q = r();
+      rect(ctx, 0, y, ART, 1, q < 0.22 ? dk : (q > 0.8 ? lt : face));
+    }
+    for (let b = 0; b < 4; b++) rect(ctx, 0, (r() * ART) | 0, ART, 1, U.shade(dk, 0.86));
+    for (let j = 0; j < 3; j++) {
+      const x = (r() * ART) | 0, y0 = (r() * 10) | 0;
+      rect(ctx, x, y0, 1, 5 + ((r() * 6) | 0), U.shade(dk, 0.8));
+      rect(ctx, x + 1, y0, 1, 3, lt);
+    }
+    speckle(ctx, r, 0, 0, ART, ART, [dk, lt], 14);
+  }
+
+  P("cliff_face", function (ctx, f, s) { strata(ctx, s, "#6a5a48", "#4b3f31", "#8a7a62", "cff"); Art.edge(ctx, "ew", "#000", 0.22); });
+  P("cliff_top", function (ctx, f, s) {
+    turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "clt");
+    rect(ctx, 0, 10, ART, 6, "#8a7a60");
+    strataBand(ctx, s, 10, "#8a7a60", "#6a5a44", "#a8977a");
+    rect(ctx, 0, 9, ART, 1, "#2c6427");
+    rect(ctx, 0, 10, ART, 1, "#b8a888");
+  });
+  function strataBand(ctx, seed, y0, face, dk, lt) {
+    const r = rnd("sb" + face, seed);
+    for (let y = y0; y < ART; y++) { const q = r(); rect(ctx, 0, y, ART, 1, q < 0.25 ? dk : (q > 0.78 ? lt : face)); }
+    speckle(ctx, r, 0, y0, ART, ART - y0, [dk, lt], 10);
+  }
+  P("cliff_left", function (ctx, f, s) {
+    strata(ctx, s, "#7a6a50", "#584a36", "#98876a", "cfl");
+    rect(ctx, 0, 0, 3, ART, "#4b3f31"); rect(ctx, 3, 0, 1, ART, "#3c3226");
+    rect(ctx, 14, 0, 2, ART, "#98876a");
+  });
+  P("cliff_right", function (ctx, f, s) {
+    strata(ctx, s, "#7a6a50", "#584a36", "#98876a", "cfr");
+    rect(ctx, 13, 0, 3, ART, "#4b3f31"); rect(ctx, 12, 0, 1, ART, "#3c3226");
+    rect(ctx, 0, 0, 2, ART, "#98876a");
+  });
+  P("cliff_corner", function (ctx, f, s) {
+    strata(ctx, s, "#6a5a48", "#463a2c", "#8a7a62", "cfc");
+    rect(ctx, 0, 0, 3, ART, "#463a2c");
+    rect(ctx, 0, 0, ART, 2, "#8a7a62");
+    rect(ctx, 0, 2, ART, 1, "#3c3226");
+    Art.edge(ctx, "e", "#000", 0.2);
+  });
+  P("cliff_climb", function (ctx, f, s) {
+    strata(ctx, s, "#9a8a68", "#74674c", "#b8a67f", "cfk");
+    // hand-holds & a trailing rope
+    const r = rnd("climb", s);
+    for (let i = 0; i < 5; i++) {
+      const x = 2 + ((r() * 11) | 0), y = 1 + i * 3;
+      rect(ctx, x, y, 3, 1, "#4e4335"); rect(ctx, x, y + 1, 3, 1, "#c6b58c");
+    }
+    rect(ctx, 7, 0, 1, ART, "#b8895a"); rect(ctx, 8, 0, 1, ART, "#8a6238");
+    for (let y = 1; y < ART; y += 3) px(ctx, 7, y, "#e0c090");
+  });
+  P("crag", function (ctx, f, s) {
+    strata(ctx, s, "#5a5058", "#3d363f", "#7a7078", "crg");
+    const r = rnd("crgs", s);
+    for (let i = 0; i < 4; i++) {
+      const x = (r() * 12) | 0, y = (r() * 12) | 0;
+      rect(ctx, x, y, 4, 3, "#4a4249"); rect(ctx, x, y, 4, 1, "#6e6470");
+    }
+    Art.edge(ctx, "n", "#8a8090", 0.5);
+    Art.edge(ctx, "s", "#000", 0.3);
+  });
+
+  function rockPile(bg) {
+    return decoVar(bg, [[
+      "................", "................", "................", ".......nnn......",
+      ".....nnlllnn....", "....nlllllnnn...", "...nllllllnnNn..", "...nlllllnnNNn..",
+      "..nlllllnnNNNn..", "..nllllnnNNNNn..", "..nlllnnNNNNnn..", "...nnnnNNNNnn...",
+      "....nNNNNNNn....", ".....NNNNNn.....", "................", "................"
+    ], [
+      "................", "................", "......nnn.......", ".....nlln.......",
+      "....nlllnn..nn..", "...nllllnn.nlln.", "..nllllnnn.nlNn.", "..nlllnnNn.nNNn.",
+      "..nlllnNNnnNNn..", "..nllnnNNNNNNn..", "...nnnNNNNNNn...", "....nNNNNNNn....",
+      "....nNNNNNn.....", ".....NNNNn......", "................", "................"
+    ]]);
+  }
+  P("rock", rockPile(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "rk"); foot(ctx, 8, 14, 6); }));
+  P("rock_moor", function (ctx, f, s) {
+    turf(ctx, s, C.moorGrass, "#6b7a36", "#a8b662", 3, "rmg"); foot(ctx, 8, 14, 6);
+    ascii(ctx, (s | 0) % 2 ? GRIT_B : GRIT_A, PAL);
+  });
+  const GRIT_A = sheet([
+    "................", "................", "................", "....qqqqqq......",
+    "...q????qqq.....", "..q??????qqQ....", "..q?????qqQQQ...", ".q?????qqQQQQq..",
+    ".q????qqQQQQQq..", "q????qqQQQQQQq..", "q???qqQQQQQQqq..", "qqqqqQQQQQQqq...",
+    ".qQQQQQQQQQq....", "..QQQQQQQQq.....", "................", "................"
+  ]);
+  const GRIT_B = sheet([
+    "................", "................", "...qqq..........", "..q??qq...qqq...",
+    "..q???qq.q???q..", ".q????qq.q??qQ..", ".q???qqQ.q?qQQ..", "q???qqQQqqqQQQ..",
+    "q??qqQQQQQQQQq..", "q?qqQQQQQQQQqq..", "qqqQQQQQQQQqq...", ".qQQQQQQQQQq....",
+    "..QQQQQQQQq.....", "...QQQQQq.......", "................", "................"
+  ]);
+  P("rock_small", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "rks"); foot(ctx, 8, 13, 4); }, [
+    "................", "................", "................", "................",
+    "................", "................", "......nnn.......", ".....nlllnn.....",
+    "....nllllnNn....", "....nlllnNNn....", "....nllnNNNn....", "....nnNNNNn.....",
+    ".....NNNNn......", "................", "................", "................"
+  ]));
+
+  P("boulder", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 2, "bld"); foot(ctx, 8, 15, 7); }, [
+    "................", "................", "....nnnnnn......", "..nnllllllnn....",
+    ".nlllllllllnn...", "nlllllllllllnn..", "nlllllllllllNn..", "nllllllllllNNn..",
+    "nlllllllllNNNn..", "nllllllllNNNNn..", "nlllllllNNNNNn..", ".nlllllNNNNNn...",
+    "..nnlllNNNNn....", "...nnNNNNNn.....", ".....nnnnn......", "................"
+  ]));
+
+  P("cave_wall", function (ctx, f, s) {
+    strata(ctx, s, "#3a3040", "#231c2a", "#544a5c", "cw");
+    const r = rnd("cwr", s);
+    for (let i = 0; i < 5; i++) {
+      const x = (r() * 13) | 0, y = (r() * 13) | 0;
+      rect(ctx, x, y, 3, 2, "#2c2434"); rect(ctx, x, y, 3, 1, "#4a4054");
+    }
+    Art.edge(ctx, "n", "#5b5168", 0.45);
+    Art.edge(ctx, "s", "#000", 0.35);
+  });
+  P("cave_wall_top", function (ctx, f, s) {
+    strata(ctx, s, "#2a2030", "#170f1e", "#3f3448", "cwt");
+    Art.edge(ctx, "nsew", "#000", 0.3);
+  });
+  P("cave_entrance", function (ctx, f, s) {
+    strata(ctx, s, "#3a3040", "#231c2a", "#544a5c", "ce");
+    // dark arch
+    ascii(ctx, [
+      "................", "................", ".....KKKKK......", "....KkkkkkK.....",
+      "...Kkkkkkkkk....", "..Kkkkkkkkkkk...", "..kkkkkkkkkkk...", "..kkkkkkkkkkk...",
+      "..kkkkkkkkkkk...", "..kkkkkkkkkkk...", "..kkkkkkkkkkk...", "..kkkkkkkkkkk...",
+      "..kkkkkkkkkkk...", "..kkkkkkkkkkk...", "..kkkkkkkkkkk...", "..kkkkkkkkkkk..."
+    ], PAL);
+  });
+
+  P("stalag", decoVar(function (ctx, f, s) { grit(ctx, s, "#6a6070", "#4d4557", "#867c8e", 20, "stg"); }, [[
+    "................", ".......l........", "......lnl.......", "......lnl.......",
+    ".....lnnnl......", ".....lnnnl......", "....lnnnnnl.....", "....lnnnnnl.....",
+    "...lnnnnnnnl....", "...lnnnnnnnl....", "..lnnnnnnnnnl...", "..lnnnnnnnnnl...",
+    ".lnnnnnnnnnnnl..", ".lNNNNNNNNNNNl..", "................", "................"
+  ], [
+    "................", "...l.......l....", "...ln.....lnl...", "..lnnl....lnl...",
+    "..lnnl...lnnnl..", ".lnnnnl..lnnnl..", ".lnnnnl.lnnnnnl.", "lnnnnnnllnnnnnl.",
+    "lnnnnnnnlnnnnnl.", "lnnnnnnnnnnnnnl.", "lnnnnnnnnnnnnnl.", "lnnnnnnnnnnnnnl.",
+    "lNNNNNNNNNNNNNl.", "lNNNNNNNNNNNNNl.", "................", "................"
+  ]]));
+
+  P("ore", function (ctx, f, s) {
+    strata(ctx, s, "#4a4050", "#332c3c", "#655a6e", "ore");
+    const r = rnd("orev", s);
+    for (let i = 0; i < 6; i++) {
+      const x = 1 + ((r() * 13) | 0), y = 1 + ((r() * 13) | 0);
+      px(ctx, x, y, "#c0a040"); px(ctx, x + 1, y, "#e8cc70"); px(ctx, x, y + 1, "#8a6c1e");
+      px(ctx, x + 1, y + 1, "#c0a040");
+    }
+    for (let i = 0; i < 4; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#f4e2a0");
+    Art.edge(ctx, "s", "#000", 0.3);
+  });
+
+  P("crystal", decoAnim(function (ctx, f, s) { grit(ctx, s, "#3a3040", "#231c2a", "#544a5c", 18, "cry"); }, [[
+    "................", "................", "..........8.....", ".........878....",
+    "....8....8778...", "...878...8778...", "...877)..8778...", "..87778..8778...",
+    "..87778.887788..", "..87778.877787..", "..877788777787..", "..877787777777..",
+    "...9777777777...", "....99999999....", "................", "................"
+  ], [
+    "................", "................", "..........7.....", ".........787....",
+    "....7....7887...", "...787...7887...", "...788)..7887...", "..78887..7887...",
+    "..78887.778877..", "..78887.788878..", "..788877888878..", "..788878888888..",
+    "...9888888888...", "....99999999....", "................", "................"
+  ]], { ")": "#bfe6f6" }));
+
+  P("mine_prop", deco(function (ctx, f, s) { grit(ctx, s, "#5a5048", "#413931", "#786c60", 18, "mp"); }, [
+    "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO", "..OO........OO..",
+    "..O>........O>..", "..O>........O>..", "..O>........O>..", "..O>........O>..",
+    "..O>........O>..", "..O>........O>..", "..O>........O>..", "..O>........O>..",
+    "..O>........O>..", "..OO........OO..", "..O>........O>..", "..OO........OO.."
+  ]));
+
+  function railBed(ctx, seed, base) {
+    grit(ctx, seed, base || "#7a6a5a", "#5c4f42", "#96866f", 18, "rb");
+  }
+  P("mine_cart_rail_h", function (ctx, f, s) {
+    railBed(ctx, s);
+    for (let x = 0; x < ART; x += 4) rect(ctx, x, 4, 3, 8, "#5f5347");
+    rect(ctx, 0, 5, ART, 2, "#8f8f98"); rect(ctx, 0, 5, ART, 1, "#c2c2cc");
+    rect(ctx, 0, 10, ART, 2, "#8f8f98"); rect(ctx, 0, 10, ART, 1, "#c2c2cc");
+  });
+  P("mine_cart_rail_v", function (ctx, f, s) {
+    railBed(ctx, s);
+    for (let y = 0; y < ART; y += 4) rect(ctx, 4, y, 8, 3, "#5f5347");
+    rect(ctx, 5, 0, 2, ART, "#8f8f98"); rect(ctx, 5, 0, 1, ART, "#c2c2cc");
+    rect(ctx, 10, 0, 2, ART, "#8f8f98"); rect(ctx, 10, 0, 1, ART, "#c2c2cc");
+  });
+  P("mine_cart", deco(function (ctx, f, s) { railBed(ctx, s); rect(ctx, 0, 5, ART, 2, "#8f8f98"); rect(ctx, 0, 10, ART, 2, "#8f8f98"); }, [
+    "................", "................", "..iiiiiiiiiiii..", "..iIIIIIIIIIIi..",
+    "..iI::::::::Ii..", "..iI:pppppp:Ii..", "..iI:pppppp:Ii..", "..iI::::::::Ii..",
+    "..iIIIIIIIIIIi..", "..iiiiiiiiiiii..", "...i..........i.", "..iIi........iIi",
+    "..iIi........iIi", "...i..........i.", "................", "................"
+  ]));
+
+  // ---- ledges: hop down only, with a chevron so the direction reads ----
+  function ledge(dir) {
+    return function (ctx, f, s) {
+      turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "lg" + dir);
+      const face = "#9a8a68", dk = "#71634a", lt = "#bcab86";
+      if (dir === "down") {
+        rect(ctx, 0, 9, ART, 7, face); strataBand(ctx, s, 9, face, dk, lt);
+        rect(ctx, 0, 8, ART, 1, "#2c6427"); rect(ctx, 0, 9, ART, 1, lt);
+        for (let x = 2; x < ART; x += 6) { rect(ctx, x, 12, 3, 1, dk); px(ctx, x + 1, 13, dk); }
+      } else if (dir === "up") {
+        rect(ctx, 0, 0, ART, 6, face); strataBand2(ctx, s, 0, 6, face, dk, lt);
+        rect(ctx, 0, 5, ART, 1, dk); rect(ctx, 0, 0, ART, 1, lt);
+        for (let x = 2; x < ART; x += 6) { px(ctx, x + 1, 2, dk); rect(ctx, x, 3, 3, 1, dk); }
+      } else if (dir === "left") {
+        rect(ctx, 0, 0, 6, ART, face);
+        for (let y = 0; y < ART; y++) rect(ctx, 0, y, 6, 1, (y % 4 === 0) ? dk : (y % 4 === 2 ? lt : face));
+        rect(ctx, 5, 0, 1, ART, dk); rect(ctx, 0, 0, 1, ART, lt);
+        for (let y = 2; y < ART; y += 6) { rect(ctx, 1, y, 1, 3, dk); px(ctx, 2, y + 1, dk); }
+      } else {
+        rect(ctx, 10, 0, 6, ART, face);
+        for (let y = 0; y < ART; y++) rect(ctx, 10, y, 6, 1, (y % 4 === 0) ? dk : (y % 4 === 2 ? lt : face));
+        rect(ctx, 10, 0, 1, ART, dk); rect(ctx, 15, 0, 1, ART, lt);
+        for (let y = 2; y < ART; y += 6) { rect(ctx, 14, y, 1, 3, dk); px(ctx, 13, y + 1, dk); }
+      }
+    };
+  }
+  function strataBand2(ctx, seed, y0, h, face, dk, lt) {
+    const r = rnd("sb2" + face, seed);
+    for (let y = y0; y < y0 + h; y++) { const q = r(); rect(ctx, 0, y, ART, 1, q < 0.25 ? dk : (q > 0.78 ? lt : face)); }
+  }
+  P("ledge_down", ledge("down"));
+  P("ledge_up", ledge("up"));
+  P("ledge_left", ledge("left"));
+  P("ledge_right", ledge("right"));
+
+  // ---------------------------------------------------------------
+  // BUILDINGS — walls, roofs, doors, windows, signs, fences
+  // ---------------------------------------------------------------
+  P("wall_brick_red", function (ctx, f, s) { brickWall(ctx, s, C.brick, C.brickDk, C.brickLt, C.mortar, 8, 4); });
+  P("wall_brick_dark", function (ctx, f, s) { brickWall(ctx, s, "#703028", "#4e1e18", "#8a4238", "#a89076", 8, 4); });
+  P("mill_wall", function (ctx, f, s) {
+    brickWall(ctx, s, "#8a4030", "#5f2820", "#a55545", "#b8a084", 8, 4);
+    // soot wash down the courses
+    const g = ctx.globalAlpha; ctx.globalAlpha = 0.14; ctx.fillStyle = "#1b1720";
+    ctx.fillRect(0, 0, ART, 6); ctx.globalAlpha = g;
+  });
+  P("wall_stone_sandstone", function (ctx, f, s) { stoneWall(ctx, s, C.sand, C.sandDk, C.sandLt, "#a58a63", 5); });
+  P("wall_stone_grey", function (ctx, f, s) { stoneWall(ctx, s, C.stone, C.stoneDk, C.stoneLt, "#6c6c76", 5); });
+  P("wall_stone_grit", function (ctx, f, s) { stoneWall(ctx, s, C.grit, C.gritDk, C.gritLt, "#4e4b45", 4); });
+  P("wall_garden", function (ctx, f, s) {
+    stoneWall(ctx, s, "#a89078", "#87705a", "#c4ae94", "#7a6552", 4);
+    rect(ctx, 0, 0, ART, 2, "#8d7a64"); rect(ctx, 0, 0, ART, 1, "#c8b69c");
+  });
+  P("fence_stone", function (ctx, f, s) {
+    turf(ctx, s, C.grass, C.grassDk, C.grassLt, 2, "fs");
+    Art.stonework(ctx, { x: 0, y: 2, w: ART, h: 13, bh: 4, face: "#8a8a80", dark: "#67675e", light: "#a8a89c", mortar: "#5e5e56", rnd: rnd("fsw", s) });
+    rect(ctx, 0, 2, ART, 1, "#b4b4a6");
+    Art.edge(ctx, "s", "#000", 0.22);
+  });
+
+  P("wall_tudor", function (ctx, f, s) {
+    fill(ctx, "#f0e8d8");
+    dither(ctx, 0, 0, ART, ART, "#e2d8c2", 4);
+    const r = rnd("tud", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#fbf6ec", "#d8ccb2"], 12);
+    rect(ctx, 0, 0, ART, 2, C.tudor); rect(ctx, 0, 14, ART, 2, C.tudor);
+    rect(ctx, 0, 2, ART, 1, "#4a3c30"); rect(ctx, 0, 13, ART, 1, "#4a3c30");
+  });
+  P("wall_tudor_beam", function (ctx, f, s) {
+    fill(ctx, "#f0e8d8");
+    rect(ctx, 0, 0, ART, 2, C.tudor); rect(ctx, 0, 14, ART, 2, C.tudor);
+    rect(ctx, 6, 0, 4, ART, C.tudor);
+    rect(ctx, 6, 0, 1, ART, "#3d322a"); rect(ctx, 9, 0, 1, ART, "#100c0a");
+    const r = rnd("tdb", s);
+    for (let i = 0; i < 5; i++) px(ctx, 7 + ((r() * 2) | 0), (r() * ART) | 0, "#3a2e26");
+  });
+  P("pub_wall", function (ctx, f, s) {
+    fill(ctx, "#f0e8d8");
+    dither(ctx, 0, 0, ART, ART, "#e2d8c2", 4);
+    rect(ctx, 0, 0, ART, 2, C.tudor);
+    rect(ctx, 0, 7, ART, 2, C.tudor);
+    rect(ctx, 3, 2, 2, 5, C.tudor); rect(ctx, 11, 9, 2, 7, C.tudor);
+    rect(ctx, 0, 14, ART, 2, C.tudor);
+  });
+  P("wall_render_white", function (ctx, f, s) {
+    fill(ctx, "#ecece4");
+    dither(ctx, 0, 0, ART, ART, "#dedcd0", 3);
+    const r = rnd("rw", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#f8f8f2", "#d2d0c4"], 14);
+    rect(ctx, 0, 0, ART, 1, "#fbfbf6"); rect(ctx, 0, 15, ART, 1, "#c8c6ba");
+  });
+  P("wall_render_cream", function (ctx, f, s) {
+    fill(ctx, "#e8dcb8");
+    dither(ctx, 0, 0, ART, ART, "#d8caa2", 3);
+    const r = rnd("rc", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#f4ecd0", "#c9b992"], 14);
+    rect(ctx, 0, 0, ART, 1, "#f6eed4"); rect(ctx, 0, 15, ART, 1, "#c2b28c");
+  });
+  P("wall_glass", function (ctx, f, s) {
+    fill(ctx, "#a0d0e0");
+    for (let y = 0; y < ART; y += 5) rect(ctx, 0, y, ART, 1, "#6f9fb6");
+    for (let x = 0; x < ART; x += 5) rect(ctx, x, 0, 1, ART, "#6f9fb6");
+    rect(ctx, 1, 1, 3, 3, "#d6eef8"); rect(ctx, 11, 6, 3, 3, "#c8e6f4");
+    rect(ctx, 6, 11, 3, 3, "#c8e6f4");
+  });
+  P("greenhouse_wall", function (ctx, f, s) {
+    fill(ctx, "#b0e0e8");
+    for (let y = 0; y < ART; y += 4) rect(ctx, 0, y, ART, 1, "#7fb8c2");
+    rect(ctx, 7, 0, 1, ART, "#7fb8c2");
+    rect(ctx, 1, 1, 2, 2, "#e2f6fa"); rect(ctx, 9, 9, 2, 2, "#e2f6fa");
+    // hint of green behind the glass
+    const g = ctx.globalAlpha; ctx.globalAlpha = 0.25; ctx.fillStyle = "#3f8a34";
+    ctx.fillRect(2, 10, 4, 5); ctx.fillRect(10, 4, 4, 4); ctx.globalAlpha = g;
+  });
+
+  P("wall_castle", function (ctx, f, s) {
+    stoneWall(ctx, s, "#7a7a80", "#575760", "#98989e", "#4e4e56", 5);
+    Art.edge(ctx, "s", "#000", 0.22);
+  });
+  P("wall_castle_top", function (ctx, f, s) {
+    stoneWall(ctx, s, "#8a8a90", "#65656e", "#a8a8ae", "#585860", 5);
+    // battlements
+    rect(ctx, 0, 0, ART, 5, "#8a8a90");
+    for (let x = 0; x < ART; x += 6) { rect(ctx, x, 0, 4, 5, "#9c9ca2"); rect(ctx, x, 0, 4, 1, "#c0c0c6"); rect(ctx, x + 3, 0, 1, 5, "#63636c"); }
+    rect(ctx, 0, 5, ART, 1, "#4e4e56");
+  });
+  P("castle_tower", function (ctx, f, s) {
+    stoneWall(ctx, s, "#6a6a70", "#4a4a52", "#88888e", "#42424a", 5);
+    rect(ctx, 0, 0, 2, ART, "#4a4a52"); rect(ctx, 14, 0, 2, ART, "#4a4a52");
+    rect(ctx, 7, 3, 2, 6, "#1b1720"); px(ctx, 7, 3, "#33333c");
+  });
+  P("wall_city", function (ctx, f, s) {
+    stoneWall(ctx, s, "#b89060", "#937046", "#d2ac7e", "#8a6a44", 5);
+    Art.edge(ctx, "s", "#000", 0.2);
+  });
+  P("wall_city_walk", function (ctx, f, s) {
+    flags(ctx, s, "#c8a878", "#a88a5c", "#e0c496", "#94764c");
+    rect(ctx, 0, 0, ART, 1, "#8a6a44"); rect(ctx, 0, 15, ART, 1, "#8a6a44");
+  });
+  P("wall_interior", function (ctx, f, s) {
+    fill(ctx, "#c8b8a0");
+    dither(ctx, 0, 0, ART, ART, "#b8a88f", 3);
+    const r = rnd("wi", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#d6c8b2"], 8);
+    rect(ctx, 0, 0, ART, 1, "#dccfba");
+  });
+  P("wall_interior_top", function (ctx, f, s) {
+    fill(ctx, "#8a7a68");
+    dither(ctx, 0, 0, ART, ART, "#786a5a", 4);
+    rect(ctx, 0, 12, ART, 2, "#6a5c4c");
+    rect(ctx, 0, 14, ART, 2, "#c8b8a0");
+    rect(ctx, 0, 0, ART, 1, "#9d8c78");
+  });
+  P("wall_wainscot", function (ctx, f, s) {
+    fill(ctx, "#c8b8a0");
+    rect(ctx, 0, 8, ART, 8, "#a08060");
+    Art.planks(ctx, { x: 0, y: 8, w: ART, h: 8, face: "#a08060", dark: "#7d5f42", light: "#bd9a76", dir: "v", pw: 4, rnd: rnd("wsc", s) });
+    rect(ctx, 0, 7, ART, 1, "#8a6a4a"); rect(ctx, 0, 8, ART, 1, "#c8a882");
+  });
+  P("church_wall", function (ctx, f, s) {
+    stoneWall(ctx, s, "#9a9a90", "#77776e", "#b6b6ac", "#6b6b62", 6);
+    Art.edge(ctx, "s", "#000", 0.18);
+  });
+  P("church_spire", function (ctx, f, s) {
+    fill(ctx, "#7a7a80");
+    ascii(ctx, [
+      ".......n........", "......nln.......", "......nln.......", ".....nlNln......",
+      ".....nlNln......", "....nlNNNln.....", "....nlNNNln.....", "...nlNNNNNln....",
+      "...nlNNNNNln....", "..nlNNNNNNNln...", "..nlNNNNNNNln...", ".nlNNNNNNNNNln..",
+      ".nlNNNNNNNNNln..", "nlNNNNNNNNNNNln.", "nlNNNNNNNNNNNln.", "nnNNNNNNNNNNNnn."
+    ], PAL);
+  });
+  P("mill_window", function (ctx, f, s) {
+    brickWall(ctx, s, "#8a4030", "#5f2820", "#a55545", "#b8a084", 8, 4);
+    ascii(ctx, [
+      "..kkkkkkkkkkkk..", "..kBBBBBBBBBBk..", "..k7799779977k..", "..k7799779977k..",
+      "..kkkkkkkkkkkk..", "..k7799779977k..", "..k7799779977k..", "..kkkkkkkkkkkk..",
+      "..k7799779977k..", "..k7799779977k..", "..kkkkkkkkkkkk..", "..k7799779977k..",
+      "..k7799779977k..", "..kBBBBBBBBBBk..", "..kkkkkkkkkkkk..", "................"
+    ], PAL);
+  });
+
+  // ---- roofs ----
+  P("roof_slate", function (ctx, f, s) { roofOf(ctx, s, "slate", C.slate, C.slateDk, C.slateLt, "#26263a"); });
+  P("roof_slate_edge", function (ctx, f, s) {
+    roofOf(ctx, s, "slate", "#3a3a48", "#26263a", "#4e4e60", "#1c1c2c");
+    rect(ctx, 0, 12, ART, 2, "#5a5a6c"); rect(ctx, 0, 14, ART, 2, "#22222e");
+    rect(ctx, 0, 12, ART, 1, "#7a7a8c");
+  });
+  P("roof_over", function (ctx, f, s) {
+    roofOf(ctx, s, "slate", C.slate, C.slateDk, C.slateLt, "#26263a");
+    rect(ctx, 0, 13, ART, 2, "#5a5a6c"); rect(ctx, 0, 15, ART, 1, "#1e1e2a");
+  });
+  P("roof_tile_red", function (ctx, f, s) { roofOf(ctx, s, "tile", "#b04a3a", "#7f3026", "#c9694f", "#6a2a20"); });
+  P("roof_thatch", function (ctx, f, s) {
+    roofOf(ctx, s, "thatch", "#c8a860", "#9c7f3c", "#e0c684", "#8a6d2e");
+    rect(ctx, 0, 0, ART, 2, "#a98b46");
+    const r = rnd("thr", s);
+    for (let i = 0; i < 10; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#f0dda0");
+  });
+  P("roof_glass", function (ctx, f, s) {
+    fill(ctx, "#b0e0f0");
+    for (let x = 0; x < ART; x += 4) rect(ctx, x, 0, 1, ART, "#7fb4c8");
+    for (let y = 0; y < ART; y += 8) rect(ctx, 0, y, ART, 1, "#8ec2d4");
+    rect(ctx, 1, 1, 2, 5, "#e4f6ff"); rect(ctx, 9, 9, 2, 5, "#dcf2fc");
+  });
+  P("roof_metal", function (ctx, f, s) { roofOf(ctx, s, "metal", "#7a8a90", "#5b6a70", "#9db0b6"); });
+
+  P("chimney", deco(function (ctx, f, s) { roofOf(ctx, s, "slate", C.slate, C.slateDk, C.slateLt, "#26263a"); }, [
+    "..bbbbbbbbbbbb..", "..brrrrrrrrrrb..", "..mmmmmmmmmmmm..", "..bBbbbBbbbBbb..",
+    "..bbbbbbbbbbbb..", "..mmmmmmmmmmmm..", "..bbBbbbBbbbBb..", "..bbbbbbbbbbbb..",
+    "..mmmmmmmmmmmm..", "..bBbbbBbbbBbb..", "..bbbbbbbbbbbb..", "..mmmmmmmmmmmm..",
+    "..bbbbbbbbbbbb..", "..bbBbbbBbbbBb..", "..mmmmmmmmmmmm..", "..BBBBBBBBBBBB.."
+  ]));
+  P("chimney_mill", deco(function (ctx, f, s) { roofOf(ctx, s, "slate", C.slate, C.slateDk, C.slateLt, "#26263a"); }, [
+    "....BBBBBBBB....", "....BrrrrrrB....", "....BmmmmmmB....", "....BbbbbbbB....",
+    "....BbBbbBbB....", "....BmmmmmmB....", "....BbbbbbbB....", "...BbbbbbbbbB...",
+    "...BmmmmmmmmB...", "...BbbBbbBbbbB..", "...BbbbbbbbbB...", "...BmmmmmmmmB...",
+    "..BbbbbbbbbbbB..", "..BbbBbbbbBbbB..", "..BmmmmmmmmmmB..", "..BBBBBBBBBBBB.."
+  ]));
+  const SMOKE_PAL = Art.pal({ "-": "#b9c6d4", "=": "#9fb0c2" });
+  P("chimney_smoke", decoAnim(null, [[
+    "................", "................", "................", ".......~~.......",
+    "......~~~~......", "......~~~.......", ".......~-.......", ".......-~.......",
+    "........~-......", "........-~......", ".......~=.......", ".......=~.......",
+    "................", "................", "................", "................"
+  ], [
+    "................", "................", "......~~~.......", ".....~~~~~......",
+    ".....~~~~.......", "......~~~.......", "......~-........", ".......-~.......",
+    ".......~-.......", "........=.......", "........~-......", ".......=~.......",
+    "................", "................", "................", "................"
+  ], [
+    "................", ".....~~~........", "....~~~~~.......", "....~~~~~.......",
+    ".....~~~........", "......~-........", "......-~........", "......~=........",
+    ".......-........", ".......~-.......", "........=.......", "........-.......",
+    "................", "................", "................", "................"
+  ], [
+    "....~~~.........", "...~~~~~........", "...~~~~~........", "....~~~.........",
+    ".....~..........", ".....~-.........", "......-.........", "......~-........",
+    ".......=........", ".......-........", "........~.......", "........=.......",
+    "................", "................", "................", "................"
+  ]], SMOKE_PAL));
+
+  // ---- doors & windows ----
+  const DOOR = sheet([
+    "bbbbbbbbbbbbbbbb", "mmmmmmmmmmmmmmmm", "bbkkkkkkkkkkkkbb", "bbkOOOOOOOOOOkbb",
+    "bbkOPPPPPPPPOkbb", "bbkOP>>>>>>POkbb", "bbkOP>oooo>POkbb", "bbkOP>oooo>POkbb",
+    "bbkOP>>>>>>POkbb", "bbkOPPPPPPPPOkbb", "bbkOP>>>>>>POkbb", "bbkOP>oooo>POkbb",
+    "bbkOP>oo5o>POkbb", "bbkOP>>>>>>POkbb", "bbkOOOOOOOOOOkbb", "bbkkkkkkkkkkkkbb"
+  ]);
+  P("door_wood", deco(null, DOOR));
+  P("door_red", deco(null, DOOR, { "O": "#6e1414", "P": "#d05a4c", "o": "#b02828", ">": "#4e0e0e" }));
+  P("door_shop", deco(null, [
+    "aaaaaaaaaaaaaaaa", "AAAAAAAAAAAAAAAA", "aakkkkkkkkkkkkaa", "aakiiiiiiiiiikaa",
+    "aaki88888888ikaa", "aaki87777778ikaa", "aaki87777778ikaa", "aaki88888888ikaa",
+    "aakiiiiiiiiiikaa", "aaki{{{{{{{{ikaa", "aaki{}}}}}}{ikaa", "aaki{}}}}}}{ikaa",
+    "aaki{}}}}5}{ikaa", "aaki{{{{{{{{ikaa", "aakiiiiiiiiiikaa", "aakkkkkkkkkkkkaa"
+  ]));
+  P("door_locked", deco(null, [
+    "bbbbbbbbbbbbbbbb", "mmmmmmmmmmmmmmmm", "bbkkkkkkkkkkkkbb", "bbk>>>>>>>>>>kbb",
+    "bbk>OOOOOOOO>kbb", "bbk>O>>>>>>O>kbb", "bbk>O>OOOO>O>kbb", "bbk>O>OiiO>O>kbb",
+    "bbk>O>OiIiO>O>kb", "bbk>O>>iIi>>O>kb", "bbk>OOOiiiOOO>kb", "bbk>O>>>>>>>O>kb",
+    "bbk>O>OOOOO>O>kb", "bbk>O>>>>>>>O>kb", "bbk>>>>>>>>>>>kb", "bbkkkkkkkkkkkkbb"
+  ]));
+  P("door_gym", deco(function (ctx, f, s) { fill(ctx, "#8a8a90"); }, [
+    "nnnnnnnnnnnnnnnn", "NNNNNNNNNNNNNNNN", "nnkkkkkkkkkkkknn", "nnk4444444444knn",
+    "nnk4333333334knn", "nnk4344444434knn", "nnk4345555434knn", "nnk4355555543kn.",
+    "nnk4355555543knn", "nnk4345555434knn", "nnk4334433443knn", "nnk4333333334knn",
+    "nnk4333553334knn", "nnk4444444444knn", "nnkkkkkkkkkkkknn", "nnNNNNNNNNNNNNnn"
+  ]));
+  P("door_stairs_up", deco(function (ctx, f, s) { fill(ctx, "#8a8a90"); }, [
+    "nnnnnnnnnnnnnnnn", "nlllllllllllllln", "nlNNNNNNNNNNNNln", "nlNllllllllllNln",
+    "nlNlNNNNNNNNlNln", "nlNlNllllllNlNln", "nlNlNlNNNNlNlNln", "nlNlNlllllNlNln.",
+    "nlNlNlNNNNlNlNln", "nlNlNllllllNlNln", "nlNlNNNNNNNNlNln", "nlNllllllllllNln",
+    "nlNNNNNNNNNNNNln", "nlllllllllllllln", "nNNNNNNNNNNNNNNn", "nnnnnnnnnnnnnnnn"
+  ]));
+  P("door_stairs_down", deco(null, [
+    "nnnnnnnnnnnnnnnn", "nNNNNNNNNNNNNNNn", "nNkkkkkkkkkkkkNn", "nNkKKKKKKKKKKkNn",
+    "nNkKjjjjjjjjKkNn", "nNkKjNNNNNNjKkNn", "nNkKjNllllNjKkNn", "nNkKjNlnnlNjKkNn",
+    "nNkKjNllllNjKkNn", "nNkKjNNNNNNjKkNn", "nNkKjjjjjjjjKkNn", "nNkKKKKKKKKKKkNn",
+    "nNkkkkkkkkkkkkNn", "nNNNNNNNNNNNNNNn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn"
+  ]));
+
+  const WINDOW = sheet([
+    "bbbbbbbbbbbbbbbb", "mmmmmmmmmmmmmmmm", "bbkkkkkkkkkkkkbb", "bbkiiiiiiiiiikbb",
+    "bbki88888888ikbb", "bbki87777778ikbb", "bbki87777778ikbb", "bbki87777778ikbb",
+    "bbkiiiiiiiiiikbb", "bbki87777778ikbb", "bbki87777778ikbb", "bbki87777778ikbb",
+    "bbki88888888ikbb", "bbkiiiiiiiiiikbb", "bbkkkkkkkkkkkkbb", "bbbbbbbbbbbbbbbb"
+  ]);
+  P("window", deco(null, WINDOW));
+  P("window_lit", function (ctx, f, s) {
+    ascii(ctx, WINDOW, LIT_PAL);
+    Art.glow(ctx, 8, 8, 4, "#ffd98a", 0.1);
+  });
+  const LIT_PAL = Art.pal({ "7": "#f0d060", "8": "#fbeaa8", "i": "#4a3a20" });
+  P("window_shop", deco(null, [
+    "aaaaaaaaaaaaaaaa", "AAAAAAAAAAAAAAAA", "aakkkkkkkkkkkkaa", "aakiiiiiiiiiikaa",
+    "aaki88888888ikaa", "aaki87777778ikaa", "aaki87111778ikaa", "aaki87111778ikaa",
+    "aaki87777778ikaa", "aaki87733778ikaa", "aaki87733778ikaa", "aaki87777778ikaa",
+    "aaki88888888ikaa", "aakiiiiiiiiiikaa", "aakOOOOOOOOOOkaa", "aakkkkkkkkkkkkaa"
+  ]));
+  P("shop_awning", deco(null, [
+    "kkkkkkkkkkkkkkkk", "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c",
+    "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c", "2121212121212121", "2k2k2k2k2k2k2k2k",
+    "................", "................", "................", "................",
+    "................", "................", "................", "................"
+  ]));
+
+  // ---- signs & boards ----
+  function postGrass(ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "sg"); foot(ctx, 8, 15, 4); }
+  function postPave(ctx, f, s) { flags(ctx, s, "#b0b0b8", "#95959f", "#c8c8d0", "#7e7e88"); foot(ctx, 8, 15, 4); }
+
+  P("sign", deco(postGrass, [
+    "................", "..kkkkkkkkkkkk..", "..kOOOOOOOOOOk..", "..kOPPPPPPPPOk..",
+    "..kOPkkkPkkkPOk.", "..kOPPPPPPPPOk..", "..kOPkkkkkkPOk..", "..kOPPPPPPPPOk..",
+    "..kOPkkkPkkPPOk.", "..kOPPPPPPPPOk..", "..kOOOOOOOOOOk..", "..kkkkkkkkkkkk..",
+    "......O>O.......", "......O>O.......", "......O>O.......", "................"
+  ]));
+  P("sign_post", deco(postGrass, [
+    "................", "................", "...kkkkkkk......", "...kOPPPOk..kk..",
+    "...kOPkPOkkkPOk.", "...kOPPPOkkOPOk.", "...kkkkkkk..kk..", "......O>O.......",
+    "..kkkkkkkkkk....", "..kOPPPPPPOk....", "..kOPkkkkPOk....", "..kkkkkkkkkk....",
+    "......O>O.......", "......O>O.......", "......O>O.......", "................"
+  ]));
+  P("noticeboard", deco(postGrass, [
+    "................", ".kkkkkkkkkkkkkk.", ".kOOOOOOOOOOOOk.", ".kO88888888888k.",
+    ".kO8cccc8ccccc8k", ".kO8ckkc8ckkkc8k", ".kO8cccc8ccccc8k", ".kO8ckkc8ckkkc8k",
+    ".kO8cccc8ccccc8k", ".kO888888888888k", ".kO8cccccc8ccc8k", ".kO8ckkkkc8ckc8k",
+    ".kO8cccccc8ccc8k", ".kOOOOOOOOOOOOk.", "...O>O....O>O...", "...O>O....O>O..."
+  ]));
+  P("sign_chippy", deco(function (ctx, f, s) { fill(ctx, "#ecece4"); }, [
+    "................", ".kkkkkkkkkkkkkk.", ".k333333333333k.", ".k344444444443k.",
+    ".k34kk4k4k44443k", ".k34k44k4k4443k.", ".k34kkk4kkk443k.", ".k344444444443k.",
+    ".k34888884444k..", ".k3488{{{844443k", ".k34888884443k..", ".k344444444443k.",
+    ".k333333333333k.", ".kkkkkkkkkkkkkk.", "................", "................"
+  ]));
+  P("sign_pub", deco(function (ctx, f, s) { fill(ctx, "#f0e8d8"); rect(ctx, 0, 0, ART, 2, C.tudor); }, [
+    "TTTTTTTTTTTTTTTT", "....O>....>O....", "....OkkkkkkO....", "...kkkkkkkkkk...",
+    "...kOOOOOOOOk...", "...kO5555555Ok..", "...kO5eeee55Ok..", "...kO5e11e55Ok..",
+    "...kO55e1e555k..", "...kO5555555Ok..", "...kO5eeeee5Ok..", "...kOOOOOOOOk...",
+    "...kkkkkkkkkk...", "................", "................", "................"
+  ]));
+  P("sign_station", deco(postPave, [
+    "................", "..kkkkkkkkkkkk..", "..k}}}}}}}}}}k..", "..k}cccccccc}k..",
+    "..k}c}}}}}}c}k..", "..k}c}cccc}c}k..", "..k}c}c}}c}c}k..", "..k}c}cccc}c}k..",
+    "..k}c}}}}}}c}k..", "..k}cccccccc}k..", "..k}}}}}}}}}}k..", "..kkkkkkkkkkkk..",
+    "....U....U......", "....U....U......", "....U....U......", "................"
+  ]));
+  P("station_clock", decoAnim(function (ctx, f, s) { fill(ctx, "#8a8a90"); rect(ctx, 0, 0, ART, ART, "#7a7a84"); }, [[
+    "................", "....kkkkkkkk....", "..kkccccccccKk..", "..kccccccccccK..",
+    ".kcckcccccckccK.", ".kccccccccccccK.", ".kcccckkkccccck.", ".kccccckccccccK.",
+    ".kccccckkkkcccK.", ".kcccccccccccck.", ".kcckcccccckccK.", "..kccccccccccK..",
+    "..kkKcccccckKk..", "....kkkkkkkk....", "......U..U......", "......U..U......"
+  ], [
+    "................", "....kkkkkkkk....", "..kkccccccccKk..", "..kccccccccccK..",
+    ".kcckcccccckccK.", ".kccccccccccccK.", ".kccccckcccccck.", ".kccccckkkkkccK.",
+    ".kcccccckccccck.", ".kccccccckccccK.", ".kcckcccccckccK.", "..kccccccccccK..",
+    "..kkKcccccckKk..", "....kkkkkkkk....", "......U..U......", "......U..U......"
+  ]]));
+
+  // ---- fences & gates ----
+  P("fence_wood", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "fw"); }, [
+    "................", "................", "................", "OOOOOOOOOOOOOOOO",
+    "PPPPPPPPPPPPPPPP", ">>>>>>>>>>>>>>>>", "..O>........O>..", "..O>........O>..",
+    "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP", ">>>>>>>>>>>>>>>>", "..O>........O>..",
+    "..O>........O>..", "..O>........O>..", "................", "................"
+  ]));
+  P("fence_wood_post", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "fwp"); }, [
+    "................", "................", ".....OOOO.......", ".....OPPO.......",
+    ".....OPPO.......", ".....OPPO.......", ".....OPPO.......", ".....OPPO.......",
+    ".....OPPO.......", ".....OPPO.......", ".....OPPO.......", ".....OPPO.......",
+    ".....OPPO.......", ".....O>>O.......", ".....OOOO.......", "................"
+  ]));
+  P("fence_iron", deco(function (ctx, f, s) { flags(ctx, s, "#b0b0b8", "#95959f", "#c8c8d0", "#7e7e88"); }, [
+    "................", "..i....i....i...", ".iIi..iIi..iIi..", "..i....i....i...",
+    "iiiiiiiiiiiiiiii", "..i....i....i...", "..i....i....i...", "..i....i....i...",
+    "..i....i....i...", "iiiiiiiiiiiiiiii", "..i....i....i...", "..i....i....i...",
+    "..i....i....i...", "..i....i....i...", "iiiiiiiiiiiiiiii", "................"
+  ]));
+  P("fence_wire", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 2, "fwr"); }, [
+    "................", ".....|..........", "....|.|.........", "||||||||||||||||",
+    "....|.|.........", "..|.|.|.|.|.|.|.", "||||||||||||||||", "..|.|.|.|.|.|.|.",
+    "....|.|.........", "||||||||||||||||", "..|.|.|.|.|.|.|.", "....|.|.........",
+    "||||||||||||||||", "....|.|.........", "....|.|.........", "................"
+  ]));
+  P("gate_wood", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 2, "gw"); }, [
+    "................", "................", "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP",
+    "O>..........>..O", "O.>........>...O", "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP",
+    "O...>.....>....O", "O....>...>.....O", "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP",
+    "O.....>.>......O", "O......>.......O", "OOOOOOOOOOOOOOOO", "................"
+  ]));
+  P("gate_iron", deco(function (ctx, f, s) { flags(ctx, s, "#b0b0b8", "#95959f", "#c8c8d0", "#7e7e88"); }, [
+    "..i..i..i..i..i.", ".iIi.iIi.iIi.iIi", "..i..i..i..i..i.", "iiiiiiiiiiiiiiii",
+    "..i..i..i..i..i.", "..i5.i..i.5i..i.", "..i..i5.5i..i..i", "iiiiiiiiiiiiiiii",
+    "..i..i5.5i..i..i", "..i5.i..i.5i..i.", "..i..i..i..i..i.", "iiiiiiiiiiiiiiii",
+    "..i..i..i..i..i.", "..i..i..i..i..i.", "iiiiiiiiiiiiiiii", "................"
+  ]));
+
+  // ---- street surfaces ----
+  P("steps", function (ctx, f, s) {
+    fill(ctx, "#9a9aa0");
+    for (let y = 0; y < ART; y += 4) {
+      rect(ctx, 0, y, ART, 3, "#a4a4aa");
+      rect(ctx, 0, y, ART, 1, "#c2c2c8");
+      rect(ctx, 0, y + 3, ART, 1, "#6f6f79");
+    }
+    const r = rnd("stp", s);
+    speckle(ctx, r, 0, 0, ART, ART, ["#8e8e96", "#b6b6be"], 12);
+  });
+  P("pavement", function (ctx, f, s) { flags(ctx, s, "#b0b0b8", "#95959f", "#c8c8d0", "#7e7e88"); });
+  P("kerb", function (ctx, f, s) {
+    flags(ctx, s, "#b0b0b8", "#95959f", "#c8c8d0", "#7e7e88");
+    rect(ctx, 0, 10, ART, 2, "#d0d0d8"); rect(ctx, 0, 12, ART, 1, "#83838d");
+    rect(ctx, 0, 13, ART, 3, "#4b4b53");
+    for (let x = 0; x < ART; x += 8) rect(ctx, x, 10, 1, 2, "#9b9ba3");
+  });
+  P("road", function (ctx, f, s) {
+    grit(ctx, s, "#505058", "#3d3d45", "#66666e", 28, "rd");
+    const r = rnd("rdp", s);
+    for (let i = 0; i < 5; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#7a7a84");
+  });
+  P("road_line", function (ctx, f, s) {
+    grit(ctx, s, "#505058", "#3d3d45", "#66666e", 24, "rl");
+    rect(ctx, 4, 0, 2, 6, "#e0e0d0"); rect(ctx, 4, 10, 2, 6, "#e0e0d0");
+    rect(ctx, 4, 0, 1, 6, "#f4f4ea"); rect(ctx, 4, 10, 1, 6, "#f4f4ea");
+  });
+  P("zebra", function (ctx, f, s) {
+    grit(ctx, s, "#505058", "#3d3d45", "#66666e", 18, "zb");
+    for (let x = 0; x < ART; x += 6) { rect(ctx, x, 0, 4, ART, "#e8e8e0"); rect(ctx, x, 0, 1, ART, "#f8f8f2"); rect(ctx, x + 3, 0, 1, ART, "#c2c2ba"); }
+  });
+
+  // ---------------------------------------------------------------
+  // STREET FURNITURE & TOWN DECO
+  // (deco-layer tiles paint on a transparent ground)
+  // ---------------------------------------------------------------
+  P("lamp", deco(null, [
+    "................", "......iiii......", "......i66i......", ".....i6666i.....",
+    ".....666666.....", ".....i6666i.....", "......iIIi......", "......iIIi......",
+    "......iIIi......", "......iIIi......", "......iIIi......", "......iIIi......",
+    "......iIIi......", ".....iIIIIi.....", ".....iiiiii.....", "................"
+  ]));
+  P("lamp_victorian", deco(null, [
+    ".......5........", "......iii.......", ".....i666i......", ".....66666......",
+    ".....66566......", ".....i666i......", "......iii.......", ".......i........",
+    "......iIi.......", ".......i........", ".......i........", "......iIi.......",
+    ".......i........", "......iiii......", ".....iIIIIi.....", ".....iiiiii....."
+  ]));
+  P("bench", deco(null, [
+    "................", "................", "................", "................",
+    "..OOOOOOOOOOOO..", "..PPPPPPPPPPPP..", "..O>>>>>>>>>>O..", "..OOOOOOOOOOOO..",
+    "..PPPPPPPPPPPP..", "..O>>>>>>>>>>O..", "..O>........O>..", "..OO........OO..",
+    "..O>........O>..", "..OO........OO..", "..ii........ii..", "................"
+  ]));
+  P("bin", deco(null, [
+    "................", "................", "................", "................",
+    "................", "....iiiiiiii....", "....i::::::i....", "....vvvvvvvv....",
+    "....v;;;;;;v....", "....v;vvvv;v....", "....v;vvvv;v....", "....v;;;;;;v....",
+    "....v;vvvv;v....", "....vvvvvvvv....", "....iiiiiiii....", "................"
+  ]));
+  P("postbox", deco(null, [
+    "................", "................", "................", ".....111111.....",
+    "....11111111....", "....12222221....", "....11kkkk11....", "....11111111....",
+    "....11555111....", "....11111111....", "....12111121....", "....11111111....",
+    "....12222221....", "....11111111....", "....iiiiiiii....", "................"
+  ]));
+  P("phonebox", deco(null, [
+    "................", "...1111111111...", "...1222222221...", "...1177777711...",
+    "...1178888711...", "...1178888711...", "...1177777711...", "...1122222211...",
+    "...1178888711...", "...1178888711...", "...1178888711...", "...1177777711...",
+    "...1222222221...", "...1111111111...", "...2222222222...", "................"
+  ]));
+  P("bus_stop", deco(null, [
+    "................", "....iiiiiiii....", "....i}}}}}}i....", "....i}cccc}i....", "....i}c}}c}i....",
+    "....i}cccc}i....", "....i}}}}}}i....", "....iiiiiiii....", ".......U........",
+    ".......U........", ".......U........", ".......U........", ".......U........",
+    ".......U........", "......UUU.......", "................"
+  ]));
+  P("bollard", deco(null, [
+    "................", "................", "................", "................",
+    "................", "................", "......::::......", "......:ii:......",
+    "......iIIi......", "......iIIi......", "......iIIi......", "......iIIi......",
+    "......iIIi......", ".....iIIIIi.....", ".....::::::.....", "................"
+  ]));
+  P("planter", deco(null, [
+    "................", "................", "......^^........", "....^^e^e^^.....",
+    "...^ee^^^ee^....", "..1^^eeeee^^1...", "...^eee1eee^....", "....^^eeee^.....",
+    "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..O>OOOOOOOO>O..", "..OPPPPPPPPPPO..",
+    "..O>OOOOOOOO>O..", "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "................"
+  ]));
+
+  P("market_stall", deco(function (ctx, f, s) { cobbles(ctx, s, "#9a9aa8", "#7a7a88", "#b6b6c2", "#68687a"); }, [
+    "................", "................", "................", "................",
+    "................", "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "O11133311133311O",
+    "O..............O", "O.1..3..5..1..3O", "O.OOOOOOOOOOOO.O", "O.OPPPPPPPPPPO.O",
+    "O.OOOOOOOOOOOO.O", "O..............O", "O>............>O", "O>............>O"
+  ]));
+  P("market_stall_top", deco(null, [
+    "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c", "1c1c1c1c1c1c1c1c",
+    "2k2k2k2k2k2k2k2k", "................", "................", "................",
+    "................", "................", "................", "................",
+    "................", "................", "................", "................"
+  ]));
+
+  P("statue", deco(postPave, [
+    "................", "......nll.......", ".....nlllN......", ".....nlllN......",
+    "......nlN.......", ".....nllln......", "....nlllllN.....", "...nllllllln....",
+    "...nlN.l.NlN....", "....n..l..N.....", "......lll.......", ".....lllll......",
+    "....nlllllN.....", "...nnnnnnnnn....", "...NNNNNNNNN....", "................"
+  ]));
+  P("bear_statue", deco(postPave, [
+    "................", "................", "....O>....>O....", "....OOOOOOOO....",
+    "...OO>OOOO>OO...", "...OOkOOOOkOO...", "...OOOO>>OOOO...", "....OOOOOOOO....",
+    "...OOOOOOOOOO...", "..OOOOOOOOOOOO..", "..OO>OOOOOO>OO..", "..OOOOOOOOOOOO..",
+    "..OO>OO..OO>OO..", "..OOOOO..OOOOO..", "..nnnnnnnnnnnn..", "..NNNNNNNNNNNN.."
+  ]));
+  P("cross_saxon", deco(postGrass, [
+    "................", ".....nlllN......", ".....nlllN......", "...nnlllllnn....",
+    "...nlllllllN....", "...nlNlllNlN....", "...nnlllllnn....", ".....nlllN......",
+    ".....nlNlN......", ".....nlllN......", ".....nlNlN......", ".....nlllN......",
+    "....nlllllN.....", "...nlllllllN....", "...nnnnnnnnn....", "...NNNNNNNNN...."
+  ]));
+  P("moai", deco(postGrass, [
+    "................", "......nnnn......", ".....nllllN.....", "....nllllllN....",
+    "....nlllllln....", "....nlkllklN....", "....nlllllln....", "....nll..llN....",
+    "....nlll.llN....", "....nllkkkln....", "....nlllllln....", "....nllllllN....",
+    "...nlllllllln...", "...nNNNNNNNNn...", "...NNNNNNNNNN...", "................"
+  ]));
+  P("white_nancy", deco(function (ctx, f, s) { turf(ctx, s, C.moorGrass, "#6b7a36", "#a8b662", 3, "wn"); foot(ctx, 8, 15, 6); }, [
+    "................", "......cccc......", ".....cccccc.....", "....cccccccc....",
+    "....cccccccc....", "...cccccccccc...", "...cccccccccc...", "...cccccccccc...",
+    "..cccccccccccc..", "..cccccccccccc..", "..ccccccccccCC..", "..ccccccccccCC..",
+    "..cccccccccCCC..", "..CCCCCCCCCCCC..", "..nnnnnnnnnnnn..", "................"
+  ]));
+  P("war_memorial", deco(postPave, [
+    "................", ".......ll.......", "......lllN......", ".....llllln.....",
+    "......lllN......", "......lllN......", "......lllN......", "......lllN......",
+    "......lllN......", ".....llllln.....", ".....l...lN.....", "....nlllllln....",
+    "...nlllllllln...", "...nNNNNNNNNn...", "..NNNNNNNNNNNN..", "................"
+  ]));
+  P("fountain", decoAnim(postPave, [[
+    "..nnnnnnnnnnnn..", ".nllllllllllllN.", ".nlwwwwwwwwwwlN.", ".nlwWxwwwwxWwlN.",
+    ".nlwwwwffwwwwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwwffwwwwlN.",
+    ".nlwWxwwwwxWwlN.", ".nlwwwwwwwwwwlN.", ".nlwwwwwwwwwwlN.", ".nlwwwwwwwwwwlN.",
+    ".nNNNNNNNNNNNNN.", "..NNNNNNNNNNNN..", "................", "................"
+  ], [
+    "..nnnnnnnnnnnn..", ".nllllllllllllN.", ".nlwwwwwwwwwwlN.", ".nlwwwwffwwwwlN.",
+    ".nlwWxwffwxWwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwwffwwwwlN.",
+    ".nlwwwwwwwwwwlN.", ".nlwWxwwwwxWwlN.", ".nlwwwwwwwwwwlN.", ".nlwwwwwwwwwwlN.",
+    ".nNNNNNNNNNNNNN.", "..NNNNNNNNNNNN..", "................", "................"
+  ], [
+    "..nnnnnnnnnnnn..", ".nllllllllllllN.", ".nlwwwwffwwwwlN.", ".nlwwwffffwwwlN.",
+    ".nlwWxwffwxWwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwwffwwwwlN.",
+    ".nlwwwwwwwwwwlN.", ".nlwwwwwwwwwwlN.", ".nlwWxwwwwxWwlN.", ".nlwwwwwwwwwwlN.",
+    ".nNNNNNNNNNNNNN.", "..NNNNNNNNNNNN..", "................", "................"
+  ], [
+    "..nnnnnnnnnnnn..", ".nllllllllllllN.", ".nlwwwfwwfwwwlN.", ".nlwwwwffwwwwlN.",
+    ".nlwWxwffwxWwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwfnnfwwwlN.", ".nlwwwwffwwwwlN.",
+    ".nlwwwwwwwwwwlN.", ".nlwWxwwwwxWwlN.", ".nlwwwwwwwwwwlN.", ".nlwwwwwwwwwwlN.",
+    ".nNNNNNNNNNNNNN.", "..NNNNNNNNNNNN..", "................", "................"
+  ]]));
+  P("well", deco(postGrass, [
+    "................", "....O>....>O....", "....OOOOOOOO....", "....O>....>O....",
+    "....O>....>O....", "....O>....>O....", "..nnnnnnnnnnnn..", "..nllllllllllN..",
+    "..nlkkkkkkkklN..", "..nlkWWWWWWklN..", "..nlkWwwwwWklN..", "..nlkkkkkkkklN..",
+    "..nlllllllllln..", "..nNNNNNNNNNNn..", "..NNNNNNNNNNNN..", "................"
+  ]));
+  P("bandstand", deco(postPave, [
+    "......yy........", ".....yyyy.......", "....yyyyyy......", "...yyyyyyyy.....",
+    "..yyyyyyyyyy....", ".yyyyyyyyyyyy...", "aaaaaaaaaaaaaaaa", "AAAAAAAAAAAAAAAA",
+    "..O>......O>....", "..O>......O>....", "..O>......O>....", "..O>......O>....",
+    "..O>......O>....", "aaaaaaaaaaaaaaaa", "AAAAAAAAAAAAAAAA", "................"
+  ]));
+  P("picnic_table", deco(function (ctx, f, s) { turf(ctx, s, C.grass, C.grassDk, C.grassLt, 3, "pt"); }, [
+    "................", "................", "..OOOOOOOOOOOO..", "..PPPPPPPPPPPP..",
+    "..O>>>>>>>>>>O..", "..OOOOOOOOOOOO..", "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP",
+    "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO", "..O>......O>....", "..OOOOOOOOOOOO..",
+    "..PPPPPPPPPPPP..", "..OOOOOOOOOOOO..", "..O>......O>....", "................"
+  ]));
+  P("scarecrow", deco(function (ctx, f, s) { grit(ctx, s, C.dirt, C.dirtDk, C.dirtLt, 18, "sc"); }, [
+    "................", "......3333......", ".....333333.....", "....33333333....",
+    "......[[[[......", "......[k[k......", "......[[[[......", "..O>..3333..>O..",
+    "OOOOOOO33OOOOOOO", "..O>..3333..>O..", "......1111......", "......3333......",
+    "......3..3......", "......3..3......", "......O..O......", "................"
+  ]));
+  P("hay_bale", deco(function (ctx, f, s) { turf(ctx, s, "#9aa858", "#7b8842", "#b6c274", 2, "hb"); }, [
+    "................", "................", "....33333333....", "...3444444443...",
+    "..34333333333 4.", "..3433333333443.", "..3433333333443.", "..3443333333343.",
+    "..3433333333443.", "..3443333333343.", "..3433333333443.", "..3443333333343.",
+    "...344444444 3..", "....33333333....", "................", "................"
+  ]));
+  P("apple_press", deco(function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); }, [
+    "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "......O>O.......",
+    "......O>O.......", "......O>O.......", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..",
+    "..O>11111111>O..", "..O>11111111>O..", "..OOOOOOOOOOOO..", "..O>........>O..",
+    "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "................"
+  ]));
+  P("crate", deco(function (ctx, f, s) { cobbles(ctx, s, "#9a9aa8", "#7a7a88", "#b6b6c2", "#68687a"); }, [
+    "................", "................", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..",
+    "..OP>>>>>>>>PO..", "..OP>oooooo>PO..", "..OPO>oooo>OPO..", "..OPOO>oo>OOPO..",
+    "..OPOOO>>OOOPO..", "..OPOO>oo>OOPO..", "..OPO>oooo>OPO..", "..OP>oooooo>PO..",
+    "..OP>>>>>>>>PO..", "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "................"
+  ]));
+  P("barrel", deco(function (ctx, f, s) { cobbles(ctx, s, "#9a9aa8", "#7a7a88", "#b6b6c2", "#68687a"); }, [
+    "................", "................", "....OOOOOOOO....", "...O>>>>>>>>O...",
+    "...OPPPPPPPPO...", "..OiiiiiiiiiiO..", "..OPPPPPPPPPPO..", "..OP>oooooo>PO..",
+    "..OP>oooooo>PO..", "..OiiiiiiiiiiO..", "..OP>oooooo>PO..", "..OPPPPPPPPPPO..",
+    "...OiiiiiiiiO...", "...OPPPPPPPPO...", "....OOOOOOOO....", "................"
+  ]));
+  P("sack", deco(function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); }, [
+    "................", "................", "................", "......aaaa......",
+    ".....aAAAAa.....", ".....aAaaAa.....", "....aAaaaaAa....", "...aAaaaaaaAa...",
+    "...aaaaaaaaaa...", "..aAaaaaaaaaAa..", "..aaaaaaaaaaaa..", "..aAaaaaaaaaAa..",
+    "..aaaaaaaaaaaa..", "..aAAaaaaaaAAa..", "..AAAAAAAAAAAA..", "................"
+  ]));
+
+  // ---------------------------------------------------------------
+  // CHESHIRE LANDMARKS & INDUSTRY
+  // ---------------------------------------------------------------
+  // Midpoint-ish circle helpers (bake time only).
+  function ring(ctx, cx, cy, r, w, color) {
+    ctx.fillStyle = color;
+    for (let y = 0; y < ART; y++) for (let x = 0; x < ART; x++) {
+      const d = Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+      if (d <= r && d >= r - w) ctx.fillRect(x, y, 1, 1);
+    }
+  }
+  function disc(ctx, cx, cy, r, color) {
+    ctx.fillStyle = color;
+    for (let y = 0; y < ART; y++) for (let x = 0; x < ART; x++) {
+      const dx = x - cx, dy = y - cy;
+      if (dx * dx + dy * dy <= r * r) ctx.fillRect(x, y, 1, 1);
+    }
+  }
+  function spoke(ctx, cx, cy, r0, r1, ang, color) {
+    ctx.fillStyle = color;
+    const dx = Math.cos(ang), dy = Math.sin(ang);
+    for (let t = r0; t <= r1; t += 0.4) {
+      const x = Math.round(cx + dx * t), y = Math.round(cy + dy * t);
+      if (x >= 0 && y >= 0 && x < ART && y < ART) ctx.fillRect(x, y, 1, 1);
+    }
+  }
+
+  P("mill_wheel", function (ctx, f, s) {
+    pond(ctx, f, { face: "#3f6a63", top: "#4b7a70", dark: "#26443f", light: "#699e8f", hi: "#a9cfc0", len: 4 });
+    const a0 = ((f | 0) & 3) * (Math.PI / 16);
+    disc(ctx, 7.5, 7.5, 7.2, "#5a3f22");
+    disc(ctx, 7.5, 7.5, 6.2, "#7a5a34");
+    ring(ctx, 7.5, 7.5, 7.4, 1.6, "#4a3116");
+    for (let k = 0; k < 8; k++) {
+      const a = a0 + k * (Math.PI / 4);
+      spoke(ctx, 7.5, 7.5, 1, 7, a, "#3f2a12");
+      spoke(ctx, 7.5, 7.5, 5.6, 7.4, a + 0.22, "#2b1d0c");
+    }
+    disc(ctx, 7.5, 7.5, 2, "#8a6a3a");
+    disc(ctx, 7.5, 7.5, 1, "#33333c");
+    // water thrown off the paddles
+    const g = ctx.globalAlpha; ctx.globalAlpha = 0.6; ctx.fillStyle = "#cfe6ff";
+    ctx.fillRect(13, 3 + ((f | 0) & 3), 2, 1); ctx.fillRect(1, 12 - ((f | 0) & 3), 2, 1);
+    ctx.globalAlpha = g;
+  });
+
+  P("loom", deco(function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); }, [
+    "OOOOOOOOOOOOOOOO", "O>PPPPPPPPPPPP>O", "O>O>OOOOOOOO>O>O", "O>Occccccccc>O>O",
+    "O>Oc((((((((cO>O", "O>Oc||||||||cO>O", "O>Oc||||||||cO>O", "O>Oc((((((((cO>O",
+    "O>Oc||||||||cO>O", "O>Oc||||||||cO>O", "O>Occccccccc>O>O", "O>OOOOOOOOOOOO>O",
+    "O>PPPPPPPPPPPP>O", "OOOOOOOOOOOOOOOO", "O>..........>O..", "OO..........OO.."
+  ]));
+  P("silk_bolt", deco(function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); }, [
+    "................", "................", "..((((((((((((..", "..()((((((((()..",
+    "..((((((((((((..", "..()((((((((()..", "..3333333333333.", "..344444444443..",
+    "..3333333333333.", "..{{{{{{{{{{{{..", "..{}}}}}}}}}}{..", "..{{{{{{{{{{{{..",
+    "..cccccccccccc..", "..cCCCCCCCCCCc..", "..cccccccccccc..", "................"
+  ]));
+
+  P("salt_pan", deco(function (ctx, f, s) { grit(ctx, s, "#6a6a70", "#4e4e54", "#87878e", 16, "sp"); }, [
+    "iiiiiiiiiiiiiiii", "iIIIIIIIIIIIIIIi", "iIzzzzzzzzzzzzIi", "iIzZZZZZZZZZZzIi",
+    "iIzZ~~~~~~~~ZzIi", "iIzZ~zzzzzz~ZzIi", "iIzZ~zzzzzz~ZzIi", "iIzZ~zzzzzz~ZzIi",
+    "iIzZ~zzzzzz~ZzIi", "iIzZ~~~~~~~~ZzIi", "iIzZZZZZZZZZZzIi", "iIzzzzzzzzzzzzIi",
+    "iIIIIIIIIIIIIIIi", "iiiiiiiiiiiiiiii", "i..............i", "ii............ii"
+  ]));
+  P("salt_pile", function (ctx, f, s) {
+    grit(ctx, s, "#6a6a70", "#4e4e54", "#87878e", 12, "spl");
+    ascii(ctx, [
+      "................", "................", "................", ".......z........",
+      "......zzz.......", ".....zzzzz......", ".....zzzzzz.....", "....zzzzzzzz....",
+      "...zzzzzzzzzz...", "...zzzzzzzzZz...", "..zzzzzzzzzZZz..", "..zzzzzzzzZZZz..",
+      ".zzzzzzzzzZZZZz.", ".zzzzzzzZZZZZZz.", "zzzzzzZZZZZZZZZz", "ZZZZZZZZZZZZZZZZ"
+    ], PAL);
+    const r = rnd("sparkle", s);
+    for (let i = 0; i < 6; i++) px(ctx, 2 + ((r() * 12) | 0), 6 + ((r() * 9) | 0), "#ffffff");
+  });
+  P("salt_works_pipe", deco(function (ctx, f, s) { grit(ctx, s, "#6a6a70", "#4e4e54", "#87878e", 14, "swp"); }, [
+    "................", "................", "................", "LLLLLLLLLLLLLLLL",
+    "UUUUUUUUUUUUUUUU", "LLLLLLLLLLLLLLLL", "::::::::::::::::", "....i......i....",
+    "....i......i....", "LLLLLLLLLLLLLLLL", "UUUUUUUUUUUUUUUU", "LLLLLLLLLLLLLLLL",
+    "::::::::::::::::", "....i......i....", "....i......i....", "................"
+  ]));
+  P("brine_pump", decoAnim(function (ctx, f, s) { grit(ctx, s, "#5a5a60", "#42424a", "#767680", 14, "bp"); }, [[
+    "................", ".....iiiiii.....", ".....iLLLLi.....", "....iiLLLLii....",
+    "....iL::::Li....", "....iL:**:Li....", "....iL:**:Li....", "....iL::::Li....",
+    "....iiLLLLii....", ".....iLLLLi.....", "...iiiLLLLiii...", "...iLLLLLLLLi...",
+    "...iL::::::Li...", "...iLLLLLLLLi...", "...iiiiiiiiii...", "................"
+  ], [
+    "................", ".....iiiiii.....", ".....iLLLLi.....", "....iiLLLLii....",
+    "....iL::::Li....", "....iL:  :Li....", "....iL:**:Li....", "....iL:**:Li....",
+    "....iiLLLLii....", ".....iLLLLi.....", "...iiiLLLLiii...", "...iLLLLLLLLi...",
+    "...iL:****:Li...", "...iLLLLLLLLi...", "...iiiiiiiiii...", "................"
+  ]]));
+
+  // ---- railway ----
+  function ballast(ctx, seed) { grit(ctx, seed, "#6a6060", "#504848", "#8a8080", 26, "bal"); }
+  P("rail_track_h", function (ctx, f, s) {
+    ballast(ctx, s);
+    for (let x = 0; x < ART; x += 4) { rect(ctx, x, 3, 3, 10, "#5a4632"); rect(ctx, x, 3, 3, 1, "#755c40"); }
+    rect(ctx, 0, 4, ART, 2, "#9aa0a8"); rect(ctx, 0, 4, ART, 1, "#d2d8e0");
+    rect(ctx, 0, 10, ART, 2, "#9aa0a8"); rect(ctx, 0, 10, ART, 1, "#d2d8e0");
+  });
+  P("rail_track_v", function (ctx, f, s) {
+    ballast(ctx, s);
+    for (let y = 0; y < ART; y += 4) { rect(ctx, 3, y, 10, 3, "#5a4632"); rect(ctx, 3, y, 10, 1, "#755c40"); }
+    rect(ctx, 4, 0, 2, ART, "#9aa0a8"); rect(ctx, 4, 0, 1, ART, "#d2d8e0");
+    rect(ctx, 10, 0, 2, ART, "#9aa0a8"); rect(ctx, 10, 0, 1, ART, "#d2d8e0");
+  });
+  P("rail_track_x", function (ctx, f, s) {
+    ballast(ctx, s);
+    for (let x = 0; x < ART; x += 4) rect(ctx, x, 3, 3, 10, "#5a4632");
+    for (let y = 0; y < ART; y += 4) rect(ctx, 3, y, 10, 3, "#5a4632");
+    rect(ctx, 0, 4, ART, 2, "#9aa0a8"); rect(ctx, 0, 10, ART, 2, "#9aa0a8");
+    rect(ctx, 4, 0, 2, ART, "#9aa0a8"); rect(ctx, 10, 0, 2, ART, "#9aa0a8");
+    rect(ctx, 0, 4, ART, 1, "#d2d8e0"); rect(ctx, 4, 0, 1, ART, "#d2d8e0");
+    rect(ctx, 6, 6, 4, 4, "#7f858d");
+  });
+  P("rail_buffer", deco(function (ctx, f, s) { ballast(ctx, s); rect(ctx, 0, 4, ART, 2, "#9aa0a8"); rect(ctx, 0, 10, ART, 2, "#9aa0a8"); }, [
+    "................", "................", "....iiiiiiii....", "...i11111111i...",
+    "...i12222221i...", "...i11111111i...", "...i12222221i...", "...i11111111i...",
+    "...i12222221i...", "...i11111111i...", "...iiiiiiiiii...", "....i......i....",
+    "....iIIIIIIi....", "....iiiiiiii....", "................", "................"
+  ]));
+  P("rail_signal", decoAnim(function (ctx, f, s) { ballast(ctx, s); }, [[
+    "................", "....iiiiii......", "....i::::i......", "....i:11:i......",
+    "....i:11:i......", "....i::::i......", "....i:22:i......", "....i:22:i......",
+    "....i::::i......", "....iiiiii......", "......ii........", "......ii........",
+    "......ii........", "......ii........", ".....iIIi.......", ".....iiii......."
+  ], [
+    "................", "....iiiiii......", "....i::::i......", "....i:22:i......",
+    "....i:22:i......", "....i::::i......", "....i:ee:i......", "....i:ee:i......",
+    "....i::::i......", "....iiiiii......", "......ii........", "......ii........",
+    "......ii........", "......ii........", ".....iIIi.......", ".....iiii......."
+  ]]));
+  P("train_engine", deco(function (ctx, f, s) { fill(ctx, "#1b1720"); }, [
+    "kkkkkkkkkkkkkkkk", "k}}}}}}}}}}}}}}k", "k}cccccccccccc}k", "k}c}}}}}}}}}}c}k",
+    "k}c}88888888}c}k", "k}c}87777778}c}k", "k}c}88888888}c}k", "k}c}}}}}}}}}}c}k",
+    "k}cccccccccccc}k", "k}}}}}}}}}}}}}}k", "k}11111111111}k.", "k}}}}}}}}}}}}}}k",
+    "kiiiiiiiiiiiiiik", "kiIIiiiiiiiiIIik", "kiIIiiiiiiiiIIik", "kkkkkkkkkkkkkkkk"
+  ]));
+  P("train_carriage", deco(function (ctx, f, s) { fill(ctx, "#1b1720"); }, [
+    "kkkkkkkkkkkkkkkk", "k22222222222222k", "k2111111111111 k", "k21777771777712k",
+    "k21788887888812k", "k21788887888812k", "k21777771777712k", "k21111111111112k",
+    "k22222222222222k", "k21111111111112k", "k2cccccccccccc2k", "k22222222222222k",
+    "kiiiiiiiiiiiiiik", "kiIIiiiiiiiiIIik", "kiIIiiiiiiiiIIik", "kkkkkkkkkkkkkkkk"
+  ]));
+  P("train_door", deco(function (ctx, f, s) { fill(ctx, "#1b1720"); }, [
+    "kkkkkkkkkkkkkkkk", "k11111111111111k", "k1kkkkkkkkkkkk1k", "k1k777777777k11k",
+    "k1k788888887k11k", "k1k788888887k11k", "k1k777777777k11k", "k1kkkkkkkkkkk11k",
+    "k1k5kkkkkkkkk11k", "k1kkkkkkkkkkk11k", "k1k111111111k11k", "k11111111111111k",
+    "kiiiiiiiiiiiiiik", "kiIIiiiiiiiiIIik", "kiIIiiiiiiiiIIik", "kkkkkkkkkkkkkkkk"
+  ]));
+
+  // ---- canal ----
+  P("towpath", function (ctx, f, s) {
+    grit(ctx, s, "#a08a60", "#7f6c46", "#bda87d", 24, "tp");
+    const r = rnd("tpg", s);
+    for (let i = 0; i < 4; i++) tuft(ctx, (r() * ART) | 0, 2 + ((r() * 3) | 0), "#4d8c36", "#6ab04c", "#8ccb66", 2);
+    for (let i = 0; i < 3; i++) tuft(ctx, (r() * ART) | 0, 15, "#4d8c36", "#6ab04c", "#8ccb66", 2);
+  });
+  P("canal_lock", deco(function (ctx, f, s) {
+    pond(ctx, f, { face: "#3f6a63", top: "#4b7a70", dark: "#26443f", light: "#699e8f", hi: "#a9cfc0", len: 4 });
+  }, [
+    "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "OO>OOOOOOOOOO>OO", "O>O>>>>>>>>>>O>O",
+    "O>O>iiiiiiii>O>O", "O>O>i::::::i>O>O", "O>O>i::::::i>O>O", "O>O>iiiiiiii>O>O",
+    "O>O>>>>>>>>>>O>O", "OO>OOOOOOOOOO>OO", "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO",
+    "O>OOOOOOOOOOOO>O", "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO"
+  ]));
+  P("canal_lock_beam", deco(function (ctx, f, s) { grit(ctx, s, "#a08a60", "#7f6c46", "#bda87d", 18, "clb"); }, [
+    "................", "................", "................", "................",
+    "................", "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP", "cccccccccccccccc",
+    "kkkkkkkkkkkkkkkk", "PPPPPPPPPPPPPPPP", "OOOOOOOOOOOOOOOO", "................",
+    ".......OO.......", ".......OO.......", "......iIIi......", "................"
+  ]));
+  P("narrowboat", deco(function (ctx, f, s) {
+    pond(ctx, f, { face: "#3f6a63", top: "#4b7a70", dark: "#26443f", light: "#699e8f", hi: "#a9cfc0", len: 4 });
+  }, [
+    "................", "................", "..kkkkkkkkkkkk..", ".keeeeeeeeeeeek.",
+    ".kevvvvvvvvvvek.", ".ke1111111111ek.", ".kev5555555vvek.", ".ke1v5vv5v11vek.",
+    ".kevvvvvvvvvvek.", ".ke1111111111ek.", ".keeeeeeeeeeeek.", "..kkkkkkkkkkkk..",
+    "...kEEEEEEEEk...", "....kkkkkkkk....", "................", "................"
+  ]));
+  P("boat_lift", deco(function (ctx, f, s) { fill(ctx, "#4a5058"); dither(ctx, 0, 0, ART, ART, "#3a4048", 6); }, [
+    "iIiiiiiiiiiiiiIi", "iI............Ii", "iI.i........i.Ii", "iI..i......i..Ii",
+    "iIiiiiiiiiiiiiIi", "iI..i......i..Ii", "iI.i........i.Ii", "iIiiiiiiiiiiiiIi",
+    "iI.i........i.Ii", "iI..i......i..Ii", "iIiiiiiiiiiiiiIi", "iI..i......i..Ii",
+    "iI.i........i.Ii", "iIiiiiiiiiiiiiIi", "iI............Ii", "iIiiiiiiiiiiiiIi"
+  ]));
+  P("boat_lift_top", deco(null, [
+    "UUUUUUUUUUUUUUUU", "LLLLLLLLLLLLLLLL", "iIiiiiiiiiiiiiIi", "iI............Ii",
+    "iI.i........i.Ii", "iIiiiiiiiiiiiiIi", "iI..i......i..Ii", "iI.i........i.Ii",
+    "iIiiiiiiiiiiiiIi", "................", "................", "................",
+    "................", "................", "................", "................"
+  ]));
+
+  // ---- Jodrell / masts ----
+  P("dish", deco(function (ctx, f, s) { flags(ctx, s, "#b0b0b8", "#95959f", "#c8c8d0", "#7e7e88"); }, [
+    "..cccccccccccc..", ".ccCCCCCCCCCCcc.", "cCCzzzzzzzzzzCCc", "cCzzzzzzzzzzzzCc",
+    "cCzzZZZZZZZZzzCc", "cCzZZ~~~~~~ZZzCc", "cCzZ~~~~~~~~ZzCc", "cCzZ~~~~~~~~ZzCc",
+    "cCzZ~~~~~~~~ZzCc", "cCzZZ~~~~~~ZZzCc", "cCzzZZZZZZZZzzCc", "cCzzzzzzzzzzzzCc",
+    "cCCzzzzzzzzzzCCc", ".ccCCCCCCCCCCcc.", "..cccccccccccc..", "......LLLL......"
+  ]));
+  P("dish_top", deco(null, [
+    "....cccccccc....", "..ccCCCCCCCCcc..", ".cCzzzzzzzzzzCc.", "cCzzzzzzzzzzzzCc",
+    "cCzzzzzzzzzzzzCc", "cCzzzzzzzzzzzzCc", ".cCzzzzzzzzzzCc.", "..ccCCCCCCCCcc..",
+    "................", "................", "................", "................",
+    "................", "................", "................", "................"
+  ]));
+  P("dish_base", deco(function (ctx, f, s) { flags(ctx, s, "#b0b0b8", "#95959f", "#c8c8d0", "#7e7e88"); }, [
+    "................", "......LLLL......", "......LUUL......", ".....LLUULL.....",
+    ".....LUUUUL.....", "....LLUUUULL....", "....LU....UL....", "...LLU....ULL...",
+    "...LU......UL...", "..LLU......ULL..", "..LU........UL..", ".LLU........ULL.",
+    ".LUUUUUUUUUUUUL.", "LLLLLLLLLLLLLLLL", ":::::::::::::::.", "................"
+  ]));
+  P("radio_mast", decoAnim(function (ctx, f, s) { turf(ctx, s, C.moorGrass, "#6b7a36", "#a8b662", 3, "rm"); }, [[
+    ".......ii.......", "......i11i......", ".......ii.......", "......i..i......",
+    "......i..i......", ".....iiiiii.....", ".....i....i.....", ".....i....i.....",
+    "....iiiiiiii....", "....i......i....", "....i......i....", "...iiiiiiiiii...",
+    "...i........i...", "...i........i...", "..iiiiiiiiiiii..", "..i..........i.."
+  ], [
+    ".......ii.......", "......i22i......", ".......ii.......", "......i..i......",
+    "......i..i......", ".....iiiiii.....", ".....i....i.....", ".....i....i.....",
+    "....iiiiiiii....", "....i......i....", "....i......i....", "...iiiiiiiiii...",
+    "...i........i...", "...i........i...", "..iiiiiiiiiiii..", "..i..........i.."
+  ]]));
+
+  // ---- castle / church / pub / chippy ----
+  P("castle_gate", deco(null, [
+    "nnnnnnnnnnnnnnnn", "nlllllllllllllln", "nlNNNNNNNNNNNNln", "nlNkkkkkkkkkkNln",
+    "nlNkjjjjjjjjkNln", "nlNkjKKKKKKjkNln", "nlNkjKkkkkKjkNln", "nlNkjKkkkkKjkNln",
+    "nlNkjKkkkkKjkNln", "nlNkjKkkkkKjkNln", "nlNkjKkkkkKjkNln", "nlNkjKkkkkKjkNln",
+    "nlNkjKkkkkKjkNln", "nlNkjjjjjjjjkNln", "nlNkkkkkkkkkkNln", "nnNNNNNNNNNNNNnn"
+  ]));
+  P("portcullis", deco(function (ctx, f, s) { fill(ctx, "#1b1720"); dither(ctx, 0, 0, ART, ART, "#2c2733", 5); }, [
+    "iiiiiiiiiiiiiiii", "iIiIiIiIiIiIiIiI", "i.i.i.i.i.i.i.i.", "iiiiiiiiiiiiiiii",
+    "i.i.i.i.i.i.i.i.", "i.i.i.i.i.i.i.i.", "iiiiiiiiiiiiiiii", "i.i.i.i.i.i.i.i.",
+    "i.i.i.i.i.i.i.i.", "iiiiiiiiiiiiiiii", "i.i.i.i.i.i.i.i.", "i.i.i.i.i.i.i.i.",
+    "iiiiiiiiiiiiiiii", "i.i.i.i.i.i.i.i.", "iIiIiIiIiIiIiIiI", "iiiiiiiiiiiiiiii"
+  ]));
+  P("church_window", deco(function (ctx, f, s) { stoneWall(ctx, s, "#9a9a90", "#77776e", "#b6b6ac", "#6b6b62", 6); }, [
+    "................", "......nnnn......", ".....nkkkkn.....", "....nk1551kn....",
+    "...nk155551kn...", "...nk1{{551kn...", "...nk1{}{51kn...", "...nk11{}11kn...",
+    "...nk1ee{11kn...", "...nk1eee11kn...", "...nk15551 kn...", "...nk155551kn...",
+    "...nkkkkkkkkn...", "...nnnnnnnnnn...", "................", "................"
+  ]));
+  P("church_door", deco(function (ctx, f, s) { stoneWall(ctx, s, "#9a9a90", "#77776e", "#b6b6ac", "#6b6b62", 6); }, [
+    "................", ".....nnnnnn.....", "....nkkkkkkn....", "...nkOOOOOOkn...",
+    "...nkO>>>>Okn...", "..nkO>oooo>Okn..", "..nkO>oooo>Okn..", "..nkO>o55o>Okn..",
+    "..nkO>oooo>Okn..", "..nkO>oooo>Okn..", "..nkO>>>>>>Okn..", "..nkO>oooo>Okn..",
+    "..nkO>oooo>Okn..", "..nkOOOOOOOOkn..", "..nkkkkkkkkkkn..", "..nnnnnnnnnnnn.."
+  ]));
+  P("gravestone", deco(function (ctx, f, s) { turf(ctx, s, "#5f8f42", "#43682e", "#7fae5c", 4, "gv"); foot(ctx, 8, 14, 5); }, [
+    "................", "................", "................", ".....nnnnn......",
+    "....nlllllN.....", "...nlllllllN....", "...nlNNNNNlN....", "...nlNlllNlN....",
+    "...nlNlllNlN....", "...nlNNNNNlN....", "...nlllllllN....", "...nlllllllN....",
+    "...nNNNNNNNNn...", "...NNNNNNNNNN...", "................", "................"
+  ]));
+  P("pub_door", deco(function (ctx, f, s) { fill(ctx, "#f0e8d8"); rect(ctx, 0, 0, ART, 2, C.tudor); }, [
+    "TTTTTTTTTTTTTTTT", "TTTTTTTTTTTTTTTT", "..kkkkkkkkkkkk..", "..k>>>>>>>>>>k..",
+    "..k>OOOOOOOO>k..", "..k>O777777O>k..", "..k>O788887O>k..", "..k>O777777O>k..",
+    "..k>OOOOOOOO>k..", "..k>O>>>>>>O>k..", "..k>O>oooo>O>k..", "..k>O>oo5o>O>k..",
+    "..k>O>oooo>O>k..", "..k>OOOOOOOO>k..", "..k>>>>>>>>>>k..", "..kkkkkkkkkkkk.."
+  ]));
+  P("chippy_counter", deco(function (ctx, f, s) { tileFloor(ctx, s, "#d8d0c0", "#bdb4a2"); }, [
+    "cccccccccccccccc", "CCCCCCCCCCCCCCCC", "cLLLLLLLLLLLLLLc", "cLUUUUUUUUUUUULc",
+    "cL3333LL333333Lc", "cL3443LL3444 3Lc", "cL3333LL333333Lc", "cLUUUUUUUUUUUULc",
+    "cLLLLLLLLLLLLLLc", "cCCCCCCCCCCCCCCc", "cccccccccccccccc", "cCCCCCCCCCCCCCCc",
+    "cccccccccccccccc", "cCCCCCCCCCCCCCCc", "cccccccccccccccc", "CCCCCCCCCCCCCCCC"
+  ]));
+  P("greenhouse_door", deco(function (ctx, f, s) { fill(ctx, "#b0e0e8"); }, [
+    "9999999999999999", "9888888888888889", "98kkkkkkkkkkkk89", "98k7777779777k89",
+    "98k7888887888k89", "98k7888887888k89", "98k7777779777k89", "98kkkkkkkkkkkk89",
+    "98k7777779777k89", "98k7888887888k89", "98k7888885888k89", "98k7777779777k89",
+    "98kkkkkkkkkkkk89", "9888888888888889", "9999999999999999", "................"
+  ]));
+  P("greenhouse_bed", deco(function (ctx, f, s) { grit(ctx, s, C.mud, "#4c331a", "#8a6640", 20, "ghb"); }, [
+    "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "Oppppppppppppp O", "Op^^p^^^p^^p^^pO",
+    "Op^eeh^he^h^ee^O", "Op^e1e^ee^ee1e^O", "Opeee^eeeeeee^pO", "Op^e^ee1ee^ee^pO",
+    "Ope1ee^eeee1eepO", "Op^ee^eeee^ee^pO", "Oppppppppppppp O", "O>>>>>>>>>>>>>>O",
+    "OOOOOOOOOOOOOOOO", "Oppppppppppppp O", "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO"
+  ]));
+
+  // ---- zoo, racecourse, airport, moor, orchard ----
+  P("zoo_fence", deco(function (ctx, f, s) { turf(ctx, s, "#8a9a70", "#6c7a56", "#a6b48c", 3, "zf"); }, [
+    "................", "..v..v..v..v..v.", "..v..v..v..v..v.", "vvvvvvvvvvvvvvvv",
+    "..v..v..v..v..v.", "..v..v..v..v..v.", "..v..v..v..v..v.", "vvvvvvvvvvvvvvvv",
+    "..v..v..v..v..v.", "..v..v..v..v..v.", "..v..v..v..v..v.", "vvvvvvvvvvvvvvvv",
+    "..v..v..v..v..v.", "..v..v..v..v..v.", "..v..v..v..v..v.", "................"
+  ]));
+  P("zoo_enclosure", function (ctx, f, s) {
+    grit(ctx, s, "#8a9a70", "#6c7a56", "#a6b48c", 20, "ze");
+    const r = rnd("zed", s);
+    for (let i = 0; i < 3; i++) tuft(ctx, (r() * ART) | 0, 4 + ((r() * 10) | 0), "#4d8c36", "#6ab04c", "#8ccb66", 3);
+    for (let i = 0; i < 4; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#b8a884");
+  });
+  P("zoo_sign", deco(postGrass, [
+    "................", "..vvvvvvvvvvvv..", "..vhhhhhhhhhhv..", "..vh3hhh33hhhv..",
+    "..vh3h3h3hh3hv..", "..vh333h3hh3hv..", "..vh3h3h33hhhv..", "..vhhhhhhhhhhv..",
+    "..vh1h11hh1hhv..", "..vh1h1h1h1hhv..", "..vh1h11hh1hhv..", "..vhhhhhhhhhhv..",
+    "..vvvvvvvvvvvv..", "......O>O.......", "......O>O.......", "................"
+  ]));
+  P("pine_forest_floor", function (ctx, f, s) {
+    grit(ctx, s, "#4a3a2a", "#332619", "#66523c", 22, "pff");
+    const r = rnd("pffn", s);
+    for (let i = 0; i < 12; i++) rect(ctx, (r() * 14) | 0, (r() * 15) | 0, 2, 1, r() < 0.5 ? "#2f4a2a" : "#7a6444");
+    for (let i = 0; i < 4; i++) tuft(ctx, (r() * ART) | 0, 4 + ((r() * 11) | 0), "#25401f", "#356a2c", "#4a8a3a", 3);
+  });
+  P("moor_path", function (ctx, f, s) {
+    grit(ctx, s, "#7a6a48", "#5c4f33", "#98865e", 24, "mpt");
+    const r = rnd("mptg", s);
+    for (let i = 0; i < 4; i++) tuft(ctx, (r() * ART) | 0, 1 + ((r() * 3) | 0), "#6b7a36", "#8a9a4a", "#a8b662", 2);
+    for (let i = 0; i < 4; i++) tuft(ctx, (r() * ART) | 0, 15, "#6b7a36", "#8a9a4a", "#a8b662", 2);
+    for (let i = 0; i < 5; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#a09a90");
+  });
+  P("moor_stone", deco(function (ctx, f, s) { turf(ctx, s, C.moorGrass, "#6b7a36", "#a8b662", 3, "ms"); foot(ctx, 8, 15, 5); }, [
+    "................", ".....qqqq.......", "....q????q......", "....q???qQ......",
+    "....q???qQ......", "....q??qQQ......", "....q???qQ......", "....q??qQQ......",
+    "....q???qQ......", "....q??qQQ......", "....q???qQ......", "....q??qQQ......",
+    "...qq???qQQ.....", "...qQQQQQQQ.....", "................", "................"
+  ]));
+  P("orchard_row", function (ctx, f, s) {
+    turf(ctx, s, "#6ab04c", "#4d8c36", "#8ccb66", 3, "orr");
+    // mown stripe down the row
+    rect(ctx, 6, 0, 4, ART, "#7cc05a");
+    dither(ctx, 6, 0, 4, ART, "#5f9c42", 6);
+    const r = rnd("orrp", s);
+    for (let i = 0; i < 3; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#e8e878");
+  });
+  P("racecourse_turf", function (ctx, f, s) {
+    turf(ctx, s, "#4aa040", "#367a2e", "#66bd58", 4, "rt");
+    for (let x = 0; x < ART; x += 8) dither(ctx, x, 0, 4, ART, "#3f8f36", 4);
+  });
+  P("racecourse_rail", deco(function (ctx, f, s) { turf(ctx, s, "#4aa040", "#367a2e", "#66bd58", 3, "rr"); }, [
+    "................", "................", "cccccccccccccccc", "CCCCCCCCCCCCCCCC",
+    "................", "................", "cccccccccccccccc", "CCCCCCCCCCCCCCCC",
+    "................", "...c........c...", "...C........C...", "...c........c...",
+    "...C........C...", "...c........c...", "...C........C...", "................"
+  ]));
+  P("mere_jetty", deco(function (ctx, f, s) {
+    pond(ctx, f, { face: "#4a7ab0", top: "#578ac0", dark: "#325a89", light: "#83aed6", hi: "#c4dcef", len: 4 });
+  }, [
+    "................", "................", "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP",
+    "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP", "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP",
+    "OOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPP", "OOOOOOOOOOOOOOOO", "..O>........O>..",
+    "..O>........O>..", "..O>........O>..", "................", "................"
+  ]));
+  P("airport_fence", deco(function (ctx, f, s) { turf(ctx, s, "#7f9a58", "#61773f", "#9cb576", 2, "af"); }, [
+    ".|..............", "|.|.|.|.|.|.|.|.", "UUUUUUUUUUUUUUUU", "|.|.|.|.|.|.|.|.",
+    ".|.|.|.|.|.|.|.|", "UUUUUUUUUUUUUUUU", "|.|.|.|.|.|.|.|.", ".|.|.|.|.|.|.|.|",
+    "UUUUUUUUUUUUUUUU", "|.|.|.|.|.|.|.|.", ".|.|.|.|.|.|.|.|", "UUUUUUUUUUUUUUUU",
+    "|.|.|.|.|.|.|.|.", ".|.|.|.|.|.|.|.|", "UUUUUUUUUUUUUUUU", "................"
+  ]));
+  P("runway", function (ctx, f, s) {
+    grit(ctx, s, "#404048", "#2f2f36", "#565660", 22, "rw");
+    rect(ctx, 7, 0, 2, 5, "#e8e8e0"); rect(ctx, 7, 11, 2, 5, "#e8e8e0");
+    const r = rnd("rwm", s);
+    for (let i = 0; i < 4; i++) rect(ctx, (r() * 12) | 0, (r() * ART) | 0, 4, 1, "#35353c");
+  });
+
+  // ---- cyber / THE STACK ----
+  P("server_rack", decoAnim(function (ctx, f, s) { fill(ctx, "#20282f"); }, [[
+    "kkkkkkkkkkkkkkkk", "k::::::::::::::k", "k:iiiiiiiiiiii:k", "k:i!0.0!.0..0i:k",
+    "k:iiiiiiiiiiii:k", "k:i0.!0..0!.0i:k", "k:iiiiiiiiiiii:k", "k:i..0!.0!0..i:k",
+    "k:iiiiiiiiiiii:k", "k:i0!..0.!0.0i:k", "k:iiiiiiiiiiii:k", "k:i.0!0..0.!.i:k",
+    "k:iiiiiiiiiiii:k", "k::::::::::::::k", "kkkkkkkkkkkkkkkk", "k@@@@@@@@@@@@@@k"
+  ], [
+    "kkkkkkkkkkkkkkkk", "k::::::::::::::k", "k:iiiiiiiiiiii:k", "k:i0!.0!0..!0i:k",
+    "k:iiiiiiiiiiii:k", "k:i!.0..!0.0.i:k", "k:iiiiiiiiiiii:k", "k:i.0!0.!.0!0i:k",
+    "k:iiiiiiiiiiii:k", "k:i.!0.0!..00i:k", "k:iiiiiiiiiiii:k", "k:i0.0!.!0..0i:k",
+    "k:iiiiiiiiiiii:k", "k::::::::::::::k", "kkkkkkkkkkkkkkkk", "k@@@@@@@@@@@@@@k"
+  ]]));
+  P("cable_duct", function (ctx, f, s) {
+    fill(ctx, "#303840");
+    rect(ctx, 0, 0, ART, 1, "#465058"); rect(ctx, 0, 15, ART, 1, "#1d232a");
+    const cols = ["#28c8a0", "#d8a028", "#c03030", "#4a8ad8", "#e8e8e0"];
+    for (let i = 0; i < 5; i++) { rect(ctx, 0, 2 + i * 3, ART, 2, cols[i]); rect(ctx, 0, 2 + i * 3, ART, 1, U.shade(cols[i], 1.3)); }
+  });
+  P("terminal", decoAnim(function (ctx, f, s) { fill(ctx, "#1d2b2a"); }, [[
+    "kkkkkkkkkkkkkkkk", "k@@@@@@@@@@@@@@k", "k@kkkkkkkkkkkk@k", "k@k0!0.0!.0..k@k",
+    "k@k!0..0.!00.k@k", "k@k.0!00..0!0k@k", "k@k0..!0!0..0k@k", "k@k!00.0..!00k@k",
+    "k@k.!.00!0.0.k@k", "k@kkkkkkkkkkkk@k", "k@@@@@@@@@@@@@@k", "k@@0!@@@@@@@@@@k",
+    "kkkkkkkkkkkkkkkk", "k::::::::::::::k", "k:iiiiiiiiiiii:k", "kkkkkkkkkkkkkkkk"
+  ], [
+    "kkkkkkkkkkkkkkkk", "k@@@@@@@@@@@@@@k", "k@kkkkkkkkkkkk@k", "k@k!0..0.!00.k@k",
+    "k@k.0!00..0!0k@k", "k@k0..!0!0..0k@k", "k@k!00.0..!00k@k", "k@k.!.00!0.0.k@k",
+    "k@k0!0.0!.0..k@k", "k@kkkkkkkkkkkk@k", "k@@@@@@@@@@@@@@k", "k@@@@@@@@@@0!@@k",
+    "kkkkkkkkkkkkkkkk", "k::::::::::::::k", "k:iiiiiiiiiiii:k", "kkkkkkkkkkkkkkkk"
+  ]]));
+  P("hologram", decoAnim(null, [[
+    "................", "................", "................", "................",
+    ".......!........", "......!0!.......", ".....!000!......", "....!00!00!.....",
+    ".....!000!......", "......!0!.......", ".......!........", "................",
+    "......@@@@......", ".....@0!!0@.....", "......@@@@......", "................"
+  ], [
+    "................", "................", "................", ".......!........",
+    "......!0!.......", ".....!0!0!......", "....!00!00!.....", "...!0!000!0!....",
+    "....!00!00!.....", ".....!0!0!......", "......!0!.......", ".......!........",
+    "......@@@@......", ".....@!00!@.....", "......@@@@......", "................"
+  ], [
+    "................", "................", "................", "................",
+    "......!0!.......", ".....!000!......", "....!0!0!0!.....", "...!00!!!00!....",
+    "....!0!0!0!.....", ".....!000!......", "......!0!.......", "................",
+    "......@@@@......", ".....@0!!0@.....", "......@@@@......", "................"
+  ], [
+    "................", "................", "................", ".......!........",
+    ".......0........", "......!0!.......", ".....!0!0!......", "....!0!!!0!.....",
+    ".....!0!0!......", "......!0!.......", ".......0........", ".......!........",
+    "......@@@@......", ".....@!00!@.....", "......@@@@......", "................"
+  ]]));
+
+  // ---------------------------------------------------------------
+  // INTERIORS — counters, machines, furniture
+  // ---------------------------------------------------------------
+  function wood(ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); }
+  function stoneF(ctx, f, s) { flags(ctx, s, "#909098", "#75757f", "#a8a8b2", "#63636d"); }
+  function tileF(ctx, f, s) { tileFloor(ctx, s, "#d8d0c0", "#bdb4a2"); }
+
+  P("counter", deco(wood, [
+    "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "OP>>>>>>>>>>>>PO", "OPPPPPPPPPPPPPPO",
+    "OOOOOOOOOOOOOOOO", "O>oooooooooooo>O", "O>o>>>>>>>>>>o>O", "O>oooooooooooo>O",
+    "O>o>>>>>>>>>>o>O", "O>oooooooooooo>O", "O>o>>>>>>>>>>o>O", "O>oooooooooooo>O",
+    "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO", "................"
+  ]));
+  P("counter_top", deco(wood, [
+    "PPPPPPPPPPPPPPPP", "cccccccccccccccc", "CCCCCCCCCCCCCCCC", "OOOOOOOOOOOOOOOO",
+    "O>oooooooooooo>O", "O>oooooooooooo>O", "OOOOOOOOOOOOOOOO", "O>oooooooooooo>O",
+    "O>oooooooooooo>O", "OOOOOOOOOOOOOOOO", "O>oooooooooooo>O", "O>oooooooooooo>O",
+    "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO", "................"
+  ]));
+  P("shelf", deco(wood, [
+    "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "O>oo>oo>oo>oo>>O", "O>1155331177>>>O",
+    "O>1155331177>>>O", "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "O>33771155>>>>>O",
+    "O>33771155>>>>>O", "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "O>55113377>>>>>O",
+    "O>55113377>>>>>O", "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "OOOOOOOOOOOOOOOO"
+  ]));
+  P("shelf_books", deco(wood, [
+    "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "O1.2.5.e.{.3.1.O", "O1.2.5.e.{.3.1.O",
+    "O1.2.5.e.{.3.1.O", "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "O2.1.3.{.e.5.2.O",
+    "O2.1.3.{.e.5.2.O", "O2.1.3.{.e.5.2.O", "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO",
+    "O5.e.1.3.2.{.5.O", "O5.e.1.3.2.{.5.O", "OOOOOOOOOOOOOOOO", "................"
+  ]));
+  P("bookcase", deco(wood, [
+    "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "O>1.5.2.e.{.3.>O", "O>1.5.2.e.{.3.>O",
+    "O>1.5.2.e.{.3.>O", "OOOOOOOOOOOOOOOO", "O>3.{.1.5.e.2.>O", "O>3.{.1.5.e.2.>O",
+    "O>3.{.1.5.e.2.>O", "OOOOOOOOOOOOOOOO", "O>2.e.5.{.3.1.>O", "O>2.e.5.{.3.1.>O",
+    "O>2.e.5.{.3.1.>O", "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO"
+  ]));
+  P("lab_bench", deco(function (ctx, f, s) { fill(ctx, "#c0d8e0"); }, [
+    "cccccccccccccccc", "CCCCCCCCCCCCCCCC", "llllllllllllllll", "lnnnnnnnnnnnnnnl",
+    "ln7l..0..l..7lnl", "ln8l.@0@.l..8lnl", "ln7l..0..l..7lnl", "lnnnnnnnnnnnnnnl",
+    "llllllllllllllll", "lNNNNNNNNNNNNNNl", "lNllllllllllllNl", "lNlNNNNNNNNNNlNl",
+    "lNllllllllllllNl", "lNNNNNNNNNNNNNNl", "llllllllllllllll", "................"
+  ]));
+  P("capsule_case", deco(function (ctx, f, s) { fill(ctx, "#c0d8e0"); }, [
+    "llllllllllllllll", "l88888888888888l", "l8kkkkkkkkkkkk8l", "l8k1177ee7711k8l",
+    "l8k1177ee7711k8l", "l8kcccccccccck8l", "l8k5577{{7755k8l", "l8k5577{{7755k8l",
+    "l8kcccccccccck8l", "l8kkkkkkkkkkkk8l", "l88888888888888l", "llllllllllllllll",
+    "lNNNNNNNNNNNNNNl", "lNllllllllllllNl", "lNNNNNNNNNNNNNNl", "................"
+  ]));
+  P("pc", decoAnim(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [[
+    "................", "..llllllllllll..", "..lkkkkkkkkkkl..", "..lk{{{{{{{{kl..",
+    "..lk}88}88}8kl..", "..lk}8}}8}}8kl..", "..lk}88}88}8kl..", "..lk{{{{{{{{kl..",
+    "..lkkkkkkkkkkl..", "..llllllllllll..", "..lNNNNNNNNNNl..", "..lnnnnnnnnnnl..",
+    "..lnkkkkkkkknl..", "..lnnnnnnnnnnl..", "..llllllllllll..", "................"
+  ], [
+    "................", "..llllllllllll..", "..lkkkkkkkkkkl..", "..lk{{{{{{{{kl..",
+    "..lk}8}}8}}8kl..", "..lk}88}88}8kl..", "..lk}8}}8}}8kl..", "..lk{{{{{{{{kl..",
+    "..lkkkkkkkkkkl..", "..llllllllllll..", "..lNNNNNNNNNNl..", "..lnnnnnnnnnnl..",
+    "..lnkkkkkkkknl..", "..lnnnnnnnnnnl..", "..llllllllllll..", "................"
+  ]]));
+  P("box_pc", decoAnim(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [[
+    "................", "..{{{{{{{{{{{{..", "..{}}}}}}}}}}{..", "..{}kkkkkkkk}{..",
+    "..{}k888888k}{..", "..{}k877778k}{..", "..{}k877778k}{..", "..{}k888888k}{..",
+    "..{}kkkkkkkk}{..", "..{}}}}}}}}}}{..", "..{}5}}}}}}}}{..", "..{{{{{{{{{{{{..",
+    "..{}}}}}}}}}}{..", "..{{{{{{{{{{{{..", "................", "................"
+  ], [
+    "................", "..{{{{{{{{{{{{..", "..{}}}}}}}}}}{..", "..{}kkkkkkkk}{..",
+    "..{}k888888k}{..", "..{}k877778k}{..", "..{}k877778k}{..", "..{}k888888k}{..",
+    "..{}kkkkkkkk}{..", "..{}}}}}}}}}}{..", "..{}}}}}}}}5}{..", "..{{{{{{{{{{{{..",
+    "..{}}}}}}}}}}{..", "..{{{{{{{{{{{{..", "................", "................"
+  ]]));
+  P("healer", decoAnim(function (ctx, f, s) { fill(ctx, "#d8d0c0"); }, [[
+    "................", "..cccccccccccc..", "..cCCCCCCCCCCc..", "..cC11111111Cc..",
+    "..cC1cc11cc1Cc..", "..cC1cc11cc1Cc..", "..cC11111111Cc..", "..cCCCCCCCCCCc..",
+    "..cllllllllllc..", "..cl11111111lc..", "..cl1kkkkkk1lc..", "..cl1k5..5k1lc..",
+    "..cl11111111lc..", "..cllllllllllc..", "..cccccccccccc..", "................"
+  ], [
+    "................", "..cccccccccccc..", "..cCCCCCCCCCCc..", "..cC11111111Cc..",
+    "..cC1cc11cc1Cc..", "..cC1cc11cc1Cc..", "..cC11111111Cc..", "..cCCCCCCCCCCc..",
+    "..cllllllllllc..", "..cl11111111lc..", "..cl1kkkkkk1lc..", "..cl1k..5.k1lc..",
+    "..cl11111111lc..", "..cllllllllllc..", "..cccccccccccc..", "................"
+  ]]));
+  P("machine", deco(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [
+    "................", "..llllllllllll..", "..lNNNNNNNNNNl..", "..lNkkkkkkkkNl..",
+    "..lNk0!00!0kNl..", "..lNk!00!00kNl..", "..lNkkkkkkkkNl..", "..lNNNNNNNNNNl..",
+    "..lN11NN33NNNl..", "..lNNNNNNNNNNl..", "..lNkkkkkkkkNl..", "..lNkKKKKKKkNl..",
+    "..lNkkkkkkkkNl..", "..lNNNNNNNNNNl..", "..llllllllllll..", "................"
+  ]));
+  P("brew_vat", decoAnim(function (ctx, f, s) { stoneF(ctx, f, s); }, [[
+    "................", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..O>44444444>O..",
+    "..O4333333334O..", "..O4344444434O..", "..O4344444434O..", "..O4333333334O..",
+    "..O>44444444>O..", "..OPPPPPPPPPPO..", "..OiiiiiiiiiiO..", "..OPPPPPPPPPPO..",
+    "..OOOOOOOOOOOO..", "...O>......>O...", "...OO......OO...", "................"
+  ], [
+    "................", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..O>44444444>O..",
+    "..O4344444434O..", "..O4333333334O..", "..O4333333334O..", "..O4344444434O..",
+    "..O>44444444>O..", "..OPPPPPPPPPPO..", "..OiiiiiiiiiiO..", "..OPPPPPPPPPPO..",
+    "..OOOOOOOOOOOO..", "...O>......>O...", "...OO......OO...", "................"
+  ]]));
+  P("cash_till", deco(wood, [
+    "................", "................", "....llllllll....", "....lNNNNNNl....",
+    "....lNkkkkNl....", "....lNk88kNl....", "....lNkkkkNl....", "...llllllllll...",
+    "...lNNNNNNNNl...", "...lNiiiiiiNl...", "...lNi1155iNl...", "...lNi3377iNl...",
+    "...lNiiiiiiNl...", "...lNNNNNNNNl...", "...llllllllll...", "................"
+  ]));
+
+  P("table", deco(wood, [
+    "................", "..PPPPPPPPPPPP..", ".PccccccccccccP.", ".PcCCCCCCCCCCcP.",
+    ".PcCoooooooo CP.", ".PcCoooooooocCP.", ".PcCoooooooocCP.", ".PcCCCCCCCCCCcP.",
+    ".PccccccccccccP.", "..PPPPPPPPPPPP..", "..OO........OO..", "..O>........O>..",
+    "..O>........O>..", "..OO........OO..", "................", "................"
+  ]));
+  P("table_round", deco(wood, [
+    "................", ".....PPPPPP.....", "...PPcccccePP...", "..PcccccccccccP.",
+    ".PcccCCCCCCcccP.", ".PccCoooooo CccP", ".PccCooooooCccP.", ".PccCooooooCccP.",
+    ".PcccCCCCCCcccP.", "..PcccccccccccP.", "...PPccccccPP...", ".....PPPPPP.....",
+    "......O>>O......", "......O>>O......", ".....OOOOOO.....", "................"
+  ]));
+  P("chair", deco(wood, [
+    "................", "................", "....OOOOOOOO....", "....OPPPPPPO....",
+    "....O>oooo>O....", "....OPPPPPPO....", "....O>oooo>O....", "....OPPPPPPO....",
+    "...OOOOOOOOOO...", "...OPPPPPPPPO...", "...OOOOOOOOOO...", "...O>......>O...",
+    "...OO......OO...", "...O>......>O...", "...OO......OO...", "................"
+  ]));
+  P("stool", deco(wood, [
+    "................", "................", "................", "................",
+    "................", "....OOOOOOOO....", "...OPPPPPPPPO...", "...OOOOOOOOOO...",
+    "....O>....>O....", "....O>....>O....", "....O>....>O....", "...OO......OO...",
+    "...O>......>O...", "...OO......OO...", "................", "................"
+  ]));
+  P("bed", deco(wood, [
+    "cccccccccccccccc", "cCCCCCCCCCCCCCCc", "c11111111111111c", "c12222222222221c",
+    "c11111111111111c", "c12222222222221c", "c11111111111111c", "c12222222222221c",
+    "c11111111111111c", "c12222222222221c", "c11111111111111c", "cCCCCCCCCCCCCCCc",
+    "cccccccccccccccc", "OOOOOOOOOOOOOOOO", "O>............>O", "OOOOOOOOOOOOOOOO"
+  ]));
+  P("bed_head", deco(wood, [
+    "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "O>OOOOOOOOOOOO>O", "O>O>>>>>>>>>>O>O",
+    "O>OOOOOOOOOOOO>O", "OPPPPPPPPPPPPPPO", "OOOOOOOOOOOOOOOO", "cccccccccccccccc",
+    "ccccccccccccccCc", "cCcccccccccccccc", "cCCCCCCCCCCCCCCc", "c22222222222222c",
+    "c11111111111111c", "c12222222222221c", "c11111111111111c", "c12222222222221c"
+  ]));
+  P("tv", deco(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [
+    "................", "................", "..kkkkkkkkkkkk..", "..k::::::::::k..",
+    "..k:88888888:k..", "..k:8{{{{{{8:k..", "..k:8{cccc{8:k..", "..k:8{cccc{8:k..",
+    "..k:8{{{{{{8:k..", "..k:88888888:k..", "..k::::::::::k..", "..kkkkkkkkkkkk..",
+    "...k::5::5::k...", "...kkkkkkkkkk...", "....k......k....", "................"
+  ]));
+  P("plant_pot", deco(function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); }, [
+    "................", "......^^........", "....^^e^e^......", "...^ee^^^ee^....",
+    "..^^eeeeeee^^...", "...^eee^eee^....", "....^^eee^^.....", "......^e^.......",
+    ".......e........", "....11111111....", "....12222221....", "....11111111....",
+    "....12222221....", ".....111111.....", "......1111......", "................"
+  ]));
+  P("fireplace", decoAnim(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [[
+    "nnnnnnnnnnnnnnnn", "nllllllllllllllN", "nlNNNNNNNNNNNNlN", "nlNkkkkkkkkkkNlN",
+    "nlNkKKKKKKKKkNlN", "nlNkK111111KkNlN", "nlNkK155551KkNlN", "nlNkK156651KkNlN",
+    "nlNkK155551KkNlN", "nlNkK111111KkNlN", "nlNkKOO>>OOKkNlN", "nlNkkkkkkkkkkNlN",
+    "nlNNNNNNNNNNNNlN", "nllllllllllllllN", "nnnnnnnnnnnnnnnn", "................"
+  ], [
+    "nnnnnnnnnnnnnnnn", "nllllllllllllllN", "nlNNNNNNNNNNNNlN", "nlNkkkkkkkkkkNlN",
+    "nlNkKKKKKKKKkNlN", "nlNkK122211KkNlN", "nlNkK155551KkNlN", "nlNkK165561KkNlN",
+    "nlNkK156651KkNlN", "nlNkK111111KkNlN", "nlNkKO>>OOOKkNlN", "nlNkkkkkkkkkkNlN",
+    "nlNNNNNNNNNNNNlN", "nllllllllllllllN", "nnnnnnnnnnnnnnnn", "................"
+  ], [
+    "nnnnnnnnnnnnnnnn", "nllllllllllllllN", "nlNNNNNNNNNNNNlN", "nlNkkkkkkkkkkNlN",
+    "nlNkKKKKKKKKkNlN", "nlNkK112211KkNlN", "nlNkK156551KkNlN", "nlNkK155551KkNlN",
+    "nlNkK166651KkNlN", "nlNkK111111KkNlN", "nlNkKOO>>O>KkNlN", "nlNkkkkkkkkkkNlN",
+    "nlNNNNNNNNNNNNlN", "nllllllllllllllN", "nnnnnnnnnnnnnnnn", "................"
+  ], [
+    "nnnnnnnnnnnnnnnn", "nllllllllllllllN", "nlNNNNNNNNNNNNlN", "nlNkkkkkkkkkkNlN",
+    "nlNkKKKKKKKKkNlN", "nlNkK111121KkNlN", "nlNkK155661KkNlN", "nlNkK156551KkNlN",
+    "nlNkK155551KkNlN", "nlNkK111111KkNlN", "nlNkKO>OO>OKkNlN", "nlNkkkkkkkkkkNlN",
+    "nlNNNNNNNNNNNNlN", "nllllllllllllllN", "nnnnnnnnnnnnnnnn", "................"
+  ]]));
+  P("stove", deco(tileF, [
+    "................", "iiiiiiiiiiiiiiii", "iIIIIIIIIIIIIIIi", "iI::::::::::::Ii",
+    "iI:kk::kk::::.Ii", "iI:kk::kk::::.Ii", "iI::::::::::::Ii", "iIIIIIIIIIIIIIIi",
+    "iI::::::::::::Ii", "iI:8888888888:Ii", "iI:8kkkkkkkk8:Ii", "iI:8k111111k8:Ii",
+    "iI:8kkkkkkkk8:Ii", "iI:8888888888:Ii", "iIIIIIIIIIIIIIIi", "iiiiiiiiiiiiiiii"
+  ]));
+  P("sink", deco(tileF, [
+    "................", "................", "......LL........", "......LU........",
+    "......LU........", "cccccccccccccccc", "cCCCCCCCCCCCCCCc", "cCzzzzzzzzzzzzCc",
+    "cCzZZZZZZZZZZzCc", "cCzZ88888888ZzCc", "cCzZ87777778ZzCc", "cCzZ88888888ZzCc",
+    "cCzZZZZZZZZZZzCc", "cCzzzzzzzzzzzzCc", "cCCCCCCCCCCCCCCc", "cccccccccccccccc"
+  ]));
+  P("fridge", deco(tileF, [
+    "cccccccccccccccc", "cCCCCCCCCCCCCCCc", "cCzzzzzzzzzzzzCc", "cCzzzzzzzzzzzzCc",
+    "cCzzzzzzzzzLzzCc", "cCzzzzzzzzzUzzCc", "cCCCCCCCCCCCCCCc", "cCzzzzzzzzzzzzCc",
+    "cCzzzzzzzzzLzzCc", "cCzzzzzzzzzUzzCc", "cCzzzzzzzzzzzzCc", "cCzzzzzzzzzzzzCc",
+    "cCzzzzzzzzzzzzCc", "cCCCCCCCCCCCCCCc", "cccccccccccccccc", "................"
+  ]));
+  P("wardrobe", deco(wood, [
+    "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "OP>>>>>>>>>>>>PO", "OP>oooooo>ooo>PO",
+    "OP>o>>>>o>o>o>PO", "OP>o>oo>o>o>o>PO", "OP>o>oo>o>o>o>PO", "OP>o>>>>o5o>o>PO",
+    "OP>oooooo>ooo>PO", "OP>o>>>>o>o>o>PO", "OP>o>oo>o>o>o>PO", "OP>o>>>>o>o>o>PO",
+    "OP>oooooo>ooo>PO", "OP>>>>>>>>>>>>PO", "OPPPPPPPPPPPPPPO", "OOOOOOOOOOOOOOOO"
+  ]));
+  P("piano", deco(wood, [
+    "................", "kkkkkkkkkkkkkkkk", "kKKKKKKKKKKKKKKk", "kK5555555555555k",
+    "kKKKKKKKKKKKKKKk", "kcccccccccccccck", "kckckkckckckkcck", "kckckkckckckkcck",
+    "kcccccccccccccck", "kKKKKKKKKKKKKKKk", "kkkkkkkkkkkkkkkk", "kK..........KKkk",
+    "kK..........KKkk", "kkk........kkkkk", "................", "................"
+  ]));
+  P("bar", deco(wood, [
+    "OOOOOOOOOOOOOOOO", "OPPPPPPPPPPPPPPO", "OPccccccccccccPO", "OPcCCCCCCCCCCcPO",
+    "OPccccccccccccPO", "OOOOOOOOOOOOOOOO", "O>oooooooooooo>O", "O>o>>>>>>>>>>o>O",
+    "O>oooooooooooo>O", "O>o>3>>>>>3>>o>O", "O>oooooooooooo>O", "O>o>>>>>>>>>>o>O",
+    "O>oooooooooooo>O", "OOOOOOOOOOOOOOOO", "O>>>>>>>>>>>>>>O", "OOOOOOOOOOOOOOOO"
+  ]));
+  P("bar_taps", deco(wood, [
+    "................", "................", "....5......5....", "....5......5....",
+    "...555....555...", "...5L5....5L5...", "....L......L....", "....L......L....",
+    "..LLLLLLLLLLLL..", "..LUUUUUUUUUUL..", "..LLLLLLLLLLLL..", "OOOOOOOOOOOOOOOO",
+    "OPccccccccccccPO", "OPcCCCCCCCCCCcPO", "OOOOOOOOOOOOOOOO", "................"
+  ]));
+  P("dartboard", deco(function (ctx, f, s) { fill(ctx, "#f0e8d8"); }, [
+    "................", "................", ".....kkkkkk.....", "...kk111111kk...",
+    "..k11cc11cc11k..", "..k1c1c11c1c1k..", ".k11c11cc11c11k.", ".k1c1c1221c1c1k.",
+    ".k1c1c1221c1c1k.", ".k11c11cc11c11k.", "..k1c1c11c1c1k..", "..k11cc11cc11k..",
+    "...kk111111kk...", ".....kkkkkk.....", "................", "................"
+  ]));
+  P("fruit_machine", decoAnim(function (ctx, f, s) { boards(ctx, s, "#b08050", "#8a6038", "#c69a68", "h", 5); }, [[
+    "................", "..3333333333333.", "..3111111111113.", "..31kkkkkkkkk13.",
+    "..31k555k555k13.", "..31k5e5k515k13.", "..31k555k555k13.", "..31kkkkkkkkk13.",
+    "..3111111111113.", "..3555333555513.", "..3111111111113.", "..31kk1111kk113.",
+    "..3111111111113.", "..3333333333333.", "................", "................"
+  ], [
+    "................", "..3333333333333.", "..3111111111113.", "..31kkkkkkkkk13.",
+    "..31k111k555k13.", "..31k1e1k5e5k13.", "..31k111k555k13.", "..31kkkkkkkkk13.",
+    "..3111111111113.", "..3555555333313.", "..3111111111113.", "..31kk1111kk113.",
+    "..3111111111113.", "..3333333333333.", "................", "................"
+  ]]));
+  P("stairs", function (ctx, f, s) {
+    for (let y = 0; y < ART; y += 4) {
+      rect(ctx, 0, y, ART, 3, "#a08060");
+      rect(ctx, 0, y, ART, 1, "#c2a582");
+      rect(ctx, 0, y + 3, ART, 1, "#6d5238");
+    }
+    rect(ctx, 0, 0, 1, ART, "#6d5238"); rect(ctx, 15, 0, 1, ART, "#6d5238");
+  });
+  P("carpet_stairs", function (ctx, f, s) {
+    for (let y = 0; y < ART; y += 4) {
+      rect(ctx, 0, y, ART, 3, "#a08060");
+      rect(ctx, 2, y, 12, 3, "#a03040");
+      rect(ctx, 2, y, 12, 1, "#c04a58");
+      rect(ctx, 0, y + 3, ART, 1, "#6d5238");
+      rect(ctx, 2, y + 3, 12, 1, "#7a2030");
+    }
+  });
+  P("mat", deco(wood, [
+    "................", "................", "................", "..]]]]]]]]]]]]..",
+    "..]AAAAAAAAAA]..", "..]A]]]]]]]]A]..", "..]A]AAAAAA]A]..", "..]A]A]]]]A]A]..",
+    "..]A]AAAAAA]A]..", "..]A]]]]]]]]A]..", "..]AAAAAAAAAA]..", "..]]]]]]]]]]]]..",
+    "................", "................", "................", "................"
+  ]));
+  P("mat_welcome", deco(wood, [
+    "................", "................", "................", "..OOOOOOOOOOOO..",
+    "..OaaaaaaaaaaO..", "..Oa]]]]]]]]aO..", "..Oa]aaaaaa]aO..", "..Oa]a]a]a]]aO..",
+    "..Oa]aa]a]a]aO..", "..Oa]aaaaaa]aO..", "..Oa]]]]]]]]aO..", "..OaaaaaaaaaaO..",
+    "..OOOOOOOOOOOO..", "................", "................", "................"
+  ]));
+  P("gym_badge_stand", deco(function (ctx, f, s) { boards(ctx, s, "#d0a860", "#a8823f", "#e2c184", "h", 8); }, [
+    "................", ".....555555.....", "....54444445....", "....5455554 5...",
+    "....5451154 5...", "....5455554 5...", "....54444445....", ".....555555.....",
+    "......5555......", "......5445......", ".....555555.....", "....OOOOOOOO....",
+    "....OPPPPPPO....", "...OOOOOOOOOO...", "...O>>>>>>>>O...", "................"
+  ]));
+  P("gym_statue", deco(function (ctx, f, s) { boards(ctx, s, "#d0a860", "#a8823f", "#e2c184", "h", 8); }, [
+    "................", "......nlN.......", ".....nlllN......", ".....nlllN......",
+    "......nlN.......", "....nnlllnn.....", "...nlllllllN....", "...nlN.l.NlN....",
+    "....n..l..N.....", "......lll.......", ".....lllll......", "....nlllllN.....",
+    "...nnnnnnnnn....", "...NNNNNNNNN....", "................", "................"
+  ]));
+  P("mirror", deco(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [
+    "................", "..OOOOOOOOOOOO..", "..OPPPPPPPPPPO..", "..OP88888888PO..",
+    "..OP87777778PO..", "..OP87ccc7778PO.", "..OP87cc77778PO.", "..OP87777778PO..",
+    "..OP87777778PO..", "..OP87777778PO..", "..OP87777778PO..", "..OP88888888PO..",
+    "..OPPPPPPPPPPO..", "..OOOOOOOOOOOO..", "................", "................"
+  ]));
+  P("painting", deco(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [
+    "................", "..5555555555555.", "..5444444444445.", "..54wwwwwwwww45.",
+    "..54wwwwwwwww45.", "..54wwwwwwwww45.", "..54ggggggggg45.", "..54gvgggvgggg45",
+    "..54gvvgvvggg45.", "..54GGGGGGGGG45.", "..5444444444445.", "..5555555555555.",
+    "................", "................", "................", "................"
+  ]));
+  P("clock_wall", decoAnim(function (ctx, f, s) { fill(ctx, "#c8b8a0"); }, [[
+    "................", "................", "....OOOOOOOO....", "...OcccccccсO...".replace("с", "c"),
+    "..Occcccccccc O.", "..OccckcccccccO.", "..Occcccccccc O.", "..OccckkkccccO..",
+    "..Occccckcccc O.", "..Occccckkccc O.", "..OcccccccccсO..".replace("с", "c"), "...OccccccccO...",
+    "....OOOOOOOO....", "................", "................", "................"
+  ], [
+    "................", "................", "....OOOOOOOO....", "...OccccccccO...",
+    "..OccccccccccO..", "..Occcccccccc O.", "..OcccccccccccO.", "..OccckkkkkccO..",
+    "..OcccccccccccO.", "..OccccccccccO..", "..OccccccccccO..", "...OccccccccO...",
+    "....OOOOOOOO....", "................", "................", "................"
+  ]]));
+  P("cat_bed", deco(wood, [
+    "................", "................", "................", "................",
+    "....((((((((....", "...()))))))(....", "..()((((((()) ..", "..()(aaaaaa()...",
+    "..()(aaaaaa()...", "..()(aaaaaa()...", "..())))))))()...", "...(((((((((....",
+    "....))))))))....", "................", "................", "................"
+  ]));
+  P("cat_bowl", deco(wood, [
+    "................", "................", "................", "................",
+    "................", "................", "......cccc......", ".....cCCCCc.....",
+    "....cCzzzzCc....", "....cCzppzCc....", "....cCzzzzCc....", ".....cCCCCc.....",
+    "......cccc......", "................", "................", "................"
+  ]));
+  P("shadow", function (ctx) {
+    const g = ctx.globalAlpha;
+    ctx.globalAlpha = 0.22; ctx.fillStyle = "#000";
+    Art.shadow(ctx, 8, 8, 7, 4, 0.28);
+    ctx.globalAlpha = g;
+  });
+
+
+  // ---------------------------------------------------------------
+  // NEW IDS (added by art) — see docs/design/reports/art-tiles.md.
+  // Additive only: nothing above changed id or properties.
+  // ---------------------------------------------------------------
+  P("marsh", function (ctx, f, s) {
+    turf(ctx, s, "#6f7f52", "#4e5b38", "#8fa06a", 4, "mrs");
+    const r = rnd("mrsw", s);
+    for (let i = 0; i < 3; i++) {
+      const x = 1 + ((r() * 11) | 0), y = 3 + ((r() * 10) | 0);
+      rect(ctx, x, y, 4, 2, "#55705f"); rect(ctx, x + 1, y, 2, 1, "#7fa08c");
+    }
+    for (let i = 0; i < 6; i++) {
+      const x = (r() * ART) | 0, y = 4 + ((r() * 10) | 0);
+      rect(ctx, x, y - 3, 1, 4, "#8a9a4a"); px(ctx, x, y - 4, "#b7a34a");
+    }
+  });
+  P("marsh_pool", function (ctx, f, s) {
+    pond(ctx, f, { face: "#4e6a63", top: "#5b7a70", dark: "#31463f", light: "#7d9c8c", hi: "#b6cfc0", len: 3, phase: 1 });
+    const r = rnd("mpw", s);
+    for (let i = 0; i < 5; i++) { const x = (r() * ART) | 0; rect(ctx, x, 2 + ((r() * 11) | 0), 1, 4, "#6b7a36"); }
+  });
+  P("boardwalk", function (ctx, f, s) {
+    boards(ctx, s, "#8f7448", "#5f4a26", "#ac8f5e", "h", 4);
+    rect(ctx, 0, 0, 1, ART, "#4a3116"); rect(ctx, 15, 0, 1, ART, "#4a3116");
+    const r = rnd("bwk", s);
+    for (let i = 0; i < 5; i++) px(ctx, (r() * ART) | 0, (r() * ART) | 0, "#3f6a4a");
+    for (let y = 3; y < ART; y += 8) { px(ctx, 2, y, "#33333c"); px(ctx, 13, y, "#33333c"); }
+  });
+  P("roof_ridge", function (ctx, f, s) {
+    roofOf(ctx, s, "slate", C.slate, C.slateDk, C.slateLt, "#26263a");
+    rect(ctx, 0, 5, ART, 6, "#5b5b70");
+    rect(ctx, 0, 5, ART, 1, "#83839c");
+    rect(ctx, 0, 10, ART, 1, "#22222e");
+    for (let x = 1; x < ART; x += 4) rect(ctx, x, 6, 1, 4, "#4a4a5e");
+  });
+  P("bunting", deco(null, [
+    "kkkkkkkkkkkkkkkk", "1.5.e.{.1.5.e.{.", "1.5.e.{.1.5.e.{.", ".1.5.e.{.1.5.e.{",
+    "..1.5.e.{.1.5.e.", "...1.5.e.{.1.5..", "................", "................",
+    "................", "................", "................", "................",
+    "................", "................", "................", "................"
+  ]));
+  function shore(side) {
+    return function (ctx, f, s) {
+      pond(ctx, f, { face: "#5f9ce4", top: "#6fa8ea", dark: "#3d76bd", light: "#9ac8f2", hi: "#d8ecff", len: 4 });
+      const r = rnd("shr" + side, s);
+      const bank = function (x, y, w, h) {
+        rect(ctx, x, y, w, h, "#c9b184");
+        dither(ctx, x, y, w, h, "#a58f65", 4);
+        for (let i = 0; i < 12; i++) px(ctx, x + ((r() * w) | 0), y + ((r() * h) | 0), r() < 0.5 ? "#8f7a52" : "#e0cca4");
+      };
+      if (side === "n") { bank(0, 0, ART, 7); rect(ctx, 0, 7, ART, 1, "#e8f4ff"); }
+      else if (side === "w") { bank(0, 0, 7, ART); rect(ctx, 7, 0, 1, ART, "#e8f4ff"); }
+      else { bank(9, 0, 7, ART); rect(ctx, 8, 0, 1, ART, "#e8f4ff"); }
+    };
+  }
+  P("shore_n", shore("n"));
+  P("shore_w", shore("w"));
+  P("shore_e", shore("e"));
+
+  // =============================================================
+  // BAKING — get / warm / cache
+  // =============================================================
+  // Fallback painter for any id that somehow has no art: a readable
+  // textured block derived from its properties, never a magenta square.
+  function fallback(ctx, d, frame, seed) {
+    const base = d.color || "#8a8a90";
+    if (d.water) { pond(ctx, frame, { face: base, top: U.shade(base, 1.1), dark: U.shade(base, 0.7), light: U.shade(base, 1.35), hi: U.shade(base, 1.6) }); return; }
+    if (d.grass) { turf(ctx, seed, base, U.shade(base, 0.72), U.shade(base, 1.25), 6, "fb"); return; }
+    if (d.solid) { stoneWall(ctx, seed, base, U.shade(base, 0.72), U.shade(base, 1.22), U.shade(base, 0.55), 5); return; }
+    grit(ctx, seed, base, U.shade(base, 0.8), U.shade(base, 1.2), 18, "fbg");
+  }
+
+  // get(id, frame, variantSeed) → cached 16×16 canvas.
+  // Cheap: one Map lookup on the hot path, everything else is bake-time.
   Tiles.get = function (id, frame, seed) {
     const d = defs[id];
     if (!d) return null;
-    frame = d.anim ? ((frame || 0) % d.anim.length) : 0;
-    seed = d.variants > 1 ? ((seed || 0) % d.variants) : 0;
+    frame = d.anim ? (((frame | 0) % d.anim.length) + d.anim.length) % d.anim.length : 0;
+    seed = d.variants > 1 ? ((((seed | 0) % d.variants) + d.variants) % d.variants) : 0;
     const key = id + "|" + frame + "|" + seed;
     let c = cache[key];
     if (c) return c;
     c = document.createElement("canvas");
     c.width = ART; c.height = ART;
     const ctx = c.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    if (d.under) { const u = Tiles.get(d.under, frame, seed); if (u) ctx.drawImage(u, 0, 0); }
     if (typeof d.paint === "function") {
       d.paint(ctx, frame, seed, d);
     } else if (d.art) {
-      const rows = d.anim ? d.art[frame] || d.art : d.art;
-      const img = MQ.Art.render(rows, d.pal || {}, 1, false);
-      if (d.under) { const u = Tiles.get(d.under, frame, seed); if (u) ctx.drawImage(u, 0, 0); }
-      ctx.drawImage(img, 0, 0);
+      const rows = d.anim ? (d.art[frame] || d.art) : d.art;
+      ascii(ctx, rows, d.pal || PAL);
     } else {
-      if (d.under) { const u = Tiles.get(d.under, frame, seed); if (u) ctx.drawImage(u, 0, 0); }
-      placeholder(ctx, d, frame, seed);
+      fallback(ctx, d, frame, seed);
     }
     cache[key] = c;
     return c;
   };
+
+  // Prebake everything (boot calls this). ~470 canvases; a few ms.
   Tiles.warm = function () {
     const ks = Object.keys(defs);
     for (let i = 0; i < ks.length; i++) {
@@ -100,8 +2424,21 @@
       const nf = d.anim ? d.anim.length : 1;
       for (let f = 0; f < nf; f++) for (let v = 0; v < d.variants; v++) Tiles.get(ks[i], f, v);
     }
+    return Tiles.stats();
+  };
+  Tiles.stats = function () {
+    let n = 0; for (const k in cache) if (Object.prototype.hasOwnProperty.call(cache, k)) n++;
+    return { tiles: Tiles.count(), baked: n };
   };
   Tiles.clearCache = function () { const ks = Object.keys(cache); for (let i = 0; i < ks.length; i++) delete cache[ks[i]]; };
+  // Introspection for tools/tests: which ids still lack a real painter.
+  Tiles.unpainted = function () {
+    const out = [];
+    const ks = Object.keys(defs);
+    for (let i = 0; i < ks.length; i++) if (typeof defs[ks[i]].paint !== "function") out.push(ks[i]);
+    return out;
+  };
+  Tiles.painters = PAINT;
 
   // ---- catalogue ------------------------------------------------------
   // T(id, colour, props). Property shorthands: S solid, W water, G grass
@@ -123,13 +2460,15 @@
     if (p.light) d.light = true;
     if (p.under) d.under = p.under;
     d.desc = p.desc || "";
+    d.paint = PAINT[id] || null;
+    if (MQ.DEV && !d.paint) MQ.warn("tiles: no painter for '" + id + "' (falling back)");
     Tiles.define(id, d);
   }
 
   // -- ground: grass / paths / floors
   T("grass", "#5aab46", { V: 3, desc: "Short grass" });
   T("grass_dark", "#3f8a34", { V: 2 });
-  T("grass_tall", "#3d9a3a", { G: 1, V: 2, desc: "Tall grass — wild encounters" });
+  T("grass_tall", "#3d9a3a", { G: 1, V: 2, A: 2, desc: "Tall grass — wild encounters, sways" });
   T("grass_moor", "#8a9a4a", { G: 1, V: 2, desc: "Moorland grass — encounters" });
   T("moor_heather", "#8a5aa0", { G: 1, V: 2, desc: "Heather — encounters" });
   T("moor_bog", "#4a5a30", { S: 1, desc: "Bog — impassable" });
@@ -429,6 +2768,16 @@
   T("cat_bed", "#a0a0c0", { S: 1 });
   T("cat_bowl", "#e0e0e8", { S: 1 });
   T("shadow", "#000000", { D: 1, desc: "Generic shadow deco (drawn translucent)" });
+
+  // -- NEW IDS added by the art workstream (additive; see report)
+  T("marsh", "#6f7f52", { G: 1, V: 2, desc: "Marsh — walkable with Waders, encounters" });
+  T("marsh_pool", "#4e6a63", { W: 1, A: 4, desc: "Marsh pool" });
+  T("boardwalk", "#8f7448", { V: 2, desc: "Bog boardwalk" });
+  T("roof_ridge", "#5b5b70", { S: 1, desc: "Slate roof ridge" });
+  T("bunting", "#c03030", { O: 1, desc: "Festival bunting (over layer)" });
+  T("shore_n", "#c9b184", { S: 1, A: 4, desc: "Bank with water to the south" });
+  T("shore_w", "#c9b184", { S: 1, A: 4, desc: "Bank with water to the east" });
+  T("shore_e", "#c9b184", { S: 1, A: 4, desc: "Bank with water to the west" });
 
   MQ.Tiles = Tiles;
 })();

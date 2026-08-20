@@ -90,7 +90,7 @@
       { x: 12, y: 19, to: "demo_field", tx: 12, ty: 1, dir: "down", kind: "edge" }
     ],
     signs: [{ x: 17, y: 7, text: ["Demo Field", "East: nothing yet. South: loops back."] }],
-    items: [{ x: 21, y: 11, item: "potion", n: 1, flag: "item_demo_1" }],
+    items: [{ x: 21, y: 11, item: "salve", n: 1, flag: "item_demo_1" }],
     npcs: [
       { id: "demo_walker", x: 6, y: 6, dir: "down", sprite: "walker", behaviour: "wander", radius: 3, say: ["Lovely day for it."] },
       { id: "demo_gate", x: 20, y: 5, dir: "left", sprite: "guard", behaviour: "still", say: ["The road east is shut."], cond: "!badge_1" }
