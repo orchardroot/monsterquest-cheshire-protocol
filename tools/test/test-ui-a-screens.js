@@ -106,7 +106,8 @@ module.exports = function (t, assert) {
     assert.strictEqual(ids.join(","), "party,bag,dex,casebook,map,trainer,perks,settings,save");
     const items = MQ.UI.Pause.items;
     assert.strictEqual(items[0].disabled, false, "party is ours, so it works");
-    assert.strictEqual(items[2].disabled, true, "dex belongs to ui-b and is not fitted here");
+    // ui-b has since landed js/ui/dex.js, so the Dex tab is fitted rather than greyed.
+    assert.strictEqual(items[2].disabled, !MQ.UI.Dex, "the Dex tab is greyed only while nobody has built it");
     env.render();
     MQ.Scenes.pop(null); MQ.Scenes.flush();
   });
