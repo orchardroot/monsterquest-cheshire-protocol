@@ -241,7 +241,9 @@ module.exports = function (t, assert) {
     assert.ok(pb.nextTime - T >= 2 * bd - 1e-6, "at least two bars queued");
     // walk the clock forward in small steps; the horizon must stay ahead
     const start = pb.nextTime;
-    for (let i = 0; i < 200; i++) {
+    // walk far enough that a 32-64 bar song comes round at least once
+    const steps10 = Math.ceil((pb.comp.bars + pb.comp.loop.to - pb.comp.loop.from) * bd * 10) + 40;
+    for (let i = 0; i < steps10; i++) {
       T += 0.1;
       A.tick();
       assert.ok(pb.nextTime >= T, "scheduled into the past at t=" + T);
