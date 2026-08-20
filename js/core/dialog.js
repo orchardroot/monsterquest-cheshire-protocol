@@ -17,10 +17,46 @@
     active: 0
   };
 
+  const BOX_H = 142;              // the box itself
+  const TAG_H = 34;               // the name tag that sits above it
+  const SPRITE_H = 52;            // a person is about a tile and a half tall
+
+  // Where on screen is the person this line is about? The overworld is the only
+  // scene with a world position worth protecting, and only when it is the scene
+  // the box is being drawn over. Returns a screen-space y, or null.
+  function subjectY(opts, under) {
+    const O = MQ.Overworld;
+    if (!O || under !== O || typeof O.toScreen !== "function") return null;
+    let p = null;
+    if (opts.at && typeof opts.at.x === "number" && typeof opts.at.y === "number") {
+      p = O.tileToScreen ? O.tileToScreen(opts.at.x, opts.at.y) : null;
+    }
+    if (!p && O.player) p = O.toScreen(O.player.px, O.player.py);
+    return p && isFinite(p.y) ? p.y : null;
+  }
+
+  // A dialogue box sits over the bottom of the screen, which during a scripted
+  // scene is exactly where the player tends to be standing. Move it to the top
+  // when that happens — but only if the top is actually clearer.
+  function choosePosition(opts, under) {
+    if (opts.position === "top" || opts.position === "bottom") return opts.position;
+    const V = MQ.View;
+    const y = subjectY(opts, under);
+    if (y === null) return "bottom";
+    const tag = opts.name ? TAG_H : 0;
+    const bottomBand = V.h - V.safe.bottom - BOX_H - 10 - tag;
+    if (y < bottomBand) return "bottom";                 // already clear of it
+    const topBand = V.safe.top + 12 + tag + BOX_H;
+    return (y - SPRITE_H) >= topBand ? "top" : "bottom"; // no point if it hides them anyway
+  }
+  Dialog.choosePosition = choosePosition;
+
   function makeScene(pages, opts, resolve) {
     if (typeof pages === "string") pages = [pages];
     if (!pages || !pages.length) pages = [""];
     opts = opts || {};
+    // the scene the box will be drawn over, captured before we are pushed
+    const under = (MQ.Scenes && MQ.Scenes.top) ? MQ.Scenes.top() : null;
     const sc = {
       id: "dialog",
       transparent: true,
@@ -35,6 +71,8 @@
       choosing: false,
       menu: null,
       box: { x: 0, y: 0, w: 0, h: 0, tx: 0 },
+      under: under,
+      position: "bottom",
       resolve: resolve,
       result: undefined,
       blip: 0
@@ -45,10 +83,15 @@
       // leave room for the canvas-drawn A/B buttons when touch controls are showing
       const touchPad = (MQ.Input && MQ.Input.touchVisible) ? 170 : 0;
       const w = Math.min(V.w - 20 - touchPad - V.safe.left - V.safe.right, 940);
-      const h = 142;
+      const h = BOX_H;
       sc.box.w = w; sc.box.h = h;
       sc.box.x = touchPad ? Math.round(10 + V.safe.left) : Math.round((V.w - w) / 2);
-      sc.box.y = opts.position === "top" ? Math.round(V.safe.top + 12) : Math.round(V.h - V.safe.bottom - h - 10);
+      sc.position = choosePosition(opts, sc.under);
+      // at the top, leave room for the name tag that hangs above the box
+      const tag = opts.name ? TAG_H : 0;
+      sc.box.y = sc.position === "top"
+        ? Math.round(V.safe.top + 12 + tag)
+        : Math.round(V.h - V.safe.bottom - h - 10);
       sc.box.tx = 26 + (opts.portrait ? 110 : 0);
       sc.repage();
     };
@@ -182,7 +225,7 @@
         let mw = 200;
         for (let i = 0; i < items.length; i++) mw = Math.max(mw, T.width(typeof items[i] === "string" ? items[i] : items[i].label, "m") + 70);
         const mh = items.length * 34 + 28;
-        const mx = b.x + b.w - mw - 6, my = opts.position === "top" ? b.y + b.h + 8 : b.y - mh - 8;
+        const mx = b.x + b.w - mw - 6, my = sc.position === "top" ? b.y + b.h + 8 : b.y - mh - 8;
         UI.menu(sc.menu, ctx, items, { x: mx, y: my, w: mw, rowH: 34, style: opts.style || "default" });
       }
     };

@@ -87,26 +87,25 @@ module.exports = function (t, assert) {
   });
 
   t("every move effect is one the battle engine implements", function () {
-    // A `weather_boost` on PACKET_STORM and a `priority` effect on
-    // ZOOMIES were both silent no-ops; both are gone. These three are
-    // SYSTEMS-SPEC §4 vocabulary the engine has not landed a handler for
-    // yet — they are recorded here so a NEW hole fails the build.
-    const KNOWN_GAPS = { cooldown: "patch_tuesday", restore_pp: "sysadmin_reboot", mimic_type: "understudy_mask" };
+    // No known gaps left: `cooldown`, `restore_pp`, `mimic_type`,
+    // effect-carried `priority` and `weather_boost` all have handlers
+    // now (see tools/test/test-battle-gaps.js), so any kind the data
+    // can emit and the engine cannot run is a NEW hole and fails here.
     const BE = env.MQ.BattleEffects;
     const bad = [];
     moveIds.forEach(function (id) {
       D.moves[id].effects.forEach(function (e) {
         if (BE.effects[e.kind]) return;
-        if (KNOWN_GAPS[e.kind] === id) return;
         bad.push(id + ":" + e.kind);
       });
     });
     assert.deepStrictEqual(bad, [], "dead effects: " + bad.join(", "));
-    // and no move may be nothing BUT a dead effect
-    Object.keys(KNOWN_GAPS).forEach(function (kind) {
-      const m = D.moves[KNOWN_GAPS[kind]];
+    // and no move may be nothing BUT an effect the engine skips
+    moveIds.forEach(function (id) {
+      const m = D.moves[id];
+      if (!m.effects.length) return;
       const live = m.effects.filter(function (e) { return !!BE.effects[e.kind]; });
-      assert.ok(m.power > 0 || live.length, KNOWN_GAPS[kind] + " does nothing at all");
+      assert.ok(m.power > 0 || live.length, id + " does nothing at all");
     });
   });
 

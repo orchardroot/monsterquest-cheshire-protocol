@@ -46,5 +46,6 @@ FIXED this pass (see git log):
   UI.Settings now applies everything on the "boot" event.
 
 STILL OPEN (not mine to fix / not small and safe):
-- dialogue boxes do not nudge the camera, so the player sprite can sit behind the text
-  box during a scripted scene (Alder Labs intro).
+- (nothing — the five QA bugs from this pass are fixed; see git log 2026-08-20:
+  overworld zoom/letterbox, the Macclesfield angler, the save summary chapter,
+  dex seen/caught recording, dialogue box top/bottom placement.)

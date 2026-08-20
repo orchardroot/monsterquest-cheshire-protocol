@@ -1406,9 +1406,13 @@
   BE.effects.cure = BE.effects.cleanse;
   BE.effects.leech = BE.effects.drain;
 
-  BE.runEffect = function (b, ctx, e) {
+  // runEffect(b, ctx, e[, o]) — o.whenChecked skips the `when:` gate
+  // because the caller already evaluated it (afterMove gates the whole
+  // list up front, so one clause cannot change the world out from under
+  // the next one).
+  BE.runEffect = function (b, ctx, e, o) {
     if (!e || !e.kind) return;
-    if (!BE.effectApplies(b, ctx, e)) return;
+    if (!(o && o.whenChecked) && !BE.effectApplies(b, ctx, e)) return;
     const chance = e.chance === undefined ? 100 : e.chance;
     if (chance < 100 && b.rng() * 100 >= chance) return;
     const fn = BE.effects[e.kind];

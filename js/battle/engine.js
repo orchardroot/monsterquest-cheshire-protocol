@@ -788,7 +788,14 @@
   function* afterMove(b, ctx) {
     const move = ctx.move, user = ctx.user;
     const effects = move.effects || [];
+    // Every `when:` is judged against the field as the move LANDED, not
+    // as each clause leaves it — otherwise Brine Jet's "make rain if it
+    // is not raining" clause immediately satisfies its own "ride the
+    // rain" sibling and both go off.
+    const gate = [];
+    for (let g = 0; g < effects.length; g++) gate[g] = BE.effectApplies(b, ctx, effects[g]);
     for (let i = 0; i < effects.length; i++) {
+      if (!gate[i]) continue;
       if (user.hp <= 0 && effects[i].kind !== "recoil") break;
       const e = effects[i];
       if (e.kind === "multihit" || e.kind === "multi" || e.kind === "charge" || e.kind === "crit_only" ||
@@ -800,7 +807,7 @@
       // Damage-dependent effects need a landed hit.
       if ((e.kind === "drain" || e.kind === "recoil" || e.kind === "leech") && !ctx.damage) continue;
       if (move.power && !ctx.hits && e.kind !== "protect" && e.kind !== "endure") continue;
-      BE.runEffect(b, ctx, e);
+      BE.runEffect(b, ctx, e, { whenChecked: true });
     }
     if (ctx.forceSwitch) yield* doForceSwitch(b, ctx.forceSwitch);
     if (BE.moveFlag(move, "recharge")) { /* handled by the recharge effect */ }
