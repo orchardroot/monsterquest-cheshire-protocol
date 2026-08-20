@@ -169,7 +169,7 @@
     c.set("g", 0, 6, "d"); c.set("g", 27, 6, "d");
     c.set("g", 1, 8, "s"); c.set("g", 26, 8, "l");
     W.defineMap("cambrian_train", {
-      name: "The Cambrian Line", region: "interior", outdoor: false, music: "route_wales", weatherZone: null,
+      name: "The Cambrian Line", region: "interior", outdoor: false, cutscene: true, music: "route_wales", weatherZone: null,
       ambience: "industrial", dialogue: "town_y_berllan",
       legend: T, layers: c.layers(),
       spawnPoint: { x: 13, y: 8 },

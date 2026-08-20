@@ -37,7 +37,7 @@
   c.fill("g", 0, 0, 30, 1, "T"); c.fill("g", 0, 51, 30, 1, "T");
   c.fill("g", 0, 0, 1, 52, "T"); c.fill("g", 29, 0, 1, 52, "T");
   for (let x = 0; x < 30; x++) c.set("o", x, 0, "y");
-  c.fill("g", 12, 51, 3, 1, "+"); c.fill("g", 12, 0, 3, 1, "+");
+  c.fill("g", 12, 51, 3, 1, "+"); c.fill("g", 22, 0, 3, 1, "+");
   // the Weaver, meandering
   c.snake("g", "weaver-r16", "!", 13, 1, 50, "v", 3, 0.42);
   // banks and the lane along the east
@@ -78,7 +78,7 @@
   c.set("g", 8, 18, "z"); c.set("g", 26, 36, "*");
   let ws = [];
   edge(ws, [12, 13, 14], [51, 51, 51], "nantwich", 26, 1, "down", "x");
-  edge(ws, [12, 13, 14], [0, 0, 0], "winsford", 24, 38, "up", "x");
+  edge(ws, [22, 23, 24], [0, 0, 0], "winsford", 24, 38, "up", "x");
   route("route_nantwich_winsford", {
     name: "Weaver Valley", region: "south", weatherZone: "south", music: "route_south",
     ambience: "water", dialogue: "town_nantwich",
@@ -408,7 +408,7 @@
   c.set("g", 22, 11, "N"); c.set("g", 5, 17, "q");
   c.fill("g", 1, 12, 2, 3, ":"); c.fill("g", 41, 12, 2, 3, ":");
   ws = [];
-  edge(ws, [0, 0, 0], [12, 13, 14], "anderton", 38, 12, "left", "y");
+  edge(ws, [0, 0, 0], [12, 13, 14], "anderton_lift_upper", 38, 12, "left", "y");
   edge(ws, [43, 43, 43], [12, 13, 14], "great_budworth", 1, 12, "right", "y");
   route("route_anderton_budworth", {
     name: "Marbury Avenues", region: "salt", music: "route_salt",
