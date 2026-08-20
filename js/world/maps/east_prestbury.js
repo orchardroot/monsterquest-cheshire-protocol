@@ -131,7 +131,7 @@
     healPoint: { x: 7, y: 22 },
     landmark: { name: "Prestbury", x: 21, y: 14 },
     encounters: { grass: "prestbury_grass", water: null },
-    fishing: "fish_route_macc_bollington",
+    fishing: "fish_prestbury",
     warps: [
       { x: 9, y: 9, to: "prestbury_priests_house", tx: 7, ty: 12, dir: "up", kind: "door" },
       { x: 22, y: 11, to: "prestbury_hedge_maze", tx: 14, ty: 24, dir: "up", kind: "door" },
@@ -343,6 +343,7 @@
       { id: "npc_prestbury_maze_lost", x: 20, y: 12, dir: "left", sprite: "npc_tourist", behaviour: "still",
         say: ["I came in at nine. It is now considerably later than nine.",
           "No, I don't want rescuing. I want to have solved it. There's a difference and it's the whole of my personality."] },
+      { id: "npc_prestbury_maze_delyth", x: 19, y: 16, dir: "up", sprite: "npc_tourist", behaviour: "look", radius: 3, trainer: "tr_prestbury_hedge_maze_1", sight: 3 },
       { id: "npc_prestbury_maze_cat", x: 9, y: 7, dir: "down", sprite: "cat_grinkit", behaviour: "wander", radius: 3,
         say: ["A ginger cat sits precisely where the path forks and does not move.", "You go the other way. It looks pleased."] }
     ],

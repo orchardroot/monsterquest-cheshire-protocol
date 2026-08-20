@@ -175,7 +175,7 @@
       { id: "npc_styal_granny", x: 30, y: 16, dir: "up", sprite: "npc_granny", behaviour: "still", script: "east_styal_granny" },
       { id: "npc_styal_walker", x: 22, y: 23, dir: "down", sprite: "npc_walker", behaviour: "path", path: [[22, 23], [22, 17], [22, 12]], pathMode: "pingpong",
         say: ["Bridge over the Bollin, mill on one side, village on the other, and everything in between belongs to the water."] },
-      { id: "npc_styal_spotter", x: 40, y: 9, dir: "left", sprite: "npc_birder", behaviour: "still",
+      { id: "npc_styal_spotter", x: 40, y: 9, dir: "left", sprite: "npc_birder", behaviour: "still", trainer: "tr_styal_4", sight: 0,
         say: ["My radio's been pulling in telemetry that isn't aircraft. Same burst, every ninety seconds, from the south-west.",
           "I've logged it for eleven days. Nobody wants the log. You can have the log."] }
     ],

@@ -140,6 +140,7 @@
       { id: "npc_lindow_twelvek", x: 8, y: 19, dir: "up", sprite: "twelve_k", behaviour: "still", script: "east_lindow_twelvek", cond: "lindow_lake_seen" },
       { id: "npc_lindow_cutter", x: 40, y: 12, dir: "down", sprite: "npc_farmer", behaviour: "still", script: "east_lindow_cutter" },
       { id: "npc_lindow_warden", x: 18, y: 23, dir: "down", sprite: "npc_ranger", behaviour: "still", trainer: "tr_lindow_moss_4", sight: 0, script: "east_lindow_warden" },
+      { id: "npc_lindow_stuffer_4", x: 19, y: 29, dir: "left", sprite: "npc_stuffer", behaviour: "look", radius: 4, trainer: "tr_lindow_moss_5", sight: 4 },
       { id: "npc_lindow_birder", x: 39, y: 24, dir: "left", sprite: "npc_birder", behaviour: "still",
         say: ["Snipe, curlew, and one thing at night that is not a bird and does not care that I know it.",
           "I've got twenty years of tapes. The last fortnight is a different tape."] },

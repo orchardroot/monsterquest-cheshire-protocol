@@ -147,6 +147,7 @@
     healPoint: { x: 7, y: 32 },
     landmark: { name: "Wilmslow", x: 25, y: 20 },
     encounters: { grass: "wilmslow_grass", water: null },
+    fishing: "fish_wilmslow",
     warps: [
       { x: 8, y: 8, to: "wilmslow_turing_house", tx: 7, ty: 12, dir: "up", kind: "door" },
       { x: 6, y: 17, to: "wilmslow_mart", tx: 6, ty: 8, dir: "up", kind: "door" },
@@ -215,6 +216,7 @@
           "Which makes the hill a quarry and a legend at the same time, and it manages both."] },
       { id: "npc_wilmslow_stuffer", x: 43, y: 34, dir: "up", sprite: "npc_stuffer", behaviour: "look", radius: 4, trainer: "tr_route_prestbury_wilmslow_3", sight: 4, cond: "!vex_battle_1" },
       { id: "npc_wilmslow_gym_door", x: 33, y: 32, dir: "up", sprite: "npc_sysadmin", behaviour: "still", script: "east_wilmslow_gym_door" },
+      { id: "npc_wilmslow_rhi", x: 43, y: 34, dir: "left", sprite: "npc_stuffer", behaviour: "look", radius: 4, trainer: "tr_wilmslow_4", sight: 4 },
       { id: "npc_wilmslow_rambler", x: 20, y: 34, dir: "down", sprite: "npc_walker", behaviour: "still",
         say: ["Two miles to the Edge and you can see it from here on a clear day: a line of trees on a lip of red rock.",
           "People go up there for the view. People come back down talking about the well."] }

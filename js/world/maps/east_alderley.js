@@ -347,7 +347,7 @@
     legend: b1, layers: m1.layers(),
     spawnPoint: { x: 20, y: 32 },
     landmark: { name: "The Copper Workings", x: 20, y: 17 },
-    encounters: { cave: "alderley_edge_caverns_b1_cave", water: null },
+    encounters: { cave: "alderley_edge_caverns_b1_cave", water: "alderley_edge_caverns_b1_water" },
     warps: [
       { x: 20, y: 33, to: "alderley_edge", tx: 41, ty: 25, dir: "down", kind: "cave" },
       { x: 35, y: 9, to: "alderley_edge_caverns_b2", tx: 6, ty: 6, dir: "down", kind: "stairs" }
@@ -420,6 +420,7 @@
       { x: 31, y: 22, item: "collectible_7", n: 1, hidden: true, flag: "item_edge_b2_3" }
     ],
     npcs: [
+      { id: "npc_edge_b2_nesta", x: 33, y: 12, dir: "left", sprite: "npc_caver", behaviour: "look", radius: 3, trainer: "tr_alderley_edge_caverns_b2_1", sight: 3 },
       { id: "npc_edge_b2_caver", x: 5, y: 10, dir: "right", sprite: "npc_caver", behaviour: "still",
         say: ["Water's warmer than the rock. That means it's moving and it means it's coming from somewhere.",
           "There's no somewhere. This is the bottom of the survey."] }
@@ -452,6 +453,10 @@
     landmark: { name: "The Cave of the Knights", x: 20, y: 15 },
     encounters: { cave: "alderley_edge_caverns_b3_cave", water: null },
     warps: [{ x: 20, y: 31, to: "alderley_edge_caverns_b2", tx: 33, ty: 20, dir: "up", kind: "stairs" }],
+    npcs: [
+      { id: "npc_edge_b3_knight", x: 20, y: 20, dir: "up", sprite: "npc_ghost_trainer", behaviour: "still",
+        trainer: "tr_alderley_edge_caverns_b3_1", sight: 0, cond: "knights_hall_open" }
+    ],
     signs: [
       { x: 20, y: 23, text: ["A hall, and along both walls a row of shapes that are almost people, and almost stone.",
         "They are waiting for a day somebody promised them. Nobody has come to say the day is off."] }

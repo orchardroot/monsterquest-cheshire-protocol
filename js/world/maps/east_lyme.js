@@ -393,7 +393,7 @@
     ],
     npcs: [
       { id: "npc_bowstones_old", x: 17, y: 14, dir: "up", sprite: "npc_historian", behaviour: "still", script: "east_bowstones_old" },
-      { id: "npc_bowstones_runner", x: 22, y: 14, dir: "left", sprite: "npc_fellrunner", behaviour: "look", radius: 4, trainer: "tr_route_poynton_lyme_2", sight: 4 },
+      { id: "npc_bowstones_runner", x: 22, y: 14, dir: "left", sprite: "npc_walker", behaviour: "look", radius: 4, trainer: "tr_lyme_park_bowstones_1", sight: 4 },
       { id: "npc_bowstones_sheep", x: 8, y: 20, dir: "down", sprite: "sheep", behaviour: "wander", radius: 3,
         say: ["The sheep are all facing the same way. All of them.", "There is no wind to explain it. There has been no wind since Tuesday."] }
     ],

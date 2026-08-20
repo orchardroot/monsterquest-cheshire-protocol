@@ -119,7 +119,7 @@
     spawnPoint: { x: 24, y: 1 },
     landmark: { name: "Tegg's Nose", x: 11, y: 6 },
     encounters: { grass: "teggs_nose_grass", water: "teggs_nose_water" },
-    fishing: "fish_lyme_park",
+    fishing: "fish_teggs_nose",
     warps: [
       { x: 23, y: 0, to: "route_macc_teggs", tx: 17, ty: 28, dir: "up", kind: "edge" },
       { x: 24, y: 0, to: "route_macc_teggs", tx: 18, ty: 28, dir: "up", kind: "edge" },
@@ -162,7 +162,7 @@
           "Half the people I stretcher off didn't fall. They just stopped being able to breathe uphill."] },
       { id: "npc_teggs_walker", x: 24, y: 28, dir: "up", sprite: "npc_walker", behaviour: "path", path: [[24, 28], [24, 30], [30, 30]], pathMode: "pingpong",
         say: ["Ridgegate, Trentabank, and Bottoms below that. Three reservoirs, one valley, and a town that drinks it."] },
-      { id: "npc_teggs_biker", x: 5, y: 30, dir: "up", sprite: "npc_walker", behaviour: "still",
+      { id: "npc_teggs_biker", x: 5, y: 30, dir: "up", sprite: "npc_walker", behaviour: "still", trainer: "tr_teggs_nose_3", sight: 0,
         say: ["Cat and Fiddle road. Twelve miles of bends and a speed limit invented by somebody who has lost somebody.",
           "I ride it slow now. That's not a moral. That's just what happened."] },
       { id: "npc_teggs_kid", x: 22, y: 30, dir: "up", sprite: "npc_kid", behaviour: "wander", radius: 3,
@@ -316,6 +316,7 @@
     npcs: [
       { id: "npc_shut_ceri", x: 16, y: 19, dir: "up", sprite: "npc_fellrunner", behaviour: "still", script: "east_shutlingsloe_dash" },
       { id: "npc_shut_summit", x: 18, y: 5, dir: "left", sprite: "npc_walker", behaviour: "still", script: "east_shutlingsloe_summit" },
+      { id: "npc_shut_bryn", x: 16, y: 12, dir: "down", sprite: "npc_fellrunner", behaviour: "look", radius: 4, trainer: "tr_shutlingsloe_1", sight: 4 },
       { id: "npc_shut_moorcock", x: 27, y: 21, dir: "left", sprite: "animal", behaviour: "wander", radius: 3,
         say: ["Something explodes out of the heather at knee height, swears at you in bird, and is gone.", "Your heart takes a full minute to agree it was a bird."] }
     ],
