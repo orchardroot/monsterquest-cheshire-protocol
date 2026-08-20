@@ -103,7 +103,7 @@
   B.house(c, { x: 33, y: 6, w: 1, h: 1, rh: 0, roof: ".", wall: ".", win: null, door: ".", doorX: 0 });
   B.house(c, { x: 8, y: 6, w: 10, h: 5, rh: 2, roof: "R", wall: "%", win: "W", door: "S", doorX: 4, over: ";" });
   c.set("g", 7, 10, "N");
-  B.house(c, { x: 20, y: 6, w: 4, h: 5, rh: 2, roof: "R", wall: "#", win: "W", door: "D", doorX: 1, over: ";" });
+  B.house(c, { x: 20, y: 6, w: 6, h: 5, rh: 2, roof: "R", wall: "#", win: "W", door: "D", doorX: 1, doors: [4], over: ";" });
   c.fill("g", 5, 11, 48, 1, "=");
   c.fill("g", 5, 30, 48, 1, "=");
   c.fill("g", 5, 36, 48, 1, "=");
@@ -123,6 +123,7 @@
     encounters: { grass: "chester_grass", water: null },
     warps: [].concat(
       NW.edge(59, 22, 4, false, "route_tarporley_chester", 1, 13, "right"),
+      NW.edge(26, 2, 4, true, "route_chester_zoo", 23, 43, "up"),
       NW.exit(13, 30, "chester_care", 7, 10, "up"),
       NW.exit(12, 10, "chester_mart", 6, 8, "up"),
       NW.exit(12, 35, "chester_inn", 6, 10, "up"),
@@ -140,6 +141,7 @@
         { x: 27, y: 43, to: "chester_edgars_field", tx: 16, ty: 3, dir: "down", kind: "edge" },
         { x: 28, y: 43, to: "chester_edgars_field", tx: 17, ty: 3, dir: "down", kind: "edge" },
         { x: 21, y: 10, to: "chester_house_1", tx: 5, ty: 8, dir: "up", kind: "door" },
+        { x: 24, y: 10, to: "chester_house_6", tx: 5, ty: 8, dir: "up", kind: "door" },
         { x: 22, y: 35, to: "chester_house_2", tx: 5, ty: 8, dir: "up", kind: "door" },
         { x: 35, y: 34, to: "chester_house_3", tx: 5, ty: 8, dir: "up", kind: "door" },
         { x: 42, y: 34, to: "chester_house_4", tx: 5, ty: 8, dir: "up", kind: "door" },
@@ -355,7 +357,10 @@
     spawnPoint: { x: 20, y: 30 },
     landmark: { name: "The Amphitheatre", x: 20, y: 15 },
     encounters: { grass: "chester_amphitheatre_grass" },
-    warps: NW.edge(19, 33, 3, true, "chester", 45, 39, "down"),
+    warps: NW.edge(19, 33, 3, true, "chester", 45, 39, "down").concat([
+      { x: 19, y: 5, to: "chester_cathedral", tx: 28, ty: 22, dir: "up", kind: "door" },
+      { x: 20, y: 5, to: "chester_cathedral", tx: 28, ty: 22, dir: "up", kind: "door" }
+    ]),
     signs: [
       { x: 18, y: 25, text: ["DEVA AMPHITHEATRE", "Seated seven thousand. Two builds, one on top of the other, and the second one had a shrine to Nemesis by the north entrance.",
         "Nemesis: the goddess of getting exactly what you have coming. They put her at the door on purpose."] }
@@ -573,7 +578,7 @@
     { id: "chester_house_5", tx: 49, ty: 35, sprite: "npc_historian",
       say: ["Deva Victrix. The Twentieth Legion. Four hundred years in one place.",
         "Nothing we build now is meant to last four hundred years. We do not even build a fence like that."] },
-    { id: "chester_house_6", tx: 21, ty: 11, sprite: "npc_shopkeep",
+    { id: "chester_house_6", tx: 24, ty: 11, sprite: "npc_shopkeep",
       say: ["Rows trade's been down since the retail park and up since the league.", "I would like the league to be on more often and I have written to say so."] }
   ];
   for (let i = 0; i < chomes.length; i++) {

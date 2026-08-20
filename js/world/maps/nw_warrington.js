@@ -231,7 +231,8 @@
     spawnPoint: { x: 10, y: 22 },
     warps: [
       { x: 9, y: 23, to: "warrington", tx: 21, ty: 31, dir: "down", kind: "lift" },
-      { x: 10, y: 23, to: "warrington", tx: 21, ty: 31, dir: "down", kind: "lift" }
+      { x: 10, y: 23, to: "warrington", tx: 21, ty: 31, dir: "down", kind: "lift" },
+      { x: 2, y: 22, to: "warrington_gym", tx: 12, ty: 5, dir: "down", kind: "lift" }
     ],
     encounters: { grass: null },
     signs: [

@@ -62,7 +62,7 @@
   B.house(c, { x: 7, y: 28, w: 8, h: 6, rh: 2, roof: "p", wall: "c", win: "C", door: "v", doorX: 3 });
   c.set("g", 9, 28, "p");
   c.scatter("g", "frod-graves", "n", 10, 5, 28, 11, 8, [","]);
-  c.set("g", 10, 27, "g");
+  c.set("g", 6, 27, "g");
   c.fill("g", 10, 34, 1, 3, "_");
   B.house(c, { x: 20, y: 26, w: 8, h: 4, rh: 1, roof: "R", wall: "$", win: "W", door: "S", doorX: 3, over: ";" });
   c.set("g", 19, 29, "N");
@@ -80,6 +80,9 @@
   c.fill("g", 39, 37, 2, 5, "s");
   c.set("g", 41, 40, "N");
   c.fill("g", 4, 38, 14, 5, '"');
+  B.house(c, { x: 4, y: 37, w: 5, h: 3, rh: 1, roof: "R", wall: "#", win: "W", door: "D", doorX: 2, over: ";" });
+  B.house(c, { x: 12, y: 37, w: 5, h: 3, rh: 1, roof: "R", wall: "#", win: "W", door: "D", doorX: 2, over: ";" });
+  c.fill("g", 3, 40, 16, 1, "=");
   c.fill("g", 20, 40, 12, 3, '"');
   B.trees(c, "frod-s", 22, 4, 38, 14, 5, "T", "y", ['"']);
   c.fill("g", 44, 25, 2, 18, "T");
@@ -104,6 +107,8 @@
       NW.exit(36, 31, "frodsham_inn", 6, 10, "up"),
       NW.exit(39, 37, "frodsham_trail_office", 8, 12, "up"),
       [
+        { x: 6, y: 39, to: "frodsham_house_1", tx: 5, ty: 8, dir: "up", kind: "door" },
+        { x: 14, y: 39, to: "frodsham_house_2", tx: 5, ty: 8, dir: "up", kind: "door" },
         { x: 10, y: 33, to: "frodsham_church", tx: 6, ty: 12, dir: "up", kind: "door" },
         { x: 40, y: 42, to: "frodsham_hill", tx: 20, ty: 41, dir: "up", kind: "stairs" },
         { x: 39, y: 42, to: "frodsham_hill", tx: 20, ty: 41, dir: "up", kind: "stairs" }
@@ -250,11 +255,9 @@
   }, to, NW.inside());
 
   const fhomes = [
-    { id: "frodsham_house_1", tx: 6, ty: 41, name: "Church Street Cottage", x: 5, y: 40 },
-    { id: "frodsham_house_2", tx: 15, ty: 41, name: "Church Street Cottage", x: 14, y: 40 }
+    { id: "frodsham_house_1", tx: 6, ty: 40, name: "Church Street Cottage" },
+    { id: "frodsham_house_2", tx: 14, ty: 40, name: "Church Street Cottage" }
   ];
-  B.house(c, { x: 4, y: 39, w: 5, h: 3, rh: 1, roof: "R", wall: "#", win: "W", door: "D", doorX: 2, over: ";" });
-  B.house(c, { x: 13, y: 39, w: 5, h: 3, rh: 1, roof: "R", wall: "#", win: "W", door: "D", doorX: 2, over: ";" });
   for (let i = 0; i < fhomes.length; i++) {
     const hh = fhomes[i];
     W.defineMap(hh.id, W.builtin("house_small", {
