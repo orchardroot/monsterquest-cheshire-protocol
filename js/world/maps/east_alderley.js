@@ -396,6 +396,7 @@
   m2.fill("g", 4, 20, 4, 3, "_");
   m2.set("g", 20, 20, "N");
   m2.fill("g", 8, 20, 24, 1, "_");
+  m2.set("g", 20, 21, "N");
   W.defineMap("alderley_edge_caverns_b2", {
     name: "Edge Caverns — the Hough Level", region: "interior", outdoor: false,
     music: "town_alderley", ambience: "cave", dialogue: "town_alderley_edge", dark: true,
@@ -410,7 +411,7 @@
       { x: 6, y: 21, to: "alderley_edge_caverns_slide", tx: 6, ty: 16, dir: "up", kind: "stairs" }
     ],
     signs: [
-      { x: 20, y: 20, text: ["THE HOUGH LEVEL — driven 1857 to drain the workings. It drains nothing now; it holds.",
+      { x: 20, y: 21, text: ["THE HOUGH LEVEL — driven 1857 to drain the workings. It drains nothing now; it holds.",
         "A rope has been rigged along the far wall by somebody who did not sign the book."] }
     ],
     items: [

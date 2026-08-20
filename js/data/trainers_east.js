@@ -295,7 +295,27 @@
     leader: { badge: "badge_packet", town: "wilmslow", type: "electric", tm: "tm_live_rail" },
     house: {
       note: "STATIC TERRAIN IS PERMANENT. THE RACKS DO NOT CARE WHOSE FAULT IT IS.",
-      terrain: "static", permanent: true, reboot: true
+      terrain: "static", permanent: true, reboot: true,
+      jamAgent: { id: "sleet", turns: 3 }
+    },
+    boss: {
+      cannotCatch: true,
+      phases: [
+        { hpFrac: 0.65, events: [
+          { say: "Ada does not look up. \"Change is going badly. Escalating.\"" },
+          { setTerrain: "static", turns: 99 },
+          { boostSelf: { spe: 1 } }
+        ] },
+        { hpFrac: 0.35, events: [
+          { say: "\"Right. Sysadmin's Reboot. Everybody hates this and everybody has it in their runbook.\"" },
+          { healSelf: 0.25 },
+          { boostSelf: { spa: 1, def: 1 } }
+        ] },
+        { hpFrac: 0.12, events: [
+          { say: "\"Uptime one thousand one hundred and four days. I am not being the reason it resets.\"" },
+          { boostSelf: { atk: 1, spa: 1 } }
+        ] }
+      ]
     },
     intro: [
       "Ada. Uptime's my religion and you're an unplanned change.",
