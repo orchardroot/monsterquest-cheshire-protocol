@@ -131,11 +131,14 @@
     T.draw(ctx, nameSc.value.length + "/" + nameSc.max, fx + fw - 10, top + 32, { size: "s", align: "right", color: C.textDim });
 
     // keyboard grid
-    const gy = top + 66;
-    const gh = Theme.footerTop() - gy - 6;
+    const gy0 = top + 66;
+    const gh = Theme.footerTop() - gy0 - 6;
     const rows = Math.ceil(nameSc.keys.length / COLS);
     const kw = Math.floor((fw - (COLS - 1) * 6) / COLS);
     const kh = Math.min(Math.floor((gh - (rows - 1) * 6) / rows), Math.round(46 * m.k));
+    // keys cap out at 46px, so on a tall screen centre them rather than
+    // leaving a third of the screen empty underneath
+    const gy = gy0 + Math.max(0, Math.floor((gh - (kh * rows + 6 * (rows - 1))) / 2));
     const gx = m.cx - (kw * COLS + 6 * (COLS - 1)) / 2;
     const st = nameSc.st;
     for (let i = 0; i < st.rects.length; i++) st.rects[i].on = false;
