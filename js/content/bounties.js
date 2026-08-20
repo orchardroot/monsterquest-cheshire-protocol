@@ -203,12 +203,10 @@
       money = (own.reward && own.reward.money) || 0;
       marks = (own.reward && own.reward.marks) || 0;
       a.addMoney(money); a.addMarks(marks);
-      a.bump("bounties", 1);
+      a.bump("bounties", 1);                 // MQ.Trainer mirrors this into count_bounties
       if (e.tier === "warrant") a.bump("warrants", 1);
     }
-    a.addFlag("count_bounties", 1);
     if (e.tier === "warrant") {
-      a.addFlag("count_warrants", 1);
       const gear = Bn.warrantGear();
       if (gear) { a.give(gear, 1); }
       Bn.state.served.unshift({ id: id, name: e.name, tier: e.tier, ts: a.now(), money: money, marks: marks, gear: gear || null });

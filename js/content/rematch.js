@@ -79,7 +79,7 @@
     if (lead) {
       // A leader climbs with your badge count; tier 5 is a post-game affair.
       const badges = MQ.Trainer && MQ.Trainer.badgeCount ? MQ.Trainer.badgeCount() : a.num("badges");
-      const need = [0, 2, 4, 6, 8, 8][tier + 1] || 8;
+      const need = [0, 1, 2, 4, 6, 8][tier + 1] || 8;
       if (badges < need) return { ok: false, why: "Come back with " + need + " badges." };
       if (tier + 1 >= 5 && !a.flag("postgame_open")) return { ok: false, why: "Tier five waits for the end of the story." };
     }

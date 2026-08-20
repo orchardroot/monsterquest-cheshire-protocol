@@ -224,7 +224,7 @@
       this.busy = false;
       this.note = B.tip();
       A().sfx("ui_open");
-      A().music("town_y_berllan");
+      A().music("town_berllan");
     },
     exit: function () { A().sfx("ui_close"); },
     resume: function () { this.refresh(); this.busy = false; },

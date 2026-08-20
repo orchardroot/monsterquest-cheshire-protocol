@@ -1021,12 +1021,106 @@
     return { ok: true, msg: "\"" + (p.name || A().itemName(id)) + ". Go on then.\"" };
   };
 
+
+  // =============================================================
+  // The arcade front-of-house: pick a cabinet, spend your tokens
+  // =============================================================
+  M.CABINETS = ["arcade_packet_run", "arcade_salt_rush", "arcade_type_trainer"];
+  M.arcadeScene = {
+    id: "arcade",
+    enter: function (params) {
+      this.p = params || {};
+      this.tab = 0;
+      this.cabs = A().menuState(M.cabinetItems(this.p.only));
+      this.shop = A().menuState(M.prizeItems());
+      this.busy = false;
+      A().sfx("ui_open");
+      A().music("town_warrington");
+    },
+    exit: function () { A().sfx("ui_close"); },
+    resume: function () { this.cabs.setItems(M.cabinetItems(this.p.only)); this.shop.setItems(M.prizeItems()); this.busy = false; },
+    update: function () {
+      if (this.busy) return;
+      const a = A();
+      const tp = a.tabTapped();
+      if (tp >= 0) { this.tab = tp; a.sfx("ui_move"); return; }
+      if (a.backPressed()) { MQ.Scenes.pop(null); return; }
+      const st = this.tab === 0 ? this.cabs : this.shop;
+      const r = st.update();
+      if (!r) return;
+      if (r.cancel) { MQ.Scenes.pop(null); return; }
+      const item = r.item || st.items[r.selected];
+      if (!item || item.disabled) { if (item) a.sfx("ui_error"); return; }
+      const self = this;
+      self.busy = true;
+      if (this.tab === 0) {
+        M.start(item.value).then(function () { self.resume(); });
+      } else {
+        const res = M.redeem(item.value);
+        a.sfx(res.ok ? "coin" : "ui_error");
+        a.say([res.msg], { name: "Prize Counter" }).then(function () { self.resume(); });
+      }
+    },
+    draw: function (ctx) {
+      const a = A(), C = a.C(), m = a.m();
+      a.backdrop(ctx, { top: "#1a1030", bottom: "#08060f" });
+      a.header(ctx, {
+        title: "Warrington Wire Arcade", accent: "#3fe0c8",
+        sub: M.tokenRate() > 1 ? "Friday — double tokens all day" : "Three cabinets and a prize counter",
+        right: M.tokens() + " tokens"
+      });
+      const top = a.headerBottom();
+      const th = a.tabStrip(ctx, ["Cabinets", "Prizes"], this.tab, { x: m.l, y: top, w: m.cw });
+      const y = top + th + 8;
+      const h = a.footerTop() - y - 4;
+      const listW = Math.round(m.cw * 0.55) - 12;
+      const st = this.tab === 0 ? this.cabs : this.shop;
+      a.list(st, ctx, { x: m.l, y: y, w: listW, h: h, rowH: Math.round(56 * m.k) });
+      const px = m.l + listW + 20, pw = m.r - px;
+      a.panel(ctx, px, y, pw, h, { flat: true });
+      const item = st.items[st.cursor];
+      if (item && this.tab === 0) {
+        const g = M.GAMES[item.value];
+        a.text(ctx, g.name, px + 14, y + 12, { size: "l", color: g.accent || C.brassLit, maxWidth: pw - 28 });
+        a.text(ctx, g.blurb, px + 14, y + 48, { size: "s", color: C.text, maxWidth: pw - 28 });
+        a.text(ctx, "Best: " + M.highScore(item.value), px + 14, y + 108, { size: "m", color: C.brass });
+        a.text(ctx, (M.state.plays[item.value] || 0) + " goes so far", px + 14, y + 136, { size: "s", color: C.textDim });
+      } else if (item) {
+        a.text(ctx, item.label, px + 14, y + 12, { size: "l", color: C.brassLit, maxWidth: pw - 28 });
+        a.text(ctx, item.price + " tokens (you have " + M.tokens() + ")", px + 14, y + 52,
+          { size: "m", color: M.tokens() >= item.price ? C.good : C.bad });
+        if (item.disabled) a.text(ctx, "You have had one of those.", px + 14, y + 84, { size: "s", color: C.dim });
+      }
+      a.footer(ctx, [{ btn: "a", label: this.tab === 0 ? "Play" : "Take it" }, { btn: "b", label: "Out" }, { btn: "lr", label: "Tab" }]);
+    }
+  };
+  M.cabinetItems = function (only) {
+    const ids = only || M.CABINETS, out = [];
+    for (let i = 0; i < ids.length; i++) {
+      const g = M.GAMES[ids[i]];
+      if (!g) continue;
+      out.push({ label: g.name, value: ids[i], right: M.highScore(ids[i]) ? "best " + M.highScore(ids[i]) : "", sub: g.blurb });
+    }
+    return out;
+  };
+  M.prizeItems = function () {
+    const p = M.prizes(), out = [];
+    for (let i = 0; i < p.length; i++) {
+      out.push({ label: p[i].name, value: p[i].id, price: p[i].price,
+        right: p[i].taken ? "taken" : p[i].price + "tk", disabled: p[i].taken,
+        sub: p[i].taken ? "Already yours." : "" });
+    }
+    return out;
+  };
+  M.arcade = function (params) { return A().open(M.arcadeScene, params || {}); };
+
   // =============================================================
   // Public entry
   // =============================================================
   // MQ.Interact calls MQ.Minigames.start(id) at a cabinet or a panel.
   M.start = function (id, opts) {
     const a = A();
+    if (id === "arcade" || id === undefined) return M.arcade(opts);
     const def = M.GAMES[id];
     if (!def) return a.say(["It's out of order. There's a note on it in biro."]);
     const scene = base(id, def);

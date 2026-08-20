@@ -131,8 +131,8 @@
   P.score = function (subject, frame, phase) {
     const dx = (subject.x - frame.x) / Math.max(0.05, frame.w / 2);
     const dy = (subject.y - frame.y) / Math.max(0.05, frame.h / 2);
-    const off = Math.sqrt(dx * dx + dy * dy);
-    if (off > 1) return null;                       // not in the frame at all
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) return null;   // not in the frame at all
+    const off = Math.min(1, Math.sqrt(dx * dx + dy * dy));
     const centring = Math.round((1 - off) * 220);
     const fill = Math.round(U.clamp(subject.z * (0.42 / Math.max(0.12, frame.w)), 0, 1.6) * 90);
     const sp = MQ.Data && MQ.Data.species ? MQ.Data.species[subject.species] : null;
@@ -161,13 +161,14 @@
     P.state.records.unshift(rec);
     if (P.state.records.length > P.MAX_RECORDS) P.state.records.length = P.MAX_RECORDS;
     P.state.shots++;
-    a.addFlag("count_photos", 1);
-    a.bump("photos", 1);
     if (MQ.Trainer && MQ.Trainer.see) {
       MQ.Trainer.see(subject.species, { map: rec.map, how: "photo", note: P.habitatNote(subject.species) });
     }
     a.sfx("camera_shutter");
+    // MQ.Quests owns the `photos` trainer stat off this event; count it
+    // ourselves only when the quest engine is not there to do it.
     a.emit("photo", { species: subject.species, score: score.total, grade: score.grade, map: rec.map, pose: subject.pose });
+    if (!MQ.Quests) a.bump("photos", 1);
     P.checkSecrets(subject, rec);
     return rec;
   };
@@ -179,10 +180,9 @@
     if (P.state.landmarks[id]) return { already: true, landmark: lm };
     P.state.landmarks[id] = a.now();
     P.state.shots++;
-    a.addFlag("count_photos", 1);
-    a.bump("photos", 1);
     a.sfx("camera_shutter");
     a.emit("photo", { landmark: id, map: mapId });
+    if (!MQ.Quests) a.bump("photos", 1);
     return { landmark: lm, first: true };
   };
   P.landmarkOn = function (mapId) {
