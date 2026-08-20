@@ -353,7 +353,6 @@
   r28.fill("g", 1, 1, 54, 28, ".");
   // the lane, then the canal in a rock cutting at the Chester end
   r28.fill("g", 1, 13, 40, 4, ":");
-  r28.fill("g", 1, 14, 40, 1, "|");
   r28.fill("g", 38, 8, 4, 14, "~");
   r28.fill("g", 35, 8, 3, 22, "t");
   r28.fill("g", 42, 8, 3, 22, "t");
