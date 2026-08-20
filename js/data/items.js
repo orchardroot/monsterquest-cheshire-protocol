@@ -36,8 +36,8 @@
   // 4.1 Healing & cures
   // =================================================================
   I("salve", "Salve", "heal", 200, { amount: 20, usableInBattle: true, usableInField: true }, "A field dressing and a strong word. Restores 20 HP.");
-  I("tonic", "Tonic", "heal", 600, { amount: 60, usableInBattle: true, usableInField: true }, "Bitter, brown and effective. Restores 60 HP.");
-  I("elixir", "Elixir", "heal", 1500, { amount: 120, usableInBattle: true, usableInField: true }, "The good stuff, kept behind the counter. Restores 120 HP.");
+  I("tonic", "Tonic", "heal", 600, { amount: 45, usableInBattle: true, usableInField: true }, "Bitter, brown and effective. Restores 45 HP.");
+  I("elixir", "Elixir", "heal", 1500, { amount: 80, usableInBattle: true, usableInField: true }, "The good stuff, kept behind the counter. Restores 80 HP.");
   I("full_restore", "Full Restore", "heal", 3000, { amount: "full", cures: ["psn", "tox", "par", "brn", "slp", "frz", "cnf"], usableInBattle: true, usableInField: true }, "Full health and every status cleared. Costs what you'd expect.");
   I("revive_salts", "Revive Salts", "heal", 1200, { revive: 0.5, friendship: -10, usableInBattle: true, usableInField: true }, "Brings a fainted monster back at half health. Tastes of the mine; they hold it against you.");
   I("antidote", "Antidote", "cure", 100, { cures: ["psn", "tox"], usableInBattle: true, usableInField: true }, "Cures poison, including the escalating sort.");
@@ -83,7 +83,7 @@
   GEAR("patch_cable", "Patch Cable", 1500, { kind: "typeBoost", type: "cyber", mult: 1.2 }, "Yellow, unlabelled, load-bearing. Cyber moves ×1.2.");
   GEAR("walkers_boots", "Walker's Boots", 2500, { kind: "stat", stat: "spe", mult: 1.5, lockMove: true }, "Speed ×1.5, but the holder commits to the first move it picks until it switches.");
   GEAR("heavy_anvil", "Heavy Anvil", 2000, { kind: "stat", stat: "atk", mult: 1.3, also: { stat: "spe", mult: 0.5 } }, "Attack ×1.3, Speed halved. An honest trade.");
-  GEAR("kevlar_waistcoat", "Kevlar Waistcoat", 2500, { kind: "damageTaken", phys: 0.9, spec: 0.9, noOverdrive: true }, "Takes 10% less of everything. No Overdrive — it's a waistcoat, not a mood.");
+  GEAR("kevlar_waistcoat", "Kevlar Waistcoat", 2500, { kind: "damageTaken", phys: 0.85, spec: 0.85, noOverdrive: true }, "Takes 15% less of everything. No Overdrive — it's a waistcoat, not a mood.");
   GEAR("rail_pass", "Rail Pass", 1000, { kind: "switchPriority" }, "The holder always gets off the train first.");
   GEAR("lucky_coin", "Lucky Coin", 1500, { kind: "crit", stages: 1 }, "Worn smooth on one side. Crit stage +1.");
   GEAR("focus_band", "Focus Band (Bollington)", 2000, { kind: "survive", chance: 10 }, "A sweatband from the hill race. 10% chance to hang on at 1 HP.");
@@ -96,7 +96,7 @@
   GEAR("warm_blanket", "Warm Blanket", 1000, { kind: "cureEndTurn", cures: ["frz", "slp"], oncePerBattle: true }, "Cures freezing or sleep at the end of a turn, once per battle, and is not consumed.");
   GEAR("torch", "Torch", 800, { kind: "ignoreFogAccuracy" }, "The holder's accuracy stops caring about Fog.");
   GEAR("silk_wrap", "Silk Wrap", 0, { kind: "statusDamage", status: "brn", mult: 0.5 }, "Weaver Bronwen's own binding. Burn damage halved.", { chapter: 1 });
-  GEAR("firebox_charm", "Firebox Charm", 0, { kind: "typeBoost", type: "fire", mult: 1.1 }, "Di's, once. Fire moves ×1.1 and a faint smell of the shed.", { chapter: "PG" });
+  GEAR("firebox_charm", "Firebox Charm", 0, { kind: "typeBoost", type: "fire", mult: 1.15 }, "Di's, once. Fire moves ×1.15 and a faint smell of the shed.", { chapter: "PG" });
   GEAR("hide_plate", "Hide Plate", 0, { kind: "damageTakenType", type: "rock", mult: 0.75 }, "Boiled leather over a bed-plate. Rock moves against the holder ×0.75.", { chapter: 7 });
   GEAR("beacon_ember", "Beacon Ember", 0, { kind: "typeBoost", type: "fire", mult: 1.2, atNight: true }, "Carried down from Frodsham beacon. Fire ×1.2 at night — and a Damson Fire ingredient.", { chapter: 9, ingredient: true });
   const ANCHORS = [

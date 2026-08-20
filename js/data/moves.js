@@ -50,7 +50,6 @@
   function END() { return { kind: "endure" }; }
   function PROT() { return { kind: "protect" }; }
   function COOL(t) { return { kind: "cooldown", turns: t }; }             // usable every N turns
-  function WBOOST(w, mult) { return { kind: "weather_boost", w: w, mult: mult }; }
   function MIMIC() { return { kind: "mimic_type" }; }
   function AGENT(o) { const e = { kind: "agent" }; if (o) { const ks = Object.keys(o); for (let i = 0; i < ks.length; i++) e[ks[i]] = o[ks[i]]; } return e; }
   function WHEN(e, cond) { e.when = cond; return e; }
@@ -168,11 +167,11 @@
   M("brine_dart", "Brine Dart", "water", "phys", 40, 100, 20, 1, "c", [], "A fast watery lunge that lands first.");
   M("bubble_jet", "Bubble Jet", "water", "spec", 65, 100, 20, 0, "", [G("foe", "spe", -1, 10)], "A stream of bubbles that clings to the legs.");
   M("claw_smash", "Claw Smash", "water", "phys", 75, 95, 15, 0, "c", [HC(1)], "One crack of a crab claw. Lands well more often than it should.");
-  M("torrent", "Torrent", "water", "spec", 80, 100, 15, 0, "", [], "A mill-race let loose down the wheel-pit.");
+  M("torrent", "Torrent", "water", "spec", 75, 100, 15, 0, "", [], "A mill-race let loose down the wheel-pit.");
   M("brine_jet", "Brine Jet", "water", "spec", 80, 100, 10, 0, "", [WHEN(WX("rain", 5), "!weather.rain"), WHEN(G("self", "spe", 1), "weather.rain")], "Nantwich brine under pressure. Brings the rain, or rides it.");
-  M("weaver_surge", "Weaver Surge", "water", "spec", 90, 100, 10, 0, "", [], "The Weaver in spate, taking the towpath with it.");
+  M("weaver_surge", "Weaver Surge", "water", "spec", 85, 100, 10, 0, "", [], "The Weaver in spate, taking the towpath with it.");
   M("mere_mist", "Mere Mist", "water", "status", 0, null, 5, 0, "", [WX("rain", 5)], "Cheshire's default weather, summoned early.");
-  M("lido_soak", "Lido Soak", "water", "status", 0, null, 10, 0, "", [HEAL(0.5)], "Steam rising off the brine pool. Half the aches gone.");
+  M("lido_soak", "Lido Soak", "water", "status", 0, null, 5, 0, "", [HEAL(0.5)], "Steam rising off the brine pool. Half the aches gone.");
   M("tide_pull", "Tide Pull", "water", "phys", 35, 90, 15, 0, "c", [TRAP(4)], "Drags the foe in and does not let go.");
   M("sluice_gate", "Sluice Gate", "water", "status", 0, null, 15, 0, "", [SCR("phys", 5)], "An iron gate drops. Physical damage halved.");
 
@@ -185,7 +184,7 @@
   M("petal_storm", "Petal Storm", "grass", "spec", 80, 100, 10, 0, "", [], "A blossom gale, prettier than it is kind.");
   M("elm_press", "Elm Press", "grass", "phys", 85, 100, 10, 0, "c", [DRAIN(0.5)], "The orchard press: crush, then drink what comes out.");
   M("sleep_powder", "Sleep Powder", "grass", "status", 0, 75, 15, 0, "", [S("slp")], "Drowsy spores. Very moreish.");
-  M("regrow", "Regrow", "grass", "status", 0, null, 10, 0, "", [HEAL(0.5)], "Fresh shoots. Half the damage forgotten.");
+  M("regrow", "Regrow", "grass", "status", 0, null, 5, 0, "", [HEAL(0.5)], "Fresh shoots. Half the damage forgotten.");
   M("root_bind", "Root Bind", "grass", "status", 0, 90, 15, 0, "", [TRAP(4)], "Roots come up through the path and hold on.");
   M("hedge_lay", "Hedge Lay", "grass", "status", 0, null, 10, 0, "", [TR("grass", 5), G("self", "def", 1)], "Pleached and pegged: Grass terrain, and a stouter guard.");
   M("mulberry_leaf", "Mulberry Leaf", "grass", "status", 0, null, 10, 0, "", [HEAL(0.25), CLEANSE("self", "status")], "A silkworm's supper. Small, but it settles the stomach.");
@@ -208,7 +207,7 @@
   // 2.6 FLYING (10)
   // =================================================================
   M("gust", "Gust", "flying", "spec", 40, 100, 35, 0, "", [], "A puff of wind with intent.");
-  M("peck", "Peck", "flying", "phys", 35, 100, 35, 0, "c", [], "A sharp beak, twice.");
+  M("peck", "Peck", "flying", "phys", 40, 100, 30, 0, "c", [], "A sharp beak, twice.");
   M("wing_attack", "Wing Attack", "flying", "phys", 60, 100, 30, 0, "c", [], "A wing buffet across the face.");
   M("aerial_lash", "Aerial Lash", "flying", "phys", 70, 100, 15, 0, "c", [], "A diving strike from an unhelpful angle.");
   M("curlew_cry", "Curlew Cry", "flying", "spec", 75, 100, 15, 0, "s", [G("foe", "spd", -1, 20)], "A wild moor call that gets under the ribs.");
@@ -216,16 +215,16 @@
   M("dive_bomb", "Dive Bomb", "flying", "phys", 100, 90, 10, 0, "c", [RECOIL(0.25)], "A reckless plunge. Both parties regret it.");
   M("ridge_gale", "Ridge Gale", "flying", "status", 0, null, 5, 0, "", [WX("wind", 4)], "Call the ridge wind down off the edge.");
   M("updraft", "Updraft", "flying", "status", 0, null, 20, 0, "", [G("self", "spe", 2)], "Find the thermal and stop flapping.");
-  M("preen", "Preen", "flying", "status", 0, null, 10, 0, "", [HEAL(0.5)], "Feathers tidied, dignity and health restored.");
+  M("preen", "Preen", "flying", "status", 0, null, 5, 0, "", [HEAL(0.5)], "Feathers tidied, dignity and health restored.");
 
   // =================================================================
   // 2.7 BUG (9)
   // =================================================================
-  M("bug_bite", "Bug Bite", "bug", "phys", 60, 100, 20, 0, "c", [], "Mandibles, applied firmly.");
-  M("needle_volley", "Needle Volley", "bug", "phys", 25, 95, 20, 0, "", [MH(2, 5)], "A volley of pins. Two to five of them.");
-  M("bollin_flutter", "Bollin Flutter", "bug", "spec", 60, 100, 20, 0, "", [G("foe", "spe", -1, 30)], "Moth-dust wingbeat. Clogs the works.");
-  M("copper_bite", "Copper Bite", "bug", "phys", 75, 100, 15, 0, "c", [G("foe", "def", -1, 20)], "Verdigris mandibles that leave a green mark.");
-  M("hive_swarm", "Hive Swarm", "bug", "spec", 80, 100, 10, 0, "s", [], "The whole nest at once, all opinions included.");
+  M("bug_bite", "Bug Bite", "bug", "phys", 45, 100, 25, 0, "c", [], "Mandibles, applied firmly.");
+  M("needle_volley", "Needle Volley", "bug", "phys", 18, 95, 20, 0, "", [MH(2, 5)], "A volley of pins. Two to five of them.");
+  M("bollin_flutter", "Bollin Flutter", "bug", "spec", 70, 100, 20, 0, "", [G("foe", "spe", -1, 30)], "Moth-dust wingbeat. Clogs the works.");
+  M("copper_bite", "Copper Bite", "bug", "phys", 80, 100, 15, 0, "c", [G("foe", "def", -1, 20)], "Verdigris mandibles that leave a green mark.");
+  M("hive_swarm", "Hive Swarm", "bug", "spec", 90, 100, 10, 0, "s", [], "The whole nest at once, all opinions included.");
   M("string_shot", "String Shot", "bug", "status", 0, 95, 40, 0, "", [G("foe", "spe", -2)], "Sticky thread around the ankles.");
   M("silk_bind", "Silk Bind", "bug", "status", 0, 90, 15, 0, "", [TRAP(4)], "Wrapped in silk and going nowhere.");
   M("cocoon", "Cocoon", "bug", "status", 0, null, 20, 0, "", [G("self", "def", 1), G("self", "spd", 1)], "Spin a shell and wait it out.");
@@ -234,13 +233,13 @@
   // =================================================================
   // 2.8 POISON (10)
   // =================================================================
-  M("poison_sting", "Poison Sting", "poison", "phys", 15, 100, 35, 0, "c", [S("psn", 30)], "A small venomous jab with a long memory.");
-  M("chem_spray", "Chem Spray", "poison", "spec", 55, 100, 20, 0, "", [G("foe", "spd", -1, 30)], "Reagent mist. Read the label afterwards.");
-  M("sludge", "Sludge", "poison", "spec", 65, 100, 20, 0, "", [S("psn", 30)], "Mersey sludge, thrown with feeling.");
-  M("rot_bite", "Rot Bite", "poison", "phys", 70, 100, 15, 0, "c", [S("psn", 20)], "Compost fangs. Warm, which is worse.");
-  M("smog_bank", "Smog Bank", "poison", "spec", 70, 100, 15, 0, "", [G("foe", "acc", -1, 30)], "Chemical-works smog, rolling in on cue.");
-  M("venom_lash", "Venom Lash", "poison", "phys", 75, 100, 15, 0, "c", [S("psn", 10)], "A venom-slick whip that finds the gaps.");
-  M("reagent_mix", "Reagent Mix", "poison", "spec", 90, 95, 10, 0, "", [S("psn", 20)], "Ria's fume cupboard, briefly outdoors.");
+  M("poison_sting", "Poison Sting", "poison", "phys", 35, 100, 30, 0, "c", [S("psn", 30)], "A small venomous jab with a long memory.");
+  M("chem_spray", "Chem Spray", "poison", "spec", 60, 100, 20, 0, "", [G("foe", "spd", -1, 30)], "Reagent mist. Read the label afterwards.");
+  M("sludge", "Sludge", "poison", "spec", 70, 100, 20, 0, "", [S("psn", 30)], "Mersey sludge, thrown with feeling.");
+  M("rot_bite", "Rot Bite", "poison", "phys", 78, 100, 15, 0, "c", [S("psn", 20)], "Compost fangs. Warm, which is worse.");
+  M("smog_bank", "Smog Bank", "poison", "spec", 75, 100, 15, 0, "", [G("foe", "acc", -1, 30)], "Chemical-works smog, rolling in on cue.");
+  M("venom_lash", "Venom Lash", "poison", "phys", 85, 100, 10, 0, "c", [S("psn", 10)], "A venom-slick whip that finds the gaps.");
+  M("reagent_mix", "Reagent Mix", "poison", "spec", 95, 95, 10, 0, "", [S("psn", 20)], "Ria's fume cupboard, briefly outdoors.");
   M("toxic_dose", "Toxic Dose", "poison", "status", 0, 90, 10, 0, "", [S("tox")], "A dose that gets worse the longer you leave it.");
   M("proxy_veil", "Proxy Veil", "poison", "status", 0, null, 5, 0, "", [WX("fog", 4), G("self", "eva", 1)], "Residential-proxy fog. Everyone looks like a neighbour.");
   M("proxy_cloud", "Proxy Cloud", "poison", "status", 0, null, 10, 0, "", [WX("fog", 5), S("tox", 30)], "Ria's Skill Card: fog with something unpleasant in it.");
@@ -248,11 +247,11 @@
   // =================================================================
   // 2.9 ROCK (8)
   // =================================================================
-  M("rock_throw", "Rock Throw", "rock", "phys", 50, 90, 20, 0, "", [], "A lobbed stone. Traditional.");
+  M("rock_throw", "Rock Throw", "rock", "phys", 45, 90, 20, 0, "", [], "A lobbed stone. Traditional.");
   M("salt_spray", "Salt Spray", "rock", "spec", 60, 100, 20, 0, "", [G("foe", "spd", -1, 20)], "Stinging salt. Rusts the resolve.");
   M("rock_slide", "Rock Slide", "rock", "phys", 75, 90, 10, 0, "", [FLINCH(30)], "Half of Kerridge quarry, coming down.");
   M("salt_grind", "Salt Grind", "rock", "phys", 75, 95, 15, 0, "c", [TR("salt", 5), HC(1)], "Salt-pan grinding. Jack's Skill Card.");
-  M("gritstone_edge", "Gritstone Edge", "rock", "phys", 80, 100, 10, 0, "c", [HC(1)], "Struck along the edge of the crag.");
+  M("gritstone_edge", "Gritstone Edge", "rock", "phys", 75, 100, 10, 0, "c", [HC(1)], "Struck along the edge of the crag.");
   M("crag_crush", "Crag Crush", "rock", "phys", 100, 80, 5, 0, "c", [], "The whole crag, briefly mobile.");
   M("stone_skin", "Stone Skin", "rock", "status", 0, null, 20, 0, "", [G("self", "def", 2)], "Sandstone hide. Defence rises sharply.");
   M("menhir_stand", "Menhir Stand", "rock", "status", 0, null, 10, 0, "", [SCR("spec", 5), G("self", "def", 1)], "A standing-stone ward against special damage.");
@@ -260,12 +259,12 @@
   // =================================================================
   // 2.10 GROUND (9)
   // =================================================================
-  M("mud_shot", "Mud Shot", "ground", "spec", 55, 95, 15, 0, "", [G("foe", "spe", -1, 30)], "Peaty mud, boot-deep.");
+  M("mud_shot", "Mud Shot", "ground", "spec", 45, 95, 20, 0, "", [G("foe", "spe", -1, 30)], "Peaty mud, boot-deep.");
   M("hoof_stamp", "Hoof Stamp", "ground", "phys", 65, 100, 20, 0, "c", [G("foe", "spe", -1, 20)], "A stamp that rattles the fillings.");
   M("bog_suck", "Bog Suck", "ground", "phys", 65, 100, 10, 0, "c", [DRAIN(0.5)], "Lindow's pull. It takes, and gives back to the user.");
   M("peat_press", "Peat Press", "ground", "phys", 75, 100, 15, 0, "c", [G("foe", "spd", -1, 20)], "Pressed flat and preserved for two thousand years.");
   M("dig", "Dig", "ground", "phys", 80, 100, 10, 0, "c ch", [CHG(1, true)], "Under, out of reach, then up underneath.");
-  M("quake", "Quake", "ground", "phys", 100, 100, 10, 0, "", [], "The ground shifts. It has been meaning to.");
+  M("quake", "Quake", "ground", "phys", 100, 90, 10, 0, "", [], "The ground shifts. It has been meaning to.");
   M("pit_shaft", "Pit Shaft", "ground", "spec", 90, 90, 10, 0, "", [], "The cold breath of a flooded pit.");
   M("subsidence", "Subsidence", "ground", "status", 0, 100, 15, 0, "", [G("foe", "def", -1), G("foe", "acc", -1)], "The buildings tilt. So does the aim.");
   M("sink_hole", "Sink Hole", "ground", "status", 0, 30, 5, 0, "", [OHKO()], "Winsford subsidence. One hole, one foe, no foe.");
@@ -273,11 +272,11 @@
   // =================================================================
   // 2.11 PSYCHIC (10)
   // =================================================================
-  M("confusion", "Confusion", "psychic", "spec", 50, 100, 25, 0, "", [S("cnf", 10)], "A mild psychic push in an unhelpful direction.");
+  M("confusion", "Confusion", "psychic", "spec", 45, 100, 25, 0, "", [S("cnf", 10)], "A mild psychic push in an unhelpful direction.");
   M("rune_read", "Rune Read", "psychic", "spec", 60, null, 20, 0, "", [NM()], "Read the Bridestones aloud. It always lands.");
   M("mind_ray", "Mind Ray", "psychic", "spec", 65, 100, 20, 0, "", [S("cnf", 10)], "A narrow beam of somebody else's thinking.");
   M("mind_blast", "Mind Blast", "psychic", "spec", 90, 100, 10, 0, "", [G("foe", "spd", -1, 10)], "The full psychic blast, no preamble.");
-  M("pulsar_beam", "Pulsar Beam", "psychic", "spec", 120, 90, 5, 0, "ch", [CHG(1)], "Tuned to a pulsar. Fires on the next tick, not before.");
+  M("pulsar_beam", "Pulsar Beam", "psychic", "spec", 110, 90, 5, 0, "ch", [CHG(1)], "Tuned to a pulsar. Fires on the next tick, not before.");
   M("agility", "Agility", "psychic", "status", 0, null, 30, 0, "", [G("self", "spe", 2)], "Mind over legs. Mostly over legs.");
   M("calm_read", "Calm Read", "psychic", "status", 0, null, 20, 0, "", [G("self", "spa", 1), G("self", "spd", 1)], "Sit down with a book in the middle of a fight.");
   M("cipher_riddle", "Cipher Riddle", "psychic", "status", 0, 80, 15, 0, "s", [S("cnf")], "Gaskell's letter-cipher, read out at speed.");
@@ -287,7 +286,7 @@
   // =================================================================
   // 2.12 GHOST (10)
   // =================================================================
-  M("lick", "Lick", "ghost", "phys", 30, 100, 30, 0, "c", [S("par", 30)], "A cold tongue and a colder afterthought.");
+  M("lick", "Lick", "ghost", "phys", 35, 100, 30, 0, "c", [S("par", 30)], "A cold tongue and a colder afterthought.");
   M("shade_bolt", "Shade Bolt", "ghost", "spec", 60, 100, 20, 0, "", [], "A bolt of shadow with weight to it.");
   M("preserved_grip", "Preserved Grip", "ghost", "phys", 70, 100, 15, 0, "c", [TRAP(4)], "A bog-body handshake. Very firm, very old.");
   M("possess", "Possess", "ghost", "spec", 75, 100, 15, 0, "", [FLINCH(20)], "A brief tenancy in someone else's head.");
@@ -302,20 +301,20 @@
   // 2.13 CYBER (18)
   // =================================================================
   M("bit_blast", "Bit Blast", "cyber", "spec", 40, 100, 30, 0, "", [], "A burst of bits, none of them friendly.");
-  M("brute_force", "Brute Force", "cyber", "phys", 25, 90, 15, 0, "c", [MH(2, 5)], "Try every password. Two to five get through.");
+  M("brute_force", "Brute Force", "cyber", "phys", 20, 90, 15, 0, "c", [MH(2, 5)], "Try every password. Two to five get through.");
   M("phish_hook", "Phish Hook", "cyber", "spec", 55, 95, 20, 0, "", [G("foe", "spa", -1, 30)], "A lure with a hook in it and a plausible sender.");
   M("data_stream", "Data Stream", "cyber", "spec", 65, 100, 20, 0, "", [], "A steady stream of packets, no gaps.");
   M("rootkit_bite", "Rootkit Bite", "cyber", "phys", 65, 100, 15, 0, "c", [G("foe", "eva", -1)], "Bites down into what was hiding, and reveals it.");
   M("hack_slash", "Hack Slash", "cyber", "phys", 70, 100, 15, 0, "c", [], "Quick and dirty. Documented later, if ever.");
   M("threat_hunt", "Threat Hunt", "cyber", "spec", 70, null, 10, 0, "", [NM(), HC(1)], "Finds what hides. Always lands, often hard.");
-  M("packet_storm", "Packet Storm", "cyber", "spec", 70, 100, 15, 0, "", [WX("wind", 4), WBOOST("wind", 1.3)], "Flood the link until the link gives up.");
+  M("packet_storm", "Packet Storm", "cyber", "spec", 70, 100, 15, 0, "", [WX("wind", 4), G("foe", "acc", -1, 30)], "Flood the link until the link gives up.");
   M("glitch_burst", "Glitch Burst", "cyber", "phys", 85, 90, 10, 0, "", [S("cnf", 10)], "Corrupted frames, delivered at speed.");
   M("rtr_deploy", "RTR Deploy", "cyber", "spec", 90, 100, 10, 0, "", [], "Real-time response, deployed to the endpoint in question.");
   M("zero_day", "Zero-Day", "cyber", "spec", 110, 80, 5, 0, "ch", [CHG(1), G("self", "spd", -1)], "Unpatched and unstoppable. Mo's Skill Card.");
   M("ddos", "DDoS", "cyber", "status", 0, 90, 20, 0, "", [G("foe", "spe", -2)], "Flood them off the wire entirely.");
   M("encrypt", "Encrypt", "cyber", "status", 0, null, 20, 0, "", [G("self", "def", 1), G("self", "spd", 1)], "Wrapped in cipher. Come back with a warrant.");
   M("firewall_up", "Firewall Up", "cyber", "status", 0, null, 15, 0, "", [SCR("spec", 5), OD(10)], "Deny inbound. Log everything.");
-  M("patch_tuesday", "Patch Tuesday", "cyber", "status", 0, null, 10, 0, "", [HEAL(0.5), CLEANSE("self", "status"), COOL(2)], "Reboot required. Only every other turn.");
+  M("patch_tuesday", "Patch Tuesday", "cyber", "status", 0, null, 5, 0, "", [HEAL(0.5), CLEANSE("self", "status"), COOL(2)], "Reboot required. Only every other turn.");
   M("ransom_note", "Ransom Note", "cyber", "status", 0, 85, 10, 0, "", [S("tox"), TRAP(4)], "Encrypted, and you're not leaving until it's paid.");
   M("honeytoken", "Honeytoken", "cyber", "status", 0, 100, 10, 0, "", [TAUNT(3)], "Bait too good to ignore. No status moves for three turns.");
   M("pixel_tripwire", "Pixel Tripwire", "cyber", "status", 0, 90, 10, 0, "", [TR("static", 5), G("foe", "spe", -1)], "A tracking pixel underfoot, and now they know where you are.");
@@ -343,7 +342,7 @@
   OM("od_psychic", "Cranford Rumour", "psychic", "spec", 130, [G("foe", "spd", -1)], "generic", "By teatime the whole town has heard.");
   OM("od_ghost", "Grave Bell", "ghost", "spec", 130, [S("cnf", 30)], "generic", "One toll, from under the water.");
   OM("od_cyber", "Root Shell", "cyber", "spec", 130, [PPD(2)], "generic", "Root, obtained. The foe's last move stops working.");
-  OM("zoomies", "Zoomies", "normal", "phys", 40, [MH(3, 3), G("self", "spe", 1), { kind: "priority", delta: 2 }], "meadow", "MEADOW at eleven at night, three times, before you can stand up.");
+  OM("zoomies", "Zoomies", "normal", "phys", 40, [MH(3, 3), G("self", "spe", 1)], "meadow", "MEADOW at eleven at night, three times, before you can stand up.").priority = 2;
   OM("brink_roar", "Brink Roar", "normal", "status", 0, [HEAL(0.5), G("self", "def", 1), G("self", "spd", 1), G("foe", "atk", -1)], "bigboy", "BIGBOY makes a noise no cat that size should make.");
   OM("jacquard_weave", "Jacquard Weave", "bug", "spec", 130, [TR("silk", 5), G("foe", "spe", -1)], "silkin", "A punch-card pattern woven straight through the foe.");
   OM("brine_tide", "Brine Tide", "water", "spec", 130, [WX("rain", 8), G("self", "spd", 1)], "brinewt", "The springs come up through the floor of the world.");
