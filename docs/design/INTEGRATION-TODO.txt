@@ -46,8 +46,6 @@ FIXED this pass (see git log):
   UI.Settings now applies everything on the "boot" event.
 
 STILL OPEN (not mine to fix / not small and safe):
-- content: MQ.Save summary reports chapter 0 while the game is in Chapter 1, so every
-  save card falls back to "Ch.1" by accident.
 - content/dex: after seeing and fighting silkin and nibbit the Field Dex still reads
   "Seen 0 - Caught 0/172"; nothing is recording encounters into the dex yet.
 - dialogue boxes do not nudge the camera, so the player sprite can sit behind the text

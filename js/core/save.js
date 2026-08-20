@@ -49,12 +49,23 @@
   };
   Save.unregister = function (key) { delete providers[key]; U.remove(order, key); };
 
+  // Whatever the story says, never below 1 — a save always exists inside a chapter.
+  function chapterNow() {
+    let n = 0;
+    if (MQ.Story && typeof MQ.Story.chapter === "function") { try { n = Number(MQ.Story.chapter()); } catch (e) { n = 0; } }
+    if (!(n > 0) && MQ.Flags) n = Number(MQ.Flags.chapter);
+    return n > 0 ? n : 1;
+  }
+  Save.chapterNow = chapterNow;
+
   function summary() {
     if (Save.summaryFn) { try { return Save.summaryFn(); } catch (e) { /* fall through */ } }
-    const s = { name: "", badges: 0, chapter: 0, party: [], map: "", level: 1 };
+    const s = { name: "", badges: 0, chapter: 1, party: [], map: "", level: 1 };
     try {
       if (MQ.Trainer) { s.name = MQ.Trainer.name || ""; s.badges = MQ.Trainer.badges ? (MQ.Trainer.badges.size !== undefined ? MQ.Trainer.badges.size : MQ.Trainer.badges.length) : 0; s.level = MQ.Trainer.level || 1; }
-      if (MQ.Flags) s.chapter = MQ.Flags.chapter;
+      // MQ.Story owns the chapter; MQ.Flags.chapter is 0 until a chapter starts,
+      // which used to print every save card as "Ch.0".
+      s.chapter = chapterNow();
       if (MQ.Party && MQ.Party.list) for (let i = 0; i < MQ.Party.list.length; i++) s.party.push(MQ.Party.list[i].species);
       if (MQ.Overworld && MQ.Overworld.state) s.map = MQ.Overworld.state.map || "";
     } catch (e) { /* ignore */ }

@@ -49,6 +49,26 @@ module.exports = function (t, assert) {
     S.erase(1); assert.strictEqual(S.read(1), null);
     MQ.Flags.set("zz"); S.newGame(); assert.strictEqual(MQ.Flags.get("zz"), undefined);
   });
+  t("the summary reports the real chapter, never 0", function () {
+    MQ.Flags.reset();
+    // nothing started yet: a save still belongs to Chapter 1, not Chapter 0
+    assert.strictEqual(S.snapshot().summary.chapter, 1, "cold summary is Ch.1");
+    // MQ.Story is the authority once the game is running
+    const realStory = MQ.Story;
+    MQ.Story = { chapter: function () { return 4; } };
+    assert.strictEqual(S.snapshot().summary.chapter, 4, "reads MQ.Story.chapter()");
+    // …and without a Story module it falls back to the flag
+    MQ.Story = undefined;
+    MQ.Flags.chapter = 3;
+    assert.strictEqual(S.snapshot().summary.chapter, 3, "falls back to MQ.Flags.chapter");
+    // a written card carries it too
+    assert.strictEqual(S.write(1), true);
+    assert.strictEqual(S.read(1).summary.chapter, 3, "the slot card remembers it");
+    MQ.Story = realStory;
+    MQ.Flags.reset();
+    S.erase(1);
+  });
+
   t("boot registers *.saveProvider systems", function () {
     MQ.Fake = { saveProvider: { save: function () { return 1; }, load: function () {} } };
     MQ.Boot.registerProviders();
