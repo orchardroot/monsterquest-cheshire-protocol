@@ -87,7 +87,8 @@
   W.defineMap("daresbury", {
     name: "Daresbury", region: "mersey", outdoor: true, music: "town_frodsham", weatherZone: "mersey",
     ambience: "town", dialogue: "town_daresbury",
-    legend: T, layers: c.layers(),
+    legend: NW.town({ "\\": "radio_mast" }),
+    layers: c.layers(),
     spawnPoint: { x: 24, y: 19 },
     healPoint: { x: 9, y: 21 },
     landmark: { name: "Daresbury", x: 24, y: 19 },

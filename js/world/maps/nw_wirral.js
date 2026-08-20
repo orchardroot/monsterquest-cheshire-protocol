@@ -191,7 +191,7 @@
     ],
     items: [{ x: 31, y: 22, item: "roe", n: 5, hidden: true, flag: "item_zoo_penguins_1" }],
     npcs: [
-      { id: "npc_zoo_pengwyn", x: 16, y: 14, dir: "down", sprite: "npc_ranger", behaviour: "still", script: "nw_zoo_pengwyn",
+      { id: "npc_zoo_pengwyn", x: 16, y: 20, dir: "down", sprite: "npc_ranger", behaviour: "still", script: "nw_zoo_pengwyn",
         cond: "penguin_case || postgame_open" }
     ]
   }, pg, NW.land(ZOO));
@@ -510,7 +510,8 @@
   W.defineMap("parkgate", {
     name: "Parkgate", region: "west", outdoor: true, music: "town_zoo", weatherZone: "west",
     ambience: "water", dialogue: "town_parkgate",
-    legend: T, layers: pk.layers(),
+    legend: NW.town({ "a": "marsh", "z": "moor_bog", "J": "marsh_pool", "Y": "boardwalk" }),
+    layers: pk.layers(),
     spawnPoint: { x: 20, y: 16 },
     healPoint: { x: 36, y: 13 },
     landmark: { name: "Parkgate", x: 20, y: 16 },

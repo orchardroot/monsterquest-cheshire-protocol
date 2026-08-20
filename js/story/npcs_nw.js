@@ -1330,6 +1330,4 @@
     yield C.addFlag("vex_ally_line", 1);
     yield C.say(VEX_ALLY_LINES[i], { name: "VEX" });
   });
-
-  MQ.log && MQ.log("[nw] npc scripts registered: " + Object.keys(N).filter(function (k) { return k.indexOf("nw_") === 0; }).length);
 })();

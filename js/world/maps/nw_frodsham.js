@@ -94,7 +94,8 @@
   W.defineMap("frodsham", {
     name: "Frodsham", region: "mersey", outdoor: true, music: "town_frodsham", weatherZone: "mersey",
     ambience: "town", dialogue: "town_frodsham",
-    legend: T, layers: c.layers(),
+    legend: NW.town({ "a": "marsh", "J": "marsh_pool", "\\": "radio_mast" }),
+    layers: c.layers(),
     spawnPoint: { x: 24, y: 22 },
     healPoint: { x: 39, y: 19 },
     landmark: { name: "Frodsham", x: 24, y: 21 },

@@ -144,7 +144,7 @@
       { x: 13, y: 40, text: ["NORTON PRIORY — Augustinian, 1134. Now a museum, a walled garden and a twelve-foot stone giant."] }
     ],
     items: [
-      { x: 4, y: 4, item: "capsule_net", n: 4, hidden: true, flag: "item_runcorn_1" },
+      { x: 58, y: 12, item: "capsule_net", n: 4, hidden: true, flag: "item_runcorn_1" },
       { x: 60, y: 42, item: "elixir", n: 2, flag: "item_runcorn_2" },
       { x: 33, y: 40, item: "antidote", n: 5, flag: "item_runcorn_3" },
       { x: 3, y: 42, item: "toxic_sachet", n: 1, hidden: true, flag: "item_runcorn_4" },
@@ -289,7 +289,7 @@
       { x: 26, y: 2, text: ["A maintenance gantry, and on the screen bolted to it, one number plate, repeated four hundred times.",
         "It is yours. You have never driven over this bridge. You have never driven."] }
     ],
-    items: [{ x: 30, y: 30, item: "elixir", n: 3, hidden: true, flag: "item_runcorn_gateway_1" }],
+    items: [{ x: 26, y: 30, item: "elixir", n: 3, hidden: true, flag: "item_runcorn_gateway_1" }],
     npcs: [
       { id: "npc_gateway_boss", x: 20, y: 20, dir: "down", sprite: "npc_darkbyte", behaviour: "still", script: "nw_gateway_boss" }
     ],
@@ -384,7 +384,7 @@
     ],
     npcs: [
       { id: "npc_runcorn_enfys", x: 12, y: 24, dir: "right", sprite: "npc_historian", behaviour: "still", trainer: "tr_runcorn_norton_priory_1", sight: 0, script: "nw_priory_gardener" },
-      { id: "npc_runcorn_priory_kid", x: 26, y: 25, dir: "up", sprite: "npc_kid", behaviour: "wander", radius: 3,
+      { id: "npc_runcorn_priory_kid", x: 26, y: 21, dir: "up", sprite: "npc_kid", behaviour: "wander", radius: 3,
         say: ["There's carp in the pond older than my mum. That's what the sign said before somebody nicked the sign."] }
     ]
   }, np, NW.land({ "%": "wall_stone_sandstone", "_": "path_flag", "N": "noticeboard", "M": "statue", "'": "flowers_white", "l": "flowers_yellow", "o": "flowers_red", "9": "water_pond", "g": "gate_wood" }));
