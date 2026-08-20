@@ -98,21 +98,29 @@ self.addEventListener("activate", (e) => {
   );
 });
 
+// Own files are network-first so a reload always lands on the newest build;
+// the cache is the offline fallback, not the source of truth. Anything from
+// another origin stays cache-first.
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
+  let sameOrigin = false;
+  try { sameOrigin = new URL(e.request.url).origin === location.origin; } catch (err) { sameOrigin = false; }
+
+  const fromCache = () => caches.match(e.request, { ignoreSearch: true }).then((hit) => {
+    if (hit) return hit;
+    if (e.request.mode === "navigate") return caches.match("index.html");
+    throw new Error("offline");
+  });
+
+  if (!sameOrigin) { e.respondWith(fromCache()); return; }
+
   e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then((hit) => {
-      if (hit) return hit;
-      return fetch(e.request).then((res) => {
-        if (res.ok && new URL(e.request.url).origin === location.origin) {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, copy));
-        }
-        return res;
-      }).catch(() => {
-        if (e.request.mode === "navigate") return caches.match("index.html");
-        throw new Error("offline");
-      });
-    })
+    fetch(e.request).then((res) => {
+      if (res && res.ok) {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
+      }
+      return res;
+    }).catch(fromCache)
   );
 });

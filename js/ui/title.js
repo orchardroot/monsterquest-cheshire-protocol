@@ -46,7 +46,9 @@
     if (k === undefined) return;
     if (k === "Backspace") { nameSc.del(); nameSc.suppress = 2; if (e.preventDefault) e.preventDefault(); return; }
     if (k === "Enter") { nameSc.suppress = 2; nameSc.done(); if (e.preventDefault) e.preventDefault(); return; }
-    if (k === "Escape") { nameSc.suppress = 2; nameSc.cancel(); if (e.preventDefault) e.preventDefault(); return; }
+    // Escape is the START glyph on a keyboard, and the footer promises
+    // "ESC Done" — so it commits the name. X (the B button) backs out.
+    if (k === "Escape") { nameSc.suppress = 2; nameSc.done(); if (e.preventDefault) e.preventDefault(); return; }
     if (k.length === 1 && /[A-Za-z0-9 '\-.]/.test(k)) {
       nameSc.type(k);
       nameSc.suppress = 2;
@@ -111,6 +113,8 @@
       if (res.selected !== undefined) { nameSc.press(nameSc.keys[res.selected]); return; }
     }
     if (MQ.Input.pressed("start")) { MQ.Input.consume("start"); nameSc.done(); }
+    // the header chevron is drawn on this screen, so it has to work too
+    if (TH().backPressed()) { nameSc.cancel(); return; }
   };
 
   nameSc.draw = function (ctx) {
