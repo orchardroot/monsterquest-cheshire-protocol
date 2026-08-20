@@ -1132,7 +1132,7 @@
     yield C.unlock("railcard");
     yield C.setFlag("rail_fast_travel", true);
     yield C.setFlag("cambrian_ticket", true);
-    yield C.sfx("fanfare_quest");
+    yield C.sfx("achievement");
     yield C.notify("Railcard: fast travel between stations you have stood in.");
     yield C.notify("Cambrian ticket: the line to Wales.");
   });

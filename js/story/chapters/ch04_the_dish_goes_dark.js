@@ -334,7 +334,7 @@
     yield C.setFlag("badge_bear", true);
     yield C.giveItem("anchor_bear", 1);
     yield C.giveItem("tm_bear_hug", 1);
-    yield C.sfx("fanfare_badge");
+    yield C.sfx("achievement");
     yield C.notify("BEAR badge obtained.");
     if (MQ.Trainer && MQ.Trainer.addBadge) yield C.custom(function () { MQ.Trainer.addBadge("badge_bear"); });
     else if (MQ.Trainer && MQ.Trainer.badges && MQ.Trainer.badges.add) yield C.custom(function () { MQ.Trainer.badges.add("badge_bear"); });

@@ -182,7 +182,7 @@
     warps: [
       { x: 14, y: 23, to: "jodrell_bank", tx: 23, ty: 26, dir: "down", kind: "door" },
       { x: 15, y: 23, to: "jodrell_bank", tx: 23, ty: 26, dir: "down", kind: "door" },
-      { x: 1, y: 20, to: "jodrell_bank_tower", tx: 4, ty: 32, dir: "up", kind: "stairs" }
+      { x: 1, y: 20, to: "jodrell_bank_tower", tx: 4, ty: 31, dir: "up", kind: "stairs" }
     ],
     signs: [
       { x: 28, y: 20, text: ["THE AZIMUTH LOG.",

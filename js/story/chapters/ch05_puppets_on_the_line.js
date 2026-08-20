@@ -415,7 +415,7 @@
     yield C.setFlag("badge_kernel", true);
     yield C.giveItem("anchor_kernel", 1);
     yield C.giveItem("tm_firebox_roar", 1);
-    yield C.sfx("fanfare_badge");
+    yield C.sfx("achievement");
     yield C.notify("KERNEL badge obtained.");
     if (MQ.Trainer && MQ.Trainer.addBadge) yield C.custom(function () { MQ.Trainer.addBadge("badge_kernel"); });
     else if (MQ.Trainer && MQ.Trainer.badges && MQ.Trainer.badges.add) yield C.custom(function () { MQ.Trainer.badges.add("badge_kernel"); });
