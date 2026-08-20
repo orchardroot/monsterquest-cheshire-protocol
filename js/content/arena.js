@@ -487,7 +487,7 @@
       }
       A.addMarks(t.marks);
       if (firstClear && MQ.Trainer && MQ.Trainer.grantPerkPoints) MQ.Trainer.grantPerkPoints(1);
-      A.xp(20 + Arena.tierIndex(t.id) * 15, "arena");
+      // trainer XP + stats come off arena:clear in the achievements engine
       A.emit("arena:clear", { tier: t.id, run: run, first: firstClear });
     }
     // Chips are paid whether or not you cleared — the crowd got its money's worth.
