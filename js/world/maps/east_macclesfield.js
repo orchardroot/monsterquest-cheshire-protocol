@@ -368,6 +368,7 @@
   for (let x = 2; x < 22; x += 4) mill.fill("g", x, 1, 2, 1, "v");
   for (let y = 3; y < 12; y += 3) { mill.fill("g", 2, y, 8, 1, "L"); mill.fill("g", 13, y, 8, 1, "L"); }
   mill.fill("g", 2, 13, 3, 1, "R"); mill.fill("g", 19, 13, 3, 1, "R");
+  mill.set("g", 22, 15, "K");
   mill.set("g", 11, 16, "D"); mill.set("g", 12, 16, "D");
   mill.fill("g", 11, 14, 2, 2, "M");
   mill.set("g", 6, 15, "K"); mill.set("g", 17, 15, "K");
@@ -390,7 +391,7 @@
         say: ["Twenty-six looms and every one of them punch-card driven.", "First programmable thing in Cheshire and it made ties."] }
     ],
     signs: [
-      { x: 20, y: 12, text: ["PATTERN BOOK — MISSING", "A card in the case: 'Removed for conservation.'", "Nobody at the museum wrote that card."] }
+      { x: 19, y: 13, text: ["PATTERN BOOK — MISSING", "A card in the case: 'Removed for conservation.'", "Nobody at the museum wrote that card."] }
     ],
     items: [{ x: 22, y: 15, item: "silk_cocoon", n: 1, hidden: true, flag: "item_paradise_mill_1" }],
     encounters: { grass: null }

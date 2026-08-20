@@ -73,6 +73,8 @@
   c.set("g", 44, 13, "P");
   c.set("g", 19, 36, "P");
 
+  c.set("g", 36, 17, "N");
+
   W.defineMap("bollington", {
     name: "Bollington", region: "east", outdoor: true, music: "town_bollington", weatherZone: "east",
     ambience: "town", dialogue: "town_bollington",
@@ -207,7 +209,7 @@
       { id: "npc_kerridge_bram", x: 17, y: 11, dir: "down", sprite: "npc_cultist", behaviour: "look", radius: 4, trainer: "tr_kerridge_hill_3", sight: 4, cond: "quest.case_02_white_nancy >= 1" },
       { id: "npc_kerridge_painter", x: 20, y: 6, dir: "left", sprite: "npc_kid", behaviour: "still", script: "east_kerridge_painter", cond: "quest.case_02_white_nancy >= 1 && time.night" }
     ],
-    restPoints: [{ x: 14, y: 6, flag: "bigboy_sat_kerridge" }],
+    restPoints: [{ x: 14, y: 5, flag: "bigboy_sat_kerridge" }],
     triggers: [
       { x: 14, y: 7, w: 7, h: 1, script: "east_white_nancy", once: "white_nancy_seen", cond: "!white_nancy_seen" }
     ]

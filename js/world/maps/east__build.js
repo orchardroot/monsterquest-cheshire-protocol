@@ -171,5 +171,42 @@
   };
   B.TOWN = TOWN;
 
+  // Merge helper: every east map builds its legend from TOWN (or CAVE) plus a
+  // handful of local chars, so a char means the same thing across the region.
+  function merge(base, extra) {
+    const out = {}, bk = Object.keys(base);
+    for (let i = 0; i < bk.length; i++) out[bk[i]] = base[bk[i]];
+    if (extra) { const ek = Object.keys(extra); for (let i = 0; i < ek.length; i++) out[ek[i]] = extra[ek[i]]; }
+    return out;
+  }
+  B.merge = merge;
+  B.legend = function (extra) { return merge(TOWN, extra); };
+
+  // Shared outdoor extras: moor, crag, water and woodland chars used by the
+  // hill towns (Kerridge, Lyme, Tegg's Nose, the Edge) and the bog.
+  const LAND = {
+    ";": "grass_moor", "0": "moor_heather", "1": "moor_bog", "2": "moor_path", "3": "moor_stone",
+    "4": "rock_moor", "5": "boulder", "6": "cliff_face", "7": "cliff_top", "8": "cliff_climb",
+    "9": "crag", "E": "cave_entrance", "Q": "fish_spot", "Y": "boardwalk", "U": "marsh",
+    "J": "marsh_pool", "!": "water_river", "?": "shallows", ":": "path_gravel",
+    "(": "tree_pine", ")": "tree_pine_top", "<": "bridge_wood", ">": "ledge_down",
+    "[": "log", "]": "stump", "{": "berry_bush", "}": "mushroom", "|": "pine_forest_floor",
+    "$": "water_pond"
+  };
+  B.LAND = LAND;
+  B.landLegend = function (extra) { return merge(merge(TOWN, LAND), extra); };
+
+  // Underground: the Edge Caverns, the pit adit, the quarry cutting.
+  const CAVE = {
+    ".": "cave_floor", ",": "cave_floor_dark", "_": "mine_floor", "#": "cave_wall", "^": "cave_wall_top",
+    "~": "water", "e": "water_edge", "s": "shallows", "z": "stalag", "o": "ore", "c": "crystal",
+    "r": "rock_small", "R": "boulder", "m": "moss_rock", "E": "cave_entrance", "L": "mine_prop",
+    "-": "mine_cart_rail_h", "|": "mine_cart_rail_v", "K": "mine_cart", "N": "sign",
+    "u": "door_stairs_up", "d": "door_stairs_down", "b": "bridge_wood", "8": "cliff_climb",
+    "w": "wall_stone_sandstone", "x": "bridge_stone", "S": "steps", " ": null
+  };
+  B.CAVE = CAVE;
+  B.caveLegend = function (extra) { return merge(CAVE, extra); };
+
   MQ.EastBuild = B;
 })();

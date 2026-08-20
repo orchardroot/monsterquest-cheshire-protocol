@@ -295,7 +295,27 @@
     leader: { badge: "badge_packet", town: "wilmslow", type: "electric", tm: "tm_live_rail" },
     house: {
       note: "STATIC TERRAIN IS PERMANENT. THE RACKS DO NOT CARE WHOSE FAULT IT IS.",
-      terrain: "static", permanent: true, reboot: true
+      terrain: "static", permanent: true, reboot: true,
+      jamAgent: { id: "sleet", turns: 3 }
+    },
+    boss: {
+      cannotCatch: true,
+      phases: [
+        { hpFrac: 0.65, events: [
+          { say: "Ada does not look up. \"Change is going badly. Escalating.\"" },
+          { setTerrain: "static", turns: 99 },
+          { boostSelf: { spe: 1 } }
+        ] },
+        { hpFrac: 0.35, events: [
+          { say: "\"Right. Sysadmin's Reboot. Everybody hates this and everybody has it in their runbook.\"" },
+          { healSelf: 0.25 },
+          { boostSelf: { spa: 1, def: 1 } }
+        ] },
+        { hpFrac: 0.12, events: [
+          { say: "\"Uptime one thousand one hundred and four days. I am not being the reason it resets.\"" },
+          { boostSelf: { atk: 1, spa: 1 } }
+        ] }
+      ]
     },
     intro: [
       "Ada. Uptime's my religion and you're an unplanned change.",
@@ -444,4 +464,68 @@
     after: ["Don't look at me like that, root user. I'm iterating."],
     rematch: { party: p("gnawlord:14,fulgurcat:14,spindrake:16"), every: 2 }
   });
+
+  // ---- the corners the first pass left empty ------------------------------
+  tr("tr_prestbury_hedge_maze_1", "granny", "npc_tourist", "Maze-lost Delyth", "prickpip:8,bobbinet:8", [
+    "I have been in here since nine and I would like to fight somebody about it.",
+    "Good. I needed that. I am still lost.",
+    "You are also lost. We are lost together and that is materially better.",
+    "Left at the stone. That much I have proved twice and disproved once."
+  ], { ai: "random" });
+
+  tr("tr_lyme_park_bowstones_1", "walker", "npc_walker", "Moorwalker Tam", "mistewe:9,grousel:9,harrowlop:10", [
+    "Nobody comes up here by accident. So you're either lost or you're interested.",
+    "Lost, then.",
+    "Interested. Right. Sit down and I'll tell you about the stones.",
+    "Four theories. Two of them are rubbish and I won't say which two."
+  ]);
+
+  tr("tr_shutlingsloe_1", "fellrunner", "npc_fellrunner", "Fell-runner Bryn", "galewing:16,moorcock:16,mistewe:15", [
+    "Summit and back. You're going up, I'm coming down, so we may as well.",
+    "Down beats up. It always has.",
+    "Up beat down. That's rare and I'll be thinking about it at work.",
+    "Ceri's record is eleven-oh-four and Ceri will tell you within a minute of meeting her."
+  ], { ai: "smart" });
+
+  tr("tr_teggs_nose_3", "walker", "npc_walker", "Biker Hal", "harrowlop:15,nancylith:15", [
+    "Twelve miles of bends and a limit somebody set because of somebody.",
+    "Slow and still ahead of you.",
+    "Slow and behind you. That's fine. That's the whole point of slow.",
+    "I ride it for the road now, not the corners. Took me two funerals to learn that."
+  ]);
+
+  tr("tr_styal_4", "birder", "npc_birder", "Spotter Ola", "sheepwire:12,botling:12,heronet:11", [
+    "Eleven years of departures in seven notebooks. Try me on anything with wings.",
+    "Logged. Filed. Beaten.",
+    "Logged anyway. Everything gets logged.",
+    "There's a burst on my scanner that isn't a plane and comes every ninety seconds. Ask me about it."
+  ], { ai: "smart" });
+
+  tr("tr_wilmslow_4", "stuffer", "npc_stuffer", "Stuffer Rhi", "puppetacct:12,proxling:12,peepcam:11", [
+    "Nineteen hotspots, one name, twenty thousand commuters. It's not hacking, it's carpentry.",
+    "Throughput holds.",
+    "Throughput's down. My mate said this bit was legal.",
+    "It isn't legal. I checked. After. I checked after."
+  ], { ai: "greedy" });
+
+  tr("tr_lindow_moss_5", "stuffer", "npc_stuffer", "Stuffer Owain", "peatkin:13,bogleap:13,puppetacct:12", [
+    "You're on the boards. Get off the boards.",
+    "Off the boards, then. Mind the peat.",
+    "Fine. Look at it. Everybody should look at it. That's what he says and I think he means it.",
+    "Twelve thousand a minute and not one of them stolen. He says that a lot. He says it to himself as well."
+  ], { ai: "greedy" });
+
+  tr("tr_alderley_edge_caverns_b2_1", "caver", "npc_caver", "Caver Nesta", "gloamite:14,cuprabug:14,shriekwing:15", [
+    "Rope's mine, the survey's ours, and the level below this one is nobody's.",
+    "Down and out. Sign the book next time.",
+    "Signed. Good. Now go up the way you came and do not run.",
+    "There's boot polish on rock nobody's mapped. This decade's polish."
+  ], { ai: "smart" });
+
+  tr("tr_alderley_edge_caverns_b3_1", "ghost", "npc_ghost_trainer", "The Nine-and-Thirtieth", "dolmenor:58,mowstane:58,gloamguard:60", [
+    "...",
+    "It lies back down without hurry, the way a thing does that has all the time there is.",
+    "It inclines its head, once, and the whole hall inclines with it.",
+    "A hundred and forty knights and a hundred and thirty-nine mares. It has been counting for four hundred years."
+  ], { ai: "smart" });
 })();

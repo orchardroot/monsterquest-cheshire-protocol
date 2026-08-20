@@ -270,4 +270,48 @@
     ["puddlish", 10, 14, 40, { tier: "common" }], ["perchip", 11, 15, 30, { tier: "uncommon" }],
     ["torrentide", 12, 16, 20, { tier: "rare", rare: true }], ["bellmere", 16, 20, 10, { tier: "legendary", rare: true }]
   ]);
+
+  // ---- variants and fishing the first pass left thin ---------------------
+  t("prestbury_grass_night", G, 0.08, [
+    ["peepcam", 6, 9, 30], ["flitmoth", 5, 8, 26], ["sparkit", 5, 8, 20], ["webshade", 6, 9, 16], ["fulgurcat", 9, 12, 8, rare]
+  ]);
+  t("fish_prestbury", W, 1, [
+    ["puddlish", 5, 9, 42, { tier: "common" }], ["perchip", 6, 10, 30, { tier: "uncommon" }],
+    ["torrentide", 8, 12, 18, { tier: "rare", rare: true }], ["otterkin", 9, 13, 10, { tier: "rare", rare: true }]
+  ]);
+  t("poynton_grass_night", G, 0.09, [
+    ["flitmoth", 5, 8, 32], ["pitpony", 5, 8, 24], ["squeakwing", 6, 9, 20], ["webshade", 6, 9, 16], ["peepcam", 7, 10, 8, rare]
+  ]);
+  t("lyme_park_grass_night", G, 0.13, [
+    ["owlume", 8, 11, 28], ["mistwisp", 8, 11, 24], ["piphart", 7, 10, 22], ["harrowlop", 8, 11, 18], ["stagwire", 10, 12, 8, rare]
+  ]);
+  t("lyme_park_grass_wind", G, 0.14, [
+    ["galewing", 8, 11, 34], ["grousel", 7, 10, 26], ["mistewe", 7, 10, 24], ["moorcock", 9, 12, 16]
+  ]);
+  t("fish_teggs_nose", W, 1, [
+    ["perchip", 12, 16, 38, { tier: "common" }], ["puddlish", 12, 16, 24, { tier: "common" }],
+    ["torrentide", 14, 18, 26, { tier: "uncommon" }], ["piketide", 16, 20, 12, { tier: "rare", rare: true }]
+  ]);
+  t("shutlingsloe_grass_wind", G, 0.16, [
+    ["galewing", 15, 19, 40], ["moorcock", 15, 19, 28], ["harrowlop", 15, 19, 20], ["gargoylet", 17, 20, 12, rare]
+  ]);
+  t("styal_water_night", W, 0.13, [
+    ["sluiceling", 10, 14, 34], ["otterkin", 11, 14, 26], ["mistwisp", 11, 14, 24], ["millrace", 14, 16, 16, rare]
+  ]);
+  t("wilmslow_grass_night", G, 0.08, [
+    ["flitmoth", 8, 12, 30], ["peepcam", 9, 12, 26], ["webshade", 9, 12, 22], ["puppetacct", 10, 13, 14], ["fulgurcat", 12, 15, 8, rare]
+  ]);
+  t("fish_wilmslow", W, 1, [
+    ["perchip", 8, 12, 40, { tier: "common" }], ["puddlish", 8, 12, 28, { tier: "common" }],
+    ["torrentide", 10, 14, 22, { tier: "uncommon" }], ["otterkin", 11, 15, 10, { tier: "rare", rare: true }]
+  ]);
+  t("prestbury_hedge_maze_grass_night", G, 0.15, [
+    ["webshade", 6, 9, 32], ["bobbinet", 6, 9, 26], ["flitmoth", 6, 9, 22], ["bramblehog", 9, 12, 12, rare], ["spindrake", 7, 10, 8, rare]
+  ]);
+  t("teggs_nose_grass_wind", G, 0.16, [
+    ["galewing", 13, 17, 36], ["moorcock", 13, 17, 26], ["harrowlop", 13, 17, 22], ["nancylith", 14, 18, 16]
+  ]);
+  t("alderley_edge_caverns_b1_water", W, 0.12, [
+    ["gloamite", 11, 15, 40], ["cuprabug", 11, 15, 30], ["otterkin", 12, 15, 20], ["verdigrit", 14, 17, 10, rare]
+  ]);
 })();

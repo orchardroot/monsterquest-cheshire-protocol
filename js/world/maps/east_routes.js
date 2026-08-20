@@ -185,6 +185,9 @@
     spawnPoint: { x: 59, y: 12 },
     encounters: { grass: "route_bollington_poynton_grass", water: null },
     landmark: { name: "Middlewood Way", x: 30, y: 12 },
+    triggers: [
+      { x: 30, y: 12, w: 3, h: 2, script: "east_r2_escort", cond: "!case_03_done" }
+    ],
     warps: [
       { x: 61, y: 12, to: "bollington", tx: 1, ty: 20, dir: "right", kind: "edge" },
       { x: 61, y: 11, to: "bollington", tx: 1, ty: 20, dir: "right", kind: "edge" },
@@ -219,7 +222,7 @@
   c.fill("g", 0, 0, 26, 4, "c"); c.fill("g", 0, 8, 26, 4, "c");
   c.fill("g", 0, 4, 26, 4, "v");
   c.set("g", 0, 5, "E"); c.set("g", 25, 6, "E");
-  c.fill("g", 8, 4, 2, 4, "r"); c.fill("g", 16, 5, 2, 3, "r");
+  c.fill("g", 8, 4, 2, 3, "r"); c.fill("g", 16, 5, 2, 3, "r");
   route("route_bollington_poynton_tunnel", {
     name: "Middlewood Tunnel", ambience: "cave", region: "interior", outdoor: false,
     music: "dungeon_cave", dialogue: "town_bollington", dark: true,
@@ -330,7 +333,7 @@
       { x: 25, y: 6, item: "capsule_basic", n: 2, flag: "item_route_macc_prestbury_2" }
     ],
     npcs: [
-      { id: "npc_r4_meg", x: 20, y: 17, dir: "up", sprite: "npc_fisher", behaviour: "still", trainer: "tr_route_macc_prestbury_1", sight: 3 },
+      { id: "npc_r4_meg", x: 19, y: 17, dir: "up", sprite: "npc_fisher", behaviour: "still", trainer: "tr_route_macc_prestbury_1", sight: 3 },
       { id: "npc_r4_sion", x: 27, y: 13, dir: "right", sprite: "npc_walker", behaviour: "look", radius: 4, trainer: "tr_route_macc_prestbury_2", sight: 4 },
       { id: "npc_r4_heron", x: 15, y: 18, dir: "left", sprite: "heron", behaviour: "still",
         say: ["The heron does not move. The heron has never moved. The heron will outlive the county."] }
@@ -446,15 +449,14 @@
   c.fill("g", 14, 0, 3, 1, "+"); c.fill("g", 14, 33, 3, 1, "+");
   c.fill("g", 1, 1, 30, 32, ".");
   // the Bollin through the park, paths on both banks
-  c.fill("g", 13, 1, 5, 32, "W");
-  c.fill("g", 12, 1, 1, 32, "e"); c.fill("g", 18, 1, 1, 32, "e");
+  c.fill("g", 13, 2, 5, 30, "W");
+  c.fill("g", 12, 2, 1, 30, "e"); c.fill("g", 18, 2, 1, 30, "e");
   c.fill("g", 9, 1, 3, 32, "+");
   c.fill("g", 19, 1, 3, 32, "+");
   // stepping stones and a footbridge
-  c.fill("g", 13, 14, 5, 1, "s");
-  c.fill("g", 13, 25, 5, 1, "X");
-  c.fill("g", 14, 0, 3, 1, "+"); c.fill("g", 14, 33, 3, 1, "+");
-  c.fill("g", 12, 0, 7, 1, "+"); c.fill("g", 12, 33, 7, 1, "+");
+  c.fill("g", 12, 14, 7, 1, "s");
+  c.fill("g", 12, 25, 7, 1, "X");
+  c.fill("g", 9, 0, 13, 2, "+"); c.fill("g", 9, 32, 13, 2, "+");
   c.fill("g", 2, 3, 7, 6, '"'); c.fill("g", 23, 4, 7, 7, '"');
   c.fill("g", 2, 18, 6, 7, '"'); c.fill("g", 23, 17, 7, 8, '"');
   c.fill("g", 3, 28, 6, 4, '"');
@@ -487,7 +489,10 @@
     npcs: [
       { id: "npc_r6_perry", x: 20, y: 13, dir: "left", sprite: "npc_fisher", behaviour: "still", trainer: "tr_route_wilmslow_styal_1", sight: 3 },
       { id: "npc_r6_kwame", x: 10, y: 18, dir: "down", sprite: "npc_birder", behaviour: "look", radius: 4, trainer: "tr_route_wilmslow_styal_2", sight: 4 },
-      { id: "npc_r6_troll", x: 15, y: 26, dir: "up", sprite: "npc_kid", behaviour: "still",
+      { id: "npc_r6_gate_1", x: 20, y: 6, dir: "left", sprite: "npc_shadow_it", behaviour: "still", script: "east_carrs_gate_1" },
+      { id: "npc_r6_gate_2", x: 10, y: 15, dir: "right", sprite: "npc_dev", behaviour: "still", script: "east_carrs_gate_2" },
+      { id: "npc_r6_gate_3", x: 20, y: 30, dir: "left", sprite: "npc_ranger", behaviour: "still", script: "east_carrs_gate_3" },
+      { id: "npc_r6_troll", x: 19, y: 26, dir: "up", sprite: "npc_kid", behaviour: "still",
         say: ["I'm the footbridge troll. You have to answer a riddle.", "...I haven't got one. Just go over. Sorry."] }
     ]
   }, c);
