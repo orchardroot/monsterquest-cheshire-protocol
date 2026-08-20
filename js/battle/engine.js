@@ -154,7 +154,7 @@
       stages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 },
       conf: 0, trapped: 0, trapper: null, flinch: false, protect: false, protectRow: 0,
       charging: null, chargeMoveId: null, recharge: false, choiceLock: null,
-      taunt: 0, disabled: {}, lastMove: null, lastHitBy: null, moved: false,
+      taunt: 0, disabled: {}, cooldowns: {}, lastMove: null, lastHitBy: null, moved: false,
       abilityOff: 0, brinkLeft: undefined, failSafeUsed: false, payloadSpent: false,
       blanketUsed: false, endure: false, semiInvuln: null, turnsIn: 0,
       critBoost: 0, guard: false, deferred: false, killChainTurn: -1,
@@ -488,7 +488,15 @@
     BE.hook(b, mon, "onSwitchOut", {});
     const v = b.vol(mon);
     v.choiceLock = null;
+    dropMimic(mon);
     b.vols[mon.uid] = newVol();
+  }
+
+  // `mimic_type` (Borrowed Face) writes the per-battle typesOverride
+  // that changeForm also uses. Only ever undo the one the move set:
+  // a boss form's override has to survive.
+  function dropMimic(mon) {
+    if (mon && mon.typesMimicked) { mon.typesOverride = null; mon.typesMimicked = false; }
   }
 
   // =============================================================
@@ -596,6 +604,13 @@
     }
     if (v.chargeMoveId) move = moveData(v.chargeMoveId);
 
+    // A move on cooldown cannot be used again yet (Patch Tuesday).
+    if (act.type === "move" && slot && v.cooldowns[move.id] > 0) {
+      b.msg(move.name + " has not come back up yet.");
+      v.moved = true;
+      return;
+    }
+
     if (!preMoveChecks(b, user, move)) { v.moved = true; return; }
 
     // Sleep Talk picks a different move entirely.
@@ -651,6 +666,11 @@
       user: user, move: move, target: targets[0] || null, damage: 0, hits: 0,
       category: move.cat, userMovedFirst: b.firstMover === user.uid, failed: false
     };
+
+    // `mimic_type` lands before the hit so the borrowed typing is
+    // already the user's when this very move's damage is worked out.
+    const mimic = BE.moveFlag(move, "mimic_type", b, ctx);
+    if (mimic && targets.length) { ctx.target = targets[0]; BE.runEffect(b, ctx, mimic); }
 
     if (move.cat === "status" && targets.length && targets[0] !== user) {
       // Honeypot turns a status move back on its user.
@@ -773,7 +793,10 @@
       const e = effects[i];
       if (e.kind === "multihit" || e.kind === "multi" || e.kind === "charge" || e.kind === "crit_only" ||
         e.kind === "never_miss" || e.kind === "high_crit" || e.kind === "weight" || e.kind === "hp_scaled" ||
-        e.kind === "damage") continue;
+        e.kind === "damage" ||
+        // resolved before the hit / before the turn instead
+        e.kind === "mimic_type" || e.kind === "priority" || e.kind === "weather_boost" ||
+        e.kind === "terrain_boost") continue;
       // Damage-dependent effects need a landed hit.
       if ((e.kind === "drain" || e.kind === "recoil" || e.kind === "leech") && !ctx.damage) continue;
       if (move.power && !ctx.hits && e.kind !== "protect" && e.kind !== "endure") continue;
@@ -1367,6 +1390,8 @@
       if (v.taunt > 0) v.taunt--;
       const dk = Object.keys(v.disabled);
       for (let d = 0; d < dk.length; d++) { if (v.disabled[dk[d]] > 0) v.disabled[dk[d]]--; }
+      const ck = Object.keys(v.cooldowns);
+      for (let c = 0; c < ck.length; c++) { if (v.cooldowns[ck[c]] > 0) v.cooldowns[ck[c]]--; }
       v.turnsIn++;
     }
   }
@@ -1447,6 +1472,11 @@
       move = moveData(v.chargeMoveId || (slot && slot.id));
     }
     let pri = move.priority || 0;
+    // `priority {delta}` as a move EFFECT (MEADOW's Zoomies), which may
+    // carry a `when:` of its own — evaluated here so the bracket is
+    // right before anybody acts.
+    const pe = BE.moveFlag(move, "priority", b, { user: mon, move: move, target: (b.foesOf(mon) || [])[0] || null });
+    if (pe) pri += (pe.delta === undefined ? 1 : pe.delta);
     const a = BE.abilityImpl(BE.abilityOf(b, mon));
     if (a && a.onModifyPriority) { const r = a.onModifyPriority(b, mon, { move: move }); if (typeof r === "number") pri += r; }
     const v2 = b.vol(mon);
@@ -1740,7 +1770,7 @@
     b.result = result;
     // Tidy the volatile bookkeeping off the live party objects.
     const all = b.sides[0].party.concat(b.sides[1].party);
-    for (let i = 0; i < all.length; i++) { if (all[i]) { delete all[i]._faintHandled; delete all[i]._fainted; all[i].overdrive = b.rules.overdriveCarry ? all[i].overdrive : 0; } }
+    for (let i = 0; i < all.length; i++) { if (all[i]) { delete all[i]._faintHandled; delete all[i]._fainted; dropMimic(all[i]); all[i].overdrive = b.rules.overdriveCarry ? all[i].overdrive : 0; } }
     b.emit("end", { result: result });
     return result;
   }
@@ -1839,9 +1869,10 @@
         const list = mon.moves || [];
         for (let i = 0; i < list.length; i++) {
           const md = moveData(list[i].id);
-          const disabled = list[i].pp <= 0 || (v.disabled[list[i].id] > 0) ||
+          const cooling = v.cooldowns[list[i].id] > 0 ? v.cooldowns[list[i].id] : 0;
+          const disabled = list[i].pp <= 0 || (v.disabled[list[i].id] > 0) || cooling > 0 ||
             (v.choiceLock && v.choiceLock !== list[i].id) || (v.taunt > 0 && md.cat === "status");
-          moves.push({ index: i, id: list[i].id, name: md.name, type: md.type, cat: md.cat, pp: list[i].pp, ppMax: list[i].ppMax, power: md.power, acc: md.acc, disabled: !!disabled, desc: md.desc });
+          moves.push({ index: i, id: list[i].id, name: md.name, type: md.type, cat: md.cat, pp: list[i].pp, ppMax: list[i].ppMax, power: md.power, acc: md.acc, disabled: !!disabled, cooldown: cooling, desc: md.desc });
         }
       }
       const switches = [];

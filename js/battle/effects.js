@@ -886,6 +886,178 @@
     };
   });
 
+
+  // =============================================================
+  // EFFECT CONDITIONS — the `when:` string (SYSTEMS-SPEC §4)
+  // =============================================================
+  // Any effect object may carry `when: "<expression>"`. The effect is
+  // skipped entirely unless the expression is true at the moment it
+  // would fire, which is how one move can carry two mutually exclusive
+  // clauses (Brine Jet: make rain if it is not raining, otherwise ride
+  // it) without both going off at once.
+  //
+  // GRAMMAR. Exactly MQ.Flags' expression syntax — the same tokenizer
+  // and parser, so no new language: identifiers, dotted paths,
+  // `name(args)` calls, numbers, 'quoted strings', `!`, `&&`, `||`,
+  // parentheses, `+ -`, and the comparisons `== != > >= < <=`.
+  // Identifiers resolve against the BATTLE first and fall through to
+  // the story flag store only if nothing here claims them:
+  //
+  //   weather                  weather id ("rain"|"sun"|"fog"|"wind"|"snow") or "" for none
+  //   weather.<kind>           true while that weather is up   ("!weather.rain")
+  //   weather.none             true when the sky is clear
+  //   terrain, terrain.<kind>, terrain.none      as above for terrain
+  //   time.<dawn|day|dusk|night>                 the game-clock phase
+  //   turn                     battle turn, 1-based            ("turn>3")
+  //   kind                     'wild' | 'trainer' | 'boss' | 'arena'
+  //   first                    true when the user is moving first this turn
+  //   move.type, move.cat      the move being used
+  //   self / user              the acting monster    ┐ each of these takes
+  //   target                   the effect's subject  ├ the sub-paths below
+  //   foe                      the opposing monster  ┘
+  //     .hp                    current HP as a percentage 0-100
+  //     .hpBelow(pct)          true when hp% is strictly below pct  ("self.hpBelow(33)")
+  //     .hpAbove(pct)
+  //     .level
+  //     .status                true when statused at all           ("target.status")
+  //     .status.<psn|tox|par|brn|slp|frz|cnf>    that specific one
+  //     .type.<type>           true when the monster has that type
+  //     .fainted
+  //
+  // A missing/empty condition is true. A malformed one is false and
+  // warns once through MQ.warn — a typo must not silently buff a move.
+  function whenMon(b, ctx, which) {
+    if (which === "self" || which === "user") return ctx.user || null;
+    if (which === "target") return ctx.target || ctx.user || null;
+    // "foe" is the opponent of the acting monster, which is usually but
+    // not always the effect's target (self-targeted clauses on an
+    // attacking move still want to ask about the thing they just hit).
+    if (ctx.target && ctx.user && ctx.target !== ctx.user) return ctx.target;
+    if (b.foesOf && ctx.user) return b.foesOf(ctx.user)[0] || null;
+    return null;
+  }
+  function whenNum(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+  function whenMonField(b, mon, rest, args) {
+    if (!mon) return false;
+    const dot = rest.indexOf(".");
+    const head = dot >= 0 ? rest.slice(0, dot) : rest;
+    const tail = dot >= 0 ? rest.slice(dot + 1) : "";
+    const max = (b.maxHp ? b.maxHp(mon) : mon.stats && mon.stats.hp) || 1;
+    const pct = (mon.hp / max) * 100;
+    switch (head) {
+      case "": return mon.hp > 0;
+      case "hp": return pct;
+      case "hpBelow": return pct < whenNum(args && args[0]);
+      case "hpAbove": return pct > whenNum(args && args[0]);
+      case "level": return mon.level || 0;
+      case "fainted": return mon.hp <= 0;
+      case "status": {
+        const conf = b.vol ? (b.vol(mon).conf || 0) > 0 : false;
+        if (!tail) return !!mon.status || conf;
+        if (tail === "cnf") return conf;
+        return mon.status === tail;
+      }
+      case "type": return (b.typesOf ? b.typesOf(mon) : mon.types || []).indexOf(tail) >= 0;
+    }
+    return false;
+  }
+  function whenIdent(b, ctx, name, args) {
+    const dot = name.indexOf(".");
+    const head = dot >= 0 ? name.slice(0, dot) : name;
+    const rest = dot >= 0 ? name.slice(dot + 1) : "";
+    switch (head) {
+      case "weather": {
+        const w = (b.field && b.field.weather) || "";
+        if (!rest) return w;
+        if (rest === "none") return !w;
+        return w === rest;
+      }
+      case "terrain": {
+        const t = (b.field && b.field.terrain) || "";
+        if (!rest) return t;
+        if (rest === "none") return !t;
+        return t === rest;
+      }
+      case "time": {
+        const phase = NS.Clock ? NS.Clock.phase : null;
+        if (!rest) return phase || "";
+        if (phase) return phase === rest;
+        if (rest === "night") return b.isNight ? !!b.isNight() : false;
+        if (rest === "day") return b.isNight ? !b.isNight() : true;
+        return false;
+      }
+      case "turn": return b.turn || 0;
+      case "kind": return b.kind || "";
+      case "first": return !!ctx.userMovedFirst;
+      case "move": {
+        if (!ctx.move) return false;
+        if (rest === "type") return ctx.move.type || "";
+        if (rest === "cat" || rest === "category") return ctx.move.cat || "";
+        if (rest === "power") return ctx.move.power || 0;
+        return false;
+      }
+      case "self": case "user": case "target": case "foe":
+        return whenMonField(b, whenMon(b, ctx, head), rest, args);
+      case "true": return true;
+      case "false": return false;
+    }
+    // Not a battle identifier — let the story flags answer.
+    if (NS.Flags) {
+      const r = NS.Flags.resolvers && NS.Flags.resolvers[head];
+      if (r) return r(rest, args);
+      const v = NS.Flags.store ? NS.Flags.store[name] : undefined;
+      return v === undefined ? false : v;
+    }
+    return false;
+  }
+  function whenNorm(v) { return v === undefined || v === null ? false : v; }
+  function whenEval(b, ctx, n) {
+    switch (n.k) {
+      case "lit": return n.v;
+      case "id": return whenIdent(b, ctx, n.name, null);
+      case "call": return whenIdent(b, ctx, n.name, n.args);
+      case "not": return !whenEval(b, ctx, n.a);
+      case "and": return whenEval(b, ctx, n.a) ? !!whenEval(b, ctx, n.b) : false;
+      case "or": return whenEval(b, ctx, n.a) ? true : !!whenEval(b, ctx, n.b);
+      case "sum": {
+        const a = +whenNorm(whenEval(b, ctx, n.a)) || 0, c = +whenNorm(whenEval(b, ctx, n.b)) || 0;
+        return n.op === "+" ? a + c : a - c;
+      }
+      case "cmp": {
+        let a = whenNorm(whenEval(b, ctx, n.a)), c = whenNorm(whenEval(b, ctx, n.b));
+        if (typeof a === "number" && typeof c !== "number") c = c === true ? 1 : c === false ? 0 : (isNaN(+c) ? c : +c);
+        if (typeof c === "number" && typeof a !== "number") a = a === true ? 1 : a === false ? 0 : (isNaN(+a) ? a : +a);
+        switch (n.op) {
+          case "==": return a === c;
+          case "!=": return a !== c;
+          case ">=": return a >= c;
+          case "<=": return a <= c;
+          case ">": return a > c;
+          case "<": return a < c;
+        }
+        return false;
+      }
+    }
+    return false;
+  }
+  // testWhen(b, ctx, expr) → boolean. ctx is the move context
+  // {user, target, move, userMovedFirst}; only `user` is really needed.
+  BE.testWhen = function (b, ctx, expr) {
+    if (expr === undefined || expr === null || expr === "" || expr === true) return true;
+    if (expr === false) return false;
+    if (typeof expr === "function") return !!expr(b, ctx || {});
+    if (!NS.Flags || !NS.Flags.compile) return true;   // no parser loaded: never silently drop an effect
+    let ast;
+    try { ast = NS.Flags.compile(String(expr)); }
+    catch (err) { NS.warn && NS.warn("battle: unparseable when \"" + expr + "\" — " + (err && err.message)); return false; }
+    try { return !!whenEval(b, ctx || {}, ast); }
+    catch (err) { NS.warn && NS.warn("battle: when \"" + expr + "\" blew up — " + (err && err.message)); return false; }
+  };
+  // Does this effect apply right now? (chance is rolled separately.)
+  BE.effectApplies = function (b, ctx, e) {
+    return !e || e.when === undefined ? true : BE.testWhen(b, ctx, e.when);
+  };
+
   // =============================================================
   // MOVE EFFECT HANDLERS (SYSTEMS-SPEC §4)
   // Each handler is fn(b, ctx, e) where
@@ -1140,7 +1312,94 @@
       if (!id) return;
       v.disabled[id] = e.turns || 2;
       b.msg(b.name(t) + "'s " + (b.moveData(id).name || id) + " was disabled.");
-    }
+    },
+
+    // `cooldown {turns}` — the move cannot be used again for N turns
+    // (Patch Tuesday: "usable every other turn"). The counter lives on
+    // the user's volatile state and ticks down at end of turn, so
+    // turns:2 means "used this turn, blocked next turn, free again the
+    // turn after". Switching out clears it with the rest of the volatiles.
+    cooldown: function (b, ctx, e) {
+      const u = ctx.user;
+      const id = (e.move || (ctx.move && ctx.move.id));
+      if (!u || !id) return;
+      const v = b.vol(u);
+      v.cooldowns[id] = Math.max(v.cooldowns[id] || 0, e.turns || 2);
+      b.emit("cooldown", { side: b.sideIndexOf(u), uid: u.uid, move: id, turns: v.cooldowns[id] });
+    },
+
+    // `restore_pp {all}` / `{move}` / `{n}` — put PP back on the
+    // target's moves (Ada's Sysadmin's Reboot restores the lot).
+    // Without `all` it refills the move named in `move`, else the last
+    // move the target used, else its emptiest slot.
+    restore_pp: function (b, ctx, e) {
+      const t = whoOf(b, ctx, e) || ctx.user;
+      if (!t) return;
+      const list = t.moves || [];
+      if (!list.length) return;
+      const amount = e.n || e.amount || 0;    // 0 = fill to the brim
+      const refill = function (slot) {
+        if (!slot) return 0;
+        const max = slot.ppMax === undefined ? slot.pp : slot.ppMax;
+        const before = slot.pp;
+        slot.pp = amount ? Math.min(max, slot.pp + amount) : max;
+        if (slot.pp === before) return 0;
+        b.emit("pp", { side: b.sideIndexOf(t), uid: t.uid, move: slot.id, pp: slot.pp, max: max });
+        return slot.pp - before;
+      };
+      let gained = 0;
+      if (e.all || e.which === "all") {
+        // Never refill the move that is doing the restoring — Ada's
+        // Reboot is a 1-PP "once", not a perpetual motion machine.
+        for (let i = 0; i < list.length; i++) {
+          if (t === ctx.user && ctx.move && list[i].id === ctx.move.id) continue;
+          gained += refill(list[i]);
+        }
+      } else {
+        let slot = null;
+        if (e.move) slot = b.moveSlot(t, e.move);
+        if (!slot) {
+          const last = b.vol(t).lastMove;
+          if (last) slot = b.moveSlot(t, last);
+        }
+        if (!slot) {
+          for (let i = 0; i < list.length; i++) {
+            const max = list[i].ppMax === undefined ? list[i].pp : list[i].ppMax;
+            if (!slot || (list[i].pp / Math.max(1, max)) < (slot.pp / Math.max(1, slot.ppMax || slot.pp))) slot = list[i];
+          }
+        }
+        gained = refill(slot);
+      }
+      if (gained > 0) b.msg(b.name(t) + " came back up with everything reloaded.");
+      else { b.msg("There was nothing left to restore."); ctx.failed = true; }
+    },
+
+    // `mimic_type` — the user takes on the primary type of the thing it
+    // is looking at (Borrowed Face). SYSTEMS-SPEC calls this a *type*
+    // change on the user, not a move-type change: it is stored as the
+    // per-battle `mon.typesOverride` that changeForm also uses (see the
+    // battle report), so it drives STAB, the defensive chart and the
+    // type shown in the HUD until the wearer leaves the field. The
+    // engine applies it BEFORE the hit lands, so Borrowed Face itself is
+    // already thrown from behind the borrowed face.
+    mimic_type: function (b, ctx, e) {
+      const u = ctx.user;
+      const src = (e.from === "self") ? ctx.user : (ctx.target || ctx.user);
+      if (!u || !src || src === u) { b.msg("But there was no face to borrow."); ctx.failed = true; return; }
+      const want = (b.typesOf(src) || [])[0];
+      if (!want) return;
+      const have = b.typesOf(u) || [];
+      if (have.length === 1 && have[0] === want) return;    // already wearing it
+      u.typesOverride = [want];
+      u.typesMimicked = true;
+      b.emit("types", { side: b.sideIndexOf(u), uid: u.uid, types: b.typesOf(u), mimic: true });
+      b.msg(b.name(u) + " took " + b.name(src) + "'s shape — it is " + want.toUpperCase() + " now.");
+    },
+
+    // Read before the turn runs, in the engine's priority bracket.
+    priority: function () { /* see engine actionBracket() */ },
+    // Read before the hit, in BE.scaledPower().
+    weather_boost: function () { /* see BE.scaledPower */ }
   };
   // ENGINE-ARCHITECTURE §4 spelt some of these differently.
   BE.effects.multi = BE.effects.multihit;
@@ -1149,6 +1408,7 @@
 
   BE.runEffect = function (b, ctx, e) {
     if (!e || !e.kind) return;
+    if (!BE.effectApplies(b, ctx, e)) return;
     const chance = e.chance === undefined ? 100 : e.chance;
     if (chance < 100 && b.rng() * 100 >= chance) return;
     const fn = BE.effects[e.kind];
@@ -1160,20 +1420,38 @@
   BE.scaledPower = function (b, user, target, move) {
     let p = move.power || 0;
     const list = move.effects || [];
+    const ctx = { user: user, target: target, move: move };
     for (let i = 0; i < list.length; i++) {
       const e = list[i];
+      if (!BE.effectApplies(b, ctx, e)) continue;
       if (e.kind === "hp_scaled" || e.kind === "weight") {
         if (e.mode === "foeHpFrac") p = Math.max(1, Math.floor(p * (target.hp / b.maxHp(target))));
         else if (e.mode === "userHpFracInverse") p = Math.max(1, Math.floor(p * (2 - user.hp / b.maxHp(user))));
         else p = Math.max(1, Math.floor(p * (1 + (1 - target.hp / b.maxHp(target)))));
+      } else if (e.kind === "weather_boost") {
+        // `weather_boost {w, mult}` — Packet Storm's "×1.3 in Wind".
+        // The user's own Umbrella-style weather immunity switches it off.
+        const w = e.w || e.weather;
+        if (b.field.weather === w && !BE.weatherIgnored(b, user)) p = Math.max(1, Math.floor(p * (e.mult || 1.3)));
+      } else if (e.kind === "terrain_boost") {
+        const tr = e.tr || e.terrain;
+        if (b.field.terrain === tr) p = Math.max(1, Math.floor(p * (e.mult || 1.3)));
       }
     }
-    if (move.type === "cyber" && b.field.weather === "wind" && move.windBoost) p = Math.floor(p * 1.3);
+    // Legacy shorthand kept for moves that carry the flag rather than the effect.
+    if (move.windBoost && b.field.weather === "wind" && !BE.weatherIgnored(b, user)) p = Math.floor(p * 1.3);
     return p;
   };
-  BE.moveFlag = function (move, kind) {
+  // moveFlag(move, kind[, b, ctx]) — the first effect of that kind.
+  // Pass the battle and a move context and conditional effects that do
+  // not currently apply are skipped, exactly as runEffect skips them.
+  BE.moveFlag = function (move, kind, b, ctx) {
     const list = move.effects || [];
-    for (let i = 0; i < list.length; i++) if (list[i].kind === kind) return list[i];
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].kind !== kind) continue;
+      if (b && !BE.effectApplies(b, ctx || { user: null, move: move }, list[i])) continue;
+      return list[i];
+    }
     return null;
   };
 

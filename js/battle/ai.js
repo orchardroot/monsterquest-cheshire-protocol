@@ -32,6 +32,7 @@
       if (!slot || !slot.id) continue;
       if (slot.pp <= 0) continue;
       if (v.disabled[slot.id] > 0) continue;
+      if (v.cooldowns && v.cooldowns[slot.id] > 0) continue;
       if (v.choiceLock && v.choiceLock !== slot.id) continue;
       const md = b.moveData(slot.id);
       if (v.taunt > 0 && md.cat === "status") continue;

@@ -918,7 +918,9 @@
     if (isNew) { e.firstSeen = { map: ctx && ctx.map, ts: Date.now() }; emit("dex:seen", { species: speciesId, entry: e }); checkDexMilestones(); }
     return isNew;
   };
-  Tr.record = function (speciesId, ctx) {
+  // obtained() is the dex half: the monster is yours, however it got here
+  // (caught, gift, starter, hatched). It does not touch the catch counters.
+  Tr.obtained = function (speciesId, ctx) {
     if (!speciesId) return false;
     const e = dexEntry(speciesId);
     if (!e.seen) Tr.see(speciesId, ctx);
@@ -930,6 +932,12 @@
       emit("dex:caught", { species: speciesId, entry: e });
       checkDexMilestones();
     }
+    return isNew;
+  };
+  // record() is a catch proper: the dex entry plus the counters and the perk award.
+  Tr.record = function (speciesId, ctx) {
+    if (!speciesId) return false;
+    const isNew = Tr.obtained(speciesId, ctx);
     Tr.bump("catches", 1);
     if (MQ.Progression) MQ.Progression.award("catch");
     return isNew;
@@ -1233,9 +1241,38 @@
       MQ.Progression.award(r.kind === "trainer" ? "trainer" : r.kind === "boss" ? "boss" : "wild");
     } else if (r.outcome === "lose") Tr.bump("losses", 1);
     else if (r.outcome === "run") Tr.bump("runs", 1);
+    if (r.caught && r.caught.species && !r.caught._dexRecorded) {
+      r.caught._dexRecorded = true;
+      Tr.record(r.caught.species, {
+        map: (r.caught.metAt && r.caught.metAt.map) || (MQ.Overworld && MQ.Overworld.state ? MQ.Overworld.state.map : null),
+        level: r.caught.level, how: "capsule"
+      });
+    }
     Inv.expireBattleBuffs();
   });
   E.on("catch", function (d) { if (d && d.species) Tr.record(d.species, d); });
+
+  // ---- the Field Dex ----------------------------------------------------
+  // Nothing was writing to it: MQ.Trainer.see/record existed but only the
+  // side activities called them, so a whole play-through read "Seen 0".
+  // Meeting a wild monster is a sighting; owning one is a catch.
+  function clockNow(key) {
+    if (!MQ.Clock) return null;
+    return key === "phase" ? MQ.Clock.phase : (MQ.Clock.weather || null);
+  }
+  E.on("encounter", function (d) {
+    if (!d || !d.species) return;
+    if (d.dexSeen) return;                 // one sighting per encounter result
+    d.dexSeen = true;
+    Tr.see(d.species, {
+      map: d.map, habitat: d.habitat || d.zone || null, level: d.level,
+      phase: clockNow("phase"), weather: clockNow("weather")
+    });
+  });
+  // Everything that hands you a monster records it: a capsule catch through
+  // battle:end below, fishing/quests/the daycare through Tr.record of their
+  // own, and story gifts (the starter) through MQ.Script's giveMonster, which
+  // calls Tr.obtained so a present is not scored as a capture.
   E.on("newgame", function () {
     Party.saveProvider.load(null);
     Inv.saveProvider.load(null);

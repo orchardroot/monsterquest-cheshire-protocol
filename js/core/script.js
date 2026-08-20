@@ -136,7 +136,14 @@
     if (!add) return P(null);
     let mon = a[0];
     if (mon && !mon.uid && MQ.Data && MQ.Data.makeMonster) mon = MQ.Data.makeMonster(mon.species, mon.level || 5, mon);
-    return P(add(mon));
+    const where = add(mon);
+    // A gift still belongs in the Field Dex — obtained(), not record(), so the
+    // starter is not counted as a capture.
+    if (mon && mon.species && MQ.Trainer && MQ.Trainer.obtained) {
+      try { MQ.Trainer.obtained(mon.species, { map: mon.metAt && mon.metAt.map, level: mon.level, how: "gift" }); }
+      catch (e) { MQ.warn("[Script] giveMonster: dex write failed", e); }
+    }
+    return P(where);
   };
   exec.heal = function () { const h = has("Party.heal"); if (h) h(); return P(); };
   exec.battle = function (a) {
