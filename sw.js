@@ -67,13 +67,19 @@ const ASSETS = [
   "js/content/quests-engine.js",
   "js/content/state.js",
   "js/ui/bag.js",
+  "js/ui/casebook.js",
+  "js/ui/dex.js",
+  "js/ui/hud.js",
   "js/ui/party.js",
   "js/ui/pause.js",
+  "js/ui/perks.js",
   "js/ui/save.js",
   "js/ui/settings.js",
   "js/ui/shop.js",
   "js/ui/theme.js",
   "js/ui/title.js",
+  "js/ui/trainercard.js",
+  "js/ui/worldmap.js",
   "js/story/main.js",
   "js/story/npcs_east.js",
   "js/story/chapters/ch01_silk_and_static.js",
@@ -98,21 +104,29 @@ self.addEventListener("activate", (e) => {
   );
 });
 
+// Own files are network-first so a reload always lands on the newest build;
+// the cache is the offline fallback, not the source of truth. Anything from
+// another origin stays cache-first.
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
+  let sameOrigin = false;
+  try { sameOrigin = new URL(e.request.url).origin === location.origin; } catch (err) { sameOrigin = false; }
+
+  const fromCache = () => caches.match(e.request, { ignoreSearch: true }).then((hit) => {
+    if (hit) return hit;
+    if (e.request.mode === "navigate") return caches.match("index.html");
+    throw new Error("offline");
+  });
+
+  if (!sameOrigin) { e.respondWith(fromCache()); return; }
+
   e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then((hit) => {
-      if (hit) return hit;
-      return fetch(e.request).then((res) => {
-        if (res.ok && new URL(e.request.url).origin === location.origin) {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, copy));
-        }
-        return res;
-      }).catch(() => {
-        if (e.request.mode === "navigate") return caches.match("index.html");
-        throw new Error("offline");
-      });
-    })
+    fetch(e.request).then((res) => {
+      if (res && res.ok) {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
+      }
+      return res;
+    }).catch(fromCache)
   );
 });

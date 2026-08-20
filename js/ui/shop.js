@@ -73,7 +73,7 @@
   }
 
   const sc = {
-    id: "shop", tab: 0, st: null, rows: [], busy: false,
+    id: "shop", touchPad: false, tab: 0, st: null, rows: [], busy: false,
     variant: "mart", def: VARIANTS.mart, shopName: "", stock: [], sellRate: 0.5, currency: "credits", greeting: ""
   };
   const TABS = ["Buy", "Sell", "Leave"];

@@ -56,7 +56,7 @@
     });
   }
 
-  const sc = { id: "pause", transparent: true, focus: 0, tab: 0, slot: 0, busy: false, t: 0, st: null, items: [] };
+  const sc = { id: "pause", transparent: true, touchPad: false, focus: 0, tab: 0, slot: 0, busy: false, t: 0, st: null, items: [] };
   const HINTS = [{ btn: "a", label: "Open" }, { btn: "b", label: "Close" }, { btn: "select", label: "Quick slots" }];
   const slotRects = [{ x: 0, y: 0, w: 0, h: 0 }, { x: 0, y: 0, w: 0, h: 0 }, { x: 0, y: 0, w: 0, h: 0 }, { x: 0, y: 0, w: 0, h: 0 }];
 

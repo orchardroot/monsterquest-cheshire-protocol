@@ -18,7 +18,7 @@
   const KEY_ROWS_LOWER = ["abcdefghij", "klmnopqrst", "uvwxyz0123", "456789-' ."];
   const COLS = 10;
 
-  const nameSc = { id: "name_entry", value: "", max: 10, title: "Name", sub: "", st: null, shift: false, suppress: 0, blink: 0, keys: [], onKey: null };
+  const nameSc = { id: "name_entry", touchPad: false, value: "", max: 10, title: "Name", sub: "", st: null, shift: false, suppress: 0, blink: 0, keys: [], onKey: null };
 
   function buildKeys(shift) {
     const rows = shift ? KEY_ROWS_UPPER : KEY_ROWS_LOWER;
@@ -46,7 +46,9 @@
     if (k === undefined) return;
     if (k === "Backspace") { nameSc.del(); nameSc.suppress = 2; if (e.preventDefault) e.preventDefault(); return; }
     if (k === "Enter") { nameSc.suppress = 2; nameSc.done(); if (e.preventDefault) e.preventDefault(); return; }
-    if (k === "Escape") { nameSc.suppress = 2; nameSc.cancel(); if (e.preventDefault) e.preventDefault(); return; }
+    // Escape is the START glyph on a keyboard, and the footer promises
+    // "ESC Done" — so it commits the name. X (the B button) backs out.
+    if (k === "Escape") { nameSc.suppress = 2; nameSc.done(); if (e.preventDefault) e.preventDefault(); return; }
     if (k.length === 1 && /[A-Za-z0-9 '\-.]/.test(k)) {
       nameSc.type(k);
       nameSc.suppress = 2;
@@ -111,6 +113,8 @@
       if (res.selected !== undefined) { nameSc.press(nameSc.keys[res.selected]); return; }
     }
     if (MQ.Input.pressed("start")) { MQ.Input.consume("start"); nameSc.done(); }
+    // the header chevron is drawn on this screen, so it has to work too
+    if (TH().backPressed()) { nameSc.cancel(); return; }
   };
 
   nameSc.draw = function (ctx) {
@@ -127,11 +131,14 @@
     T.draw(ctx, nameSc.value.length + "/" + nameSc.max, fx + fw - 10, top + 32, { size: "s", align: "right", color: C.textDim });
 
     // keyboard grid
-    const gy = top + 66;
-    const gh = Theme.footerTop() - gy - 6;
+    const gy0 = top + 66;
+    const gh = Theme.footerTop() - gy0 - 6;
     const rows = Math.ceil(nameSc.keys.length / COLS);
     const kw = Math.floor((fw - (COLS - 1) * 6) / COLS);
     const kh = Math.min(Math.floor((gh - (rows - 1) * 6) / rows), Math.round(46 * m.k));
+    // keys cap out at 46px, so on a tall screen centre them rather than
+    // leaving a third of the screen empty underneath
+    const gy = gy0 + Math.max(0, Math.floor((gh - (kh * rows + 6 * (rows - 1))) / 2));
     const gx = m.cx - (kw * COLS + 6 * (COLS - 1)) / 2;
     const st = nameSc.st;
     for (let i = 0; i < st.rects.length; i++) st.rects[i].on = false;
@@ -159,7 +166,7 @@
     { id: "hard", name: "Hard", blurb: "Trainers think a move ahead, agents take longer to come back, and you get three items a battle. Bring a plan.", detail: "Levels +10%  |  3 bag items per trainer fight  |  Whiteout -25% + an item" },
     { id: "nightmare", name: "Nightmare", blurb: "Everyone is smart, the bag is shut, gyms jam your agents and bosses start with the meter half full. Noted.", detail: "Levels +20%  |  No bag in trainer fights  |  Capture x0.85" }
   ];
-  const diffSc = { id: "difficulty", st: null, onPick: null, current: "normal" };
+  const diffSc = { id: "difficulty", touchPad: false, st: null, onPick: null, current: "normal" };
   diffSc.enter = function (params) {
     params = params || {};
     diffSc.current = params.current || currentDifficulty();
@@ -251,7 +258,7 @@
     "",
     "$Thank you for walking it."
   ];
-  const credSc = { id: "credits", y: 0, speed: 0.032, done: false };
+  const credSc = { id: "credits", touchPad: false, y: 0, speed: 0.032, done: false };
   credSc.enter = function () { credSc.y = 0; credSc.done = false; TH().music("credits"); };
   credSc.update = function (dt) {
     const fast = MQ.Input.held("a") || MQ.Input.held("run");
@@ -289,7 +296,7 @@
   for (let i = 0; i < STAR_N; i++) stars.push({ x: 0, y: 0, r: 0, tw: 0 });
 
   const Title = {
-    id: "title",
+    id: "title", touchPad: false,
     t: 0, seeded: false, busy: false,
     st: null, items: [], slots: null, hasSave: false,
     grinT: 0, grinAlpha: 0, settle: 0

@@ -59,7 +59,8 @@
     T.draw(ctx, Theme.playtime(e.playtime), x + w - 14, y + 62, { size: "s", align: "right", color: C.textDim });
     // party line
     const party = s.party || [];
-    let px = x + 14, py = y + 88;
+    // keep the party chips clear of the map line on a short card
+    let px = x + 14, py = Math.min(y + 88, y + h - 46);
     for (let i = 0; i < party.length && i < 6; i++) {
       const label = speciesName(party[i]);
       const pw = T.width(label, "s") + 12;
@@ -73,7 +74,7 @@
   }
 
   // ---- the scene ---------------------------------------------------
-  const sc = { id: "save_screen", mode: "save", entries: [], st: null, busy: false, t: 0 };
+  const sc = { id: "save_screen", touchPad: false, mode: "save", entries: [], st: null, busy: false, t: 0 };
   const HINTS_SAVE = [{ btn: "a", label: "Write" }, { btn: "b", label: "Back" }];
   const HINTS_LOAD = [{ btn: "a", label: "Load" }, { btn: "b", label: "Back" }];
 

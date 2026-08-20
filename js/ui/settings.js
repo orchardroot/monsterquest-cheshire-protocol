@@ -33,7 +33,24 @@
       const obj = JSON.parse(raw);
       const ks = Object.keys(DEFAULTS);
       for (let i = 0; i < ks.length; i++) if (obj[ks[i]] !== undefined) local[ks[i]] = obj[ks[i]];
+      sanitise();
     } catch (e) { /* a broken settings blob is not worth crashing over */ }
+  }
+  // A value written by an older build may not be one of the current choices
+  // (screenShake used to be a boolean). Fall back rather than show the raw value.
+  function sanitise() {
+    for (let i = 0; i < OPTIONS.length; i++) {
+      const o = OPTIONS[i];
+      const v = local[o.id];
+      if (o.kind === "slider") {
+        const n = Number(v);
+        local[o.id] = isFinite(n) ? U.clamp(Math.round(n), o.min, o.max) : DEFAULTS[o.id];
+        continue;
+      }
+      let ok = false;
+      for (let j = 0; j < o.options.length; j++) if (o.options[j].value === v) { ok = true; break; }
+      if (!ok) local[o.id] = DEFAULTS[o.id];
+    }
   }
   function writeLocal() {
     const s = store();
@@ -149,7 +166,7 @@
   ];
 
   // ---- the scene ---------------------------------------------------
-  const sc = { id: "settings", st: null, items: [], sample: 0, sampleT: 0, fromTitle: false, busy: false };
+  const sc = { id: "settings", touchPad: false, st: null, items: [], sample: 0, sampleT: 0, fromTitle: false, busy: false };
   const SAMPLE = "Cheshire is quiet tonight. That is usually when it starts.";
   const HINTS = [{ btn: "lr", label: "Change" }, { btn: "a", label: "Change" }, { btn: "b", label: "Back" }];
 
@@ -312,5 +329,8 @@
   sc.touchScale = function () { return TOUCH_SCALE[get("touchSize")] || 1; };
 
   readLocal();
+  // Stored preferences used to sit there until you opened this screen; apply
+  // them once the engine is up so a cold boot honours them.
+  if (MQ.Events && MQ.Events.on) MQ.Events.on("boot", function () { readLocal(); applyAll(); });
   UI.Settings = sc;
 })();

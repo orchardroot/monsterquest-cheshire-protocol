@@ -79,13 +79,19 @@
   <script src="js/content/quests-engine.js"></script>
   <script src="js/content/state.js"></script>
   <script src="js/ui/bag.js"></script>
+  <script src="js/ui/casebook.js"></script>
+  <script src="js/ui/dex.js"></script>
+  <script src="js/ui/hud.js"></script>
   <script src="js/ui/party.js"></script>
   <script src="js/ui/pause.js"></script>
+  <script src="js/ui/perks.js"></script>
   <script src="js/ui/save.js"></script>
   <script src="js/ui/settings.js"></script>
   <script src="js/ui/shop.js"></script>
   <script src="js/ui/theme.js"></script>
   <script src="js/ui/title.js"></script>
+  <script src="js/ui/trainercard.js"></script>
+  <script src="js/ui/worldmap.js"></script>
   <script src="js/story/main.js"></script>
   <script src="js/story/npcs_east.js"></script>
   <script src="js/story/chapters/ch01_silk_and_static.js"></script>
@@ -110,8 +116,23 @@
       window.addEventListener("touchend", first, true);
       // Service worker for offline / installed play (needs http(s))
       if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+        // Always ask for the newest worker, and reload once when one takes
+        // over, so a refresh can never leave you on a stale build.
+        var reloading = false;
+        var hadController = !!navigator.serviceWorker.controller;
+        navigator.serviceWorker.addEventListener("controllerchange", function () {
+          if (reloading || !hadController) return;
+          reloading = true;
+          location.reload();
+        });
         window.addEventListener("load", function () {
-          navigator.serviceWorker.register("sw.js").catch(function () {});
+          navigator.serviceWorker.register("sw.js").then(function (reg) {
+            if (!reg) return;
+            try { reg.update(); } catch (e) {}
+            document.addEventListener("visibilitychange", function () {
+              if (document.visibilityState === "visible") { try { reg.update(); } catch (e) {} }
+            });
+          }).catch(function () {});
         });
       }
       if (window.MQ && MQ.Boot && !window.__MQ_NO_BOOT) MQ.Boot.start();

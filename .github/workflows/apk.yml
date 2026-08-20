@@ -2,11 +2,17 @@ name: Build Android APK
 
 on:
   push:
-    branches: ["main", "master", "claude/pokemon-style-game-q728v6"]
+    branches: ["main", "master", "v2"]
   workflow_dispatch:
 
 permissions:
   contents: write
+
+# One APK build at a time: they all publish to the same rolling release tag,
+# so overlapping runs would race each other over `apk-latest`.
+concurrency:
+  group: apk
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -54,6 +60,19 @@ jobs:
             -PversionName="1.${{ github.run_number }}"
           cp android/app/build/outputs/apk/release/app-release.apk monsterquest.apk
 
+      - name: Sanity-check the bundled web assets
+        run: |
+          # The Sync task in android/app/build.gradle mirrors the web tree into
+          # assets/www. If that ever silently produces nothing we would ship a
+          # blank screen, so assert the essentials are actually inside the APK.
+          unzip -l monsterquest.apk > apk-listing.txt
+          for f in assets/www/index.html assets/www/css/style.css \
+                   assets/www/js/boot.js assets/www/js/core/loop.js; do
+            grep -q "$f" apk-listing.txt || { echo "::error::missing $f in APK"; exit 1; }
+          done
+          echo "Bundled JS files: $(grep -c 'assets/www/js/.*\.js' apk-listing.txt)"
+          ls -lh monsterquest.apk
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -64,13 +83,16 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: apk-latest
-          name: MonsterQuest APK (latest build)
+          name: "MonsterQuest: The Cheshire Protocol — latest APK"
           body: |
-            Sideloadable Android build of MonsterQuest — download `monsterquest.apk`
-            on your phone, open it, and allow "install from unknown sources" when
-            prompted. Fully offline; your save lives on the device.
+            Sideloadable Android build — download `monsterquest.apk` on the
+            device (Fire tablet, phone, anything on Android 5.1 or newer), open
+            it, and allow "install from unknown sources" when prompted. Plays in
+            landscape, fully offline; your save lives on the device.
 
             Note: unless the repo has a stable signing key configured
             (`ANDROID_KEYSTORE_B64` secret), each build is signed with a fresh
             throwaway key — uninstall the previous build before installing a new one.
           files: monsterquest.apk
+          prerelease: false
+          make_latest: true

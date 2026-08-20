@@ -766,7 +766,7 @@
           if (slot && slot.pp > 0) {
             slot.pp = 0;
             b.emit("pp", { side: b.sideIndexOf(c.killer), uid: c.killer.uid, move: c.move.id, pp: 0 });
-            b.msg("Kernel panic — " + c.killer.nickname + "'s " + c.move.name + " lost all its PP.");
+            b.msg("Kernel panic — " + b.plainName(c.killer) + "'s " + c.move.name + " lost all its PP.");
           }
         }
       }

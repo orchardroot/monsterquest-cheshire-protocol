@@ -54,11 +54,12 @@
 
   // touch buttons (positions computed on resize, logical px)
   const buttons = [
-    { action: "a", label: "A", r: 34, x: 0, y: 0, color: "rgba(198,40,40,0.45)" },
-    { action: "b", label: "B", r: 28, x: 0, y: 0, color: "rgba(42,79,168,0.45)" },
-    { action: "start", label: "START", w: 78, h: 30, x: 0, y: 0, color: "rgba(90,90,120,0.45)" },
-    { action: "run", label: "RUN", w: 78, h: 30, x: 0, y: 0, color: "rgba(90,90,120,0.45)" }
+    { action: "a", label: "A", r: 34, r0: 34, x: 0, y: 0, color: "rgba(198,40,40,0.45)" },
+    { action: "b", label: "B", r: 28, r0: 28, x: 0, y: 0, color: "rgba(42,79,168,0.45)" },
+    { action: "start", label: "START", w: 78, h: 30, w0: 78, h0: 30, x: 0, y: 0, color: "rgba(90,90,120,0.45)" },
+    { action: "run", label: "RUN", w: 78, h: 30, w0: 78, h0: 30, x: 0, y: 0, color: "rgba(90,90,120,0.45)" }
   ];
+  const STICK_R0 = STICK.radius;
 
   const Input = {
     ACTIONS: ACTIONS,
@@ -66,6 +67,10 @@
     STICK: STICK,
     lastSource: "key",
     touchVisible: false,
+    touchScale: 1,          // Settings "Touch layout size"
+    touchSide: "left",      // which half of the screen the stick lives on
+    touchAlpha: 0.85,       // Settings "Stick opacity"
+    vibrateEnabled: true,
     touchAuto: true,        // auto-decide visibility until setTouchVisible() is called
     coarse: false,
     enabled: true,
@@ -86,8 +91,19 @@
   Input.tapAt = function () { return tapThisFrame ? tap : null; };
   Input.inject = function (action) { if (ACTIONS.indexOf(action) >= 0) injected.push(action); };
   Input.vibrate = function (ms) {
+    if (!Input.vibrateEnabled) return;
     try { if (navigator.vibrate) navigator.vibrate(ms || 30); } catch (e) { /* ignore */ }
   };
+  Input.setTouchScale = function (k) {
+    Input.touchScale = U.clamp(+k || 1, 0.6, 1.6);
+    STICK.radius = Math.round(STICK_R0 * Input.touchScale);
+    layoutButtons();
+  };
+  Input.setTouchSide = function (side) {
+    Input.touchSide = side === "right" ? "right" : "left";
+    layoutButtons();
+  };
+  Input.setTouchAlpha = function (a) { Input.touchAlpha = U.clamp(+a, 0, 1); };
   Input.setTouchVisible = function (b) {
     Input.touchAuto = (b === null || b === undefined);
     if (!Input.touchAuto) Input.touchVisible = !!b;
@@ -186,16 +202,39 @@
   function layoutButtons() {
     const V = MQ.View;
     const w = V ? V.w : MQ.BASE_W, h = V ? V.h : MQ.BASE_H;
-    const sr = V ? V.safe.right : 0, sb = V ? V.safe.bottom : 0;
+    const sl = V ? V.safe.left : 0, sr = V ? V.safe.right : 0, sb = V ? V.safe.bottom : 0;
+    const k = Input.touchScale;
     const A = buttons[0], B = buttons[1], ST = buttons[2], RN = buttons[3];
-    A.x = w - sr - 62; A.y = h - sb - 96;
-    B.x = w - sr - 138; B.y = h - sb - 52;
-    ST.x = w - sr - 84 - ST.w / 2; ST.y = h - sb - 178;
-    RN.x = w - sr - 84 - RN.w / 2 - 92; RN.y = h - sb - 178;
+    A.r = A.r0 * k; B.r = B.r0 * k;
+    ST.w = ST.w0 * k; ST.h = ST.h0 * k;
+    RN.w = RN.w0 * k; RN.h = RN.h0 * k;
+    // The pad sits opposite the stick; mirror every x when the stick moves.
+    const padRight = Input.touchSide !== "right";
+    const edge = padRight ? (w - sr) : sl;
+    const inward = function (d) { return padRight ? edge - d : edge + d; };
+    A.x = inward(62 * k); A.y = h - sb - 96 * k;
+    B.x = inward(138 * k); B.y = h - sb - 52 * k;
+    ST.x = inward(84 * k) - ST.w / 2; ST.y = h - sb - 178 * k;
+    RN.x = inward(84 * k + 92 * k) - RN.w / 2; RN.y = h - sb - 178 * k;
     // start/run x,y are top-left; a/b are centres
   }
+  // The half of the screen that starts the virtual stick.
+  function inStickHalf(x) {
+    const w = MQ.View ? MQ.View.w : MQ.BASE_W;
+    return Input.touchSide === "right" ? x > w * 0.5 : x < w * 0.5;
+  }
+  // Menu scenes (anything with touchPad === false) get plain taps only: the
+  // stick and the A/B/START/RUN pad would sit on top of their lists.
+  function padSuppressed() {
+    const S = MQ.Scenes;
+    if (!S || !S.top) return false;
+    const top = S.top();
+    return !!(top && top.touchPad === false);
+  }
+  Input.padSuppressed = padSuppressed;
+
   function hitButton(x, y) {
-    if (!Input.touchVisible) return null;
+    if (!Input.touchVisible || padSuppressed()) return null;
     for (let i = 0; i < buttons.length; i++) {
       const b = buttons[i];
       if (b.r) {
@@ -243,7 +282,7 @@
       return;
     }
     const V = MQ.View;
-    if (isTouch && Input.touchVisible && !stick.active && x < V.w * 0.5) {
+    if (isTouch && Input.touchVisible && !padSuppressed() && !stick.active && inStickHalf(x)) {
       stick.active = true; stick.id = id; stick.ox = x; stick.oy = y; stick.x = x; stick.y = y;
       stick.vx = stick.vy = stick.mag = 0;
       p.stick = true;
@@ -373,13 +412,15 @@
 
   // ---- draw touch overlay (called by MQ.Loop after scenes) ---------
   Input.draw = function (ctx) {
-    if (!Input.touchVisible) return;
+    if (!Input.touchVisible || padSuppressed()) return;
     const V = MQ.View;
+    const A0 = U.clamp(Input.touchAlpha, 0, 1);
+    if (A0 <= 0.01) return;
     ctx.save();
     ctx.lineWidth = 2;
     // stick
     if (stick.active) {
-      ctx.globalAlpha = 0.55;
+      ctx.globalAlpha = 0.65 * A0;
       ctx.strokeStyle = "rgba(230,230,255,0.9)";
       ctx.fillStyle = "rgba(60,60,90,0.35)";
       ctx.beginPath(); ctx.arc(stick.ox, stick.oy, STICK.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -387,13 +428,15 @@
       ctx.beginPath(); ctx.arc(stick.x, stick.y, 22, 0, Math.PI * 2); ctx.fill();
     } else {
       // resting hint
-      ctx.globalAlpha = 0.18;
+      ctx.globalAlpha = 0.21 * A0;
       ctx.strokeStyle = "#e6e6ff";
-      ctx.beginPath(); ctx.arc(V.safe.left + 110, V.h - V.safe.bottom - 110, STICK.radius, 0, Math.PI * 2); ctx.stroke();
-      ctx.beginPath(); ctx.arc(V.safe.left + 110, V.h - V.safe.bottom - 110, 20, 0, Math.PI * 2); ctx.stroke();
+      const hx = Input.touchSide === "right" ? (V.w - V.safe.right - 110 * Input.touchScale) : (V.safe.left + 110 * Input.touchScale);
+      const hy = V.h - V.safe.bottom - 110 * Input.touchScale;
+      ctx.beginPath(); ctx.arc(hx, hy, STICK.radius, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(hx, hy, 20 * Input.touchScale, 0, Math.PI * 2); ctx.stroke();
     }
     // buttons
-    ctx.globalAlpha = 0.85;
+    ctx.globalAlpha = A0;
     for (let i = 0; i < buttons.length; i++) {
       const b = buttons[i];
       const down = touchDown[b.action];
