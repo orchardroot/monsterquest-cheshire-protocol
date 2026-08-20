@@ -73,7 +73,7 @@
   }
 
   // ---- the scene ---------------------------------------------------
-  const sc = { id: "save_screen", mode: "save", entries: [], st: null, busy: false, t: 0 };
+  const sc = { id: "save_screen", touchPad: false, mode: "save", entries: [], st: null, busy: false, t: 0 };
   const HINTS_SAVE = [{ btn: "a", label: "Write" }, { btn: "b", label: "Back" }];
   const HINTS_LOAD = [{ btn: "a", label: "Load" }, { btn: "b", label: "Back" }];
 

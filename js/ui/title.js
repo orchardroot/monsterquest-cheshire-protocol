@@ -18,7 +18,7 @@
   const KEY_ROWS_LOWER = ["abcdefghij", "klmnopqrst", "uvwxyz0123", "456789-' ."];
   const COLS = 10;
 
-  const nameSc = { id: "name_entry", value: "", max: 10, title: "Name", sub: "", st: null, shift: false, suppress: 0, blink: 0, keys: [], onKey: null };
+  const nameSc = { id: "name_entry", touchPad: false, value: "", max: 10, title: "Name", sub: "", st: null, shift: false, suppress: 0, blink: 0, keys: [], onKey: null };
 
   function buildKeys(shift) {
     const rows = shift ? KEY_ROWS_UPPER : KEY_ROWS_LOWER;
@@ -163,7 +163,7 @@
     { id: "hard", name: "Hard", blurb: "Trainers think a move ahead, agents take longer to come back, and you get three items a battle. Bring a plan.", detail: "Levels +10%  |  3 bag items per trainer fight  |  Whiteout -25% + an item" },
     { id: "nightmare", name: "Nightmare", blurb: "Everyone is smart, the bag is shut, gyms jam your agents and bosses start with the meter half full. Noted.", detail: "Levels +20%  |  No bag in trainer fights  |  Capture x0.85" }
   ];
-  const diffSc = { id: "difficulty", st: null, onPick: null, current: "normal" };
+  const diffSc = { id: "difficulty", touchPad: false, st: null, onPick: null, current: "normal" };
   diffSc.enter = function (params) {
     params = params || {};
     diffSc.current = params.current || currentDifficulty();
@@ -255,7 +255,7 @@
     "",
     "$Thank you for walking it."
   ];
-  const credSc = { id: "credits", y: 0, speed: 0.032, done: false };
+  const credSc = { id: "credits", touchPad: false, y: 0, speed: 0.032, done: false };
   credSc.enter = function () { credSc.y = 0; credSc.done = false; TH().music("credits"); };
   credSc.update = function (dt) {
     const fast = MQ.Input.held("a") || MQ.Input.held("run");
@@ -293,7 +293,7 @@
   for (let i = 0; i < STAR_N; i++) stars.push({ x: 0, y: 0, r: 0, tw: 0 });
 
   const Title = {
-    id: "title",
+    id: "title", touchPad: false,
     t: 0, seeded: false, busy: false,
     st: null, items: [], slots: null, hasSave: false,
     grinT: 0, grinAlpha: 0, settle: 0

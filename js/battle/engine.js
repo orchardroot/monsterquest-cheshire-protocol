@@ -284,9 +284,15 @@
       return b.species(mon).types || ["normal"];
     };
     b.maxHp = function (mon) { return (mon.stats && mon.stats.hp) || 1; };
+    // Party monsters made by content-core carry nickname:null and expect the
+    // species name to stand in, so every display path goes through here.
+    b.plainName = function (mon) {
+      if (!mon) return "It";
+      return mon.nickname || b.species(mon).name || U.capitalise(String(mon.species));
+    };
     b.name = function (mon) {
       if (!mon) return "It";
-      const base = mon.nickname || b.species(mon).name || U.capitalise(String(mon.species));
+      const base = b.plainName(mon);
       return b.isPlayerSide(mon) ? base : ((b.kind === "wild" ? "The wild " : "The foe's ") + base);
     };
     b.moveData = moveData;
@@ -381,7 +387,7 @@
       mon.hp = 0;
       const v = b.vol(mon);
       v.charging = false; v.chargeMoveId = null; v.semiInvuln = null; v.trapped = 0;
-      b.emit("faint", { side: b.sideIndexOf(mon), uid: mon.uid, name: mon.nickname, species: mon.species });
+      b.emit("faint", { side: b.sideIndexOf(mon), uid: mon.uid, name: b.plainName(mon), species: mon.species });
       b.msg(b.name(mon) + " keeled over.");
       BE.hookFainted(b, mon, "onFaint", { killer: source, move: move });
       if (source && source.hp > 0) {
@@ -449,19 +455,19 @@
 
     b.emit("switch", {
       side: sideIndex, slot: slot, uid: mon.uid, partyIndex: partyIndex,
-      name: mon.nickname, species: mon.species, level: mon.level,
+      name: b.plainName(mon), species: mon.species, level: mon.level,
       hp: mon.hp, max: b.maxHp(mon), status: mon.status, overdrive: mon.overdrive || 0,
       types: b.typesOf(mon), first: !!o.first
     });
     if (o.first) {
       if (sideIndex === 1) {
-        if (b.kind === "wild") b.msg("A wild " + (mon.nickname || mon.species) + " blocked the path!");
-        else b.msg((side.trainer ? side.trainer.name : "The challenger") + " sent out " + mon.nickname + "!");
+        if (b.kind === "wild") b.msg("A wild " + b.plainName(mon) + " blocked the path!");
+        else b.msg((side.trainer ? side.trainer.name : "The challenger") + " sent out " + b.plainName(mon) + "!");
       } else {
-        b.msg("Go on then, " + mon.nickname + "!");
+        b.msg("Go on then, " + b.plainName(mon) + "!");
       }
     } else {
-      b.msg(sideIndex === 0 ? ("Come back! " + mon.nickname + ", you're up!") : ((side.trainer ? side.trainer.name : "The foe") + " sent out " + mon.nickname + "!"));
+      b.msg(sideIndex === 0 ? ("Come back! " + b.plainName(mon) + ", you're up!") : ((side.trainer ? side.trainer.name : "The foe") + " sent out " + b.plainName(mon) + "!"));
     }
 
     const v = b.vol(mon);
@@ -805,7 +811,7 @@
   function* doForceSwitch(b, target) {
     const side = b.sideOf(target);
     if (b.kind === "wild" && side.index === 1) {
-      b.msg("The wild " + (target.nickname || target.species) + " bolted.");
+      b.msg("The wild " + b.plainName(target) + " bolted.");
       b.fled = true;
       b.over = true;
       b.outcome = "run";
@@ -900,7 +906,7 @@
           ability: f.ability, gear: f.gear, hpNumbers: tl >= 15
         });
         const names = (f.moves || []).map(function (m) { return moveData(m.id).name; }).join(", ");
-        b.msg(f.nickname + ": " + (names || "no moves on file") + ". Ability " + (BE.abilityName(f.ability) || "unknown") + ".");
+        b.msg(b.plainName(f) + ": " + (names || "no moves on file") + ". Ability " + (BE.abilityName(f.ability) || "unknown") + ".");
         BE.addStage(b, f, "spe", -2, user, {});
         if (tl >= 30) BE.addStage(b, f, "acc", -1, user, {});
       }
@@ -955,14 +961,14 @@
           target._fainted = false;
           b.emit("hp", { side: b.sideIndexOf(target), uid: target.uid, from: 0, to: target.hp, max: b.maxHp(target), delta: target.hp, cause: "revive" });
           adjustFriendship(b, target, -10);
-          b.msg(target.nickname + " came round, and did not thank you for it.");
+          b.msg(b.plainName(target) + " came round, and did not thank you for it.");
         }
         return true;
       }
       if (id === "full_restore" && target) {
         BE.cureStatus(b, target, true);
         BE.heal(b, target, b.maxHp(target), { quiet: true });
-        b.msg(target.nickname + " is right as rain.");
+        b.msg(b.plainName(target) + " is right as rain.");
         return true;
       }
       if (it.amount && target) {
@@ -974,7 +980,7 @@
       if (it.cures && target) {
         if (it.cures.indexOf("all") >= 0 || id === "panacea") BE.cureStatus(b, target, true);
         else for (let i = 0; i < it.cures.length; i++) if (target.status === it.cures[i]) BE.cureStatus(b, target, false);
-        b.msg(target.nickname + " is feeling better.");
+        b.msg(b.plainName(target) + " is feeling better.");
         return true;
       }
     }
@@ -1021,7 +1027,7 @@
     b.emit("catch", { uid: foe.uid, shakes: res.shakes, success: res.success, critical: res.critical, capsule: capsuleId, a: res.a });
     if (res.critical) b.msg("The capsule barely wobbled.");
     if (res.success) {
-      b.msg("Gotcha! " + foe.nickname + " was caught.");
+      b.msg("Gotcha! " + b.plainName(foe) + " was caught.");
       const c = BE.CAPSULES[capsuleId];
       if (c && c.friendship) foe.friendship = c.friendship;
       foe.metAt = { map: (NS.Overworld && NS.Overworld.state && NS.Overworld.state.map) || null, level: foe.level, ts: Date.now() };
@@ -1084,14 +1090,14 @@
     if (mon.level >= 100) return;
     mon.exp = (mon.exp || 0) + amount;
     b.emit("xp", { side: 0, uid: mon.uid, amount: amount, exp: mon.exp, level: mon.level });
-    b.msg(mon.nickname + " gained " + amount + " XP.");
+    b.msg(b.plainName(mon) + " gained " + amount + " XP.");
     const growth = b.growth(mon);
     while (mon.level < 100 && mon.exp >= BE.expForLevel(mon.level + 1, growth)) {
       mon.level++;
       recomputeStats(b, mon);
       adjustFriendship(b, mon, 1);
       b.emit("levelup", { side: 0, uid: mon.uid, level: mon.level, stats: mon.stats, max: b.maxHp(mon), hp: mon.hp });
-      b.msg(mon.nickname + " reached level " + mon.level + "!");
+      b.msg(b.plainName(mon) + " reached level " + mon.level + "!");
       const sp = b.species(mon);
       const ls = sp.learnset || [];
       for (let i = 0; i < ls.length; i++) {
@@ -1102,7 +1108,7 @@
         if ((mon.moves || []).length < 4) {
           mon.moves.push({ id: moveId, pp: md.pp || 15, ppMax: md.pp || 15 });
           b.emit("learn", { side: 0, uid: mon.uid, move: moveId, name: md.name, auto: true });
-          b.msg(mon.nickname + " learnt " + md.name + "!");
+          b.msg(b.plainName(mon) + " learnt " + md.name + "!");
         } else {
           b.pending.push({ kind: "learn", uid: mon.uid, move: moveId });
           b.emit("learn", { side: 0, uid: mon.uid, move: moveId, name: md.name, auto: false });
@@ -1215,8 +1221,8 @@
         mon.typesOverride = null;
         recomputeStats(b, mon);
         mon.hp = keep ? Math.max(1, Math.round(b.maxHp(mon) * ratio)) : b.maxHp(mon);
-        b.emit("switch", { side: 1, slot: 0, uid: mon.uid, species: mon.species, name: mon.nickname, level: mon.level, hp: mon.hp, max: b.maxHp(mon), status: mon.status, overdrive: mon.overdrive || 0, types: b.typesOf(mon), form: true });
-        b.msg(mon.nickname + " wore a different shape.");
+        b.emit("switch", { side: 1, slot: 0, uid: mon.uid, species: mon.species, name: b.plainName(mon), level: mon.level, hp: mon.hp, max: b.maxHp(mon), status: mon.status, overdrive: mon.overdrive || 0, types: b.typesOf(mon), form: true });
+        b.msg(b.plainName(mon) + " wore a different shape.");
       }
       if (e.disableMove) {
         b.vol(mon).disabled[e.disableMove] = e.turns || 2;
@@ -1486,7 +1492,7 @@
     if (act.type === "guard") {
       b.vol(mon).guard = true;
       b.emit("guard", { side: 0, uid: mon.uid });
-      b.msg("You put yourself between them. " + mon.nickname + " braced.");
+      b.msg("You put yourself between them. " + b.plainName(mon) + " braced.");
       BE.gainOverdrive(b, mon, 10, "guard");
       return;
     }
@@ -1842,7 +1848,7 @@
       for (let i = 0; i < side.party.length; i++) {
         const m = side.party[i];
         if (!m) continue;
-        switches.push({ index: i, uid: m.uid, name: m.nickname, level: m.level, hp: m.hp, max: b.maxHp(m), status: m.status, species: m.species, active: side.activeUids.indexOf(m.uid) >= 0, ok: m.hp > 0 && side.activeUids.indexOf(m.uid) < 0 && !(v && v.trapped > 0) });
+        switches.push({ index: i, uid: m.uid, name: b.plainName(m), level: m.level, hp: m.hp, max: b.maxHp(m), status: m.status, species: m.species, active: side.activeUids.indexOf(m.uid) >= 0, ok: m.hp > 0 && side.activeUids.indexOf(m.uid) < 0 && !(v && v.trapped > 0) });
       }
       return {
         kind: "action", slot: req.slot, mon: mon, moves: moves, switches: switches,

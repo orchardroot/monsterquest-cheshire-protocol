@@ -69,7 +69,7 @@
   // Summary scene (four pages)
   // =============================================================
   const PAGES = ["Stats", "Moves", "Dex", "Ribbons"];
-  const sum = { id: "party_summary", page: 0, idx: 0, moveSt: null, mons: null };
+  const sum = { id: "party_summary", touchPad: false, page: 0, idx: 0, moveSt: null, mons: null };
   const SUM_HINTS = [{ btn: "b", label: "Back" }, { btn: "lr", label: "Page" }, { btn: "select", label: "Next mon" }];
 
   sum.enter = function (params) {
@@ -244,7 +244,7 @@
   // =============================================================
   // The party list
   // =============================================================
-  const sc = { id: "party", mode: "menu", st: null, mons: [], reorder: -1, busy: false, title: "", filter: null };
+  const sc = { id: "party", touchPad: false, mode: "menu", st: null, mons: [], reorder: -1, busy: false, title: "", filter: null };
   const HINTS_MENU = [{ btn: "a", label: "Options" }, { btn: "b", label: "Back" }, { btn: "select", label: "Summary" }];
   const HINTS_SELECT = [{ btn: "a", label: "Choose" }, { btn: "b", label: "Cancel" }];
   const HINTS_MOVE = [{ btn: "a", label: "Place" }, { btn: "b", label: "Cancel" }];

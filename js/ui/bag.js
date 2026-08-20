@@ -62,7 +62,7 @@
   // =============================================================
   // Quantity picker (shared with the shop)
   // =============================================================
-  const qty = { id: "quantity", n: 1, max: 99, min: 1, price: 0, label: "", sub: "", unit: "" };
+  const qty = { id: "quantity", touchPad: false, n: 1, max: 99, min: 1, price: 0, label: "", sub: "", unit: "" };
   qty.enter = function (p) {
     p = p || {};
     qty.max = Math.max(1, p.max || 1);
@@ -122,7 +122,7 @@
   // Move replacement (Skill Cards, level-up learning)
   // MQ.UI.MoveReplace.open({mon, moveId}) -> Promise<index|null>
   // =============================================================
-  const rep = { id: "move_replace", mon: null, moveId: null, st: null };
+  const rep = { id: "move_replace", touchPad: false, mon: null, moveId: null, st: null };
   rep.enter = function (p) {
     p = p || {};
     rep.mon = p.mon; rep.moveId = p.moveId;
@@ -185,7 +185,7 @@
   // =============================================================
   // The bag
   // =============================================================
-  const sc = { id: "bag", mode: "field", pocket: 0, st: null, rows: [], busy: false, target: null, title: "", cursorPer: [0, 0, 0, 0, 0, 0, 0] };
+  const sc = { id: "bag", touchPad: false, mode: "field", pocket: 0, st: null, rows: [], busy: false, target: null, title: "", cursorPer: [0, 0, 0, 0, 0, 0, 0] };
   const HINTS_FIELD = [{ btn: "a", label: "Options" }, { btn: "b", label: "Back" }, { btn: "lr", label: "Pocket" }];
   const HINTS_PICK = [{ btn: "a", label: "Choose" }, { btn: "b", label: "Cancel" }, { btn: "lr", label: "Pocket" }];
 
