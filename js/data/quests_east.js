@@ -141,11 +141,11 @@
     summary: "Three catches, written in the ledger, and one of them is wearing somebody else's tag.",
     stages: [
       { id: "s1", text: "Land a common fish from Poynton Pool.", hint: "Any rod. The pool is honest.",
-        cond: { kind: "count", flag: "fish_caught_poynton", n: 1 } },
-      { id: "s2", text: "Land an uncommon one.", hint: "Perchip, usually, off the deep side.",
-        cond: { kind: "count", flag: "fish_caught_poynton", n: 2 } },
-      { id: "s3", text: "Land the rare one on Doug's weighted line.", hint: "Torrentide or better. Patience.",
-        cond: { kind: "count", flag: "fish_caught_poynton", n: 3 },
+        cond: { kind: "catch", species: "puddlish", n: 1 } },
+      { id: "s2", text: "Land an uncommon one.", hint: "Perchip, off the deep side by the jetty.",
+        cond: { kind: "catch", species: "perchip", n: 1 } },
+      { id: "s3", text: "Land the rare one on Doug's weighted line.", hint: "Torrentide. Patience, and the weighted line.",
+        cond: { kind: "catch", species: "torrentide", n: 1 },
         reward: { flags: ["case_07_done"] } }
     ],
     reward: { gear: "rod_weighted", items: [{ id: "brew_bait_tin", n: 1 }], marks: 2, xp: 110 }

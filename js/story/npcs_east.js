@@ -246,20 +246,58 @@
 
   def("east_kerridge_painter", function* (ctx) {
     const C = ctx.S;
+    if (flag("case_02_helped") || flag("case_02_reported")) {
+      yield C.say(["The lad is up the ladder with a brush and a look of total concentration, and does not notice you."]);
+      return;
+    }
     yield C.say([
       "A lad, seventeen at most, with a paint tin and an expression of total innocence he has clearly practised.",
-      "'It's not damage. It's emulsion. It comes off in the rain. I checked.'"
-    ]);
-    yield C.say([
-      "You know that shape you keep putting on her? People are pointing phones at it. Somebody's been telling you it's harmless.",
-      "...Yeah. Bloke on a forum. Said it'd be funny."
+      "It's not damage. It's emulsion. It comes off in the rain. I checked."
     ], { name: "Painter" });
     yield C.say([
-      "It was going to be a cat. Underneath. I was going to do a cat and they said do this first and I'd get followers.",
-      "She was called Nutmeg. She's buried up by the trig point.",
-      "I'll do the cat. I'll do the cat properly."
+      "That shape you keep putting on her. People are pointing phones at it.",
+      "...Yeah. Bloke on a forum. Said it'd be funny and said I'd get followers.",
+      "It's not even a real code. Somebody scanned it and it went nowhere."
+    ], { name: "Painter" });
+    yield C.say([
+      "It was going to be a cat. Underneath. I was going to do the cat properly.",
+      "She was called Nutmeg. She's buried up by the trig point and she was fourteen and she was mine.",
+      "You can't put a cat on a listed folly. I asked. I actually asked, at the parish meeting, and a man laughed."
     ], { name: "Painter" });
     yield C.setFlag("kerridge_painter_talked", true);
+    const pick = yield C.ask("He waits, with the brush still in his hand.", [
+      { label: "Hold the ladder. Finish the cat.", value: "help" },
+      { label: "This is somebody else's building. Report it.", value: "report" },
+      { label: "Say nothing and walk down the hill.", value: "leave" }
+    ]);
+    if (pick === "help") {
+      yield C.setFlag("case_02_helped", true);
+      yield C.fadeOut(400); yield C.wait(600); yield C.fadeIn(500);
+      yield C.say([
+        "It takes an hour and your arms ache and the wind comes over the ridge the whole time.",
+        "White paint on a white folly: you can only see it when the light is low and coming sideways off the plain.",
+        "A small black cat, curled, on the south face of White Nancy. It will be gone by March.",
+        "MEADOW sits at the foot of the ladder for the entire hour and does not move."
+      ]);
+      if (MQ.Cats && MQ.Cats.addTrust) yield C.custom(function () { MQ.Cats.addTrust("meadow", 1, "case_02"); });
+      yield C.quest.advance("case_02_white_nancys_watch");
+      yield C.quest.complete("case_02_white_nancys_watch");
+      yield C.achievement("ach_nutmeg");
+      return;
+    }
+    if (pick === "report") {
+      yield C.setFlag("case_02_reported", true);
+      yield C.say([
+        "You take a photograph of the tin, the ladder and the lad, and he does not argue and does not run.",
+        "Fair enough. Fair enough. It's not my building.",
+        "Ranger Kev pays you four hundred credits out of the parish fund and does not look pleased about any part of it."
+      ]);
+      yield C.giveMoney(400);
+      yield C.quest.advance("case_02_white_nancys_watch");
+      yield C.quest.complete("case_02_white_nancys_watch");
+      return;
+    }
+    yield C.say(["You go down the hill. Behind you a brush starts again, slowly, in the dark."]);
   });
 
   // =====================================================================
@@ -1038,6 +1076,150 @@
       ], { name: "Moss Warden" });
     }
     yield C.say(["Stay on the boards. Nine layers of plank under your boots and every one of them was somebody's afternoon."], { name: "Moss Warden" });
+  });
+
+  
+  // ---- the Edge: three inscriptions, and they only count in order ---------
+  function* inscription(ctx, index, title, lines) {
+    const C = ctx.S;
+    const done = flag("edge_reading_step") || 0;
+    yield C.say(lines);
+    if (flag("case_04_readings_done")) return;
+    if (done !== index) {
+      if (index === 0) { yield C.setFlag("edge_reading_step", 1); }
+      else {
+        yield C.setFlag("edge_reading_step", 0);
+        yield C.say([
+          "You have read them out of order, and out of order they are three separate curiosities about a hill.",
+          "Elis was quite specific. Stormy Point, then Castle Rock, then the Well. Start again."
+        ]);
+      }
+      return;
+    }
+    yield C.setFlag("edge_reading_step", done + 1);
+    if (done + 1 === 3) {
+      yield C.setFlag("case_04_readings_done", true);
+      yield C.sfx("confirm");
+      yield C.say([
+        "Beach, drop, water. Two hundred million years, sixty feet, and a promise about drinking.",
+        "Read in that order they stop being three curiosities and become one sentence about a hill that keeps changing what it is and never says so.",
+        "Gwil will take you down now."
+      ]);
+      if (MQ.Quests && MQ.Quests.advance) yield C.quest.advance("case_04_wizards_well");
+    } else {
+      yield C.notify("Inscription " + (done + 1) + " of 3.");
+    }
+  }
+  def("east_edge_read_stormy", function* (ctx) {
+    yield* inscription(ctx, 0, "Stormy Point", [
+      "Cut into the sandstone at ankle height, worn nearly flat:",
+      "'HERE WAS THE SHORE.'",
+      "The sand under your boots was a desert two hundred million years ago and is a car park's worth of it now."
+    ]);
+  });
+  def("east_edge_read_castle", function* (ctx) {
+    yield* inscription(ctx, 1, "Castle Rock", [
+      "On the lip of the drop, where the rock is polished by two centuries of people sitting down carefully:",
+      "'HERE IT ENDS AND THE COUNTY BEGINS.'",
+      "It is sixty feet. It has always been sixty feet. It looks like thirty."
+    ]);
+  });
+  def("east_edge_read_well", function* (ctx) {
+    yield* inscription(ctx, 2, "the Wizard's Well", [
+      "DRINK OF THIS AND TAKE THY FILL",
+      "FOR THE WATER FALLS BY THE WIZHARD'S WILL",
+      "Above the words a face, cut shallow and looking at the path rather than the water.",
+      "The water is moving. There has been no rain for nine days."
+    ]);
+  });
+
+  // ---- the Carrs: case 5's three sluice gates -----------------------------
+  function* carrsGate(ctx, n, flagId, lines) {
+    const C = ctx.S;
+    if (flag(flagId)) { yield C.say(["Gate " + n + ". Seated, logged and left alone."]); return; }
+    if (!flag("wheel_fridge_fixed")) {
+      yield C.say(["A sluice gate on the Bollin, humming very slightly. Whatever is wrong here starts further down, at the mill."]);
+      return;
+    }
+    yield C.say(lines);
+    yield C.setFlag(flagId, true);
+    if (MQ.Quests && MQ.Quests.advance) yield C.quest.advance("case_05_quarry_bank_overtime");
+    if (flag("case_05_gate_1") && flag("case_05_gate_2") && flag("case_05_gate_3")) {
+      yield C.say([
+        "Three gates. One contractor who should not have been there, one app that nobody configured wrongly on purpose, and one gate that was simply stiff.",
+        "Enid will want telling. Enid will not be surprised by any of it, and will be furious about exactly one."
+      ]);
+      yield C.giveItem("tm_torrent", 1);
+      yield C.giveMoney(700);
+      yield C.quest.complete("case_05_quarry_bank_overtime");
+    }
+  }
+  def("east_carrs_gate_1", function* (ctx) {
+    yield* carrsGate(ctx, 1, "case_05_gate_1", [
+      "A man in an unbranded fleece is standing at the first gate with a laptop balanced on the handrail.",
+      "Contractor. I'm not with the mill, I'm with the water people. ...No, not those water people. The other ones.",
+      "He cannot name the other ones. He looks at the laptop instead, which is the tell, and he knows it is the tell."
+    ]);
+  });
+  def("east_carrs_gate_2", function* (ctx) {
+    yield* carrsGate(ctx, 2, "case_05_gate_2", [
+      "The second gate is being opened and shut, gently, four times an hour, by nobody.",
+      "The controller's screen shows a scheduling app the trust bought in 2021 to book volunteer shifts.",
+      "Somebody connected it to the sluices so the gates would open when the mill opened. Then somebody changed the opening hours. Then somebody left.",
+      "There is no attacker here. There is a Tuesday in 2021 and a person who did their best."
+    ]);
+  });
+  def("east_carrs_gate_3", function* (ctx) {
+    yield* carrsGate(ctx, 3, "case_05_gate_3", [
+      "The third gate is stiff.",
+      "It is stiff because it is a hundred and thirty years old and full of gravel and nobody has greased it since a man called Ronnie retired.",
+      "You grease it. It stops being stiff. This is, on the day's evidence, the single most useful thing you have done all week."
+    ]);
+  });
+
+  // ---- Middlewood Way: case 3's escort ------------------------------------
+  def("east_r2_escort", function* (ctx) {
+    const C = ctx.S;
+    if (flag("case_03_done")) return;
+    if (!MQ.Quests || MQ.Quests.stage("case_03_middlewood_escort") < 0) return;
+    yield C.freeze(true);
+    yield C.say([
+      "Priya stops dead at the mouth of the cutting with one foot on the pedal.",
+      "There. Every time. Twelve tiles and something comes off the bank."
+    ], { name: "Cyclist Priya" });
+    let lost = false;
+    const foes = ["tr_route_bollington_poynton_1", "tr_route_bollington_poynton_2", "tr_route_bollington_poynton_3"];
+    for (let i = 0; i < foes.length; i++) {
+      const r = yield C.battle({ kind: "trainer", trainer: foes[i] });
+      if (r && r.lost) { lost = true; break; }
+      if (i < foes.length - 1) {
+        yield C.say([["Keep going. Twelve more.", "That's two. There's three. There's always three.",
+          "Right. This is the bit where I usually turn round."][i]], { name: "Cyclist Priya" });
+      }
+    }
+    if (lost) {
+      yield C.say(["We'll go back. I don't mind going back. I mind going back ALONE."], { name: "Cyclist Priya" });
+      yield C.freeze(false);
+      return;
+    }
+    yield C.setFlag("case_03_done", true);
+    yield C.say([
+      "Poynton end. Priya gets off the bike and puts both hands on the saddle and breathes.",
+      "Right. Yes. Now — do me a favour and open the pannier, because I've not been able to."
+    ], { name: "Cyclist Priya" });
+    yield C.say([
+      "Inside the pannier is a small grey box with two aerials and a SIM slot and no maker's name.",
+      "It is warm. It has been warm the whole way. It is exactly the same box that is bolted inside the Cage at Lyme."
+    ]);
+    yield C.say([
+      "Forty quid. A bloke on a group chat. Take this to Poynton, don't shake it, forty quid.",
+      "I never opened it. I've thought about that a lot in the last twenty minutes."
+    ], { name: "Cyclist Priya" });
+    yield C.giveMoney(900);
+    yield C.giveItem("copper_coil", 1);
+    yield C.setFlag("clue_grey_box", true);
+    if (MQ.Quests && MQ.Quests.advance) yield C.quest.advance("case_03_middlewood_escort");
+    yield C.freeze(false);
   });
 
   MQ.Story = S;

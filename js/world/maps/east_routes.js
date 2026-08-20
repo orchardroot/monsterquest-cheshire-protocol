@@ -185,6 +185,9 @@
     spawnPoint: { x: 59, y: 12 },
     encounters: { grass: "route_bollington_poynton_grass", water: null },
     landmark: { name: "Middlewood Way", x: 30, y: 12 },
+    triggers: [
+      { x: 30, y: 12, w: 3, h: 2, script: "east_r2_escort", cond: "!case_03_done" }
+    ],
     warps: [
       { x: 61, y: 12, to: "bollington", tx: 1, ty: 20, dir: "right", kind: "edge" },
       { x: 61, y: 11, to: "bollington", tx: 1, ty: 20, dir: "right", kind: "edge" },
@@ -486,6 +489,9 @@
     npcs: [
       { id: "npc_r6_perry", x: 20, y: 13, dir: "left", sprite: "npc_fisher", behaviour: "still", trainer: "tr_route_wilmslow_styal_1", sight: 3 },
       { id: "npc_r6_kwame", x: 10, y: 18, dir: "down", sprite: "npc_birder", behaviour: "look", radius: 4, trainer: "tr_route_wilmslow_styal_2", sight: 4 },
+      { id: "npc_r6_gate_1", x: 20, y: 6, dir: "left", sprite: "npc_shadow_it", behaviour: "still", script: "east_carrs_gate_1" },
+      { id: "npc_r6_gate_2", x: 10, y: 15, dir: "right", sprite: "npc_dev", behaviour: "still", script: "east_carrs_gate_2" },
+      { id: "npc_r6_gate_3", x: 20, y: 30, dir: "left", sprite: "npc_ranger", behaviour: "still", script: "east_carrs_gate_3" },
       { id: "npc_r6_troll", x: 19, y: 26, dir: "up", sprite: "npc_kid", behaviour: "still",
         say: ["I'm the footbridge troll. You have to answer a riddle.", "...I haven't got one. Just go over. Sorry."] }
     ]

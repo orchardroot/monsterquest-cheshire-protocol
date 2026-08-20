@@ -200,6 +200,9 @@
     ],
     triggers: [
       { x: 30, y: 25, w: 4, h: 1, script: "east_alderley_stormy", once: "elis_met", cond: "!elis_met" },
+      { x: 43, y: 22, w: 1, h: 1, script: "east_edge_read_stormy", cond: "elis_met" },
+      { x: 9, y: 23, w: 1, h: 1, script: "east_edge_read_castle", cond: "elis_met" },
+      { x: 4, y: 33, w: 1, h: 1, script: "east_edge_read_well", cond: "elis_met" },
       { x: 41, y: 25, w: 1, h: 1, script: "east_alderley_minemouth", once: "merlynx_seen", cond: "!merlynx_seen" }
     ]
   });
