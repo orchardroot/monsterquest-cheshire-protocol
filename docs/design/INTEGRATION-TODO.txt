@@ -49,3 +49,7 @@ STILL OPEN (not mine to fix / not small and safe):
 - (nothing — the five QA bugs from this pass are fixed; see git log 2026-08-20:
   overworld zoom/letterbox, the Macclesfield angler, the save summary chapter,
   dex seen/caught recording, dialogue box top/bottom placement.)
+
+After merging region-mid + region-southwest (2026-08-20):
+- Duplicate trainer id: both js/data/trainers_mid.js and trainers_sw.js define `vex_3` ("[Data] redefining trainers/vex_3"). Decide which chapter owns it (DESIGN-INDEX says VEX appears once per chapter band) and rename the other, updating the story script that references it.
+- Region south-west's `aberaeron` map declares fishing table `fish_aberaeron` which nothing defines — add it to js/data/encounters_sw.js.
