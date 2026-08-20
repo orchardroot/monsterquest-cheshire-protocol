@@ -446,14 +446,14 @@
   c.fill("g", 14, 0, 3, 1, "+"); c.fill("g", 14, 33, 3, 1, "+");
   c.fill("g", 1, 1, 30, 32, ".");
   // the Bollin through the park, paths on both banks
-  c.fill("g", 13, 1, 5, 32, "W");
-  c.fill("g", 12, 1, 1, 32, "e"); c.fill("g", 18, 1, 1, 32, "e");
+  c.fill("g", 13, 2, 5, 30, "W");
+  c.fill("g", 12, 2, 1, 30, "e"); c.fill("g", 18, 2, 1, 30, "e");
   c.fill("g", 9, 1, 3, 32, "+");
   c.fill("g", 19, 1, 3, 32, "+");
   // stepping stones and a footbridge
   c.fill("g", 12, 14, 7, 1, "s");
   c.fill("g", 12, 25, 7, 1, "X");
-  c.fill("g", 9, 0, 13, 1, "+"); c.fill("g", 9, 33, 13, 1, "+");
+  c.fill("g", 9, 0, 13, 2, "+"); c.fill("g", 9, 32, 13, 2, "+");
   c.fill("g", 2, 3, 7, 6, '"'); c.fill("g", 23, 4, 7, 7, '"');
   c.fill("g", 2, 18, 6, 7, '"'); c.fill("g", 23, 17, 7, 8, '"');
   c.fill("g", 3, 28, 6, 4, '"');

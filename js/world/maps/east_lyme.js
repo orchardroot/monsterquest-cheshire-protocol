@@ -219,7 +219,7 @@
     ambience: "town", dialogue: "town_lyme_park",
     legend: {
       "#": "wall_interior", "^": "wall_interior_top", "W": "window", "_": "floor_tile_check",
-      "r": "carpet", "P": "painting", "k": "bookcase", "t": "table", "s": "counter",
+      "r": "floor_carpet", "P": "painting", "k": "bookcase", "t": "table", "s": "counter",
       "b": "chair", "f": "fireplace", "n": "piano", "a": "stairs", "d": "door_wood",
       "M": "mat_welcome", " ": null
     },

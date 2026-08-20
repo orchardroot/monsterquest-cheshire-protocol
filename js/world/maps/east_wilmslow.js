@@ -126,6 +126,7 @@
   c.set("g", 23, 28, "l"); c.set("g", 24, 30, "o");
   c.fill("g", 1, 26, 1, 6, "_");
   c.fill("g", 14, 26, 2, 6, "\"");
+  c.set("g", 2, 32, "N");
 
   // ---- the southern fringe: rough ground out towards the Edge -----------
   c.fill("g", 1, 33, 50, 4, ",");
@@ -177,7 +178,7 @@
       { x: 42, y: 15, text: ["WILMSLOW STATION — Manchester 18 minutes, Crewe 22, London two hours and a sandwich."] },
       { x: 26, y: 31, text: ["WILMSLOW GYM — Sysadmin Ada.", "TERRAIN IS STATIC AND STAYS STATIC. HOUSE RULE. NO, IT IS NOT NEGOTIABLE.",
         "Under it, in marker: 'she means it, the door means it, the RACKS mean it'"] },
-      { x: 1, y: 31, text: ["WILMSLOW CARE CENTRE — twenty-four hours. It has to be. This is a commuter town."] },
+      { x: 2, y: 32, text: ["WILMSLOW CARE CENTRE — twenty-four hours. It has to be. This is a commuter town."] },
       { x: 43, y: 31, text: ["THE COACH & FOUR — rooms, food, and the only place in Wilmslow with no Wi-Fi.",
         "The landlord calls that a feature. Lately people have started agreeing with him."] },
       { x: 16, y: 34, text: ["ALDERLEY EDGE 2 MILES.", "Somebody has written under it: 'and then straight down'."] }
