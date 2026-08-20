@@ -13,10 +13,10 @@ const ORDER = [
   "core/ns", "core/util", "core/events", "core/view", "core/input", "core/loop", "core/scene", "core/text", "core/ui", "core/dialog", "core/script", "core/flags", "core/clock", "core/save", "core/registry",
   "art/sprites", "art/tiles", "art/monsters", "art/people", "art/fx",
   "audio/audio", "audio/songs", "audio/sfx",
-  "data/types", "data/moves", "data/abilities", "data/items", "data/species", "data/encounters", "data/encounters_east", "data/trainers", "data/trainers_east", "data/quests", "data/quests_east", "data/achievements", "data/dialogue",
+  "data/types", "data/moves", "data/abilities", "data/items", "data/species", "data/encounters", "data/encounters_east", "data/encounters_mid", "data/trainers", "data/trainers_east", "data/trainers_mid", "data/quests", "data/quests_east", "data/quests_mid", "data/achievements", "data/dialogue",
   "world/mapformat", "world/npc", "world/interact", "world/encounters", "world/overworld", "world/maps/",
   "battle/effects", "battle/ai", "battle/engine", "battle/scene",
-  "content/", "ui/", "story/main", "story/npcs", "story/npcs_east", "story/chapters/",
+  "content/", "ui/", "story/main", "story/npcs", "story/npcs_east", "story/npcs_mid", "story/chapters/",
   "boot"
 ];
 
