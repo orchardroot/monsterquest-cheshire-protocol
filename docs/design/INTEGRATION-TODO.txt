@@ -46,9 +46,6 @@ FIXED this pass (see git log):
   UI.Settings now applies everything on the "boot" event.
 
 STILL OPEN (not mine to fix / not small and safe):
-- world/npc.js or story/npcs_east.js: npc_macclesfield_angler (tile 14,33) is solid and
-  stands in the single-tile gap of the canal-side path, so walking east along that path
-  is blocked entirely. Not a soft-lock (you can go round) but it reads as a wall.
 - content: MQ.Save summary reports chapter 0 while the game is in Chapter 1, so every
   save card falls back to "Ch.1" by accident.
 - content/dex: after seeing and fighting silkin and nibbit the Field Dex still reads
