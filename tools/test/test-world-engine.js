@@ -510,9 +510,22 @@ module.exports = function (t, assert) {
     const w = O.getNpc("we_wanderer"), p = O.getNpc("we_patroller"), l = O.getNpc("we_looker");
     assert.ok(w && p && l);
     O.place(3, 14, "down");                  // stand next to the looker
-    return pump(env, 260).then(function () {
+    // Sample the patroller's reach rather than just its position at the end:
+    // its path is only 3 tiles long and loops straight back, so a run with
+    // an unlucky (random) start delay can land the last frame exactly back
+    // at the home waypoint between loops — that is still real progress.
+    let maxX = p.x;
+    let i = 0;
+    return new Promise(function (resolve) {
+      (function loop() {
+        if (i++ >= 260) return resolve();
+        env.step(1);
+        if (p.x > maxX) maxX = p.x;
+        setImmediate(loop);
+      })();
+    }).then(function () {
       assert.ok(Math.abs(w.x - w.home.x) <= 2 && Math.abs(w.y - w.home.y) <= 2, "wanderer stayed within its radius");
-      assert.ok(p.x > 15 || p.pathIdx > 0, "patroller made progress along the path");
+      assert.ok(maxX > 15, "patroller made progress along the path");
       assert.strictEqual(l.dir, "up", "the looker turned to face the player");
     });
   });
