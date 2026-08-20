@@ -51,7 +51,7 @@
     ":": "path_tarmac", "t": "towpath", "Y": "boardwalk", "d": "mud", "$": "sand",
     "~": "water_canal", "W": "water_river", "!": "water_deep", "?": "water_flash", "9": "water_pond",
     "e": "water_edge", "s": "shallows", "Z": "waterfall", "a": "marsh", "J": "marsh_pool",
-    "x": "bridge_stone", "X": "bridge_wood", "<": "bridge_rail", "Q": "fish_spot", "j": "boat_dock",
+    "x": "bridge_stone", "X": "bridge_wood", "<": "pine_forest_floor", "Q": "fish_spot", "j": "boat_dock",
     "T": "tree_oak", "y": "tree_oak_top", "B": "tree_birch", "b": "tree_birch_top",
     "P": "tree_pine", "p": "tree_pine_top", "A": "tree_willow", "D": "tree_dead", "u": "stump",
     "g": "log", "&": "moss_rock", "r": "rock", "O": "rock_moor", "R": "rock_small", "M": "boulder",
