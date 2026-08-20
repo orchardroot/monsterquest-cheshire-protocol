@@ -322,10 +322,13 @@
 
   // Minimal private fallback so the bag works before js/data/items.js lands.
   // Anything the data workstream defines wins; this is never registered.
+  // Every number here must match js/data/items.js — a heal that is worth
+  // more in the fallback than in the real bag is how a balance pass gets
+  // lied to. tools/test/test-battle-gaps.js checks the two agree.
   const FALLBACK = {
     salve: { name: "Salve", kind: "heal", price: 200, amount: 20 },
-    tonic: { name: "Tonic", kind: "heal", price: 600, amount: 60 },
-    elixir: { name: "Elixir", kind: "heal", price: 1500, amount: 120 },
+    tonic: { name: "Tonic", kind: "heal", price: 600, amount: 45 },
+    elixir: { name: "Elixir", kind: "heal", price: 1500, amount: 80 },
     full_restore: { name: "Full Restore", kind: "heal", price: 3000, amount: 9999, cures: ["psn", "tox", "par", "brn", "slp", "frz", "cnf"] },
     revive_salts: { name: "Revive Salts", kind: "heal", price: 1200, revive: 0.5 },
     antidote: { name: "Antidote", kind: "cure", price: 100, cures: ["psn", "tox"] },

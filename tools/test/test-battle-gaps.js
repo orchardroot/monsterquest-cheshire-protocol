@@ -405,7 +405,40 @@ module.exports = function (t, assert) {
   });
 
   // =================================================================
-  // 7. every kind the data can emit has a handler
+  // 7. the bag numbers the engine would fall back on
+  // =================================================================
+  t("state.js's private item fallback matches js/data/items.js", function () {
+    // MQ.Inventory keeps a hard-coded table for the case where
+    // js/data/items.js has not loaded, and the battle engine's own
+    // itemData() does the same. It had drifted: Elixir healed 120 there
+    // and 80 in the real bag, so anything measured against the fallback
+    // was measuring an item that does not exist.
+    const fs = require("fs");
+    const path = require("path");
+    // A clean load: this file's fixtures redefine some item ids.
+    const real = require("../headless").load().MQ.Data.items;
+    const src = fs.readFileSync(path.join(__dirname, "..", "..", "js", "content", "state.js"), "utf8");
+    const start = src.indexOf("const FALLBACK = {");
+    assert.ok(start > 0, "found the fallback table");
+    const body = src.slice(start, src.indexOf("\n  };", start));
+    const bad = [];
+    body.split("\n").forEach(function (line) {
+      const m = /^\s*([a-z0-9_]+):\s*\{(.*)\},?\s*$/.exec(line);
+      if (!m) return;
+      const id = m[1], def = real[id];
+      if (!def) return;                        // fallback-only id, nothing to check
+      ["price", "amount"].forEach(function (key) {
+        const got = new RegExp(key + ":\\s*(-?[0-9.]+)").exec(m[2]);
+        if (!got) return;
+        if (typeof def[key] !== "number") return;    // e.g. amount:'full'
+        if (Number(got[1]) !== def[key]) bad.push(id + "." + key + " " + got[1] + " vs " + def[key]);
+      });
+    });
+    assert.deepStrictEqual(bad, [], "stale fallback: " + bad.join(", "));
+  });
+
+  // =================================================================
+  // 8. every kind the data can emit has a handler
   // =================================================================
   t("no move-effect kind in the data is a silent no-op", function () {
     const dead = [];
