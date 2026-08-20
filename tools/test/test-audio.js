@@ -436,6 +436,25 @@ module.exports = function (t, assert) {
     assert.ok(Object.keys(A.CRY_TYPE).length === 13, "one flavour per type");
   });
 
+  t("cry uses the data team's per-species cry params when they exist", function () {
+    MQ.Data.define("species", "test_dataful", {
+      name: "Datum", types: ["water"], base: { hp: 70, atk: 60, def: 60, spa: 70, spd: 60, spe: 60 },
+      cry: { wave: "triangle", base: 240, len: 700, slide: -120, noise: 0.44, vib: 6, gain: 0.34 }
+    });
+    const p = A.cryPlan("test_dataful");
+    const wantNote = 69 + 12 * Math.log(240 / 440) / Math.LN2;
+    assert.strictEqual(p.wave, "triangle", "wave comes from the data");
+    assert.ok(Math.abs(p.dur - 0.7) < 1e-9, "len ms -> seconds, got " + p.dur);
+    assert.strictEqual(p.vib, 6, "vibrato depth from the data");
+    assert.ok(p.gain > 1, "a loud species is louder");
+    assert.ok(Math.abs(p.segs[0].n - wantNote) <= 2, "starts on the data base note, got " + p.segs[0].n);
+    assert.ok(p.segs[p.segs.length - 1].n < p.segs[0].n, "a negative slide droops");
+    assert.ok(p.noise > 0.2, "noisy species stay noisy");
+    // still deterministic, and a species without a cry block still works
+    assert.strictEqual(JSON.stringify(A.cryPlan("test_dataful")), JSON.stringify(p));
+    assert.ok(A.cryPlan("test_sparker").segs.length >= 2);
+  });
+
   // ---- mixer -----------------------------------------------------------------
   t("volumes, mute and the settings bridge", function () {
     A.setVolume("music", 0.3);

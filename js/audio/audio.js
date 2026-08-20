@@ -1611,19 +1611,40 @@
     if (sp && sp.base) weight = ((sp.base.hp || 60) + (sp.base.atk || 60) + (sp.base.def || 60)) / 3;
     const size = weight ? Math.max(-14, Math.min(10, (70 - weight) * 0.22)) : (rnd() * 10 - 5);
     const segs = Math.max(2, F.seg + Math.floor(rnd() * 3) - 1);
-    const total = 0.34 + rnd() * 0.3 + (opts.dur ? 0 : 0);
-    const plan = { type: type, wave: F.w, segs: [], dur: opts.dur || total, noise: F.noise, ratio: F.ratio + rnd() * 0.8, rough: F.rough };
-    let note = F.base + size + Math.floor(rnd() * 7) - 3;
+    // The data team hands every species a `cry` block (ROSTER §1: wave, base
+    // Hz, len ms, slide Hz, noise, vib, gain). Honour it when it is there and
+    // let the type flavour only colour the bends; fall back to the derived
+    // shape when a species (or a test stub) has none.
+    const cd = (sp && sp.cry) ? sp.cry : null;
+    const total = cd && cd.len ? Math.max(0.16, Math.min(1.1, cd.len / 1000)) : 0.34 + rnd() * 0.3;
+    const plan = {
+      type: type, wave: (cd && cd.wave) || F.w, segs: [], dur: opts.dur || total,
+      noise: cd ? (cd.noise * 0.65 + F.noise * 0.35) : F.noise,
+      ratio: F.ratio + rnd() * 0.8, rough: F.rough,
+      vib: cd && cd.vib ? cd.vib : 0,
+      gain: cd && cd.gain ? Math.max(0.55, Math.min(1.45, cd.gain / 0.3)) : 1
+    };
+    let note = clampNote(cd
+      ? midiOfFreq(cd.base) + Math.floor(rnd() * 3) - 1
+      : F.base + size + Math.floor(rnd() * 7) - 3);
+    // A positive `slide` rises, a negative one droops; walk there over the segs.
+    const target = cd && cd.slide ? clampNote(midiOfFreq(Math.max(55, cd.base + cd.slide))) : null;
     const dseg = plan.dur / segs;
     for (let i = 0; i < segs; i++) {
       const dir = i === 0 ? 1 : (rnd() < 0.55 ? 1 : -1);
       const jump = Math.round((rnd() * F.bend * dir) * 0.7);
-      const nn = Math.max(28, Math.min(104, note + (i === 0 ? 0 : jump)));
-      plan.segs.push({ n: nn, t: i * dseg, d: dseg * (0.85 + rnd() * 0.5), v: 0.55 - i * 0.045 + rnd() * 0.1 });
+      let nn;
+      if (i === 0) nn = note;
+      else if (target !== null) nn = clampNote(Math.round(note + (target - note) / (segs - i) + jump * 0.45));
+      else nn = clampNote(note + jump);
+      plan.segs.push({ n: nn, t: i * dseg, d: dseg * (0.85 + rnd() * 0.5), v: (0.55 - i * 0.045 + rnd() * 0.1) * plan.gain });
       note = nn;
     }
     return plan;
   };
+
+  function clampNote(n) { return Math.max(28, Math.min(104, Math.round(n))); }
+  function midiOfFreq(hz) { return 69 + 12 * Math.log(Math.max(20, hz) / 440) / Math.LN2; }
 
   A.cry = function (speciesId, opts) {
     if (!speciesId) return false;
@@ -1641,7 +1662,8 @@
       grains.push({
         i: plan.rough > 0.45 ? "fm" : "osc", w: plan.wave, n: s.n, to: next ? next.n : s.n - 2,
         t: s.t, d: s.d, v: s.v * 0.7, ratio: plan.ratio, index: plan.rough * 3,
-        vib: plan.rough > 0.3 ? 20 * plan.rough : 0, vibHz: 9 + plan.rough * 12, a: 0.006
+        vib: plan.vib ? 6 + plan.vib * 2.4 : (plan.rough > 0.3 ? 20 * plan.rough : 0),
+        vibHz: 9 + plan.rough * 12, a: 0.006
       });
     }
     if (plan.noise > 0.08) {

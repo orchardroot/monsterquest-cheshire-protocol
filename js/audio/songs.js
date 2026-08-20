@@ -29,7 +29,9 @@
   MQ.Songs = S;
 
   const TABLE = {};
-  const ALIAS = { battle_rival: "battle_vex", town_poynton: "town_prestbury", town_sandbach: "town_congleton", town_runcorn: "town_frodsham", town_lymm: "town_warrington", ending: "credits" };
+  const ALIAS = { battle_rival: "battle_vex", town_poynton: "town_prestbury", town_sandbach: "town_congleton", town_runcorn: "town_frodsham", town_lymm: "town_warrington", ending: "credits",
+    // legacy v1 ids, so an old save or an old call site still finds music
+    battle: "battle_wild", fame: "credits", victory: "fanfare_victory", gym: "battle_gym", town: "town_macc", route: "route_east" };
   S.ALIAS = ALIAS;
 
   S.define = function (id, def) {
