@@ -61,6 +61,7 @@ const ASSETS = [
   "js/ui/shop.js",
   "js/ui/theme.js",
   "js/ui/title.js",
+  "js/story/main.js",
   "js/boot.js",
   "icons/icon-192.png",
   "icons/icon-512.png",

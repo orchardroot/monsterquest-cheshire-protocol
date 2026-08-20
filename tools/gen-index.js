@@ -16,7 +16,7 @@ const ORDER = [
   "data/types", "data/moves", "data/abilities", "data/items", "data/species", "data/encounters", "data/encounters_east", "data/trainers", "data/trainers_east", "data/quests", "data/achievements", "data/dialogue",
   "world/mapformat", "world/npc", "world/interact", "world/encounters", "world/overworld", "world/maps/",
   "battle/effects", "battle/ai", "battle/engine", "battle/scene",
-  "content/", "ui/", "story/npcs", "story/chapters/",
+  "content/", "ui/", "story/main", "story/npcs", "story/chapters/",
   "boot"
 ];
 

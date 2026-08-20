@@ -356,6 +356,15 @@
   // ---- flow ---------------------------------------------------
   Title.onStart = null;   // integration hook: fn({newGame, slot, name, difficulty})
 
+  // MQ.Overworld is itself the pushable scene (id/enter/exit/update/draw),
+  // not a `.scene` property or a `.start()` factory — support either shape.
+  function pushOverworld(params) {
+    if (MQ.Overworld && typeof MQ.Overworld.enter === "function" && MQ.Scenes) { MQ.Scenes.replace(MQ.Overworld, params); return true; }
+    if (MQ.Overworld && MQ.Overworld.scene) { MQ.Scenes.replace(MQ.Overworld.scene, params); return true; }
+    if (MQ.Overworld && MQ.Overworld.start) { MQ.Overworld.start(params); return true; }
+    return false;
+  }
+
   function handOff(info) {
     if (MQ.Events) MQ.Events.emit("game:start", info);
     try {
@@ -363,12 +372,11 @@
       if (MQ.Game && MQ.Game.start) { MQ.Game.start(info); return; }
       if (MQ.Story && MQ.Story.begin) { MQ.Story.begin(info); return; }
       if (info.newGame && MQ.Story && MQ.Story.chapters && MQ.Story.chapters[1] && MQ.Story.chapters[1].start && MQ.Script) {
-        if (MQ.Overworld && MQ.Overworld.scene) MQ.Scenes.replace(MQ.Overworld.scene);
+        pushOverworld(info);
         MQ.Script.run(MQ.Story.chapters[1].start, {});
         return;
       }
-      if (MQ.Overworld && MQ.Overworld.scene) { MQ.Scenes.replace(MQ.Overworld.scene); return; }
-      if (MQ.Overworld && MQ.Overworld.start) { MQ.Overworld.start(info); return; }
+      if (pushOverworld(info)) return;
     } catch (e) { MQ.warn("[Title] hand-off failed", e); }
     Title.busy = false;
     TH().say([
