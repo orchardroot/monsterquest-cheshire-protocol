@@ -41,6 +41,9 @@ FIXED this pass (see git log):
 - toasts: walking into the canal four times stacked four identical bars; a repeat of the
   newest toast now just restarts its clock (core/ui.js).
 - name entry: keyboard grid centred instead of hugging the top of a tall screen.
+- settings were read from localStorage at load but only applied when you opened the
+  Settings screen, so a cold boot ignored your volume, text speed and touch layout.
+  UI.Settings now applies everything on the "boot" event.
 
 STILL OPEN (not mine to fix / not small and safe):
 - world/overworld.js camera: interiors are drawn 1:1 and small maps sit in a large black

@@ -329,5 +329,8 @@
   sc.touchScale = function () { return TOUCH_SCALE[get("touchSize")] || 1; };
 
   readLocal();
+  // Stored preferences used to sit there until you opened this screen; apply
+  // them once the engine is up so a cold boot honours them.
+  if (MQ.Events && MQ.Events.on) MQ.Events.on("boot", function () { readLocal(); applyAll(); });
   UI.Settings = sc;
 })();
