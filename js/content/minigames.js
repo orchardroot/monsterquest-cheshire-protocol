@@ -21,6 +21,7 @@
   const M = MQ.Minigames || {};
   function A() { return MQ.Activities; }
 
+  M.auto = false;
   M.state = { scores: {}, plays: {}, tokens: 0, quizDay: 0, quizBest: 0, liftLevel: 1, ttLevel: 1, redeemed: {} };
 
   M.GAMES = {};
@@ -90,6 +91,14 @@
       update: function (dt) {
         const a = A();
         this.t += dt;
+        // Headless/skip mode (tests, MQ.Dialog.auto): play out honourably rather
+        // than sitting here waiting for a button nobody is going to press.
+        if (M.auto || (MQ.Dialog && MQ.Dialog.auto)) {
+          if (this.over) { MQ.Scenes.pop(this.result); return; }
+          if (def.auto) { def.auto.call(this, finish); return; }
+          finish(this, { score: this.score || 0, won: true, auto: true });
+          return;
+        }
         if (this.over) {
           this.overT += dt;
           if (this.overT > 350 && (a.confirmPressed() || a.anyTap() || a.backPressed())) MQ.Scenes.pop(this.result);
@@ -604,6 +613,7 @@
       a.music("town_knutsford");
     },
     right: function () { return (this.i + 1) + "/" + this.qs.length; },
+    auto: function () { while (!this.over && this.i < this.qs.length) this.answerWith(this.qs[this.i].r); },
     hints: function () { return [{ btn: "dir", label: "Choose" }, { btn: "a", label: "Answer" }, { btn: "b", label: "Leave" }]; },
     update: function (dt) {
       const a = A(), I = MQ.Input;
