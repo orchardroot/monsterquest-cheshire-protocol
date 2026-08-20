@@ -31,12 +31,20 @@
   function entryOf(id) { try { return (MQ.Trainer && MQ.Trainer.dexEntry) ? MQ.Trainer.dexEntry(id) : null; } catch (e) { return null; } }
   function seen(id) { const e = entryOf(id); return !!(e && e.seen); }
   function caught(id) { const e = entryOf(id); return !!(e && e.caught); }
+  // Recounted at most a few times a second and into the same object, so the
+  // grid can ask for it every frame without allocating.
+  const countCache = { seen: 0, caught: 0, total: 0, at: -9999 };
   function counts() {
+    const now = (MQ.Loop && MQ.Loop.time) || 0;
+    if (countCache.at >= 0 && now - countCache.at < 300) return countCache;
+    countCache.at = now;
     let s = 0, c = 0, total = 0;
     const ids = order();
     for (let i = 0; i < ids.length; i++) { total++; if (seen(ids[i])) s++; if (caught(ids[i])) c++; }
-    return { seen: s, caught: c, total: total };
+    countCache.seen = s; countCache.caught = c; countCache.total = total;
+    return countCache;
   }
+  Dex.invalidateCounts = function () { countCache.at = -9999; };
   function nameOf(id) { const sp = speciesDef(id); return (sp && sp.name) || String(id).toUpperCase(); }
   function numOf(id) { const sp = speciesDef(id); return (sp && sp.num) || (order().indexOf(id) + 1); }
   function typesOf(id) { const sp = speciesDef(id); return (sp && sp.types) || []; }
@@ -884,4 +892,11 @@
   };
   mile.open = function () { return MQ.Scenes.pushP(mile, {}); };
   UI.DexMilestones = mile;
+
+  if (MQ.Events && MQ.Events.on) {
+    MQ.Events.on("dex:seen", function () { Dex.invalidateCounts(); });
+    MQ.Events.on("dex:caught", function () { Dex.invalidateCounts(); });
+    MQ.Events.on("load", function () { Dex.invalidateCounts(); });
+    MQ.Events.on("newgame", function () { Dex.invalidateCounts(); });
+  }
 })();

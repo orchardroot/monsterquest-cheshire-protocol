@@ -340,7 +340,13 @@
     ctx.strokeStyle = "rgba(140,110,70,0.4)"; ctx.lineWidth = 2;
     UI.roundRect(ctx, x + 1, y + 1, w - 2, h - 2, 10); ctx.stroke();
     T.draw(ctx, "Chapter " + def.n + " — " + def.title, x + 14, y + 8, { size: "m", color: C.brassLit });
-    T.draw(ctx, def.where, x + w - 14, y + 12, { size: "s", align: "right", color: C.textDim });
+    let rightEdge = x + w - 14;
+    if (UI.HUD && UI.HUD.cutover) {
+      const cw2 = 150;
+      const hh = UI.HUD.cutover(ctx, x + w - cw2 - 10, y + 4, cw2);
+      if (hh) rightEdge = x + w - cw2 - 20;
+    }
+    T.draw(ctx, def.where, rightEdge, y + 12, { size: "s", align: "right", color: C.textDim, maxWidth: w * 0.45 });
 
     const detailH = 64;
     const gy = y + 34, gh = h - 34 - detailH;
@@ -412,6 +418,32 @@
     }
   }
 
+  // What is in it for you? Open cases keep the details to themselves.
+  function rewardText(c) {
+    const Theme = TH();
+    let def = null;
+    try { if (MQ.Quests && MQ.Quests.def) def = MQ.Quests.def(c.id); } catch (e) { def = null; }
+    const r = def && def.reward;
+    if (!r) return c.pin === "Open" ? "Reward: whatever they think it is worth." : "";
+    if (c.pin === "Open") return "Reward: they have not said yet.";
+    const bits = [];
+    if (r.money) bits.push(Theme.money(r.money));
+    if (r.marks) bits.push(r.marks + " marks");
+    if (r.xp) bits.push(r.xp + " xp");
+    if (r.perk) bits.push((r.perk === true ? 1 : r.perk) + " perk point");
+    if (r.items) for (let i = 0; i < r.items.length; i++) {
+      const it = r.items[i];
+      const nm = (MQ.Data && MQ.Data.itemName) ? MQ.Data.itemName(it.id || it) : Theme.titleCase(it.id || it);
+      bits.push(nm + (it.n > 1 ? " x" + it.n : ""));
+    }
+    if (r.gear) bits.push(Theme.titleCase(r.gear));
+    if (r.title) bits.push("the title " + r.title);
+    if (r.trust) bits.push("trust with " + Theme.titleCase(r.trust.cat || "the cats"));
+    if (r.unlock) bits.push(Theme.titleCase(r.unlock));
+    if (!bits.length) return "";
+    return (c.pin === "Closed" ? "Paid: " : "Reward: ") + bits.join(", ");
+  }
+
   function pinColour(pin) {
     const C = TH().C;
     return pin === "Closed" ? C.good : pin === "In Hand" ? C.brassLit : C.textDim;
@@ -457,7 +489,6 @@
       for (let i = 0; i < stages.length && ry < y + h - 60; i++) {
         const done = c.stage > i || c.pin === "Closed";
         const now = c.stage === i && c.pin === "In Hand";
-        const hidden = !done && !now && c.stage < i - 0 && c.pin !== "Closed" && i > c.stage;
         ctx.fillStyle = done ? C.good : now ? C.brass : "rgba(120,118,145,0.5)";
         ctx.beginPath(); ctx.arc(dx + 20, ry + 7, 4, 0, 6.3); ctx.fill();
         const label = (done || now || c.pin === "Closed") ? (stages[i].text || "Step " + (i + 1)) : "· · ·";
@@ -466,8 +497,11 @@
     } else if (c.text) {
       ry += T.drawWrapped(ctx, c.text, dx + 14, ry, dw - 28, { size: "s", color: C.text }) * 15 + 4;
     }
-    // footer facts
-    let fy = y + h - 46;
+    // reward + footer facts
+    let fy = y + h - 64;
+    const rew = rewardText(c);
+    if (rew) T.draw(ctx, rew, dx + 14, fy, { size: "s", color: c.pin === "Closed" ? C.good : C.brassLit, maxWidth: dw - 28 });
+    fy += 16;
     if (c.twist) { T.draw(ctx, "The twist landed.", dx + 14, fy, { size: "s", color: C.oxblood }); fy += 15; }
     if (c.teaches) T.draw(ctx, "Teaches: " + c.teaches, dx + 14, fy, { size: "s", color: C.canal, maxWidth: dw - 28 });
     if (c.pin === "In Hand") T.draw(ctx, MQ.Quests && MQ.Quests.trackedId === c.id ? "A: stop tracking" : "A: track this", dx + dw - 14, y + h - 20, { size: "s", align: "right", color: C.brassLit });
