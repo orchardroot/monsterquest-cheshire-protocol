@@ -62,6 +62,9 @@
   B.house(c, { x: 7, y: 28, w: 8, h: 6, rh: 2, roof: "p", wall: "c", win: "C", door: "v", doorX: 3 });
   c.set("g", 9, 28, "p");
   c.scatter("g", "frod-graves", "n", 10, 5, 28, 11, 8, [","]);
+  c.fill("g", 5, 34, 11, 2, ",");
+  c.fill("g", 5, 28, 2, 8, ",");
+  c.fill("g", 15, 28, 1, 8, ",");
   c.set("g", 6, 27, "g");
   c.fill("g", 10, 34, 1, 3, "_");
   B.house(c, { x: 20, y: 26, w: 8, h: 4, rh: 1, roof: "R", wall: "$", win: "W", door: "S", doorX: 3, over: ";" });
