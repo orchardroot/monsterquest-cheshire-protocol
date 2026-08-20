@@ -135,17 +135,50 @@ module.exports = function (t, assert) {
     assert.strictEqual(C.points("bigboy"), 1, "a reveal is worth a point");
   });
 
+  // C.sendThrough({battle:true}) rolls Math.random() against a trust-scaled
+  // chance that caps at 0.95, so asserting "trust 5 wins" lost about one run
+  // in twenty. Pin the roll instead: the point of the test is the plumbing
+  // either side of the scrap, and both outcomes are now covered.
+  function withRoll(value, fn) {
+    const real = Math.random;
+    Math.random = function () { return value; };
+    const done = function () { Math.random = real; };
+    let out;
+    try { out = fn(); }
+    catch (e) { done(); throw e; }
+    return (out && typeof out.then === "function") ? out.then(function (v) { done(); return v; }, function (e) { done(); throw e; }) : (done(), out);
+  }
+
   t("cat-only paths need the squeeze ability and can auto-resolve a scrap", function () {
     fresh(); C.unlock(); C.follow("meadow");
     C.setTrust("meadow", 5);
-    return C.sendThrough({ item: "salve", n: 2, flag: "cat_gap_1", battle: true }).then(function (r) {
+    return withRoll(0, function () {
+      return C.sendThrough({ item: "salve", n: 2, flag: "cat_gap_1", battle: true });
+    }).then(function (r) {
       assert.strictEqual(r.ok, true, "trust 5 wins the little fight");
+      assert.strictEqual(r.battle.won, true);
+      assert.ok(r.battle.chance > 0.9, "trust 5 is a 95% cat");
       assert.strictEqual(Inv.count("salve"), 2);
       assert.strictEqual(MQ.Flags.get("cat_gap_1"), true);
       C.stopFollowing();
       return C.sendThrough({ item: "salve" });
     }).then(function (r2) {
       assert.strictEqual(r2.ok, false, "no cat, no gap");
+    });
+  });
+
+  t("a cat that loses the scrap comes back with nothing", function () {
+    fresh(); C.unlock(); C.follow("meadow");
+    C.setTrust("meadow", 0);
+    const before = C.points("meadow");
+    return withRoll(0.999, function () {
+      return C.sendThrough({ item: "salve", n: 2, flag: "cat_gap_2", battle: true });
+    }).then(function (r) {
+      assert.strictEqual(r.ok, false, "it was bigger than it looked");
+      assert.strictEqual(r.battle.won, false);
+      assert.strictEqual(Inv.count("salve"), 0, "no loot for a loss");
+      assert.strictEqual(MQ.Flags.get("cat_gap_2"), undefined, "and no flag");
+      assert.strictEqual(C.points("meadow"), before, "and no trust");
     });
   });
 
