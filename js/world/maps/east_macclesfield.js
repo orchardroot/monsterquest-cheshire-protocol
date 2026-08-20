@@ -202,7 +202,10 @@
         say: ["A hundred and eight steps. I've done it in forty seconds.", "That's a lie. I've done it in ninety and been sick."] },
       { id: "npc_macclesfield_walker", x: 34, y: 17, dir: "down", sprite: "npc_walker", behaviour: "path", path: [[34, 17], [50, 17], [50, 20], [34, 20]], pathMode: "loop",
         say: ["Up the hill, down the hill. It's the only flat thing about this town: nothing."] },
-      { id: "npc_macclesfield_angler", x: 14, y: 33, dir: "down", sprite: "npc_fisher", behaviour: "still",
+      // (14,33) sealed the towpath: there the cut is one tile wide with the mill
+      // wall behind it, so he read as a gate. Moved east to where the bank opens
+      // out and you can step round him.
+      { id: "npc_macclesfield_angler", x: 18, y: 33, dir: "down", sprite: "npc_fisher", behaviour: "still",
         say: ["Cut's four foot deep and full of bicycles.", "And perch. Mostly bicycles."] },
       { id: "npc_macclesfield_granny", x: 32, y: 15, dir: "down", sprite: "npc_granny", behaviour: "still",
         say: ["The masts have been humming. Not loud. Just... agreed with each other."] },
