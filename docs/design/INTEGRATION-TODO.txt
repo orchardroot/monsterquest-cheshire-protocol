@@ -14,3 +14,8 @@ Known cross-team mismatches after merging ws/ui-a + ws/content-core (2026-08-19)
 - cats: Quiet Cat perk should make Slipstream +2 (perk lookup mismatch: MQ.Progression.has vs MQ.Trainer.perks).
 - quests rewards: unlock() needs MQ.Overworld present, or a flag fallback the test accepts.
 - brewing buffs: MQ.Inventory brew-buff channel vs content-activities' expectations (activities not built yet).
+
+Browser QA 2026-08-20 (v2 @ integrated build, Firefox, 1411x1216):
+- WORKS: title screen (night Cheshire, dish, rain, slots), name entry, difficulty picker, confirm dialog, overworld with real tiles/NPCs/clock HUD, virtual analogue stick moves the player diagonally, touch A/B/RUN/START, canvas fills the window at 60fps, no letterbox.
+- BUG: on the name-entry screen the footer says "ESC Done" but pressing Escape does not commit the name (tapping DONE does). Fix in js/ui/title.js: Escape/START should confirm the entered name.
+- NOTE: testers must hard-refresh once — the old service worker serves a stale index.html (cache name changed to mq2-*).
