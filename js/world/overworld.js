@@ -981,6 +981,7 @@
       else MQ.NPC.updateFollower(c, dt, w);
     }
     updateParticles(dt);
+    if (MQ.FX && MQ.FX.update) MQ.FX.update(dt);
     if (!locked) checkSightLines();
     updateCamera(dt);
   };
@@ -1095,7 +1096,10 @@
     const vw = viewW(), vh = viewH();
     const outdoor = map.outdoor !== false;
     const kind = outdoor && MQ.Clock ? MQ.Clock.weatherOf(map.weatherZone) : "clear";
-    if (MQ.FX && MQ.FX.weather) { MQ.FX.weather(ctx, kind, dt, { w: vw, h: vh, ox: ox, oy: oy }); }
+    if (MQ.FX && MQ.FX.drawWeather) {
+      if (MQ.FX.setWeather) MQ.FX.setWeather(kind);
+      MQ.FX.drawWeather(ctx);
+    }
     else if (outdoor && kind !== "clear") {
       if (!weatherInit) initWeather();
       if (kind === "rain") {

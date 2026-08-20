@@ -123,7 +123,7 @@ function fixtures(MQ) {
     },
     warps: [{ x: 6, y: 3, to: "we_house", tx: 5, ty: 8, dir: "up", kind: "door" }],
     signs: [{ x: 13, y: 6, text: ["TEST FIELD", "Ledges south. Pond west. Mind the cat."] }],
-    items: [{ x: 9, y: 6, item: "potion", n: 1, flag: "item_we_field_1" }],
+    items: [{ x: 9, y: 6, item: "salve", n: 1, flag: "item_we_field_1" }],
     npcs: [
       { id: "we_greeter", x: 8, y: 12, dir: "down", sprite: "npc_walker", behaviour: "still", script: "we_greeter" },
       { id: "we_wanderer", x: 17, y: 6, dir: "down", sprite: "npc_kid", behaviour: "wander", radius: 2, say: ["Lovely day."] },
@@ -135,7 +135,7 @@ function fixtures(MQ) {
     encounters: { grass: "we_field_grass", water: null, cave: null },
     fishing: "fish_we_field",
     restPoints: [{ x: 13, y: 6, flag: "we_rested" }],
-    catGaps: [{ x: 19, y: 6, item: "potion", n: 1, flag: "we_gap_1", say: ["MEADOW comes back with a dusty little box."] }],
+    catGaps: [{ x: 19, y: 6, item: "salve", n: 1, flag: "we_gap_1", say: ["MEADOW comes back with a dusty little box."] }],
     spawnPoint: { x: 13, y: 9 },
     healPoint: { x: 13, y: 9 },
     landmark: { name: "The Test Field", x: 13, y: 9 }
@@ -251,7 +251,7 @@ module.exports = function (t, assert) {
       triggers: [{ x: 8, y: 4, w: 4, h: 4, script: "we_trigger" }],
       catGaps: [{ x: 99, y: 1 }],
       restPoints: [{ x: 4, y: 99 }],
-      items: [{ x: 1, y: 0, item: "potion", flag: "dupe" }, { x: 2, y: 0, item: "potion", flag: "dupe" }],
+      items: [{ x: 1, y: 0, item: "salve", flag: "dupe" }, { x: 2, y: 0, item: "salve", flag: "dupe" }],
       fishing: "fish_nowhere",
       encounters: { swamp: "we_field_grass" },
       spawnPoint: { x: 0, y: 4 }
@@ -510,9 +510,22 @@ module.exports = function (t, assert) {
     const w = O.getNpc("we_wanderer"), p = O.getNpc("we_patroller"), l = O.getNpc("we_looker");
     assert.ok(w && p && l);
     O.place(3, 14, "down");                  // stand next to the looker
-    return pump(env, 260).then(function () {
+    // Sample the patroller's reach rather than just its position at the end:
+    // its path is only 3 tiles long and loops straight back, so a run with
+    // an unlucky (random) start delay can land the last frame exactly back
+    // at the home waypoint between loops — that is still real progress.
+    let maxX = p.x;
+    let i = 0;
+    return new Promise(function (resolve) {
+      (function loop() {
+        if (i++ >= 260) return resolve();
+        env.step(1);
+        if (p.x > maxX) maxX = p.x;
+        setImmediate(loop);
+      })();
+    }).then(function () {
       assert.ok(Math.abs(w.x - w.home.x) <= 2 && Math.abs(w.y - w.home.y) <= 2, "wanderer stayed within its radius");
-      assert.ok(p.x > 15 || p.pathIdx > 0, "patroller made progress along the path");
+      assert.ok(maxX > 15, "patroller made progress along the path");
       assert.strictEqual(l.dir, "up", "the looker turned to face the player");
     });
   });
@@ -721,7 +734,11 @@ module.exports = function (t, assert) {
       MQ.Dialog.say = realSay;
       assert.strictEqual(r[0], true, "the errand completed");
       assert.strictEqual(MQ.Flags.get("we_gap_1"), true, "the gap is marked done");
-      assert.strictEqual(MQ.Flags.get("item_potion"), 1, "MEADOW brought back the goods");
+      if (MQ.Inventory && MQ.Inventory.count) {
+        assert.strictEqual(MQ.Inventory.count("salve"), 1, "MEADOW brought back the goods");
+      } else {
+        assert.strictEqual(MQ.Flags.get("item_salve"), 1, "MEADOW brought back the goods");
+      }
       assert.strictEqual(O.frozen(), false);
       assert.strictEqual(O.getCat("meadow").scriptCtl, null);
     }, function (e) { MQ.Dialog.say = realSay; throw e; });

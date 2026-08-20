@@ -59,6 +59,14 @@ noTests.load = function () {
   const ab = function (id, name) { D.define("abilities", id, { name: name, desc: "", impl: id }); };
   Object.keys(MQ.BattleEffects.abilities).forEach(function (id) { ab(id, MQ.BattleEffects.abilities[id].name || id); });
 
+  // A stocked bag so the flow tests can use items/capsules regardless of
+  // whether MQ.Inventory (content workstream) is present in this build.
+  if (MQ.Inventory && MQ.Inventory.add) {
+    ["salve", "tonic", "panacea", "capsule_basic", "capsule_kernel", "capsule_root"].forEach(function (id) {
+      MQ.Inventory.add(id, 10);
+    });
+  }
+
   return env;
 };
 

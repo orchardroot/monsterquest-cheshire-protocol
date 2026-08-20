@@ -304,8 +304,8 @@
     b.perk = function (id) {
       const T = NS.Trainer;
       if (T && T.perks) {
-        if (T.perks.has) return T.perks.has(id);
-        if (T.perks.indexOf) return T.perks.indexOf(id) >= 0;
+        if (T.perks.has && T.perks.has(id)) return true;
+        if (T.perks.indexOf && T.perks.indexOf(id) >= 0) return true;
       }
       if (NS.Flags && NS.Flags.get) return !!NS.Flags.get(id);
       return false;
