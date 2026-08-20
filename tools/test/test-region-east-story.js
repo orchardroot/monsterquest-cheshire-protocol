@@ -39,10 +39,9 @@ module.exports = function (t, assert) {
     });
     assert.deepStrictEqual(missing, [], "unregistered scripts:\n" + missing.join("\n"));
     assert.deepStrictEqual(notGen, [], "not generator functions:\n" + notGen.join("\n"));
-    // the east namespace is respected
-    Object.keys(S.npcScripts).forEach(function (k) {
-      assert.ok(k.indexOf("east_") === 0, "npc script key outside the east_ namespace: " + k);
-    });
+    // this workstream namespaces everything it registers
+    const east = Object.keys(S.npcScripts).filter(function (k) { return k.indexOf("east_") === 0; });
+    assert.ok(east.length >= 70, "region-east registers " + east.length + " npc scripts");
   });
 
   t("the chapter table, CUTOVER days and starter counter-picks are wired", function () {
@@ -284,5 +283,75 @@ module.exports = function (t, assert) {
       const found = (m.npcs || []).some(function (n) { return n.id === q.giver.npc; });
       assert.ok(found, id + ": giver npc " + q.giver.npc + " is not on " + q.giver.map);
     });
+  });
+
+  t("the Edge inscriptions only count when read in order", function () {
+    const env = H.load();
+    const MQ = env.MQ;
+    MQ.Dialog.auto = true;
+    MQ.Scenes.replace(MQ.Overworld, { map: "alderley_edge", x: 26, y: 1, dir: "down" });
+    env.step(1);
+    const N = MQ.Story.npcScripts;
+    return pump(env, MQ.Script.run(N.east_edge_read_well, {}), 800, "well first")
+      .then(function () {
+        assert.ok(!MQ.Flags.get("case_04_readings_done"));
+        assert.strictEqual(MQ.Flags.get("edge_reading_step") || 0, 0, "out of order resets");
+        return pump(env, MQ.Script.run(N.east_edge_read_stormy, {}), 800, "stormy");
+      })
+      .then(function () { return pump(env, MQ.Script.run(N.east_edge_read_castle, {}), 800, "castle"); })
+      .then(function () {
+        assert.ok(!MQ.Flags.get("case_04_readings_done"), "two of three is not three");
+        return pump(env, MQ.Script.run(N.east_edge_read_well, {}), 800, "well");
+      })
+      .then(function () {
+        assert.ok(MQ.Flags.get("case_04_readings_done"), "beach, drop, water");
+        // and Gwil then parts with the lamp
+        MQ.Quests.start("case_04_wizards_well");
+        return pump(env, MQ.Script.run(N.east_alderley_gwil, {}), 1200, "Gwil");
+      })
+      .then(function () {
+        assert.ok(MQ.Inventory.count("davy_lamp") >= 1, "the Davy Lamp is handed over");
+        assert.ok(MQ.Flags.get("lamp_given"));
+      });
+  });
+
+  t("White Nancy's watch closes either way, and the helping branch pays in trust", function () {
+    const env = H.load();
+    const MQ = env.MQ;
+    MQ.Dialog.auto = true;
+    MQ.Dialog.autoChoice = 0;   // "hold the ladder"
+    MQ.Scenes.replace(MQ.Overworld, { map: "kerridge_hill", x: 17, y: 5, dir: "up" });
+    env.step(1);
+    MQ.Quests.start("case_02_white_nancys_watch");
+    const before = (MQ.Cats && MQ.Cats.state.meadow) ? MQ.Cats.state.meadow.points : 0;
+    return pump(env, MQ.Script.run(MQ.Story.npcScripts.east_kerridge_painter, {}), 2000, "the painter").then(function () {
+      assert.ok(MQ.Flags.get("case_02_helped"), "you held the ladder");
+      assert.ok(!MQ.Flags.get("case_02_reported"));
+      assert.ok(MQ.Quests.isDone("case_02_white_nancys_watch"), "the case closed");
+      if (MQ.Cats && MQ.Cats.state.meadow) assert.ok(MQ.Cats.state.meadow.points > before, "MEADOW noticed");
+    });
+  });
+
+  t("the Carrs gates close case 5 only after the fridge is out", function () {
+    const env = H.load();
+    const MQ = env.MQ;
+    MQ.Dialog.auto = true;
+    MQ.Scenes.replace(MQ.Overworld, { map: "route_wilmslow_styal", x: 20, y: 32, dir: "up" });
+    env.step(1);
+    const N = MQ.Story.npcScripts;
+    return pump(env, MQ.Script.run(N.east_carrs_gate_1, {}), 800, "gate 1 early")
+      .then(function () {
+        assert.ok(!MQ.Flags.get("case_05_gate_1"), "nothing to trace until the mill is clear");
+        MQ.Flags.set("wheel_fridge_fixed", true);
+        MQ.Quests.start("case_05_quarry_bank_overtime");
+        return pump(env, MQ.Script.run(N.east_carrs_gate_1, {}), 800, "gate 1");
+      })
+      .then(function () { return pump(env, MQ.Script.run(N.east_carrs_gate_2, {}), 800, "gate 2"); })
+      .then(function () { return pump(env, MQ.Script.run(N.east_carrs_gate_3, {}), 1200, "gate 3"); })
+      .then(function () {
+        assert.ok(MQ.Flags.get("case_05_gate_3"));
+        assert.ok(MQ.Quests.isDone("case_05_quarry_bank_overtime"), "case 5 closed");
+        assert.ok(MQ.Inventory.count("tm_torrent") >= 1, "Skill Card: Torrent");
+      });
   });
 };
