@@ -59,7 +59,8 @@
     T.draw(ctx, Theme.playtime(e.playtime), x + w - 14, y + 62, { size: "s", align: "right", color: C.textDim });
     // party line
     const party = s.party || [];
-    let px = x + 14, py = y + 88;
+    // keep the party chips clear of the map line on a short card
+    let px = x + 14, py = Math.min(y + 88, y + h - 46);
     for (let i = 0; i < party.length && i < 6; i++) {
       const label = speciesName(party[i]);
       const pw = T.width(label, "s") + 12;
