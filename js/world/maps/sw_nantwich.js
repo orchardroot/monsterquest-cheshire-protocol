@@ -67,7 +67,7 @@
   c.fill("g", 31, 13, 16, 10, ",");
   B.house(c, { x: 34, y: 13, w: 11, h: 8, rh: 3, roof: "p", wall: "c", win: "C", door: "d", doorX: 5 });
   c.set("g", 39, 12, "p");
-  B.speckle(c, "graves", "g", 12, 31, 21, 16, 2, [","]);
+  B.speckle(c, "g", "graves", "g", 14, 31, 13, 16, 10, [","]);
   c.set("g", 38, 23, "d"); c.set("g", 39, 23, "d");
   c.fill("g", 38, 21, 2, 3, "_");
   c.set("g", 33, 22, "i");
@@ -99,7 +99,7 @@
 
   // The station, east end
   B.house(c, { x: 48, y: 18, w: 6, h: 4, rh: 2, roof: "R", wall: "#", win: "W", door: "S", doorX: 3, over: "^" });
-  c.set("g", 47, 21, "P");
+  c.set("g", 48, 22, "P");
   c.fill("g", 47, 23, 8, 1, "-");
 
   // ---- the brine pool and the lido gate, north-east ----------------------
@@ -188,7 +188,7 @@
       { x: 43, y: 34, text: ["CHURCHE'S MANSION, 1577.", "Survived the fire because it was outside the walls, which is the only recorded advantage of living out of town."] },
       { x: 47, y: 12, text: ["NANTWICH BRINE POOL — open-air, warmed, and the same water they've pumped since the Romans.", "NO PETTING THE SALTLINGS. (Somebody has crossed out NO.)"] },
       { x: 16, y: 4, text: ["NANTWICH CHEESE SHOW — this way.", "Judging from ten. Do not touch the truckles. Do not lean on the truckles. Do not LOOK at the truckles like that."] },
-      { x: 47, y: 21, text: ["NANTWICH STATION", "Crewe, and then anywhere. The Cambrian line goes west from Crewe and keeps going until it hits the sea."] }
+      { x: 48, y: 22, text: ["NANTWICH STATION", "Crewe, and then anywhere. The Cambrian line goes west from Crewe and keeps going until it hits the sea."] }
     ],
     items: [
       { x: 52, y: 15, item: "capsule_brine", n: 3, flag: "item_nantwich_1" },
@@ -318,7 +318,7 @@
   A.fill("g", 5, 18, 10, 8, ",");
   B.house(A, { x: 7, y: 18, w: 8, h: 6, rh: 2, roof: "p", wall: "c", win: "C", door: "d", doorX: 4 });
   A.set("g", 10, 17, "p");
-  B.speckle(A, "acton-graves", "g", 10, 5, 24, 10, 2, [","]);
+  B.speckle(A, "g", "acton-graves", "g", 10, 5, 19, 10, 6, [","]);
   A.set("g", 11, 26, "d");
   A.fill("g", 11, 24, 1, 3, "_");
   A.set("g", 17, 21, "N");

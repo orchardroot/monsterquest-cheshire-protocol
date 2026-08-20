@@ -114,7 +114,6 @@
       { x: 10, y: 31, to: "winsford_deepstore", tx: 14, ty: 24, dir: "up", kind: "door" },
       { x: 18, y: 25, to: "winsford_house_1", tx: 5, ty: 8, dir: "up", kind: "door" },
       { x: 5, y: 22, to: "winsford_house_2", tx: 5, ty: 8, dir: "up", kind: "door" },
-      { x: 41, y: 13, to: "salt_mine_cage", tx: 12, ty: 20, dir: "up", kind: "cave", cond: "item.salt_mine_pass > 0" },
       { x: 21, y: 34, to: "salt_mine_sinkhole", tx: 8, ty: 22, dir: "down", kind: "cave", cond: "mine_descended" },
       // edges
       { x: 20, y: 0, to: "route_winsford_northwich", tx: 14, ty: 48, dir: "up", kind: "edge" },

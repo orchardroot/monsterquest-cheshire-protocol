@@ -384,7 +384,7 @@
   gb.fill("g", 21, 3, 11, 7, ",");
   B.house(gb, { x: 23, y: 3, w: 8, h: 6, rh: 2, roof: "p", wall: "c", win: "C", door: "d", doorX: 4 });
   gb.set("g", 27, 2, "p");
-  B.speckle(gb, "gb-graves", "g", 10, 21, 8, 11, 2, [","]);
+  B.speckle(gb, "g", "gb-graves", "g", 10, 21, 8, 11, 2, [","]);
   gb.set("g", 27, 11, "d");
   gb.set("g", 19, 8, "N");
   // the village: brick terraces and mullioned windows

@@ -53,7 +53,7 @@
   c.fill("g", 6, 2, 12, 5, ",");
   B.house(c, { x: 8, y: 2, w: 9, h: 5, rh: 2, roof: "p", wall: "c", win: "C", door: "d", doorX: 4 });
   c.set("g", 12, 1, "p");
-  B.speckle(c, "mw-graves", "g", 8, 6, 3, 11, 4, [","]);
+  B.speckle(c, "g", "mw-graves", "g", 8, 6, 3, 11, 4, [","]);
   c.set("g", 12, 8, "d");
   c.set("g", 4, 6, "N");
 
