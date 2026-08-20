@@ -334,6 +334,7 @@ module.exports = function (t, assert) {
     // Q8 — the Gaskell draft: quiz, then the mule on the Heath, beaten fairly
     return pump(env, MQ.Script.run(N.mid_knutsford_aled, {}), 2000, "aled").then(function () {
       assert.strictEqual(MQ.Quests.isStarted("case_08_the_gaskell_draft"), true);
+      MQ.Minigames.auto = true;   // play the quiz through headlessly
       return pump(env, MQ.Script.run(N.mid_knutsford_quiz, {}), 2500, "the quiz");
     }).then(function () {
       assert.ok(MQ.Flags.get("case_08_quiz_passed"), "the quiz is passed");

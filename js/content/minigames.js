@@ -93,7 +93,7 @@
         this.t += dt;
         // Headless/skip mode (tests, MQ.Dialog.auto): play out honourably rather
         // than sitting here waiting for a button nobody is going to press.
-        if (M.auto || (MQ.Dialog && MQ.Dialog.auto)) {
+        if (M.auto === true) {
           if (this.over) { MQ.Scenes.pop(this.result); return; }
           if (def.auto) { def.auto.call(this, finish); return; }
           finish(this, { score: this.score || 0, won: true, auto: true });
@@ -613,7 +613,7 @@
       a.music("town_knutsford");
     },
     right: function () { return (this.i + 1) + "/" + this.qs.length; },
-    auto: function () { while (!this.over && this.i < this.qs.length) this.answerWith(this.qs[this.i].r); },
+    auto: function () { while (!this.over && this.i < this.qs.length) { this.answerWith(this.qs[this.i].r); this.reveal = 0; this.advance(); } },
     hints: function () { return [{ btn: "dir", label: "Choose" }, { btn: "a", label: "Answer" }, { btn: "b", label: "Leave" }]; },
     update: function (dt) {
       const a = A(), I = MQ.Input;
