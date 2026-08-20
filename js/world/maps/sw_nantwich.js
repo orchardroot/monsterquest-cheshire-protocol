@@ -296,8 +296,7 @@
       { id: "npc_nantwich_lido_osian", x: 28, y: 25, dir: "down", sprite: "npc_cultist", behaviour: "still", trainer: "tr_nantwich_brine_lido_2", sight: 3, cond: "!lido_battle_done" },
       { id: "npc_nantwich_lido_swimmer", x: 8, y: 24, dir: "down", sprite: "npc_granny", behaviour: "still",
         say: ["Eighty-one lengths. I do eighty-one because I'm eighty-one and it seemed tidy.", "The steam does something to your chest. In a good way. Mostly."] },
-      { id: "npc_nantwich_lido_lifeguard", x: 32, y: 25, dir: "left", sprite: "npc_saltworker", behaviour: "still",
-        say: ["Deep end's eleven foot and full of things that like salt.", "They've never bothered a swimmer. They bother the LANE ROPES, constantly."] }
+      { id: "npc_nantwich_lido_lifeguard", x: 32, y: 25, dir: "left", sprite: "npc_fisher", behaviour: "still", script: "sw_lido_angler" }
     ],
     triggers: [
       { x: 18, y: 27, w: 6, h: 1, script: "sw_lido_scene", once: "lido_scene_seen", cond: "!lido_battle_done && badge_kernel", kind: "step" }

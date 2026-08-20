@@ -555,6 +555,10 @@
     ], { name: "Angler" });
     yield C.giveItem("rod_weighted", 1);
     yield C.notify("BRITHYLL will now rise at Y Berllan pond.");
+    const res = yield C.custom(fishing(ctx, "y_berllan_pond"));
+    if (res === null || res === undefined) {
+      yield C.say(["You cast once, badly, into a Welsh pond, and something under the far bank considers it seriously for the first time in years."]);
+    }
   });
 
   def("sw_hywel", function* (ctx) {
@@ -1350,4 +1354,53 @@
       "Ninety seconds down. It is the longest ninety seconds in Cheshire and you will spend all of it listening."
     ], { name: "Mine-Captain Rhona" });
   });
+
+  // ---------------------------------------------------------- fishing -----
+  // The rod, the bite bar and the tables belong to content-activities; these
+  // are the people who hand you a line and tell you where to put it.
+  def("sw_lido_angler", function* (ctx) {
+    const C = ctx.S;
+    yield C.say([
+      "Deep end's eleven foot and full of things that like salt. They have never bothered a swimmer.",
+      "They bother the LANE ROPES. Constantly. I have replaced four this year."
+    ], { name: "Lifeguard" });
+    if (!flag("lido_rod")) {
+      yield C.setFlag("lido_rod", true);
+      yield C.say([
+        "Here. Rod. Wyn wants three samples off the deep end and I am not getting in a swimming costume to do it.",
+        "Brine fishing is not like river fishing. There is no current. Nothing is going anywhere. It is entirely a question of who gets bored first."
+      ], { name: "Lifeguard" });
+      yield C.giveItem("rod_bamboo", 1);
+      return;
+    }
+    const yes = yield C.confirm("Cast a line into the deep end?");
+    if (!yes) { yield C.say(["Fair enough. It is a swimming pool. Most people do find this odd."], { name: "Lifeguard" }); return; }
+    const res = yield C.custom(fishing(ctx, "nantwich_brine_lido"));
+    if (res === null || res === undefined) {
+      yield C.say(["You put a line in a swimming pool, in public, and nobody so much as looks up, because this is Nantwich and the pool is full of golems."]);
+    }
+  });
+
+  def("sw_anderton_bottles", function* (ctx) {
+    const C = ctx.S;
+    yield C.say([
+      "I have sat on this dock since I retired and I have never once put a hook in the water.",
+      "The rod is for the look of the thing. The sitting is the point and I would like that respected."
+    ], { name: "Angler" });
+    if (!flag("anderton_bottle")) {
+      yield C.setFlag("anderton_bottle", true);
+      yield C.say([
+        "Mind you. A crab came up on somebody's line last August with a bottle in its claw, and there was paper in the bottle, and it was dry.",
+        "He put it back. I would not have put it back. I think about it most days."
+      ], { name: "Angler" });
+      return;
+    }
+    const yes = yield C.confirm("Try the cut for bottles?");
+    if (!yes) { yield C.say(["Good man. Sit down. There's room."], { name: "Angler" }); return; }
+    const res = yield C.custom(fishing(ctx, "anderton"));
+    if (res === null || res === undefined) {
+      yield C.say(["Nothing but a moorhen with opinions and, eventually, the specific silence of a canal at four in the afternoon."]);
+    }
+  });
+
 })();

@@ -383,8 +383,7 @@
     npcs: [
       { id: "npc_route_northwich_anderton_rhonwen", x: 15, y: 20, dir: "up", sprite: "npc_boater", behaviour: "look", radius: 4, trainer: "tr_route_northwich_anderton_1", sight: 4 },
       { id: "npc_route_northwich_anderton_cai", x: 25, y: 9, dir: "left", sprite: "npc_fisher", behaviour: "look", radius: 3, trainer: "tr_route_northwich_anderton_2", sight: 3 },
-      { id: "npc_route_northwich_anderton_still", x: 13, y: 16, dir: "right", sprite: "npc_fisher", behaviour: "still",
-        say: ["I've sat on this dock since I retired and I have never once put a hook in the water.", "The rod's for the look of the thing. The sitting is the point."] }
+      { id: "npc_route_northwich_anderton_still", x: 13, y: 16, dir: "right", sprite: "npc_fisher", behaviour: "still", script: "sw_anderton_bottles" }
     ]
   }, c);
 
