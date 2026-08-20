@@ -86,9 +86,9 @@
   B.house(c, { x: 16, y: 18, w: 12, h: 4, rh: 2, roof: "R", wall: "#", win: "W", door: "D", doorX: 6, over: "^" });
   c.set("g", 17, 18, "m"); c.set("g", 26, 18, "m");
   B.house(c, { x: 31, y: 18, w: 10, h: 4, rh: 2, roof: "3", wall: "2", win: "W", door: "S", doorX: 4, over: "^" });
-  c.set("g", 2, 22, "N"); c.set("g", 15, 22, "N"); c.set("g", 30, 22, "N");
   // the back lane behind the terrace, joined to the street at both ends
   c.fill("g", 1, 22, 42, 1, "4");
+  c.set("g", 2, 22, "N"); c.set("g", 15, 22, "N"); c.set("g", 30, 22, "N");
   c.fill("g", 1, 18, 1, 4, "4"); c.fill("g", 42, 18, 1, 4, "4");
   c.fill("g", 14, 18, 1, 4, "4"); c.fill("g", 29, 18, 1, 4, "4");
   c.set("g", 1, 12, "L");
@@ -172,7 +172,7 @@
     ],
     restPoints: [{ x: 24, y: 26, flag: "bigboy_sat_prestbury" }],
     npcs: [
-      { id: "npc_prestbury_ffion", x: 21, y: 11, dir: "right", sprite: "npc_granny", behaviour: "still", script: "east_prestbury_ffion" },
+      { id: "npc_prestbury_ffion", x: 21, y: 12, dir: "right", sprite: "npc_granny", behaviour: "still", script: "east_prestbury_ffion" },
       { id: "npc_prestbury_penhaligon", x: 30, y: 12, dir: "down", sprite: "npc_historian", behaviour: "still", trainer: "tr_prestbury_3", sight: 0, script: "east_prestbury_penhaligon" },
       { id: "npc_prestbury_vance", x: 12, y: 14, dir: "down", sprite: "npc_shadow_it", behaviour: "look", radius: 3, trainer: "tr_prestbury_1", sight: 3 },
       { id: "npc_prestbury_efa", x: 33, y: 22, dir: "up", sprite: "npc_granny", behaviour: "still", trainer: "tr_prestbury_2", sight: 0 },
@@ -191,7 +191,7 @@
         say: ["Bollin's low. Runs clear through here and comes out at Wilmslow the colour of tea.",
           "That is not the village's fault, before you ask. Everything round here is somebody's fault and none of it is ours."] },
       { id: "npc_prestbury_cat_lady", x: 42, y: 20, dir: "left", sprite: "npc_granny", behaviour: "still", script: "east_prestbury_cat" },
-      { id: "npc_prestbury_verger", x: 31, y: 6, dir: "down", sprite: "npc_walker", behaviour: "wander", radius: 3,
+      { id: "npc_prestbury_verger", x: 28, y: 7, dir: "down", sprite: "npc_walker", behaviour: "wander", radius: 3,
         say: ["Graves face east so they can see the sunrise. That is the reason given.",
           "The real reason is that somebody in 1310 did it that way and nobody has had the nerve to stop."] }
     ],

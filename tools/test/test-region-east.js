@@ -58,6 +58,16 @@ module.exports = function (t, assert) {
     assert.ok(eastIds.length >= 80, "region-east ships " + eastIds.length + " maps");
   });
 
+  // Counters, benches and market stalls are solid on purpose: the clerk stands
+  // behind one and you talk across it. What must never happen is a thing the
+  // player cannot stand next to.
+  function approachable(m, x, y) {
+    if (!W.inBounds(m, x, y)) return false;
+    if (!W.isSolid(m, x, y)) return true;
+    return !W.isSolid(m, x + 1, y) || !W.isSolid(m, x - 1, y) ||
+      !W.isSolid(m, x, y + 1) || !W.isSolid(m, x, y - 1);
+  }
+
   t("spawn points, heal points and NPCs stand on walkable ground", function () {
     eastIds.forEach(function (id) {
       const m = W.get(id);
@@ -65,13 +75,15 @@ module.exports = function (t, assert) {
       if (m.healPoint) assert.ok(!W.isSolid(m, m.healPoint.x, m.healPoint.y), id + ": healPoint is solid");
       (m.npcs || []).forEach(function (n) {
         assert.ok(W.inBounds(m, n.x, n.y), id + ": npc " + n.id + " out of bounds");
-        assert.ok(!W.isSolid(m, n.x, n.y), id + ": npc " + n.id + " stands on a solid tile (" + n.x + "," + n.y + ")");
+        assert.ok(approachable(m, n.x, n.y), id + ": npc " + n.id + " is walled in at (" + n.x + "," + n.y + ")");
+        // a trainer has to be able to walk up to you, so they may not stand in scenery
+        if (n.trainer) assert.ok(!W.isSolid(m, n.x, n.y), id + ": trainer npc " + n.id + " stands in scenery (" + n.x + "," + n.y + ")");
       });
       (m.restPoints || []).forEach(function (r) {
-        assert.ok(!W.isSolid(m, r.x, r.y), id + ": restPoint (" + r.x + "," + r.y + ") is solid");
+        assert.ok(approachable(m, r.x, r.y), id + ": restPoint (" + r.x + "," + r.y + ") is walled in");
       });
       (m.items || []).forEach(function (it) {
-        assert.ok(!W.isSolid(m, it.x, it.y), id + ": item " + it.item + " (" + it.x + "," + it.y + ") is solid");
+        assert.ok(approachable(m, it.x, it.y), id + ": item " + it.item + " (" + it.x + "," + it.y + ") is walled in");
       });
     });
   });
@@ -80,8 +92,11 @@ module.exports = function (t, assert) {
     eastIds.forEach(function (id) {
       const m = W.get(id);
       (m.signs || []).forEach(function (s) {
-        const kind = W.interactAt(m, s.x, s.y);
-        assert.ok(kind === "sign" || kind === "door", id + ": sign at (" + s.x + "," + s.y + ") is on a '" + kind + "' tile");
+        // A sign entry beats the tile handler, but the player still has to be
+        // able to FACE it: the tile must be something you stand next to.
+        assert.ok(W.isSolid(m, s.x, s.y) || W.interactAt(m, s.x, s.y),
+          id + ": sign at (" + s.x + "," + s.y + ") is on open ground — nothing to read");
+        assert.ok(approachable(m, s.x, s.y), id + ": sign at (" + s.x + "," + s.y + ") cannot be stood next to");
       });
     });
   });
