@@ -233,7 +233,7 @@
     ],
     npcs: [
       { id: "npc_anderton_upper_beth", x: 20, y: 20, dir: "up", sprite: "npc_signaller", behaviour: "still", trainer: "tr_anderton_1", sight: 0, script: "sw_beth_upper" },
-      { id: "npc_anderton_upper_boater", x: 30, y: 13, dir: "left", sprite: "npc_boater", behaviour: "path", path: [[26, 13], [36, 13]], pathMode: "pingpong",
+      { id: "npc_anderton_upper_boater", x: 30, y: 14, dir: "left", sprite: "npc_boater", behaviour: "path", path: [[26, 14], [36, 14]], pathMode: "pingpong",
         say: ["Down is the frightening one. Up you're only going where the water's already been."] }
     ],
     triggers: [

@@ -155,7 +155,7 @@
       { id: "npc_winsford_sion", x: 12, y: 5, dir: "down", sprite: "npc_fisher", behaviour: "still", trainer: "tr_winsford_3", sight: 3 },
       { id: "npc_winsford_alun", x: 43, y: 17, dir: "left", sprite: "npc_saltworker", behaviour: "look", radius: 3, trainer: "tr_winsford_4", sight: 3 },
       { id: "npc_winsford_lowri_town", x: 35, y: 24, dir: "down", sprite: "npc_birder", behaviour: "still", script: "sw_lowri_town" },
-      { id: "npc_winsford_walker", x: 10, y: 19, dir: "right", sprite: "npc_walker", behaviour: "path", path: [[6, 19], [30, 19]], pathMode: "pingpong",
+      { id: "npc_winsford_walker", x: 20, y: 19, dir: "right", sprite: "npc_walker", behaviour: "path", path: [[18, 19], [36, 19]], pathMode: "pingpong",
         say: ["Half this town is a lake that used to be a field.", "Nobody's cross about it. It's a nice lake."] },
       { id: "npc_winsford_granny", x: 17, y: 21, dir: "up", sprite: "npc_granny", behaviour: "still",
         say: ["My mother's house is under Bottom Flash. Not the ruins of it. The house. They walked out and it went down.",
