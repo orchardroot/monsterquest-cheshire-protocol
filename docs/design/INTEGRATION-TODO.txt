@@ -46,9 +46,6 @@ FIXED this pass (see git log):
   UI.Settings now applies everything on the "boot" event.
 
 STILL OPEN (not mine to fix / not small and safe):
-- world/overworld.js camera: interiors are drawn 1:1 and small maps sit in a large black
-  frame — a 17x13 shop fills about a third of a 1280x800 screen. Consider a per-map zoom
-  or camera scale for indoor maps. Same effect (less severe) on the Alder Labs floor.
 - world/npc.js or story/npcs_east.js: npc_macclesfield_angler (tile 14,33) is solid and
   stands in the single-tile gap of the canal-side path, so walking east along that path
   is blocked entirely. Not a soft-lock (you can go round) but it reads as a wall.

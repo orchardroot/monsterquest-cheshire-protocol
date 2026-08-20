@@ -182,6 +182,7 @@
     map = m;
     rt = MQ.World.prepare(m);
     O.state.map = id;
+    zoom = fitZoom();
     clearChunks();
     if (!keepEntities) spawnNpcs();
     lastTileX = -1; lastTileY = -1;
@@ -217,8 +218,66 @@
   const cam = { x: 0, y: 0, lx: 0, ly: 0, follow: true, pan: null };
   O.camera = cam;
 
-  function viewW() { return MQ.View.w; }
-  function viewH() { return MQ.View.h; }
+  // World zoom. Small maps (shops, front rooms, lab floors) used to be drawn 1:1
+  // and sat in a big black frame on a 1280x800 screen. We scale the whole world
+  // up by a fixed step so the room fills as much of the view as it can without
+  // cropping, and letterbox whatever is left with a room-appropriate backdrop.
+  // The camera and every tile->screen sum below work in WORLD px; viewW()/viewH()
+  // are the world-space viewport (screenW()/screenH() are the real screen).
+  // Eighth steps: T is 32, so every step lands a tile on a whole number of
+  // screen pixels (32 * 0.125 = 4) — no seams between chunk blits, no blur.
+  const ZOOM_STEPS = (function () {
+    const a = [];
+    for (let k = 8; k <= 32; k++) a.push(k / 8);   // 1.0 .. 4.0
+    return a;
+  })();
+  let zoom = 1;
+  O.zoom = function () { return zoom; };
+
+  function screenW() { return MQ.View.w; }
+  function screenH() { return MQ.View.h; }
+  function viewW() { return MQ.View.w / zoom; }
+  function viewH() { return MQ.View.h / zoom; }
+
+  // Largest step that still shows the whole map: never crops, never below 1.
+  function fitZoom() {
+    if (!rt) return 1;
+    const mw = rt.w * T, mh = rt.h * T;
+    if (mw <= 0 || mh <= 0) return 1;
+    const fit = Math.min(screenW() / mw, screenH() / mh);
+    let z = 1;
+    for (let i = 0; i < ZOOM_STEPS.length; i++) if (ZOOM_STEPS[i] <= fit + 1e-6) z = ZOOM_STEPS[i];
+    return z;
+  }
+  function applyZoom() {
+    const z = fitZoom();
+    if (z === zoom) return false;
+    zoom = z;
+    clampCam();
+    return true;
+  }
+  O.applyZoom = applyZoom;
+
+  // Camera offset snapped so that the scaled result lands on whole screen pixels
+  // — integer-ish steps keep the pixel art crisp at 1.5x/2x/3x.
+  function camOx() { return Math.round(cam.x * zoom) / zoom; }
+  function camOy() { return Math.round(cam.y * zoom) / zoom; }
+
+  // Public tile/world <-> screen maths, so interaction, picking, the mini-map
+  // and FX all agree with what was actually drawn.
+  O.toScreen = function (wx, wy) { return { x: (wx - camOx()) * zoom, y: (wy - camOy()) * zoom }; };
+  O.toWorld = function (sx, sy) { return { x: sx / zoom + camOx(), y: sy / zoom + camOy() }; };
+  O.tileToScreen = function (tx, ty) { return O.toScreen(tx * T + T / 2, ty * T + T / 2); };
+  O.tileAtScreen = function (sx, sy) {
+    const w = O.toWorld(sx, sy);
+    return { x: Math.floor(w.x / T), y: Math.floor(w.y / T) };
+  };
+  // Where the map itself sits on screen (the rest of the view is letterbox).
+  O.mapScreenRect = function () {
+    if (!rt) return { x: 0, y: 0, w: 0, h: 0 };
+    const p = O.toScreen(0, 0);
+    return { x: p.x, y: p.y, w: rt.w * T * zoom, h: rt.h * T * zoom };
+  };
 
   function clampCam() {
     const mw = rt ? rt.w * T : 0, mh = rt ? rt.h * T : 0;
@@ -1288,7 +1347,7 @@
 
   function drawMinimap(ctx) {
     const c = minimapCanvas || buildMinimap();
-    const vw = viewW(), vh = viewH();
+    const vw = screenW(), vh = screenH();
     const maxW = Math.min(vw * 0.34, 260), maxH = Math.min(vh * 0.42, 200);
     const k = Math.min(maxW / c.width, maxH / c.height, 1.6);
     const w = Math.round(c.width * k), h = Math.round(c.height * k);
@@ -1328,7 +1387,7 @@
   }
 
   function drawHud(ctx) {
-    const vw = viewW(), vh = viewH();
+    const vw = screenW(), vh = screenH();
     const top = 12 + MQ.View.safe.top;
     const right = vw - 12 - MQ.View.safe.right;
 
@@ -1382,11 +1441,36 @@
       kind === "wind" ? "wind" : kind === "sun" ? "sun" : kind === "indoor" ? "in" : "clear";
   }
 
+  // The frame around a map that cannot fill the view. Raw black looked like a
+  // bug; a darkened wash of the room's own ground colour reads as a mount.
+  function frameColor() {
+    const base = map.bg || (map.outdoor === false ? "#12121a" : "#25412a");
+    return U.shade ? U.shade(base, 0.42) : "#0b0b12";
+  }
+
+  function drawBackdrop(ctx) {
+    const sw = screenW(), sh = screenH();
+    const r = O.mapScreenRect();
+    if (r.x <= 0.5 && r.y <= 0.5 && r.w >= sw - 0.5 && r.h >= sh - 0.5) return; // map covers the view
+    ctx.fillStyle = frameColor();
+    ctx.fillRect(0, 0, sw, sh);
+    // a hairline so the room reads as mounted rather than floating
+    ctx.strokeStyle = U.shade ? U.shade(frameColor(), 1.6) : "#2a2a36";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(Math.round(r.x) - 0.5, Math.round(r.y) - 0.5, Math.round(r.w) + 1, Math.round(r.h) + 1);
+  }
+
   O.draw = function (ctx) {
     if (!map || !rt) return;
-    const ox = Math.round(cam.x), oy = Math.round(cam.y);
+    const z = zoom;
+    const ox = camOx(), oy = camOy();
+    drawBackdrop(ctx);
+    if (z !== 1) { ctx.save(); ctx.scale(z, z); }
+    // the map's own ground colour, only where the map actually is
+    const mw = rt.w * T, mh = rt.h * T;
+    const bx = Math.max(0, -ox), by = Math.max(0, -oy);
     ctx.fillStyle = map.bg || (map.outdoor === false ? "#12121a" : "#25412a");
-    ctx.fillRect(0, 0, viewW(), viewH());
+    ctx.fillRect(bx, by, Math.min(viewW() - bx, mw - Math.max(0, ox)), Math.min(viewH() - by, mh - Math.max(0, oy)));
     drawLayer(ctx, "ground", ox, oy);
     drawLayer(ctx, "deco", ox, oy);
     drawItems(ctx, ox, oy);
@@ -1394,8 +1478,15 @@
     drawParticles(ctx, ox, oy);
     drawLayer(ctx, "over", ox, oy);
     drawWeather(ctx, lastDt, ox, oy);
+    if (z !== 1) ctx.restore();
     if (!hudHidden) drawHud(ctx);
   };
+
+  // A resize can change which zoom step fits; keep the camera honest.
+  MQ.Events.on("resize", function () {
+    if (!rt) return;
+    if (applyZoom()) clampCam();
+  });
 
   // ---- abilities ----------------------------------------------------------
   O.unlock = function (id) {
