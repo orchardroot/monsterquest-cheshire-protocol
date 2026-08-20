@@ -197,6 +197,7 @@
           "That's a county-wide talent, that is."] },
       { id: "npc_knutsford_shopper", x: 47, y: 22, dir: "left", sprite: "npc_shopkeep", behaviour: "wander", radius: 3,
         say: ["Georgian frontage, Victorian plumbing, and a broadband cabinet somebody has painted cream so it doesn't spoil the view."] },
+      { id: "npc_knutsford_seller", x: 14, y: 9, dir: "down", sprite: "npc_cultist", behaviour: "still", script: "mid_knutsford_seller", cond: "case_08_quiz_passed" },
       { id: "npc_knutsford_gymdoor", x: 32, y: 14, dir: "up", sprite: "npc_historian", behaviour: "still", script: "mid_gym2_door" }
     ],
     triggers: [

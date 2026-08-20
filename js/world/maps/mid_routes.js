@@ -547,6 +547,7 @@
       { id: "npc_r14_del", x: 20, y: 14, dir: "down", sprite: "npc_boater", behaviour: "look", radius: 3, trainer: "tr_route_congleton_sandbach_1", sight: 3, script: "mid_r14_del" },
       { id: "npc_r14_rhodri", x: 45, y: 12, dir: "up", sprite: "npc_fisher", behaviour: "look", radius: 3, trainer: "tr_route_congleton_sandbach_2", sight: 3, script: "mid_r14_rhodri" },
       { id: "npc_r14_josh", x: 12, y: 20, dir: "down", sprite: "npc_stuffer", behaviour: "look", radius: 4, trainer: "tr_route_congleton_sandbach_3", sight: 4, script: "mid_r14_josh" },
+      { id: "npc_r14_bramble", x: 36, y: 13, dir: "down", sprite: "npc_walker", behaviour: "still", script: "mid_r14_bramble", cond: "bounty_board_open" },
       { id: "npc_r14_lockkeeper", x: 35, y: 14, dir: "down", sprite: "npc_boater", behaviour: "still",
         say: ["Sixteen locks. Sixteen. And every one of them a hole you fill up and empty out again for the sake of six feet.",
           "It's the most patient machine ever built and it's made of wood."] },

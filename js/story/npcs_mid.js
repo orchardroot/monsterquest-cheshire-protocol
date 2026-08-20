@@ -1332,3 +1332,288 @@
     ], { name: "Immy" });
   });
 })();
+// =============================================================
+// MonsterQuest v2 — MID region NPC scripts, part two: the casebook
+// cases that need more than a giver — the Cranford mule on the Heath,
+// the two remaining bear tokens, the churchyard dead-drop, the photo
+// census, and a named ROTTLING that has eaten its way up the Wheelock.
+// Owned by region-mid.
+// =============================================================
+(function () {
+  "use strict";
+  const MQ = window.MQ;
+  const S = MQ.Story;
+  const N = S.npcScripts;
+  function def(id, gen) { N[id] = gen; S.scripts[id] = gen; return gen; }
+  function flag(id) { return MQ.Flags ? MQ.Flags.get(id) : undefined; }
+
+  // ---- case 08: the seller on the Heath ---------------------------------
+  def("mid_knutsford_seller", function* (ctx) {
+    const C = ctx.S;
+    if (flag("case_08_done")) {
+      yield C.say([
+        "I shelve on Tuesdays now. Aled says I'm good at it.",
+        "Nobody's ever told me I was good at anything, so I've been doing it four days a week."
+      ], { name: "The Seller" });
+      return;
+    }
+    if (!flag("case_08_seller_found")) {
+      yield C.setFlag("case_08_seller_found", true);
+      yield C.say([
+        "A young man behind a folding table with a page in a plastic sleeve and a laminated card in his other hand.",
+        "He reads from the card. He reads all of it, including a bit that is clearly a stage direction."
+      ]);
+      yield C.say([
+        "'This remarkable survival — pause — was discovered in a private collection in — ' hang on, sorry, I've lost my place.",
+        "'...in a private collection in Cheshire.'"
+      ], { name: "The Seller" });
+      yield C.say([
+        "The paper is not foxed. The ink has not bled into the fibres. The hand is very good and the paper is 1980s cartridge.",
+        "It is a beautiful forgery being sold badly by somebody who has not been told what he is holding."
+      ]);
+    }
+    yield C.say([
+      "Look — I just read the card. They give me the card and the sleeve and I get forty quid and a bus fare.",
+      "If you know it's wrong then just say so. Nobody ever just says so. Everyone goes away and rings somebody."
+    ], { name: "The Seller" });
+    const a = yield C.ask("", [
+      { label: "\"It's a fake. Put it down.\"", value: "say" },
+      { label: "\"Battle me. No Agents. Just you and me.\"", value: "fight" },
+      { label: "Walk away and ring somebody.", value: "ring" }
+    ]);
+    if (a === "ring") {
+      yield C.say(["He watches you go. He has been watched going before. He puts the card back in his pocket."]);
+      return;
+    }
+    if (a === "say") {
+      yield C.say([
+        "...Right. Yeah. I thought it might be.",
+        "Can you tell me how you knew? Not to argue. I'd just — I'd like to know how a person knows a thing."
+      ], { name: "The Seller" });
+    }
+    yield C.say([
+      "One battle. Straight. No Agents, on either side — I haven't got any, so that's me being generous with your stuff.",
+      "If you win properly I'll pack the table up and I'll not do this again."
+    ], { name: "The Seller" });
+    const r = yield C.battle({ kind: "trainer", trainer: "tr_route_alderley_knutsford_4", music: "battle_trainer", rules: { agents: false, noAgents: true } });
+    if (r && r.lost) {
+      yield C.say(["\"Best of three?\" he says, hopefully. He has been waiting a long time for somebody to say yes to that."], { name: "The Seller" });
+      return;
+    }
+    yield C.setFlag("case_08_done", true);
+    yield C.giveMoney(1000);
+    yield C.custom(function () { if (MQ.Inventory && MQ.Inventory.addMarks) MQ.Inventory.addMarks(3); });
+    yield C.say([
+      "He folds the table. It takes him a while because one leg has always been wrong.",
+      "\"There's a bloke in Wilmslow gives me the sleeves,\" he says. \"I'll write his name down for the librarian. I write quite neatly.\""
+    ]);
+    if (MQ.Quests && MQ.Quests.complete) yield C.quest.complete("case_08_the_gaskell_draft");
+    yield C.notify("Casebook case closed: The Gaskell Draft.");
+  });
+
+  // ---- case 10: the other two bear tokens --------------------------------
+  def("mid_congleton_token_2", function* (ctx) {
+    const C = ctx.S;
+    if (flag("case_10_token_bridge")) {
+      yield C.say(["\"Second token's yours. There's one in the park and the park keeper is a stickler.\""], { name: "Angler" });
+      return;
+    }
+    if (!flag("case_10_open")) {
+      yield C.say(["\"There's a brass thing wedged under the parapet of that bridge. Been there years. Otis knows.\""], { name: "Angler" });
+      return;
+    }
+    yield C.say([
+      "Under the downstream parapet of the Dane bridge, wedged into a joint, something brass.",
+      "Getting it out means lying flat on cold stone with your arm over the river while a man fishes eight feet away and says nothing about it."
+    ]);
+    yield C.setFlag("case_10_token_bridge", true);
+    yield C.giveItem("collectible_11", 1);
+    yield C.notify("Bear token 2/3.");
+    yield C.say(["\"Third one's in the park,\" says the angler, to the water. \"Warden's got it in his hut and he'll want telling why.\""], { name: "Angler" });
+  });
+
+  def("mid_congleton_token_3", function* (ctx) {
+    const C = ctx.S;
+    if (flag("case_10_token_park")) {
+      yield C.say(["\"All three. Go and see Otis. He'll pretend he'd forgotten.\""], { name: "Mere-Warden" });
+      return;
+    }
+    if (!flag("case_10_token_bridge")) {
+      yield C.say(["\"Bakery, bridge, park. In that order, because that's the order the town put them in, in 1897, for a reason nobody wrote down.\""], { name: "Mere-Warden" });
+      return;
+    }
+    yield C.say([
+      "Warden's hut. A tin on a shelf with BEAR TOKENS, 1897 on it in a hand that has been dead a century.",
+      "\"Why d'you want it?\" he says. He asks everybody. Nobody has ever had a good answer."
+    ], { name: "Mere-Warden" });
+    const a = yield C.ask("", [
+      { label: "\"Otis asked me to.\"", value: "otis" },
+      { label: "\"Because somebody's printing lies over the town's own password.\"", value: "true" },
+      { label: "\"I collect things.\"", value: "collect" }
+    ]);
+    if (a === "true") {
+      yield C.say(["He looks at you for a moment and then hands the tin over without opening it.", "\"That's the first good answer,\" he says."], { name: "Mere-Warden" });
+    } else if (a === "otis") {
+      yield C.say(["\"Aye, he would.\" He hands it over. \"He's asked four people this month. You're the first one who came.\""], { name: "Mere-Warden" });
+    } else {
+      yield C.say(["\"So does the council,\" he says, and hands it over anyway, because he has been waiting to give it to somebody since about 1994."], { name: "Mere-Warden" });
+    }
+    yield C.setFlag("case_10_token_park", true);
+    yield C.giveItem("collectible_11", 1);
+    yield C.notify("Bear token 3/3.");
+    yield C.say([
+      "Three tokens, four letters between them, and they spell BEAR, which is the town's Wi-Fi password.",
+      "Which the town has been perfectly happy about for fourteen years, until somebody printed it on a lamppost with a lie under it."
+    ]);
+  });
+
+  // ---- case 12: the dead drop on the cold side --------------------------
+  def("mid_sandbach_drop", function* (ctx) {
+    const C = ctx.S;
+    if (flag("case_12_handed_in") || flag("case_12_sold")) {
+      yield C.say(["The stone is back the way it was. The north side of a churchyard is cold because nobody stands in it, and now nobody does again."]);
+      return;
+    }
+    if (!flag("clue_interlace_key")) {
+      yield C.say([
+        "The north side of the churchyard. Damp stone, no sun, and a table tomb with a corner that has been lifted recently.",
+        "You would need to know which four panels were chalked, and in what order, before this meant anything."
+      ]);
+      return;
+    }
+    if (!flag("case_12_drop_found")) {
+      yield C.setFlag("case_12_drop_found", true);
+      yield C.say([
+        "Four panels, four marks, and the order they were chalked in reads — against the alphabet on the old market sign — as a bearing and a distance.",
+        "The bearing is from the north cross. The distance is forty-one paces. Forty-one paces is the third table tomb on the cold side."
+      ]);
+      yield C.say([
+        "Under the lifted corner: a freezer bag, and in the freezer bag a printed list.",
+        "Eleven thousand credential pairs, sorted by postcode, with a column at the end headed WORKS / DOESN'T."
+      ]);
+      yield C.notify("Casebook: a Credential Stuffer proxy list.");
+      yield C.setFlag("clue_proxy_list", true);
+      return;
+    }
+    const a = yield C.ask("What do you do with eleven thousand people's passwords?", [
+      { label: "Take it to Brine Nell at Nantwich. She was forensics.", value: "nell" },
+      { label: "Sell it to the Shadow IT contact. Two thousand, cash.", value: "sell" },
+      { label: "Leave it and watch who comes for it.", value: "wait" }
+    ]);
+    if (a === "sell") {
+      yield C.setFlag("case_12_sold", true);
+      yield C.giveMoney(2000);
+      yield C.say([
+        "Two thousand, in an envelope, in a car park, from a man who does not get out of the car.",
+        "Nobody is harmed by this today. That is the whole of what you can honestly say about it."
+      ]);
+      if (MQ.Quests && MQ.Quests.complete) yield C.quest.complete("case_12_saxon_crosses_cipher");
+      return;
+    }
+    if (a === "wait") {
+      yield C.say([
+        "You put it back and you sit in the cold for four hours and nobody comes, because nobody was going to come today.",
+        "Dead drops are not collected on the day they are filled. That is the entire point of them and you knew that."
+      ]);
+      return;
+    }
+    yield C.setFlag("case_12_handed_in", true);
+    yield C.setFlag("case_12_done", true);
+    yield C.custom(function () { if (MQ.Inventory && MQ.Inventory.addMarks) MQ.Inventory.addMarks(5); });
+    yield C.giveMoney(1200);
+    yield C.say([
+      "Nantwich is two towns and a train away and she will not thank you, because she does not thank people; she files them.",
+      "But eleven thousand of those are somebody's mum's, and one of them is a salon on Nantwich Road."
+    ]);
+    if (MQ.Quests && MQ.Quests.complete) yield C.quest.complete("case_12_saxon_crosses_cipher");
+    yield C.notify("Casebook case closed: The Saxon Crosses Cipher.");
+  });
+
+  // ---- case 06: the photo census ----------------------------------------
+  def("mid_tatton_stag", function* (ctx) {
+    const C = ctx.S;
+    if (!flag("case_06_open")) {
+      yield C.say(["A stag, side on, entirely unbothered. Its antlers are a shape you would recognise again."]);
+      return;
+    }
+    const n = Number(flag("case_06_photos") || 0);
+    if (flag("case_06_ninth")) {
+      yield C.say(["A stag. An ordinary, correct, extremely large stag, doing nothing at all of note."]);
+      return;
+    }
+    if (n >= 8) {
+      yield C.music("cutscene_signal");
+      yield C.say([
+        "The ninth one is standing slightly apart from the herd on ground the herd is not using.",
+        "It has the antlers of a six-year-old and the coat of a yearling and it is looking at the camera before you raise it."
+      ]);
+      yield C.say([
+        "Through the lens it is a stag. Above the lens it is a stag.",
+        "In the photograph, when you look at the photograph, it is a stag with its ears on slightly wrong."
+      ]);
+      yield C.say([
+        "It goes. Not bolting — walking, at the speed of something that has decided the appointment is over.",
+        "Where it stood there is a thing in the grass about the size of a bank card, and it is warm, and it has half a face printed on it."
+      ]);
+      yield C.setFlag("case_06_ninth", true);
+      yield C.giveItem("face_fragment_1", 1);
+      yield C.giveItem("rain_cloak", 1);
+      yield C.custom(function () { if (MQ.Inventory && MQ.Inventory.addMarks) MQ.Inventory.addMarks(4); });
+      yield C.giveMoney(800);
+      if (MQ.Quests && MQ.Quests.complete) yield C.quest.complete("case_06_deer_census_part_two");
+      yield C.notify("Face Fragment #1.");
+      yield C.music("town_knutsford");
+      return;
+    }
+    const rain = MQ.Clock && MQ.Clock.weather === "rain";
+    const wet = n >= 6;
+    if (wet && !rain) {
+      yield C.say([
+        "Six patterns logged. The last two you need are the pair that only come down off the rise when it is raining.",
+        "It is not raining. Nerys would tell you to wait, and Nerys has waited since 1998."
+      ]);
+      return;
+    }
+    yield C.addFlag("case_06_photos", 1);
+    const now = Number(flag("case_06_photos") || 1);
+    yield C.sfx("camera_shutter");
+    yield C.say(["A clean side-on frame: brow, bay, trey, and the little kink in the near palm that makes this one this one.", "Antler patterns logged: " + now + "/8."]);
+    yield C.notify("Stag " + now + "/8 photographed.");
+  });
+
+  // ---- case 13: Bramble --------------------------------------------------
+  def("mid_r14_bramble", function* (ctx) {
+    const C = ctx.S;
+    if (flag("case_13_done")) {
+      yield C.say(["The hedge above the fourth lock has berries on it again. It will not last."]);
+      return;
+    }
+    if (!flag("case_13_tracked")) {
+      yield C.setFlag("case_13_tracked", true);
+      yield C.say([
+        "Stripped hedge, all the way up the flight, one bush at a time and always the same side.",
+        "Berries gone, pips spat out in a little heap. Deer swallow the pips. Birds swallow the pips. This thing spits them."
+      ]);
+      yield C.say([
+        "Above the fourth lock the heap is fresh and the hedge is still moving.",
+        "There is an orchard tag caught in the thorns: a printed loop of card, weathered, with a Welsh farm name on it."
+      ]);
+      yield C.notify("Casebook: 'Bramble' is upstream of the fourth lock.");
+      return;
+    }
+    yield C.say(["The hedge stops moving. Something the size of a cat and the colour of a bad apple comes out of it backwards, which is not how anything should leave a hedge."]);
+    const r = yield C.battle({ kind: "wild", species: "rottling", level: 24, canCatch: true, music: "battle_wild" });
+    if (r && (r.outcome === "catch" || r.outcome === "win")) {
+      yield C.setFlag("case_13_done", true);
+      yield C.giveMoney(500);
+      yield C.custom(function () { if (MQ.Inventory && MQ.Inventory.addMarks) MQ.Inventory.addMarks(2); });
+      if (MQ.Quests && MQ.Quests.complete) yield C.quest.complete("case_13_bounty_fenced_goods");
+      yield C.say([
+        "The orchard tag is from Y Berllan, Ceredigion, which is a farm you have not thought about since you were twelve.",
+        "It came over in a consignment. It has been eating its way across Cheshire ever since and nobody noticed until a board went up in Sandbach."
+      ]);
+      yield C.setFlag("clue_berllan_tag", true);
+      yield C.notify("Bounty closed: Fenced Goods.");
+    }
+  });
+})();

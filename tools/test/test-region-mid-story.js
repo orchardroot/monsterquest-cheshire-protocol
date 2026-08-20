@@ -322,4 +322,83 @@ module.exports = function (t, assert) {
       "welsh_word_learned", "rail_fast_travel", "badge_kernel"].forEach(function (f) { MQ.Flags.set(f, true); });
     assert.strictEqual(S.chapters[5].hooks.complete(), true, "Ch.5 completes");
   });
+
+  t("the region's casebook cases can be worked end to end", function () {
+    const env = H.load();
+    const MQ = env.MQ;
+    MQ.Dialog.auto = true; MQ.Dialog.autoChoice = 0;
+    MQ.Scenes.replace(MQ.Overworld, { map: "knutsford", x: 3, y: 22, dir: "right" });
+    env.step(1);
+    stack(MQ);
+    const N = MQ.Story.npcScripts;
+    // Q8 — the Gaskell draft: quiz, then the mule on the Heath, beaten fairly
+    return pump(env, MQ.Script.run(N.mid_knutsford_aled, {}), 2000, "aled").then(function () {
+      assert.strictEqual(MQ.Quests.isStarted("case_08_the_gaskell_draft"), true);
+      return pump(env, MQ.Script.run(N.mid_knutsford_quiz, {}), 2500, "the quiz");
+    }).then(function () {
+      assert.ok(MQ.Flags.get("case_08_quiz_passed"), "the quiz is passed");
+      return pump(env, MQ.Script.run(N.mid_knutsford_seller, {}), 2000, "seller intro");
+    }).then(function () {
+      assert.ok(MQ.Flags.get("case_08_seller_found"), "the seller is found");
+      return pump(env, MQ.Script.run(N.mid_knutsford_seller, {}), 20000, "seller battle");
+    }).then(function () {
+      assert.ok(MQ.Flags.get("case_08_done"), "case 08 closes");
+      // Q10 — three bear tokens and six lampposts
+      MQ.Flags.set("case_10_open", true);
+      return pump(env, MQ.Script.run(N.mid_congleton_token_1, {}), 1500, "token 1");
+    }).then(function () {
+      return pump(env, MQ.Script.run(N.mid_congleton_token_2, {}), 1500, "token 2");
+    }).then(function () {
+      return pump(env, MQ.Script.run(N.mid_congleton_token_3, {}), 1500, "token 3");
+    }).then(function () {
+      assert.ok(MQ.Flags.get("case_10_token_bakery") && MQ.Flags.get("case_10_token_bridge") && MQ.Flags.get("case_10_token_park"),
+        "all three bear tokens");
+      let chain = Promise.resolve();
+      for (let i = 0; i < 6; i++) chain = chain.then(function () { return pump(env, MQ.Script.run(N.mid_congleton_poster, {}), 1200, "poster"); });
+      return chain;
+    }).then(function () {
+      assert.strictEqual(Number(MQ.Flags.get("case_10_posters")), 6, "six posters down");
+      assert.ok(MQ.Flags.get("case_10_posters_done"));
+      return pump(env, MQ.Script.run(N.mid_congleton_otis_pre, {}), 2000, "otis closes it");
+    }).then(function () {
+      assert.ok(MQ.Flags.get("case_10_done"), "case 10 closes");
+      // Q11 — the signal box, at night, caught rather than flattened
+      MQ.Flags.set("case_11_watching", true);
+      MQ.Clock.setPhase("night");
+      return pump(env, MQ.Script.run(N.mid_holmes_levers, {}), 20000, "the levers");
+    }).then(function () {
+      assert.ok(MQ.Flags.get("case_11_poltergrid"), "POLTERGRID is in the noise");
+      assert.ok(MQ.Flags.get("case_11_done"), "case 11 closes either way");
+      // Q12 — the cipher, the drop, and handing it to Nell
+      MQ.Flags.set("case_12_open", true);
+      MQ.Flags.set("clue_interlace_key", true);
+      return pump(env, MQ.Script.run(N.mid_sandbach_drop, {}), 2000, "the drop");
+    }).then(function () {
+      assert.ok(MQ.Flags.get("case_12_drop_found"), "the proxy list is found");
+      return pump(env, MQ.Script.run(N.mid_sandbach_drop, {}), 2000, "handed in");
+    }).then(function () {
+      assert.ok(MQ.Flags.get("case_12_handed_in"), "case_12_handed_in (the Nell path)");
+      // Q13 — the first bounty
+      MQ.Flags.set("bounty_board_open", true);
+      return pump(env, MQ.Script.run(N.mid_r14_bramble, {}), 2000, "tracking bramble");
+    }).then(function () {
+      assert.ok(MQ.Flags.get("case_13_tracked"));
+      return pump(env, MQ.Script.run(N.mid_r14_bramble, {}), 20000, "bramble");
+    }).then(function () {
+      assert.ok(MQ.Flags.get("case_13_done"), "case 13 closes");
+      assert.ok(MQ.Flags.get("clue_berllan_tag"), "the orchard tag points at Y Berllan");
+      // Q6 — the photo census, eight stags and a ninth that is not one
+      MQ.Flags.set("case_06_open", true);
+      MQ.Clock.setWeather("rain");
+      let chain = Promise.resolve();
+      for (let i = 0; i < 8; i++) chain = chain.then(function () { return pump(env, MQ.Script.run(N.mid_tatton_stag, {}), 1200, "photo"); });
+      return chain;
+    }).then(function () {
+      assert.strictEqual(Number(MQ.Flags.get("case_06_photos")), 8, "eight antler patterns");
+      return pump(env, MQ.Script.run(N.mid_tatton_stag, {}), 3000, "the ninth");
+    }).then(function () {
+      assert.ok(MQ.Flags.get("case_06_ninth"), "the ninth is not a deer");
+      assert.ok(MQ.Inventory.count("face_fragment_1") >= 1, "Face Fragment #1");
+    });
+  });
 };

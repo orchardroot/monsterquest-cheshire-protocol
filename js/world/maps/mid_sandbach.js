@@ -141,6 +141,7 @@
       { id: "npc_sandbach_gethin", x: 11, y: 19, dir: "down", sprite: "npc_shopkeep", behaviour: "still", trainer: "tr_sandbach_2", sight: 0,
         say: ["Crumbly, not creamy. If it doesn't fall apart on the knife it isn't Cheshire and I'll not sell it to you."] },
       { id: "npc_sandbach_mostyn", x: 36, y: 26, dir: "left", sprite: "npc_shadow_it", behaviour: "look", radius: 3, trainer: "tr_sandbach_5", sight: 3 },
+      { id: "npc_sandbach_drop", x: 17, y: 4, dir: "left", sprite: "npc_historian", behaviour: "still", script: "mid_sandbach_drop", cond: "case_12_open" },
       { id: "npc_sandbach_shrine", x: 22, y: 22, dir: "up", sprite: "npc_historian", behaviour: "still", script: "mid_sandbach_shrine", cond: "sandbach_shrine" },
       { id: "npc_sandbach_boater", x: 20, y: 30, dir: "right", sprite: "npc_boater", behaviour: "path", path: [[8, 30], [28, 30]], pathMode: "pingpong",
         say: ["Wheelock flight. Sixteen locks in a mile and a half. It's the best afternoon in Cheshire and it takes four hours."] },

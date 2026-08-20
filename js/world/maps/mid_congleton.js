@@ -151,6 +151,8 @@
       { id: "npc_congleton_meg", x: 31, y: 29, dir: "left", sprite: "npc_historian", behaviour: "look", radius: 3, trainer: "tr_congleton_1", sight: 3, script: "mid_congleton_meg" },
       { id: "npc_congleton_kirsty", x: 44, y: 21, dir: "down", sprite: "npc_shadow_it", behaviour: "look", radius: 3, trainer: "tr_congleton_2", sight: 3, script: "mid_congleton_kirsty" },
       { id: "npc_congleton_tam", x: 16, y: 31, dir: "down", sprite: "npc_ranger", behaviour: "look", radius: 3, trainer: "tr_congleton_3", sight: 3 },
+      { id: "npc_congleton_token_2", x: 27, y: 31, dir: "down", sprite: "npc_walker", behaviour: "still", script: "mid_congleton_token_2" },
+      { id: "npc_congleton_token_3", x: 37, y: 30, dir: "down", sprite: "npc_ranger", behaviour: "still", script: "mid_congleton_token_3" },
       { id: "npc_congleton_poster_1", x: 33, y: 16, dir: "down", sprite: "npc_kid", behaviour: "still", script: "mid_congleton_poster" },
       { id: "npc_congleton_bearward_boy", x: 26, y: 22, dir: "down", sprite: "npc_kid", behaviour: "wander", radius: 3,
         say: ["There's three bears in the square and one on the Cloud and the one on the Cloud is REAL.",
