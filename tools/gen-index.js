@@ -16,7 +16,7 @@ const ORDER = [
   "data/types", "data/moves", "data/abilities", "data/items", "data/species", "data/encounters", "data/encounters_east", "data/encounters_mid", "data/encounters_sw", "data/encounters_nw", "data/trainers", "data/trainers_east", "data/trainers_mid", "data/trainers_sw", "data/trainers_nw", "data/quests", "data/quests_east", "data/quests_mid", "data/quests_sw", "data/quests_nw", "data/achievements", "data/dialogue",
   "world/mapformat", "world/npc", "world/interact", "world/encounters", "world/overworld", "world/maps/",
   "battle/effects", "battle/ai", "battle/engine", "battle/scene",
-  "content/", "ui/", "story/main", "story/npcs", "story/npcs_east", "story/npcs_mid", "story/npcs_sw", "story/npcs_nw", "story/chapters/",
+  "content/", "ui/", "story/main", "story/npcs", "story/npcs_east", "story/npcs_mid", "story/npcs_sw", "story/npcs_nw", "story/endings", "story/chapters/",
   "boot"
 ];
 
