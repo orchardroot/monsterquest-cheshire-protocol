@@ -233,7 +233,11 @@ module.exports = function (t, assert) {
     assert.strictEqual(Tr.bonusPoints, beforeBonus + 1);
     assert.strictEqual(Inv.chips, 4);
     assert.strictEqual(Tr.titles.has("Wallwalker"), true);
-    assert.strictEqual(MQ.Flags.get("unlock_lamp"), true, "no overworld: falls back to a flag");
+    if (MQ.Overworld && MQ.Overworld.state && MQ.Overworld.state.abilities) {
+      assert.strictEqual(MQ.Overworld.state.abilities.has("lamp"), true, "overworld present: ability is unlocked directly");
+    } else {
+      assert.strictEqual(MQ.Flags.get("unlock_lamp"), true, "no overworld: falls back to a flag");
+    }
     assert.strictEqual(Tr.dexEntry("spindrake").caught, 1, "gift monsters register in the dex");
   });
 

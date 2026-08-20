@@ -376,9 +376,42 @@
     lift_pass: "lift", waders: "waders", gritstone_grips: "climb", proxy_goggles: "goggles", railcard: "railcard"
   };
 
+  function brewEffectToFlat(e) {
+    if (e.kind === "partyHeal") return { partyHeal: true, overdriveStart: e.overdriveStart };
+    if (e.kind === "partyCure") return { partyCure: true };
+    if (e.kind === "catTrust") return { catTrust: e.delta || 1 };
+    if (e.kind === "perkPoint") return { perkPoint: e.n || 1 };
+    if (e.kind === "fishing") return { trinket: true, buff: { key: "fishRareWindow", value: e.rareZone } };
+    if (e.kind === "prebattle") {
+      if (e.typeBoost) return { buff: { key: e.typeBoost + "Mult", value: e.mult, battles: e.battles || 1 } };
+      if (e.damageTaken) {
+        const types = e.damageTaken.types || [];
+        const key = types.length ? types[0] + types.slice(1).map(U.capitalise).join("") + "TakenMult" : "takenMult";
+        return { buff: { key: key, value: e.damageTaken.mult, battles: e.battles || 1 } };
+      }
+      if (e.stage) return { buff: { key: e.stage.stat + "OpenerStages", value: e.stage.delta, battles: e.battles || 1 } };
+      return {};
+    }
+    if (e.kind === "timed") {
+      const keys = Object.keys(e).filter(function (k) { return k !== "kind" && k !== "realMinutes"; });
+      const k = keys[0];
+      return k ? { buff: { key: k, value: e[k], minutes: e.realMinutes } } : {};
+    }
+    return {};
+  }
+
   Inv.def = function (id) {
     const d = MQ.Data && MQ.Data.items ? MQ.Data.items[id] : null;
-    if (d) return d;
+    if (d) {
+      // data/items.js brews describe their effect under `brewEffect` (kind +
+      // params, e.g. {kind:'timed', catchMult:1.3, realMinutes:10}); the
+      // dispatch below reads the flatter shape (partyHeal/partyCure/buff)
+      // this workstream's own fallback table already used, so translate.
+      if (d.kind === "brew" && d.brewEffect && !d.buff && !d.partyHeal && !d.partyCure) {
+        return U.merge(d, brewEffectToFlat(d.brewEffect));
+      }
+      return d;
+    }
     const f = FALLBACK[id];
     if (f) { f.id = id; return f; }
     return { id: id, name: U.capitalise(String(id).replace(/_/g, " ")), kind: "consumable", price: 0, __unknown: true };
@@ -901,8 +934,12 @@
     if (MQ.Progression) MQ.Progression.award("catch");
     return isNew;
   };
-  Tr.seenCount = function () { let n = 0; const ks = Object.keys(Tr.dex); for (let i = 0; i < ks.length; i++) if (Tr.dex[ks[i]].seen) n++; return n; };
-  Tr.caughtCount = function () { let n = 0; const ks = Object.keys(Tr.dex); for (let i = 0; i < ks.length; i++) if (Tr.dex[ks[i]].caught) n++; return n; };
+  function dexCounted(id) {
+    const sp = MQ.Data && MQ.Data.species ? MQ.Data.species[id] : null;
+    return !sp || !sp.dexHidden;
+  }
+  Tr.seenCount = function () { let n = 0; const ks = Object.keys(Tr.dex); for (let i = 0; i < ks.length; i++) if (Tr.dex[ks[i]].seen && dexCounted(ks[i])) n++; return n; };
+  Tr.caughtCount = function () { let n = 0; const ks = Object.keys(Tr.dex); for (let i = 0; i < ks.length; i++) if (Tr.dex[ks[i]].caught && dexCounted(ks[i])) n++; return n; };
   Tr.habitatNote = function (speciesId) {
     const e = Tr.dex[speciesId];
     if (!e || !e.notes.length) return "";
