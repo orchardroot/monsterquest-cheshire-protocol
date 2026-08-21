@@ -285,6 +285,8 @@
   sh.fill("g", 15, 3, 4, 1, "2");
   sh.set("g", 14, 3, "5"); sh.set("g", 19, 3, "5");
   sh.set("g", 11, 9, ">"); sh.set("g", 22, 9, ">");
+  sh.set("g", 15, 2, "8"); // the summit cone had no climbable face anywhere in it —
+  sh.set("g", 17, 4, "8"); // two gritstone-grips points, one per nested ring, open a way in
   sh.fill("g", 3, 20, 6, 5, "0");
   sh.fill("g", 24, 19, 7, 6, "0");
   sh.fill("g", 25, 12, 6, 5, "0");

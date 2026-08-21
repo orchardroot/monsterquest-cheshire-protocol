@@ -152,7 +152,7 @@
           "It keeps pace with you. It keeps a polite distance. It is not a lantern."] }
     ],
     triggers: [
-      { x: 10, y: 18, w: 2, h: 1, script: "east_lindow_lake", once: "lindow_lake_seen", cond: "!lindow_lake_seen" }
+      { x: 10, y: 19, w: 2, h: 1, script: "east_lindow_lake", once: "lindow_lake_seen", cond: "!lindow_lake_seen" }
     ]
   });
 

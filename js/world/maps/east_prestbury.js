@@ -50,6 +50,10 @@
   c.set("g", 40, 5, "C"); c.set("g", 40, 8, "C");
   c.set("g", 39, 8, "d");
   c.scatter("g", "prest-graves", "g", 12, 26, 4, 12, 6, [","]);
+  // the scatter above walled the verger and the well into two dead pockets
+  // between the gravestones — clear a one-tile path down the row so both
+  // reach the rest of the churchyard.
+  c.set("g", 27, 6, ","); c.set("g", 27, 8, ",");
   c.fill("g", 33, 10, 1, 2, "_"); c.set("g", 33, 12, "_");
   c.fill("g", 38, 8, 1, 3, "_"); c.set("g", 38, 11, "_"); c.set("g", 38, 12, "_");
   c.set("g", 27, 3, "U");
@@ -76,7 +80,7 @@
   c.fill("g", 20, 5, 5, 7, "h");
   c.fill("g", 21, 6, 3, 4, "5");
   c.set("g", 22, 11, ";");
-  c.fill("g", 22, 6, 1, 5, ".");
+  c.fill("g", 22, 5, 1, 6, ".");
   c.set("g", 24, 4, "N");
 
   // ---- south terrace: Care centre, the Bridge Hotel, the boutique ---------

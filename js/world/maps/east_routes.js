@@ -308,6 +308,10 @@
   c.set("g", 37, 19, "G");
   c.set("g", 39, 21, "K");
   B.trees(c, "r4", 26, 1, 2, 44, 22, "A", null, ["."]);
+  // keep the gate at (37,19) and the path just inside it clear — the willow
+  // scatter above can land right on top of either.
+  c.set("g", 37, 18, ".");
+  c.set("g", 38, 20, ".");
   c.set("g", 5, 13, "S"); c.set("g", 40, 13, "S");
   c.set("g", 22, 12, "q"); c.set("g", 16, 20, "I");
   c.set("g", 18, 17, "Q"); c.set("g", 34, 18, "Q");
@@ -362,8 +366,10 @@
   c.set("g", 16, 5, "/"); c.set("g", 36, 22, "*"); c.set("g", 12, 29, "*");
   c.set("g", 4, 16, "S"); c.set("g", 43, 17, "S");
   c.set("g", 20, 17, "q");
-  // billhook gaps (diagonal shortcuts through the hedges)
-  c.set("g", 10, 9, "i"); c.set("g", 33, 9, "i"); c.set("g", 19, 25, "i"); c.set("g", 37, 25, "i");
+  // billhook gaps (diagonal shortcuts through the hedges) — must be the
+  // "hedge" tile itself: World.blocked's billhookGaps check only opens a
+  // ground id of exactly "hedge", not "hedge_low" ("i").
+  c.set("g", 10, 9, "h"); c.set("g", 33, 9, "h"); c.set("g", 19, 25, "h"); c.set("g", 37, 25, "h");
   B.trees(c, "r5", 14, 1, 1, 44, 32, "T", "y", ["."]);
   route("route_prestbury_wilmslow", {
     name: "Mottram Lanes", ambience: "forest", dialogue: "town_prestbury",
@@ -377,7 +383,10 @@
       { x: 0, y: 16, to: "wilmslow", tx: 50, ty: 20, dir: "left", kind: "edge" },
       { x: 0, y: 17, to: "wilmslow", tx: 50, ty: 21, dir: "left", kind: "edge" }
     ],
-    billhookGaps: ["10,9", "33,9", "19,25", "37,25"],
+    // the hedge is more than one tile thick at three of these four gaps —
+    // every layer needs to be listed or the billhook only clears the
+    // outer one.
+    billhookGaps: ["10,9", "10,8", "33,9", "19,25", "19,24", "19,26", "37,25", "37,24", "37,26"],
     signs: [
       { x: 4, y: 16, text: ["WILMSLOW 2 MILES.", "The lanes are a lattice. The lattice is a maze. The maze is somebody's field boundary from 1310."] },
       { x: 43, y: 17, text: ["PRESTBURY 1 MILE. NO TURNING, NO PASSING, NO PATIENCE."] }
@@ -546,6 +555,7 @@
   c.fill("g", 24, 34, 8, 5, "R");
   c.fill("g", 25, 35, 6, 3, "+");
   c.set("g", 28, 36, "M");
+  c.set("g", 28, 34, "+"); // the viewpoint's own wall had no door — open one
   // sandy banks, ledges and pockets
   c.fill("g", 2, 4, 11, 8, '"'); c.fill("g", 3, 16, 10, 7, '"');
   c.fill("g", 2, 28, 12, 9, '"'); c.fill("g", 20, 22, 3, 8, '"');
