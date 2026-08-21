@@ -1,19 +1,11 @@
-  FAIL Slipstream boosts speed on entry; Quiet Cat makes it +2
-  FAIL catching a wild monster ends the battle with the catch
-  FAIL bag items heal and cost the turn
-  FAIL the capture animation and the timing minigame draw
-  FAIL rewards can grant a monster, a perk point and a traversal unlock
-  FAIL brews apply timed buffs the rest of the game can read
-  FAIL dex records seen/caught with habitat notes and fires milestones
-  FAIL cat gaps: MEADOW squeezes through and fetches what's behind
-
-Known cross-team mismatches after merging ws/ui-a + ws/content-core (2026-08-19):
-- battle expects MQ.Inventory.has/count for capsules+items; content-core uses pockets — reconcile the item lookup API (battle/engine.js chooses, content/state.js owns).
-- battle effect kind 'priority' unimplemented in battle/effects.js (data emits it).
-- battle scene capture animation: null guard needed when Settings.captureMinigame is off.
-- cats: Quiet Cat perk should make Slipstream +2 (perk lookup mismatch: MQ.Progression.has vs MQ.Trainer.perks).
-- quests rewards: unlock() needs MQ.Overworld present, or a flag fallback the test accepts.
-- brewing buffs: MQ.Inventory brew-buff channel vs content-activities' expectations (activities not built yet).
+Resolved (2026-08-21) — verified against the current tree with `node tools/test/run.js` and spot-checked reads of the implementing code; deleted rather than left stale:
+- The un-headed FAIL list and the "known cross-team mismatches after merging
+  ws/ui-a + ws/content-core (2026-08-19)" block that used to live here (Slipstream/
+  Quiet Cat, catch-ends-battle, bag items, capture animation, monster/perk/unlock
+  rewards, brew buffs, dex recording, cat gaps, the Inventory pockets API, the
+  'priority' battle effect) are all implemented and covered by green tests
+  (test-content-core-cats.js, test-battle*.js, test-content-core-quests.js,
+  test-dex-recording.js, test-region-*.js "cat gaps" cases). Nothing to do.
 
 Browser QA 2026-08-20 (v2 @ integrated build, Firefox, 1411x1216):
 - WORKS: title screen (night Cheshire, dish, rain, slots), name entry, difficulty picker, confirm dialog, overworld with real tiles/NPCs/clock HUD, virtual analogue stick moves the player diagonally, touch A/B/RUN/START, canvas fills the window at 60fps, no letterbox.
@@ -51,5 +43,9 @@ STILL OPEN (not mine to fix / not small and safe):
   dex seen/caught recording, dialogue box top/bottom placement.)
 
 After merging region-mid + region-southwest (2026-08-20):
-- Duplicate trainer id: both js/data/trainers_mid.js and trainers_sw.js define `vex_3` ("[Data] redefining trainers/vex_3"). Decide which chapter owns it (DESIGN-INDEX says VEX appears once per chapter band) and rename the other, updating the story script that references it.
-- Region south-west's `aberaeron` map declares fishing table `fish_aberaeron` which nothing defines — add it to js/data/encounters_sw.js.
+- FIXED (2026-08-21): Region south-west's `aberaeron` fishing table `fish_aberaeron` was already defined in js/data/encounters_sw.js by the time this pass started — nothing left to do.
+- FIXED (2026-08-21): duplicate trainer id `vex_3` (trainers_mid.js and trainers_sw.js both defined it). Neither is invoked by any script or map npc.trainer field — grepped every `battle({trainer:...})` call and every `trainer:` field in js/world/maps/*.js; only vex_1 (Ch.1), vex_2 (Ch.3) and vex_4 (Ch.8, trainers_nw.js — already correct, not the collision) are ever fought. Renamed region-southwest's copy to `vex_3_sw_unused` rather than reusing `vex_4` (that's a different, already-wired trainer) or deleting written content.
+
+STILL OPEN — repeat-interaction sweep (2026-08-21, tools/test/test-npc-loops.js + tools/test/test-quest-flow.js):
+- Chapter 5 ("Puppets on the Line") has no wired rival battle. The only VEX content at Crewe is js/story/npcs_mid.js's "mid_crewe_vex" scene (run by js/world/maps/mid_crewe.js's npc_crewe_vex), and it is dialogue-only — it never calls `C.battle`. trainers_mid.js's "vex_3" (full party/intro/win/lose/rematch data, clearly written for this exact platform-six scene) sits unused. DESIGN-INDEX's "vex_<n> (rival fights 1-4)" line and the region-mid workstream report both imply a Ch.5 rival fight was intended. Not fixed here — deciding where in the scene to insert the battle and matching its pacing/rewards to the other three rival fights is a content call, not a mechanical bug fix.
+- region-southwest's own unused rival trainer (`vex_3_sw_unused`, see above) is in the same boat: full flavour text, no script anywhere battles it. Whoever picks up the Ch.5 rival fight should also decide whether this one is a leftover to delete or content for a different (unwritten) south-west beat.
