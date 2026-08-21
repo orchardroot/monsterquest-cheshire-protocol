@@ -290,7 +290,7 @@
       "Outer ward arena. Rematches only. Bring somebody you've already beaten and find out whether it took.",
       "House rule: the wind counts as a third trainer and it is on nobody's side."
     ]);
-    if (MQ.Arena && MQ.Arena.start) { yield C.custom(function () { MQ.Arena.start({ venue: "beeston", tier: "bronze" }); }); return; }
+    if (MQ.Arena && MQ.Arena.start) { yield C.custom(function () { return MQ.Arena.start({ venue: "beeston", tier: "bronze" }); }); return; }
     yield C.say(["The board is up but the fixtures have not been posted. Come back when the county has calmed down."]);
   });
 
@@ -883,7 +883,7 @@
         { label: "Not now", value: null }
       ]);
       if (pick) {
-        yield C.custom(function () { MQ.Minigames.start(pick); });
+        yield C.custom(function () { return MQ.Minigames.start(pick); });
         yield C.addFlag("case_28_cabinets", 1);
       }
       return;
@@ -959,7 +959,7 @@
         { label: "Obsidian — 12 fights, L65+", value: "obsidian" },
         { label: "Not today", value: null }
       ]);
-      if (tier) yield C.custom(function () { MQ.Arena.start({ tier: tier }); });
+      if (tier) yield C.custom(function () { return MQ.Arena.start({ tier: tier }); });
       return;
     }
     yield C.say(["The board is up and the fixtures are not posted. Come back when the county has calmed down."], { name: "Arena Desk" });
@@ -971,7 +971,7 @@
       "Three warrants, rotating daily, clue text only.",
       "No map markers. If you wanted map markers you should have joined a different profession and I say that to everyone."
     ], { name: "Town Clerk" });
-    if (MQ.Bounties && MQ.Bounties.open) yield C.custom(function () { MQ.Bounties.open("warrington"); });
+    if (MQ.Bounties && MQ.Bounties.open) yield C.custom(function () { return MQ.Bounties.open("warrington"); });
     else yield C.setFlag("bounty_board_open", true);
   });
 
@@ -1127,7 +1127,7 @@
       "There's a fish pass. They use it. And then some of them go up the weir anyway, straight up, in April, in front of half the city.",
       "Nobody has ever explained why and I have stopped wanting them to."
     ], { name: "Angler" });
-    if (MQ.Fishing && MQ.Fishing.start) yield C.custom(function () { MQ.Fishing.start({ table: "fish_chester_groves" }); });
+    if (MQ.Fishing && MQ.Fishing.start) yield C.custom(function () { return MQ.Fishing.start({ table: "fish_chester_groves" }); });
   });
 
   def("nw_roodee_betting", function* (ctx) {
@@ -1136,7 +1136,7 @@
       "Oldest racecourse still going anywhere in the world, on the silt of a Roman harbour, and a betting window I am not allowed to open on a Tuesday.",
       "There are three names on the board for the winter meet. One of them is a nineteen-year-old who has never ridden a horse in their life and it is not a horse race."
     ], { name: "Clerk of the Course" });
-    if (MQ.Minigames && MQ.Minigames.start) yield C.custom(function () { MQ.Minigames.start("roodee_betting"); });
+    if (MQ.Minigames && MQ.Minigames.start) yield C.custom(function () { return MQ.Minigames.start("roodee_betting"); });
   });
 
   // =====================================================================

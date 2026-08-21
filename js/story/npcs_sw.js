@@ -1175,6 +1175,13 @@
 
   def("sw_bells", function* (ctx) {
     const C = ctx.S;
+    if (flag("bells_rung")) {
+      yield C.say([
+        "Bell-ringing is not music. It is a sorting algorithm with a rope on the end and a thousand-year head start.",
+        "You've had your go. There's a queue, and half of it is eight years old and better than you."
+      ], { name: "Ringing Master Huw" });
+      return;
+    }
     yield C.say([
       "Bell-ringing is not music. It is a sorting algorithm with a rope on the end and a thousand-year head start.",
       "Care to pull one?"
