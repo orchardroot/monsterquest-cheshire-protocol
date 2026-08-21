@@ -116,6 +116,7 @@ const ASSETS = [
   "js/content/progression.js",
   "js/content/quests-engine.js",
   "js/content/rematch.js",
+  "js/content/shop.js",
   "js/content/shrine.js",
   "js/content/state.js",
   "js/ui/bag.js",
