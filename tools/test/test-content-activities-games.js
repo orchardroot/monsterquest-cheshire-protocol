@@ -358,7 +358,8 @@ module.exports = function (t, assert) {
     assert.strictEqual(res.ok, true);
     assert.strictEqual(MQ.Inventory.count("capsule_quick"), 1);
     assert.strictEqual(MQ.Minigames.redeem("capsule_quick").ok, true, "capsules repeat");
-    assert.strictEqual(MQ.Minigames.redeem("tm_static_wave").ok, MQ.Minigames.tokens() >= 40);
+    const canAffordCard = MQ.Minigames.tokens() >= 40;
+    assert.strictEqual(MQ.Minigames.redeem("tm_static_wave").ok, canAffordCard);
     while (MQ.Minigames.tokens() > 0) MQ.Minigames.spendTokens(1);
     assert.strictEqual(MQ.Minigames.redeem("capsule_net").ok, false, "no tokens, no prize");
     const prizes = MQ.Minigames.prizes();

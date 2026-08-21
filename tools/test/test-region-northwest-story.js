@@ -14,6 +14,12 @@ function nwFiles() {
   const re = /<script\s+src="([^"]+)"/g;
   let m;
   while ((m = re.exec(html))) files.push(m[1]);
+  // The whole point of this suite: region-mid's Jodrell maps (jodrell_bank,
+  // jodrell_bank_dish, ...) must not be loaded here, so Chapter 11 exercises
+  // its own "degrades to narration if they aren't loaded" fallback instead
+  // of the real cross-region content.
+  const midJodrell = files.indexOf("js/world/maps/mid_jodrell.js");
+  if (midJodrell >= 0) files.splice(midJodrell, 1);
   const add = function (before, extra) {
     const keep = extra.filter(function (f) { return files.indexOf(f) < 0 && fs.existsSync(path.join(ROOT, f)); });
     const i = files.indexOf(before);
