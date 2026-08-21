@@ -297,8 +297,9 @@ module.exports = function (t, assert) {
       assert.ok(MQ.Flags.get("rail_fast_travel"), "rail_fast_travel");
       assert.ok(MQ.Flags.get("cambrian_ticket"), "cambrian_ticket");
       assert.ok(MQ.Overworld.state.abilities.has("railcard"), "the railcard is a traversal unlock");
-      return pump(env, MQ.Script.run(N.mid_crewe_vex, {}), 6000, "the train home");
+      return pump(env, MQ.Script.run(N.mid_crewe_vex, {}), 20000, "the train home");
     }).then(function () {
+      assert.ok(MQ.Flags.get("vex_battle_3"), "vex_battle_3 — the platform-six rival fight");
       assert.ok(MQ.Flags.get("salon_seen"), "salon_seen");
       assert.ok(MQ.Flags.get("welsh_word_learned"), "welsh_word_learned — 'paid', said aloud, off-log");
     });

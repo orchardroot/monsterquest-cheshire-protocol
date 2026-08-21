@@ -23,6 +23,20 @@ module.exports = function (t, assert) {
     assert.strictEqual(errors.length, 0, errors.join("\n"));
   });
 
+  t("defining the same id twice in a kind is recorded as a collision and fails validate()", function () {
+    const before = D.collisions.length;
+    D.define("trainers", "test_dup_trainer", { name: "First" });
+    D.define("trainers", "test_dup_trainer", { name: "Second" });
+    assert.strictEqual(D.collisions.length, before + 1);
+    assert.strictEqual(D.collisions[D.collisions.length - 1], "trainers/test_dup_trainer");
+    const errors = D.validate();
+    assert.ok(errors.some(function (e) { return e.indexOf("test_dup_trainer") >= 0; }), "validate() reports the duplicate");
+    // an explicit __override does not count as a collision (used by fixtures/overrides)
+    const beforeOverride = D.collisions.length;
+    D.define("trainers", "test_dup_trainer", { name: "Third", __override: true });
+    assert.strictEqual(D.collisions.length, beforeOverride, "__override is not a collision");
+  });
+
   t("dex numbering is complete and contiguous", function () {
     const seen = {};
     D.each("species", function (s) { if (!s.dexHidden) seen[s.num] = s.id; });

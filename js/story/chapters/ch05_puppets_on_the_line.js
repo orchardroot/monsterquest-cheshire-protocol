@@ -296,6 +296,20 @@
         "VEX says nothing for eleven minutes, which is the longest they have gone since you met them."
       ]);
     }
+    yield C.say(["Fight me instead, it's easier."], { name: "VEX" });
+    const rBattle = yield C.battle({ kind: "trainer", trainer: "vex_3", music: "battle_vex" });
+    yield C.setFlag("vex_battle_3", true);
+    if (rBattle && rBattle.lost) {
+      yield C.say([
+        "VEX doesn't gloat. That's somehow worse.",
+        "Come on. Sit down before the board changes again."
+      ], { name: "VEX" });
+    } else {
+      yield C.say([
+        "VEX's shoulders drop about an inch, which for VEX counts as a full collapse.",
+        "...Yeah. Alright. Ta."
+      ], { name: "VEX" });
+    }
     yield C.wait(400);
     yield C.setFlag("salon_seen", true);
     yield C.say([

@@ -15,9 +15,13 @@
     if (!Data[kind] || typeof Data[kind] !== "object") { Data[kind] = {}; if (KINDS.indexOf(kind) < 0) KINDS.push(kind); }
     return Data[kind];
   };
+  Data.collisions = [];
   Data.define = function (kind, id, obj) {
     const table = Data.kind(kind);
-    if (MQ.DEV && table[id] && !obj.__override) MQ.warn("[Data] redefining " + kind + "/" + id);
+    if (table[id] && !obj.__override) {
+      Data.collisions.push(kind + "/" + id);
+      if (MQ.DEV) MQ.warn("[Data] redefining " + kind + "/" + id);
+    }
     obj.id = id;
     table[id] = obj;
     return obj;
@@ -56,6 +60,14 @@
     }
     return errors;
   };
+
+  // A second MQ.Data.define("trainers", "vex_3", ...) from a different file
+  // silently overwrites the first at load time — by validate() time the
+  // original is already gone, so Data.define itself records the collision
+  // above; this just reports whatever it saw.
+  Data.validators.push(function (err) {
+    for (let i = 0; i < Data.collisions.length; i++) err("duplicate id defined twice: " + Data.collisions[i]);
+  });
 
   MQ.Data = Data;
 })();

@@ -662,10 +662,10 @@
   });
 
   // NOTE: not currently invoked by any script (see docs/design/INTEGRATION-TODO.txt) —
-  // `vex_3` collided with region-mid's trainer of the same id (also unused: chapter 5's
-  // "mid_crewe_vex" scene is dialogue-only) and the canonical vex_1/vex_2/vex_4 rival
-  // fights are already owned by ch01/ch03/ch08. Renamed to stop the redefine warning;
-  // left in place rather than deleted in case a south-west rival beat gets written later.
+  // this collided with region-mid's `vex_3` id, which IS the Ch.5 rival fight (wired into
+  // "mid_crewe_vex", js/story/chapters/ch05_puppets_on_the_line.js) and owns that id.
+  // Renamed to stop the redefine warning; left in place rather than deleted in case a
+  // south-west rival beat gets written later.
   T("vex_3_sw_unused", {
     name: "VEX", cls: "Rival", sprite: "vex", ai: "smart",
     party: p("amoslurk:32,saltling:32,volteel:33,phishfin:33,trojanox:35"),
