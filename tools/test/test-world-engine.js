@@ -678,6 +678,41 @@ module.exports = function (t, assert) {
     return pump(env, 2);
   });
 
+  t("the HUD (tracker/SIGNAL/CUTOVER/mini-map) is drawn once, through MQ.UI.HUD, not reimplemented", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    assert.ok(MQ.UI && MQ.UI.HUD && MQ.UI.HUD.corner, "ui/hud.js is loaded in a full build");
+    let calls = 0;
+    const real = MQ.UI.HUD.corner;
+    MQ.UI.HUD.corner = function () { calls++; return real.apply(this, arguments); };
+    const ctx = MQ.View.ctx || env.screen.getContext("2d");
+    MQ.Loop.render();
+    MQ.UI.HUD.corner = real;
+    assert.strictEqual(calls, 1, "the overworld delegates its HUD corner to MQ.UI.HUD exactly once per frame");
+    // the overworld's own toggle drives MQ.UI.HUD's mini-map flag, not a second one
+    assert.strictEqual(MQ.UI.HUD.miniMapOn, false);
+    O.toggleMinimap(true);
+    assert.strictEqual(MQ.UI.HUD.miniMapOn, true, "toggling the overworld minimap also flips MQ.UI.HUD's");
+    O.toggleMinimap(false);
+    assert.strictEqual(MQ.UI.HUD.miniMapOn, false);
+  });
+
+  t("with MQ.UI.HUD absent, the overworld falls back to its own tracker/SIGNAL/CUTOVER/mini-map", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    const realHud = MQ.UI.HUD;
+    MQ.UI.HUD = null;
+    MQ.Flags.set("signal_meter", true);
+    MQ.Flags.set("cutover_days", 5);
+    O.toggleMinimap(true);
+    const ctx = MQ.View.ctx || env.screen.getContext("2d");
+    ctx.calls.length = 0;
+    assert.doesNotThrow(function () { MQ.Loop.render(); }, "drawing without MQ.UI.HUD does not throw");
+    assert.ok(ctx.calls.length > 10, "the fallback still drew something");
+    O.toggleMinimap(false);
+    MQ.Flags.set("signal_meter", false);
+    MQ.Flags.clear("cutover_days");
+    MQ.UI.HUD = realHud;
+  });
+
   t("setTile rewrites collision and drops the affected chunk", function () {
     const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
     const m = O.currentMap();

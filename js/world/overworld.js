@@ -981,11 +981,15 @@
     }
     if (MQ.Input.pressed("select")) {
       MQ.Input.consume("select");
-      minimapOn = !minimapOn;
+      O.toggleMinimap();
       if (MQ.Audio && MQ.Audio.sfx) MQ.Audio.sfx("ui_open");
     }
   }
-  O.toggleMinimap = function (on) { minimapOn = on === undefined ? !minimapOn : !!on; return minimapOn; };
+  O.toggleMinimap = function (on) {
+    minimapOn = on === undefined ? !minimapOn : !!on;
+    if (MQ.UI && MQ.UI.HUD && MQ.UI.HUD.setMiniMap) MQ.UI.HUD.setMiniMap(minimapOn);
+    return minimapOn;
+  };
 
   // ---- scene hooks -------------------------------------------------------
   let lastDt = 16.7;
@@ -1323,7 +1327,7 @@
     else if (player.running) emitParticle(player.px + spread * 0.4, player.py, 2, spread * 0.5, -18, 260);
   }
 
-  // ---- mini-map ----------------------------------------------------------
+  // ---- mini-map (fallback only — MQ.UI.HUD.miniMap is the real one) ------
   let minimapCanvas = null;
   const MM_SCALE = 3;
   function buildMinimap() {
@@ -1345,7 +1349,7 @@
     return c;
   }
 
-  function drawMinimap(ctx) {
+  function drawMinimapFallback(ctx) {
     const c = minimapCanvas || buildMinimap();
     const vw = screenW(), vh = screenH();
     const maxW = Math.min(vw * 0.34, 260), maxH = Math.min(vh * 0.42, 200);
@@ -1376,7 +1380,12 @@
     }
   }
 
-  // ---- HUD ---------------------------------------------------------------
+  // ---- HUD -----------------------------------------------------------
+  // The quest tracker, SIGNAL METER, CUTOVER counter and mini-map all live
+  // in MQ.UI.HUD (ui-b) — HUD.corner() draws the standard arrangement.
+  // This is a fallback only, for a build with ui/hud.js missing: it repeats
+  // the same four widgets by hand so the overworld degrades rather than
+  // going blank, same as everywhere else that checks a system exists first.
   function cutoverLabel() {
     const v = MQ.Flags.get("cutover_days");
     if (v === undefined || v === false) return null;
@@ -1386,22 +1395,13 @@
     return "CUTOVER  T-" + v;
   }
 
-  function drawHud(ctx) {
-    const vw = screenW(), vh = screenH();
-    const top = 12 + MQ.View.safe.top;
+  // Draws the fallback tracker/signal/cutover/minimap and returns the y just
+  // below whatever it drew top-left, so the clock chip can sit clear of it.
+  function drawHudFallback(ctx, top, vw) {
     const right = vw - 12 - MQ.View.safe.right;
 
-    // clock + weather chip
-    if (MQ.Clock) {
-      const kind = map.outdoor === false ? "indoor" : MQ.Clock.weatherOf(map.weatherZone);
-      const label = MQ.Clock.timeString() + "  " + weatherGlyph(kind);
-      const w = MQ.Text.width(label, "s") + 18;
-      MQ.UI.box(ctx, right - w, top, w, 24, { style: "dark", alpha: 0.7 });
-      MQ.Text.draw(ctx, label, right - w + 9, top + 5, { size: "s", color: "#e8e8e0" });
-    }
-
     // SIGNAL METER (Ch.4+)
-    let y = top + 30;
+    let y = top;
     const sig = MQ.Encounters.signalLevel();
     if (MQ.Flags.get("signal_meter") || sig > 0) {
       const w = 118;
@@ -1421,6 +1421,7 @@
     }
 
     // quest tracker
+    let leftY = top;
     const tracked = (MQ.Quests && MQ.Quests.tracked) ? MQ.Quests.tracked() : null;
     if (tracked && tracked.length) {
       const q = tracked[0];
@@ -1428,12 +1429,37 @@
       const line = q.text || q.stageText || "";
       const w = Math.max(MQ.Text.width(title, "s"), MQ.Text.width(line, "s")) + 22;
       const x = 12 + MQ.View.safe.left;
-      MQ.UI.box(ctx, x, top, Math.min(w, vw * 0.42), line ? 46 : 28, { style: "dark", alpha: 0.72 });
+      const h = line ? 46 : 28;
+      MQ.UI.box(ctx, x, top, Math.min(w, vw * 0.42), h, { style: "dark", alpha: 0.72 });
       MQ.Text.draw(ctx, title, x + 10, top + 6, { size: "s", color: "#e0c060", maxWidth: vw * 0.4 });
       if (line) MQ.Text.draw(ctx, line, x + 10, top + 24, { size: "s", color: "#d8d8d0", maxWidth: vw * 0.4 });
+      leftY = top + h + 6;
     }
 
-    if (minimapOn) drawMinimap(ctx);
+    if (minimapOn) drawMinimapFallback(ctx);
+    return leftY;
+  }
+
+  function drawHud(ctx) {
+    const vw = screenW();
+    const top = 12 + MQ.View.safe.top;
+
+    const hasHud = !!(MQ.UI && MQ.UI.HUD && MQ.UI.HUD.corner);
+    const clockY = hasHud ? MQ.UI.HUD.corner(ctx) : drawHudFallback(ctx, top, vw);
+
+    // clock + weather chip — not one of MQ.UI.HUD's widgets, so it always
+    // draws here; top-left, below wherever the quest tracker left off, so it
+    // never lands under HUD.corner's SIGNAL/CUTOVER (top-right) or mini-map
+    // (bottom-right) — or under the touch stick/buttons, which only ever
+    // live in the bottom corners.
+    if (MQ.Clock) {
+      const kind = map.outdoor === false ? "indoor" : MQ.Clock.weatherOf(map.weatherZone);
+      const label = MQ.Clock.timeString() + "  " + weatherGlyph(kind);
+      const w = MQ.Text.width(label, "s") + 18;
+      const x = 12 + MQ.View.safe.left, y = clockY > top ? clockY : top;
+      MQ.UI.box(ctx, x, y, w, 24, { style: "dark", alpha: 0.7 });
+      MQ.Text.draw(ctx, label, x + 9, y + 5, { size: "s", color: "#e8e8e0" });
+    }
   }
 
   function weatherGlyph(kind) {
