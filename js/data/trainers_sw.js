@@ -1,7 +1,7 @@
 // =============================================================
 // MonsterQuest v2 — trainers of the SOUTH-WEST region (Ch.6-7).
 // Route and town trainers `tr_<mapid>_<n>`, Gym 5 `leader_nell`,
-// Gym 6 `leader_jack`, the rival fight `vex_3`, and the bosses:
+// Gym 6 `leader_jack`, and the bosses:
 // `boss_kellan` (the lido), `boss_hack_green_ops`, the Understudy at
 // Middlewich, and `boss_terrataur` under Northwich.
 // Shapes per ENGINE-ARCHITECTURE §4 + the battle team's `house`/`boss`.
@@ -661,7 +661,12 @@
     rematch: { party: p("salberg:39,pillarnaut:38,terrataur:41,panscald:38,cryssal:38,salberg:42::salt_crust"), every: 1 }
   });
 
-  T("vex_3", {
+  // NOTE: not currently invoked by any script (see docs/design/INTEGRATION-TODO.txt) —
+  // `vex_3` collided with region-mid's trainer of the same id (also unused: chapter 5's
+  // "mid_crewe_vex" scene is dialogue-only) and the canonical vex_1/vex_2/vex_4 rival
+  // fights are already owned by ch01/ch03/ch08. Renamed to stop the redefine warning;
+  // left in place rather than deleted in case a south-west rival beat gets written later.
+  T("vex_3_sw_unused", {
     name: "VEX", cls: "Rival", sprite: "vex", ai: "smart",
     party: p("amoslurk:32,saltling:32,volteel:33,phishfin:33,trojanox:35"),
     payout: 2800,
