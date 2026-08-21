@@ -357,6 +357,89 @@ module.exports = function (t, assert) {
   });
 
   // =================================================================
+  // 5b. Late game (Gyms 5-8, the White Hats, Champion VEX, ORACLE).
+  //
+  // Measured with a dedicated five-mon "high" tier party (not the cats —
+  // MEADOW and BIGBOY are mandatory extra slots every real run carries,
+  // and dragging two mid-tier cats into a fight tuned around a full team
+  // of high-tier commons will always read harder than the fight actually
+  // is; this isolates whether the *fight itself* is winnable). None of
+  // these battles use items either (the AI never reaches for the bag),
+  // so real play — potions, capsules, gear — has more headroom than
+  // these numbers show. That's the honest baseline these bands are set
+  // against, not a claim that every late fight is soloable stock.
+  // =================================================================
+  const LATE_PARTY = function (lvl) {
+    return [
+      { species: "loomoth", level: lvl }, { species: "salberg", level: lvl - 1 },
+      { species: "panoptix", level: lvl - 1 }, { species: "bruinhall", level: lvl - 1 },
+      { species: "strigyx", level: lvl - 2 }
+    ];
+  };
+  function lateFight(id) {
+    const t0 = D.trainers[id];
+    const ace = Math.max.apply(null, t0.party.map(function (p) { return p.level; }));
+    return SIM.simulate({ label: id, n: 50, player: LATE_PARTY(ace), trainerId: id, seed: 4200 });
+  }
+
+  t("Gyms 5-7 (Nell, Jack, Ria) are winnable with a level-appropriate high-tier team", function () {
+    ["leader_nell", "leader_jack", "leader_ria"].forEach(function (id) {
+      const r = lateFight(id);
+      assert.ok(r.winRate > 0, id + " is unwinnable (0% over 50 runs) at the ace's level with a real team");
+      assert.ok(r.avgTurns >= 6, id + " resolves in only " + r.avgTurns.toFixed(1) + " turns — too fast for a gym fight");
+    });
+  });
+
+  t("Gym 8 (Mo) is the hardest gym by design (a mid-fight type-chart rewrite and a forced Overdrive) but not a wall", function () {
+    const r = lateFight("leader_mo");
+    assert.ok(r.winRate >= 0.1, "leader_mo wins against the player " + ((1 - r.winRate) * 100).toFixed(0) + "% of the time — that's a wall, not a hard gym");
+    assert.ok(r.avgTurns >= 6, "leader_mo resolves in only " + r.avgTurns.toFixed(1) + " turns");
+  });
+
+  t("the four White Hats are a real gauntlet, not a wipe", function () {
+    const ids = ["whitehat_sue", "whitehat_raj", "whitehat_kim", "whitehat_doc"];
+    const agg = SIM.Stats();
+    ids.forEach(function (id) {
+      const r = lateFight(id);
+      assert.ok(r.winRate > 0, id + " is unwinnable (0% over 50 runs)");
+      agg.n += r.n; agg.wins += Math.round(r.winRate * r.n); agg.turns.push(r.avgTurns);
+    });
+    const overall = SIM.summarise("white hats", agg);
+    assert.ok(overall.winRate >= 0.5, "the White Hats overall win rate is only " + (overall.winRate * 100).toFixed(0) + "%");
+  });
+
+  t("Champion VEX and ORACLE are the hardest fights in the game, but losable-and-winnable, not a coin the player can't call", function () {
+    ["champion_vex", "boss_oracle"].forEach(function (id) {
+      const r = lateFight(id);
+      assert.ok(r.winRate >= 0.1 && r.winRate <= 0.9,
+        id + " win rate is " + (r.winRate * 100).toFixed(0) + "% — should read as the hardest fight in the game, not a coin flip either way");
+      assert.ok(r.avgTurns >= 6, id + " resolves in only " + r.avgTurns.toFixed(1) + " turns");
+    });
+  });
+
+  t("fully-evolved level 45-60 duels are a real exchange, not a first-hit stomp", function () {
+    const high = speciesIds.filter(function (id) {
+      const s = D.species[id];
+      return !s.dexHidden && s.tier === "high" && !(s.evolutions && s.evolutions.length);
+    });
+    assert.ok(high.length >= 20, "expected a decent spread of high-tier finals, found " + high.length);
+    // a fixed, reproducible spread of pairs across the live high-tier dex
+    let seed = 12345;
+    function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    const agg = SIM.Stats();
+    for (let i = 0; i < 40; i++) {
+      const a = high[Math.floor(rnd() * high.length)], b = high[Math.floor(rnd() * high.length)];
+      if (a === b) continue;
+      const s = SIM.simulate({ label: a + " vs " + b, n: 4, player: [{ species: a, level: 50 }], enemy: [{ species: b, level: 50 }], seed: 500 + i });
+      agg.n += s.n; agg.wins += Math.round(s.winRate * s.n); agg.turns.push(s.avgTurns); agg.hits.push(s.avgDmgPerHit); agg.oneShots += Math.round(s.oneShotRate * s.n);
+    }
+    const r = SIM.summarise("high-tier lvl 50 duels", agg);
+    assert.ok(r.avgTurns >= 3, "high-tier duels average only " + r.avgTurns.toFixed(1) + " turns");
+    assert.ok(r.oneShotRate <= 0.25, "high-tier duels one-shot " + (r.oneShotRate * 100).toFixed(0) + "% of the time");
+    assert.ok(r.avgDmgPerHit <= 0.42, "high-tier duels land " + (r.avgDmgPerHit * 100).toFixed(0) + "% of the bar per hit");
+  });
+
+  // =================================================================
   // 6. Items
   // =================================================================
   t("healing does not out-pace damage", function () {
