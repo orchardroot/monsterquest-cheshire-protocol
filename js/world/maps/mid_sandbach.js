@@ -102,7 +102,8 @@
       { x: 45, y: 16, to: "route_congleton_sandbach", tx: 1, ty: 17, dir: "right", kind: "edge" },
       { x: 20, y: 37, to: "route_sandbach_crewe", tx: 14, ty: 1, dir: "down", kind: "edge" },
       { x: 21, y: 37, to: "route_sandbach_crewe", tx: 15, ty: 1, dir: "down", kind: "edge" },
-      { x: 22, y: 37, to: "route_sandbach_crewe", tx: 16, ty: 1, dir: "down", kind: "edge" }
+      { x: 22, y: 37, to: "route_sandbach_crewe", tx: 16, ty: 1, dir: "down", kind: "edge" },
+      { x: 1, y: 7, to: "route_sandbach_middlewich", tx: 54, ty: 7, dir: "left", kind: "edge" }
     ],
     signs: [
       { x: 16, y: 24, text: ["THE BOUNTY BOARD.",

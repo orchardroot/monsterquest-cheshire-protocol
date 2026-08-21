@@ -88,7 +88,8 @@
         { x: 5, y: 25, to: "lymm_house_1", tx: 5, ty: 8, dir: "up", kind: "door" },
         { x: 13, y: 25, to: "lymm_house_2", tx: 5, ty: 8, dir: "up", kind: "door" },
         { x: 9, y: 32, to: "lymm_dam", tx: 24, ty: 3, dir: "down", kind: "stairs" },
-        { x: 10, y: 32, to: "lymm_dam", tx: 24, ty: 3, dir: "down", kind: "stairs" }
+        { x: 10, y: 32, to: "lymm_dam", tx: 24, ty: 3, dir: "down", kind: "stairs" },
+        { x: 20, y: 32, to: "route_budworth_lymm", tx: 15, ty: 1, dir: "down", kind: "edge" }
       ]
     ),
     signs: [

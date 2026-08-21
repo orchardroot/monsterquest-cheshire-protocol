@@ -109,7 +109,8 @@
       { x: 38, y: 36, to: "crewe_gym", tx: 16, ty: 28, dir: "up", kind: "door" },
       { x: 24, y: 0, to: "route_sandbach_crewe", tx: 14, ty: 38, dir: "up", kind: "edge" },
       { x: 25, y: 0, to: "route_sandbach_crewe", tx: 15, ty: 38, dir: "up", kind: "edge" },
-      { x: 26, y: 0, to: "route_sandbach_crewe", tx: 16, ty: 38, dir: "up", kind: "edge" }
+      { x: 26, y: 0, to: "route_sandbach_crewe", tx: 16, ty: 38, dir: "up", kind: "edge" },
+      { x: 52, y: 15, to: "route_crewe_nantwich", tx: 54, ty: 14, dir: "right", kind: "edge" }
     ],
     signs: [
       { x: 3, y: 8, text: ["CREWE WORKS. Opened 1843. Built seven thousand locomotives and a town to go round them.",

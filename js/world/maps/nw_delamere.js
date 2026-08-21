@@ -471,7 +471,9 @@
     spawnPoint: { x: 2, y: 12 },
     landmark: { name: "Whitegate Station", x: 28, y: 10 },
     encounters: { grass: "route_delamere_winsford_grass" },
-    warps: NW.edge(0, 11, 3, false, "delamere_forest", 54, 20, "left"),
+    warps: NW.edge(0, 11, 3, false, "delamere_forest", 54, 20, "left").concat(
+      NW.edge(55, 11, 3, false, "winsford", 2, 29, "right")
+    ),
     signs: [
       { x: 6, y: 10, text: ["WHITEGATE WAY — six miles of the Cheshire Lines Committee, retired.",
         "Cyclists, walkers, horses. In that order on paper and in no order at all in practice."] },
