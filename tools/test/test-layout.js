@@ -206,6 +206,42 @@ module.exports = function (t, assert) {
     assert.strictEqual(missing.length, 0, "menu scenes still showing the pad: " + missing.join(", "));
   });
 
+  t("Settings speaks both vocabularies MQ.Settings uses for the shared ids", function () {
+    const S = MQ.UI.Settings;
+    // MQ.Settings keeps touchSize as a multiplier and screenShake as a boolean;
+    // this screen offers names. Reading straight through showed the player "1"
+    // and "true", and writing straight through wrote a name into a number.
+    MQ.Settings.set("touchSize", 1);
+    assert.strictEqual(S.get("touchSize"), "medium");
+    MQ.Settings.set("touchSize", 1.24);
+    assert.strictEqual(S.get("touchSize"), "large");
+    MQ.Settings.set("touchSize", 0.82);
+    assert.strictEqual(S.get("touchSize"), "small");
+    MQ.Settings.set("screenShake", true);
+    assert.strictEqual(S.get("screenShake"), "full");
+    MQ.Settings.set("screenShake", false);
+    assert.strictEqual(S.get("screenShake"), "off");
+    // and back the other way
+    S.setValue("touchSize", "large");
+    assert.strictEqual(MQ.Settings.get("touchSize"), 1.24);
+    assert.strictEqual(S.get("touchSize"), "large");
+    S.setValue("screenShake", "off");
+    assert.strictEqual(MQ.Settings.get("screenShake"), false);
+    S.setValue("touchSize", "medium");
+    S.setValue("screenShake", "full");
+    // every option's stored value survives a round trip and has a label
+    const opts = S.OPTIONS;
+    for (let i = 0; i < opts.length; i++) {
+      const o = opts[i];
+      if (o.kind !== "choice") continue;
+      for (let j = 0; j < o.options.length; j++) {
+        S.setValue(o.id, o.options[j].value);
+        assert.strictEqual(S.get(o.id), o.options[j].value, o.id + " lost " + o.options[j].label);
+      }
+      S.setValue(o.id, S.DEFAULTS[o.id]);
+    }
+  });
+
   t("Input: the pad scales up on a small screen and reports what it stands on", function () {
     V.init();
     MQ.Input.init(V.canvas);

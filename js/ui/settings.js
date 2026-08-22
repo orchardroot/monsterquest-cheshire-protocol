@@ -58,11 +58,49 @@
     try { s.setItem(KEY, JSON.stringify(values())); } catch (e) { /* ignore */ }
   }
 
+  // MQ.Settings (the engine's own store) predates this screen and keeps some of
+  // the same ids in a different vocabulary: touchSize is a number there and a
+  // name here, screenShake a boolean. Translate both ways rather than showing
+  // the player "1" and "true" — and rather than writing a name into a field the
+  // engine reads as a multiplier, which is how touchSize ended up NaN.
+  const FROM_ENGINE = {
+    touchSize: function (v) {
+      const n = Number(v);
+      if (!isFinite(n)) return undefined;
+      return n <= 0.9 ? "small" : n >= 1.15 ? "large" : "medium";
+    },
+    screenShake: function (v) { return v === true ? "full" : v === false ? "off" : undefined; }
+  };
+  const TO_ENGINE = {
+    touchSize: function (v) { return TOUCH_SCALE[v] === undefined ? 1 : TOUCH_SCALE[v]; },
+    screenShake: function (v) { return v !== "off"; }
+  };
+  function optionFor(id) {
+    for (let i = 0; i < OPTIONS.length; i++) if (OPTIONS[i].id === id) return OPTIONS[i];
+    return null;
+  }
+  function isValid(o, v) {
+    if (!o) return v !== undefined && v !== null;
+    if (o.kind === "slider") { const n = Number(v); return isFinite(n); }
+    for (let i = 0; i < o.options.length; i++) if (o.options[i].value === v) return true;
+    return false;
+  }
   function get(id) {
     try {
       if (MQ.Settings) {
-        if (typeof MQ.Settings.get === "function") { const v = MQ.Settings.get(id); if (v !== undefined) return v; }
-        else if (MQ.Settings[id] !== undefined) return MQ.Settings[id];
+        let v;
+        if (typeof MQ.Settings.get === "function") v = MQ.Settings.get(id);
+        else v = MQ.Settings[id];
+        if (v !== undefined && v !== null) {
+          const o = optionFor(id);
+          if (isValid(o, v)) return v;
+          // The engine's version can be coarser than ours (it stores screenShake
+          // as a boolean, so "light" and "full" both land on true). When our own
+          // value still means the same thing to the engine, keep the detail.
+          if (TO_ENGINE[id] && isValid(o, local[id]) && TO_ENGINE[id](local[id]) === v) return local[id];
+          const conv = FROM_ENGINE[id] ? FROM_ENGINE[id](v) : undefined;
+          if (conv !== undefined && isValid(o, conv)) return conv;
+        }
       }
     } catch (e) { /* ignore */ }
     return local[id];
@@ -71,8 +109,9 @@
     local[id] = v;
     try {
       if (MQ.Settings) {
-        if (typeof MQ.Settings.set === "function") MQ.Settings.set(id, v);
-        else MQ.Settings[id] = v;
+        const ev = TO_ENGINE[id] ? TO_ENGINE[id](v) : v;
+        if (typeof MQ.Settings.set === "function") MQ.Settings.set(id, ev);
+        else MQ.Settings[id] = ev;
         if (typeof MQ.Settings.save === "function") MQ.Settings.save();
       }
     } catch (e) { /* ignore */ }
