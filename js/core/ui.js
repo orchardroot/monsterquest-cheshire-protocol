@@ -385,7 +385,10 @@
       const h = banner.sub ? (24 + lh + 8 + sh) : (24 + lh);
       // Centred: the top-left corner belongs to the quest tracker, and the top
       // corners of a phone belong to the camera cutout.
-      const x = Math.round((V.w - w) / 2), y = V.safe.top + 18 - (1 - k) * 20;
+      const Theme = UI.Theme;
+      const reserve = (Theme && Theme.headerReserve) ? Theme.headerReserve() : 0;
+      const x = Math.round((V.w - w) / 2);
+      const y = Math.max(V.safe.top + 18, reserve) - (1 - k) * 20;
       ctx.globalAlpha = k;
       UI.box(ctx, x, y, w, h, { style: "dark" });
       T.draw(ctx, banner.title, x + w / 2, y + 12, { size: "l", align: "center", color: "#fff8e0", shadow: true, maxWidth: w - 24 });

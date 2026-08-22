@@ -297,34 +297,90 @@
     }
   }
 
-  sc.draw = function (ctx) {
+  // The tab rail. One column when the screen has the height for nine
+  // finger-sized rows; two when it does not (a 19.5:9 phone in landscape has
+  // width to spare and no height at all), so every tab stays on screen.
+  function drawTabRail(ctx, x, y, w, h, cols) {
     const Theme = TH(), C = Theme.C, m = Theme.m();
+    const st = sc.st, items = sc.items, n = items.length;
+    const gap = 6;
+    const rows = Math.ceil(n / cols) || 1;
+    const fit = Math.floor((h - (rows - 1) * gap) / rows);
+    const rowH = Math.max(m.minTouch, Math.min(Math.round(46 * m.k * m.ui), fit));
+    const visible = Math.max(1, Math.floor((h + gap) / (rowH + gap)));
+    const maxScroll = Math.max(0, rows - visible);
+    st.cols = cols;
+    st.visible = visible;
+    if (maxScroll) {
+      const dr = (MQ.Input && MQ.Input.dragState) ? MQ.Input.dragState() : null;
+      if (dr && dr.active && dr.dy && U.inRect(dr.x0, dr.y0, x, y, w, h)) {
+        st.dragAcc = (st.dragAcc || 0) + dr.dy;
+        while (st.dragAcc >= rowH + gap && st.scroll > 0) { st.scroll--; st.dragAcc -= rowH + gap; }
+        while (st.dragAcc <= -(rowH + gap) && st.scroll < maxScroll) { st.scroll++; st.dragAcc += rowH + gap; }
+      } else st.dragAcc = 0;
+    } else st.scroll = 0;
+    const curRow = Math.floor(st.cursor / cols);
+    if (curRow < st.scroll) st.scroll = curRow;
+    else if (curRow >= st.scroll + visible) st.scroll = curRow - visible + 1;
+    if (st.scroll > maxScroll) st.scroll = maxScroll;
+    const colW = (w - (cols - 1) * gap) / cols;
+    for (let i = 0; i < st.rects.length; i++) { if (st.rects[i]) st.rects[i].on = false; }
+    for (let i = 0; i < n; i++) {
+      const r0 = Math.floor(i / cols), c0 = i % cols;
+      if (r0 < st.scroll || r0 >= st.scroll + visible) continue;
+      const ix = x + c0 * (colW + gap), iy = y + (r0 - st.scroll) * (rowH + gap);
+      let r = st.rects[i];
+      if (!r) r = st.rects[i] = { x: 0, y: 0, w: 0, h: 0, on: false };
+      r.x = ix; r.y = iy; r.w = colW; r.h = rowH; r.on = true;
+      const item = items[i];
+      const focused = i === st.cursor && sc.focus === 0;
+      ctx.fillStyle = focused ? C.sel : "rgba(255,255,255,0.05)";
+      UI.roundRect(ctx, ix, iy, colW, rowH, 7); ctx.fill();
+      if (focused) { ctx.strokeStyle = C.selEdge; ctx.lineWidth = 3; UI.roundRect(ctx, ix + 1, iy + 1, colW - 2, rowH - 2, 7); ctx.stroke(); }
+      if (item.icon && UI.hasIcon(item.icon)) UI.icon(ctx, item.icon, ix + 10, iy + (rowH - 16) / 2, 1);
+      const mh = T.px("m");
+      T.draw(ctx, item.label, ix + 34, iy + (rowH - mh) / 2, {
+        size: "m", color: item.disabled ? "rgba(150,148,170,0.6)" : focused ? C.brassLit : C.text, maxWidth: colW - 46
+      });
+      if (item.disabled) T.draw(ctx, "-", ix + colW - 12, iy + (rowH - mh) / 2, { size: "s", align: "right", color: C.dim });
+    }
+    if (maxScroll) {
+      const barH = Math.max(20, h * visible / rows);
+      const barY = y + (h - barH) * (st.scroll / maxScroll);
+      ctx.fillStyle = "rgba(255,255,255,0.08)"; ctx.fillRect(x + w + 4, y, 4, h);
+      ctx.fillStyle = C.brass; ctx.fillRect(x + w + 4, barY, 4, barH);
+    }
+  }
+
+  sc.draw = function (ctx) {
+    const Theme = TH(), m = Theme.m();
     Theme.scrim(ctx, 0.78);
     Theme.header(ctx, { title: "Pause", sub: "Everything you carry, know and owe.", icon: "cog", back: true });
     const top = Theme.headerBottom();
     const bot = Theme.footerTop() - 6;
-    const quickH = Math.round(52 * m.k);
-    const bodyH = bot - top - quickH - 10;
-    const tabW = Math.min(210 * m.k, m.cw * 0.26);
-    Theme.list(sc.st, ctx, {
-      x: m.l, y: top, w: tabW, h: bodyH, rowH: Math.round(Math.min(46 * m.k, bodyH / TABS.length - 4)), gap: 4,
-      render: function (c, item, x, y, w, h, sel) {
-        const focused = sel && sc.focus === 0;
-        c.fillStyle = focused ? C.sel : "rgba(255,255,255,0.05)";
-        UI.roundRect(c, x, y, w, h, 7); c.fill();
-        if (focused) { c.strokeStyle = C.selEdge; c.lineWidth = 3; UI.roundRect(c, x + 1, y + 1, w - 2, h - 2, 7); c.stroke(); }
-        if (item.icon && UI.hasIcon(item.icon)) UI.icon(c, item.icon, x + 10, y + (h - 16) / 2, 1);
-        T.draw(c, item.label, x + 34, y + (h - 18) / 2, { size: "m", color: item.disabled ? "rgba(150,148,170,0.6)" : focused ? C.brassLit : C.text });
-        if (item.disabled) T.draw(c, "-", x + w - 12, y + (h - 18) / 2, { size: "s", align: "right", color: C.dim });
-      }
-    });
+    const quickH = Math.max(Math.round(52 * m.k), Math.round(m.minTouch * 0.9));
+    const n = sc.items.length || TABS.length;
+    // would nine finger-sized rows fit in one column, with the quick slots
+    // under them as usual?
+    const oneCol = Math.floor((bot - top - quickH - 10 + 4) / (m.rowH + 4)) >= n;
+    const cols = oneCol ? 1 : 2;
+    // In two columns the rail wants every pixel of height it can get, so the
+    // quick slots move under the status card instead of across the bottom.
+    const bodyH = oneCol ? (bot - top - quickH - 10) : (bot - top);
+    const tabW = oneCol ? Math.min(210 * m.k, m.cw * 0.26) : Math.min(430, m.cw * 0.44);
+    drawTabRail(ctx, m.l, top, tabW, bodyH, cols);
     // right column
     const rx = m.l + tabW + 16, rw = m.r - rx;
     let ry = top;
     ry += drawCutover(ctx, rx, ry, rw);
     ry += drawSignal(ctx, rx, ry, rw);
-    drawStatus(ctx, rx, ry, rw, top + bodyH - ry);
-    drawQuick(ctx, m.l, top + bodyH + 10, m.cw - 8, quickH);
+    if (oneCol) {
+      drawStatus(ctx, rx, ry, rw, top + bodyH - ry);
+      drawQuick(ctx, m.l, top + bodyH + 10, m.cw - 8, quickH);
+    } else {
+      drawStatus(ctx, rx, ry, rw, bot - quickH - 10 - ry);
+      drawQuick(ctx, rx, bot - quickH, rw, quickH);
+    }
     Theme.footer(ctx, HINTS);
   };
 

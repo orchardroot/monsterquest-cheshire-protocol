@@ -379,11 +379,19 @@
       L.msgLine = line;
       L.boxH = Math.round(Math.min(Math.max(112, 3 * line + 34), (L.bottom - L.top) * 0.34));
       L.boxY = L.bottom - L.boxH;
-      L.enemyX = L.left + L.cw * 0.66; L.enemyY = L.top + (L.boxY - L.top) * 0.30;
-      L.playerX = L.left + L.cw * 0.24; L.playerY = L.boxY - (L.boxY - L.top) * 0.10;
+      // The monsters are sized against the strip of field that is actually
+      // left above the message box, not the whole view — on a 540-high screen
+      // the player's sprite used to stand with its feet inside the box.
+      const field = Math.max(80, L.boxY - L.top);
+      L.playerSize = Math.round(Math.min(field * 0.56, h * 0.38));
+      L.enemySize = Math.round(Math.min(field * 0.46, h * 0.30));
+      L.enemyX = L.left + L.cw * 0.66; L.enemyY = L.top + 30 + L.enemySize / 2;
+      L.playerX = L.left + L.cw * 0.24; L.playerY = L.boxY - 16 - L.playerSize / 2;
       L.infoW = Math.min(360, Math.max(230, L.cw * 0.42));
       L.infoH = Math.round(T.px("m") + T.px("s") + 30);
-      L.enemyInfoX = L.left; L.enemyInfoY = L.top + Math.max(22, T.px("s") + 10);
+      L.chipH = Math.max(18, T.px("s") + 4);
+      // leave room above the enemy panel for its type chips AND the turn counter
+      L.enemyInfoX = L.left; L.enemyInfoY = L.top + T.px("s") + L.chipH + 8;
       L.playerInfoX = L.right - L.infoW; L.playerInfoY = L.boxY - L.infoH - 26;
       return L;
     },
@@ -726,8 +734,8 @@
     }
 
     S.drawBackground(ctx, L);
-    S.drawPlatform(ctx, L.enemyX, L.enemyY + 46, 132, 30);
-    S.drawPlatform(ctx, L.playerX, L.playerY + 60, 168, 38);
+    S.drawPlatform(ctx, L.enemyX, L.enemyY + L.enemySize * 0.30, L.enemySize * 0.82, L.enemySize * 0.19);
+    S.drawPlatform(ctx, L.playerX, L.playerY + L.playerSize * 0.30, L.playerSize * 0.82, L.playerSize * 0.19);
 
     // monsters (enemy behind, player in front)
     for (let k = 1; k >= 0; k--) S.drawMon(ctx, S.vm[1][k], 1, k, L);
@@ -745,7 +753,9 @@
     S.drawFieldChips(ctx, L);
     if (S.catchAnim) S.drawCatch(ctx, L);
 
-    S.drawMessageBox(ctx, L);
+    // The move list covers the whole bottom band, and the message box behind it
+    // showed through the panel's translucency.
+    if (S.mode !== "move") S.drawMessageBox(ctx, L);
 
     if (S.mode === "menu") S.drawMainMenu(ctx, L);
     else if (S.mode === "move") S.drawMoveMenu(ctx, L);
@@ -831,7 +841,7 @@
   Scene.drawMon = function (ctx, vm, side, slot, L) {
     if (!vm.active || !vm.species) return;
     const S = this;
-    const size = side === 0 ? Math.round(L.h * 0.38) : Math.round(L.h * 0.30);
+    const size = side === 0 ? (L.playerSize || Math.round(L.h * 0.38)) : (L.enemySize || Math.round(L.h * 0.30));
     const cv = monsterCanvas(vm.species, side === 0, size, vm.types);
     const p = S.slotPos(side, slot);
     let x = p.x - size / 2, y = p.y - size / 2 + vm.dy;
@@ -900,7 +910,7 @@
     }
     // type chips
     if (vm.types) {
-      const chipH = Math.max(18, sh + 4);
+      const chipH = L.chipH || Math.max(18, sh + 4);
       for (let i = 0; i < vm.types.length && i < 2; i++) UI.typeChip(ctx, vm.types[i], x + 12 + i * 62, y - chipH - 4, { w: 58, h: chipH });
     }
     // stat stage arrows
