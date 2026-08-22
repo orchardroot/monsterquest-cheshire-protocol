@@ -82,7 +82,7 @@
   }
 
   // ---- scene ---------------------------------------------------------
-  const sc = { id: "perks", col: 0, row: 0, scroll: 0, rects: [] };
+  const sc = { id: "perks", touchPad: false, col: 0, row: 0, scroll: 0, rects: [] };
   const HINTS = [{ btn: "b", label: "Back" }, { btn: "dir", label: "Move" }, { btn: "a", label: "Take" }, { btn: "select", label: "Respec" }];
 
   sc.enter = function (p) {

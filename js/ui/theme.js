@@ -374,6 +374,21 @@
     return (o && o.min === false) ? want : Math.max(want, m.minTouch);
   };
 
+  // Shared drag/wheel scrolling for anything that keeps its own `scroll`
+  // (grids, long text panes) rather than going through Theme.list. `step` is
+  // one row/page of scroll in logical px. Returns true when it moved.
+  Theme.dragScroll = function (st, x, y, w, h, step, maxScroll) {
+    if (!st || !(maxScroll > 0) || !(step > 0)) { if (st) st.dragAcc = 0; return false; }
+    const dr = (MQ.Input && MQ.Input.dragState) ? MQ.Input.dragState() : null;
+    if (!dr || !dr.active || !dr.dy || !U.inRect(dr.x0, dr.y0, x, y, w, h)) { st.dragAcc = 0; return false; }
+    st.dragAcc = (st.dragAcc || 0) + dr.dy;
+    let moved = false;
+    while (st.dragAcc >= step && st.scroll > 0) { st.scroll--; st.dragAcc -= step; moved = true; }
+    while (st.dragAcc <= -step && st.scroll < maxScroll) { st.scroll++; st.dragAcc += step; moved = true; }
+    if (st.scroll <= 0 || st.scroll >= maxScroll) st.dragAcc = U.clamp(st.dragAcc, -step, step);
+    return moved;
+  };
+
   // ---- themed scrolling list (rows drawn by the caller) ------------
   // st = MQ.UI.menuState(items, {visible}); this fills st.rects so
   // st.update() taps work, and draws a scrollbar. render(ctx,item,x,y,w,h,sel,i)
@@ -394,18 +409,7 @@
     if (st.scroll > maxScroll) st.scroll = maxScroll;
     // Drag (thumb) or wheel scrolling, so a touch-only player can reach the
     // bottom of a list that has no room to show itself.
-    let dragged = false;
-    if (n > visible) {
-      const dr = (MQ.Input && MQ.Input.dragState) ? MQ.Input.dragState() : null;
-      if (dr && dr.active && dr.dy && U.inRect(dr.x0, dr.y0, x, y, w, h)) {
-        st.dragAcc = (st.dragAcc || 0) + dr.dy;
-        const step = rowH + gap;
-        while (st.dragAcc >= step && st.scroll > 0) { st.scroll--; st.dragAcc -= step; }
-        while (st.dragAcc <= -step && st.scroll < maxScroll) { st.scroll++; st.dragAcc += step; }
-        if (st.scroll <= 0 || st.scroll >= maxScroll) st.dragAcc = U.clamp(st.dragAcc, -step, step);
-        dragged = true;
-      } else st.dragAcc = 0;
-    }
+    const dragged = (n > visible) && Theme.dragScroll(st, x, y, w, h, rowH + gap, maxScroll);
     if (dragged) {
       // keep the cursor on something you can actually see
       st.cursor = U.clamp(st.cursor, st.scroll, Math.min(n - 1, st.scroll + visible - 1));

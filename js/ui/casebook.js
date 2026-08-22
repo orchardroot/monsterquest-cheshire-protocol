@@ -164,7 +164,7 @@
   // The scene
   // =============================================================
   const TABS = ["Board", "Cases", "Bounties", "Awards"];
-  const sc = { id: "casebook", tab: 0, chapter: 1, pinIdx: 0, caseSt: null, bountySt: null, awardSt: null, cases: null, caseFilter: 0, detail: 0 };
+  const sc = { id: "casebook", touchPad: false, tab: 0, chapter: 1, pinIdx: 0, caseSt: null, bountySt: null, awardSt: null, cases: null, caseFilter: 0, detail: 0 };
   const CASE_FILTERS = ["All", "Open", "In hand", "Closed"];
   const H_BOARD = [{ btn: "b", label: "Back" }, { btn: "lr", label: "Chapter" }, { btn: "a", label: "Read" }, { btn: "select", label: "Tab" }];
   const H_CASES = [{ btn: "b", label: "Back" }, { btn: "a", label: "Track" }, { btn: "lr", label: "Filter" }, { btn: "select", label: "Tab" }];

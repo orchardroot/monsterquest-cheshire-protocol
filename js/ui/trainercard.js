@@ -117,7 +117,7 @@
 
   const PAGES = ["Card", "Records"];
   const HINTS = [{ btn: "b", label: "Back" }, { btn: "lr", label: "Page" }];
-  const sc = { id: "trainercard", page: 0, scroll: 0 };
+  const sc = { id: "trainercard", touchPad: false, page: 0, scroll: 0 };
 
   function tr() { return MQ.Trainer || null; }
   function card() {

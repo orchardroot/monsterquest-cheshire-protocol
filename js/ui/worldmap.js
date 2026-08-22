@@ -160,7 +160,7 @@
   // =============================================================
   // Scene
   // =============================================================
-  const sc = { id: "worldmap", idx: 0, mode: "view", warp: false, rects: [], area: { x: 0, y: 0, w: 0, h: 0 } };
+  const sc = { id: "worldmap", touchPad: false, idx: 0, mode: "view", warp: false, rects: [], area: { x: 0, y: 0, w: 0, h: 0 } };
   const HINTS = [{ btn: "b", label: "Back" }, { btn: "dir", label: "Move" }, { btn: "a", label: "Travel" }, { btn: "select", label: "Legend" }];
 
   sc.enter = function (p) {
@@ -459,7 +459,7 @@
   UI.Map = sc;
 
   // ---- legend --------------------------------------------------------
-  const leg = { id: "worldmap_legend" };
+  const leg = { id: "worldmap_legend", touchPad: false };
   const LEG_HINTS = [{ btn: "b", label: "Back" }];
   leg.enter = function () { TH().sfx("ui_open"); };
   leg.update = function () { const Theme = TH(); if (Theme.backPressed() || MQ.Input.pressed("a")) { MQ.Input.consume("a"); MQ.Scenes.pop(null); } };

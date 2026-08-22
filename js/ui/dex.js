@@ -15,7 +15,7 @@
   const U = MQ.U, T = MQ.Text, UI = MQ.UI;
   function TH() { return UI.Theme; }
 
-  const Dex = { id: "dex" };
+  const Dex = { id: "dex", touchPad: false };
   const iconCache = {};
 
   // ---- data access, all optional ----------------------------------
@@ -288,6 +288,10 @@
     st.visible = rows;
     const maxScroll = Math.max(0, Math.ceil(ids.length / cols) - rows);
     if (st.scroll > maxScroll) st.scroll = maxScroll;
+    // 177 species is a long way to travel with a d-pad you have not got
+    if (Theme.dragScroll(st, m.l, gy, m.cw, gh, ch, maxScroll)) {
+      st.cursor = U.clamp(st.cursor, st.scroll * cols, Math.min(ids.length - 1, (st.scroll + rows) * cols - 1));
+    }
     for (let i = 0; i < st.rects.length; i++) { if (st.rects[i]) st.rects[i].on = false; }
     if (!ids.length) {
       T.draw(ctx, "Nothing matches that. Try a wider net.", m.cx, gy + gh / 2 - 9, { size: "m", align: "center", color: C.textDim });
@@ -337,7 +341,7 @@
   // =============================================================
   const PAGES = ["Profile", "Stats", "Family", "Habitat", "Records"];
   const E_HINTS = [{ btn: "b", label: "Back" }, { btn: "lr", label: "Page" }, { btn: "a", label: "Cry" }, { btn: "select", label: "Next" }];
-  const ent = { id: "dex_entry", page: 0, index: 0, list: null, st: null, scroll: 0 };
+  const ent = { id: "dex_entry", touchPad: false, page: 0, index: 0, list: null, st: null, scroll: 0 };
 
   ent.enter = function (p) {
     p = p || {};
@@ -707,7 +711,7 @@
   // =============================================================
   // Filter screen
   // =============================================================
-  const flt = { id: "dex_filter", st: null, work: null, rows: null };
+  const flt = { id: "dex_filter", touchPad: false, st: null, work: null, rows: null };
   const F_HINTS = [{ btn: "lr", label: "Change" }, { btn: "a", label: "Apply" }, { btn: "b", label: "Cancel" }, { btn: "select", label: "Clear" }];
   function optionsFor(kind) {
     if (kind === "status") return ["all", "seen", "caught", "missing"];
@@ -803,7 +807,7 @@
     { id: "caught_100", caught: 100, text: "Caught 100 — a shiny-morph egg at the daycare." },
     { id: "caughtAll", caughtAll: true, text: "The dex is full. Something waits on the elm press." }
   ];
-  const mile = { id: "dex_milestones", tab: 0, scroll: 0 };
+  const mile = { id: "dex_milestones", touchPad: false, tab: 0, scroll: 0 };
   const M_HINTS = [{ btn: "b", label: "Back" }, { btn: "lr", label: "Page" }];
   mile.enter = function () { mile.tab = 0; mile.scroll = 0; TH().sfx("ui_open"); };
   mile.update = function () {

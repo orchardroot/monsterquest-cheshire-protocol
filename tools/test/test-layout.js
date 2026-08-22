@@ -190,6 +190,22 @@ module.exports = function (t, assert) {
     assert.ok(st.visible > floored, "opting out packs more rows in: " + st.visible + " vs " + floored);
   });
 
+  t("every menu scene stands the touch pad down", function () {
+    // A menu draws lists where the stick and the A/B/RUN/START pad would sit.
+    // Anything pushed as a scene from MQ.UI has to say so, or the pad lands on
+    // top of it — which is how the Dex grid ended up under the D-pad.
+    const UI = MQ.UI;
+    const names = Object.keys(UI);
+    const missing = [];
+    for (let i = 0; i < names.length; i++) {
+      const o = UI[names[i]];
+      if (!o || typeof o !== "object" || typeof o.draw !== "function" || typeof o.id !== "string") continue;
+      if (o.id === "overworld" || o.id === "battle") continue;
+      if (o.touchPad !== false) missing.push(names[i] + " (" + o.id + ")");
+    }
+    assert.strictEqual(missing.length, 0, "menu scenes still showing the pad: " + missing.join(", "));
+  });
+
   t("Input: the pad scales up on a small screen and reports what it stands on", function () {
     V.init();
     MQ.Input.init(V.canvas);
