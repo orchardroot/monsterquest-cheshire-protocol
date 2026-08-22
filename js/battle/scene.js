@@ -379,20 +379,28 @@
       L.msgLine = line;
       L.boxH = Math.round(Math.min(Math.max(112, 3 * line + 34), (L.bottom - L.top) * 0.34));
       L.boxY = L.bottom - L.boxH;
+      // The move list is a taller panel than the message box. Everything above
+      // measures off the tallest of the two, so switching to it never shunts
+      // the menu up over the player's gauges.
+      const minTouch = (V && V.ui && V.ui.touch) || 44;
+      L.moveRowH = Math.max(46, T.px("m") + T.px("s") + 16, minTouch);
+      L.moveH = Math.round(Math.min(2 * L.moveRowH + 26, (L.bottom - L.top) * 0.5));
+      L.bottomBand = Math.max(L.boxH, L.moveH);
+      L.bandY = L.bottom - L.bottomBand;
       // The monsters are sized against the strip of field that is actually
       // left above the message box, not the whole view — on a 540-high screen
       // the player's sprite used to stand with its feet inside the box.
-      const field = Math.max(80, L.boxY - L.top);
+      const field = Math.max(80, L.bandY - L.top);
       L.playerSize = Math.round(Math.min(field * 0.56, h * 0.38));
       L.enemySize = Math.round(Math.min(field * 0.46, h * 0.30));
       L.enemyX = L.left + L.cw * 0.66; L.enemyY = L.top + 30 + L.enemySize / 2;
-      L.playerX = L.left + L.cw * 0.24; L.playerY = L.boxY - 16 - L.playerSize / 2;
+      L.playerX = L.left + L.cw * 0.24; L.playerY = L.bandY - 16 - L.playerSize / 2;
       L.infoW = Math.min(360, Math.max(230, L.cw * 0.42));
       L.infoH = Math.round(T.px("m") + T.px("s") + 30);
       L.chipH = Math.max(18, T.px("s") + 4);
       // leave room above the enemy panel for its type chips AND the turn counter
       L.enemyInfoX = L.left; L.enemyInfoY = L.top + T.px("s") + L.chipH + 8;
-      L.playerInfoX = L.right - L.infoW; L.playerInfoY = L.boxY - L.infoH - 26;
+      L.playerInfoX = L.right - L.infoW; L.playerInfoY = L.bandY - L.infoH - 26;
       return L;
     },
     slotPos: function (side, slot) {
@@ -755,7 +763,7 @@
 
     // The move list covers the whole bottom band, and the message box behind it
     // showed through the panel's translucency.
-    if (S.mode !== "move") S.drawMessageBox(ctx, L);
+    if (!(S.mode === "move" && S.options && S.options.moves)) S.drawMessageBox(ctx, L);
 
     if (S.mode === "menu") S.drawMainMenu(ctx, L);
     else if (S.mode === "move") S.drawMoveMenu(ctx, L);
@@ -995,10 +1003,9 @@
     const moves = S.options.moves;
     const mh = T.px("m"), sh = T.px("s");
     // A row is a tap target, so it is never smaller than a finger.
-    const minTouch = (NS.View && NS.View.ui && NS.View.ui.touch) || 44;
-    const ch = Math.max(46, mh + sh + 16, minTouch);
+    const ch = L.moveRowH || Math.max(46, mh + sh + 16);
     const rows = Math.ceil(Math.max(1, moves.length) / 2);
-    const h = Math.min(rows * ch + 26, L.bottom - L.top - 8);
+    const h = Math.min(Math.max(rows * ch + 26, L.bottomBand), L.bottom - L.top - 8);
     const y = L.bottom - h;
     UI.box(ctx, L.left, y, L.cw, h, { style: "dark" });
     // the info panel only earns its place when there is width to spare

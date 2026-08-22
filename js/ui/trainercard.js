@@ -239,14 +239,21 @@
     // badges
     const by = y + pad + ps + 24;
     T.draw(ctx, flag("pippin_found") ? "Badges — every one of them SIGNED" : "Badges", x + pad, by - 18, { size: "s", color: flag("pippin_found") ? C.oxblood : C.brassLit });
-    const bs = Math.min(56, (w - pad * 2) / 8 - 6);
+    // Spread the eight over the whole card rather than packing them left: the
+    // labels underneath need the width, or "PACKETCIPHER BEAR" is what you read.
+    const step = (w - pad * 2) / 8;
+    const bs = Math.min(56, step - 6);
+    const sh = T.px("s");
     for (let i = 0; i < BADGES.length; i++) {
       const b = BADGES[i];
-      const cxp = x + pad + bs / 2 + i * (bs + 6);
+      const cxp = x + pad + step / 2 + i * step;
       const on = Badges.earned(b.id);
       Badges.draw(ctx, b.id, cxp, by + bs / 2, bs, on);
-      T.draw(ctx, badgeWord(b), cxp, by + bs + 4, { size: "s", align: "center", color: on ? C.text : C.dim, maxWidth: bs + 6 });
-      T.draw(ctx, b.town, cxp, by + bs + 18, { size: "s", align: "center", color: C.dim, maxWidth: bs + 6 });
+      T.draw(ctx, badgeWord(b), cxp, by + bs + 4, { size: "s", align: "center", color: on ? C.text : C.dim, maxWidth: step - 4 });
+      // the town only earns its line when it can be read at its natural width
+      if (T.width(b.town, "s") <= step - 4) {
+        T.draw(ctx, b.town, cxp, by + bs + 6 + sh, { size: "s", align: "center", color: C.dim });
+      }
     }
 
     // cats
