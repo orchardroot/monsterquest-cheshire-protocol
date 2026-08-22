@@ -169,7 +169,7 @@
     const y0 = top + 66;
     const listH = Theme.footerTop() - y0 - 6;
     Theme.list(rep.st, ctx, {
-      x: m.l, y: y0, w: m.cw - 8, h: listH, rowH: 54, gap: 6,
+      x: m.l, y: y0, w: m.cw - 8, h: listH, rowH: Theme.rowH(54), gap: 6,
       render: function (c, item, x, y, w, h, sel) {
         if (item.value < 0) { Theme.row(c, item, x, y, w, h, sel); return; }
         moveCard(c, rep.mon.moves[item.value].id, x, y, w, h, sel, "PP " + rep.mon.moves[item.value].pp + "/" + rep.mon.moves[item.value].ppMax);
@@ -432,7 +432,7 @@
     const descH = 54;
     const listW = m.cw * 0.60;
     Theme.list(sc.st, ctx, {
-      x: m.l, y: y0, w: listW, h: bot - y0, rowH: Math.round(40 * m.k), gap: 4,
+      x: m.l, y: y0, w: listW, h: bot - y0, rowH: Theme.rowH(40), gap: 4,
       empty: sc.mode === "give" ? "No gear to hand." : "This pocket is empty."
     });
     // detail panel

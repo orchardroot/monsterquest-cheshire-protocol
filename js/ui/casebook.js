@@ -452,7 +452,7 @@
     const Theme = TH(), C = Theme.C;
     const listW = Math.min(w * 0.46, 380);
     Theme.list(sc.caseSt, ctx, {
-      x: x, y: y, w: listW, h: h, rowH: Math.round(Theme.m().rowH * 0.9), gap: 3,
+      x: x, y: y, w: listW, h: h, rowH: Theme.rowH(40), gap: 3,
       empty: "No cases under that filter.",
       render: function (c2, item, rx, ry, rw, rh, sel) {
         if (item.header) {
@@ -513,7 +513,7 @@
     T.draw(ctx, "Three a day, seeded to the date. No re-rolls, however hard you close the book.", x + 4, y, { size: "s", color: C.textDim });
     const ly = y + 20;
     Theme.list(sc.bountySt, ctx, {
-      x: x, y: ly, w: w - 8, h: h - 20, rowH: Math.round(74 * Theme.m().k), gap: 6,
+      x: x, y: ly, w: w - 8, h: h - 20, rowH: Theme.rowH(74), gap: 6,
       empty: "The board is bare. Sandbach opens it in Chapter 5.",
       render: function (c2, b, rx, ry, rw, rh, sel) {
         c2.fillStyle = sel ? C.sel : "rgba(255,255,255,0.045)";
@@ -543,7 +543,7 @@
     for (let i = 0; i < list.length; i++) if (list[i].unlocked) got++;
     T.draw(ctx, got + " of " + list.length + " earned. The rest are all technically possible.", x + 4, y, { size: "s", color: C.textDim });
     Theme.list(sc.awardSt, ctx, {
-      x: x, y: y + 20, w: w - 8, h: h - 20, rowH: Math.round(46 * Theme.m().k), gap: 4,
+      x: x, y: y + 20, w: w - 8, h: h - 20, rowH: Theme.rowH(46), gap: 4,
       empty: "Nobody has written the awards list yet.",
       render: function (c2, a, rx, ry, rw, rh, sel) {
         const d = a.def || {};

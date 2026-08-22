@@ -122,20 +122,26 @@
     Theme.scrim(ctx, 0.82);
     Theme.header(ctx, { title: nameSc.title, sub: nameSc.sub || "Tap the letters, or just type.", icon: "book" });
     const top = Theme.headerBottom();
+    // The keyboard wants ten keys across at a finger apiece; on a wide phone
+    // there is plenty of room for that, and it used to sit in a 520px column
+    // with a third of the screen empty beside it.
+    const kwWant = Math.max(m.minTouch, Math.round(52 * m.k * m.ui));
+    const gw = Math.min(m.cw, Math.max(Math.round(520 * m.k), kwWant * COLS + (COLS - 1) * 6));
     // the field
-    const fw = Math.min(m.cw, 520 * m.k);
+    const fw = gw;
     const fx = m.cx - fw / 2;
-    Theme.panel(ctx, fx, top, fw, 52, { lit: true });
+    const fh = Math.max(52, T.px("l") + 26);
+    Theme.panel(ctx, fx, top, fw, fh, { lit: true });
     const shown = nameSc.value + ((nameSc.blink % 900 < 500) ? "_" : " ");
-    T.draw(ctx, shown, m.cx, top + 14, { size: "l", align: "center", color: C.brassLit });
-    T.draw(ctx, nameSc.value.length + "/" + nameSc.max, fx + fw - 10, top + 32, { size: "s", align: "right", color: C.textDim });
+    T.draw(ctx, shown, m.cx, top + 12, { size: "l", align: "center", color: C.brassLit });
+    T.draw(ctx, nameSc.value.length + "/" + nameSc.max, fx + fw - 10, top + fh - T.px("s") - 6, { size: "s", align: "right", color: C.textDim });
 
     // keyboard grid
-    const gy0 = top + 66;
+    const gy0 = top + fh + 14;
     const gh = Theme.footerTop() - gy0 - 6;
     const rows = Math.ceil(nameSc.keys.length / COLS);
-    const kw = Math.floor((fw - (COLS - 1) * 6) / COLS);
-    const kh = Math.min(Math.floor((gh - (rows - 1) * 6) / rows), Math.round(46 * m.k));
+    const kw = Math.floor((gw - (COLS - 1) * 6) / COLS);
+    const kh = Math.min(Math.floor((gh - (rows - 1) * 6) / rows), Math.max(Math.round(46 * m.k * m.ui), m.minTouch));
     // keys cap out at 46px, so on a tall screen centre them rather than
     // leaving a third of the screen empty underneath
     const gy = gy0 + Math.max(0, Math.floor((gh - (kh * rows + 6 * (rows - 1))) / 2));
@@ -191,7 +197,7 @@
     Theme.header(ctx, { title: "Difficulty", sub: "Changeable later in Settings; it applies from the next battle.", icon: "cog" });
     const top = Theme.headerBottom();
     const listW = Math.min(300 * m.k, m.cw * 0.38);
-    const rowH = Math.round(52 * m.k);
+    const rowH = Theme.rowH(52);
     Theme.list(diffSc.st, ctx, { x: m.l, y: top, w: listW, h: Theme.footerTop() - top - 6, rowH: rowH, gap: 6 });
     const d = DIFFS[diffSc.st.cursor] || DIFFS[1];
     const px = m.l + listW + 18, pw = m.r - px;
@@ -585,10 +591,11 @@
 
     // menu, bottom-left, big rows for thumbs
     const mw = Math.min(320, m.cw * 0.42);
-    const rowH = Math.round(46 * m.k);
-    const listH = Title.items.length * (rowH + 6);
+    const rowH = Theme.rowH(46);
+    const bottom = Theme.footerTop() - 8;
+    const listH = Math.min(Title.items.length * (rowH + 6), bottom - m.t - 8);
     const mx = m.l + 8;
-    const my = Math.min(m.b - Theme.FOOTER_H * m.k - listH - 14, m.h * 0.52);
+    const my = U.clamp(Math.min(bottom - listH, m.h * 0.52), m.t + 8, Math.max(m.t + 8, bottom - listH));
     Theme.list(Title.st, ctx, {
       x: mx, y: my, w: mw, h: listH, rowH: rowH, gap: 6,
       render: function (c, item, x, y, w, h, sel) {

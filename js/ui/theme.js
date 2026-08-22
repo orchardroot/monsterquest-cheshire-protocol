@@ -134,7 +134,7 @@
   };
 
   // ---- header bar --------------------------------------------------
-  const headerRect = { x: 0, y: 0, w: 0, h: 0 };
+  const headerRect = { x: 0, y: 0, w: 0, h: 0, at: -9999 };
   const backRect = { x: 0, y: 0, w: 0, h: 0 };
   Theme.HEADER_H = 46;
   // The bar is as tall as its contents need: a title alone, or a title with a
@@ -153,6 +153,7 @@
     const h = Theme.headerHeight(hasSub);
     const x = m.l, y = m.t, w = m.cw;
     headerRect.x = x; headerRect.y = y; headerRect.w = w; headerRect.h = h;
+    headerRect.at = (MQ.Loop && MQ.Loop.time) || 0;
     const accent = o.accent || C.brass;
     const titleH = T.px("l"), subH = T.px("s");
     ctx.save();
@@ -184,6 +185,13 @@
     return h;
   };
   Theme.headerBottom = function () { return headerRect.y + headerRect.h + 8; };
+  // Where a floating thing (a toast) has to start so it does not land on a
+  // header bar that is on screen right now. 0 when no screen drew one.
+  Theme.headerReserve = function () {
+    const now = (MQ.Loop && MQ.Loop.time) || 0;
+    if (!headerRect.h || now - headerRect.at > 120) return 0;
+    return headerRect.y + headerRect.h + 8;
+  };
   Theme.backRect = function () { return backRect; };
 
   // ---- button glyphs by input source ------------------------------
@@ -354,6 +362,16 @@
       }
     }
     ctx.restore();
+  };
+
+  // The row height a screen should use for a list of `base`-tall rows: scaled
+  // for roominess and the UI-scale setting, floored at a real finger. Screens
+  // that size their own container must ask here, or the container and the rows
+  // disagree and the last item falls off the bottom.
+  Theme.rowH = function (base, o) {
+    const m = Theme.m();
+    const want = Math.round((base || 40) * m.k * m.ui);
+    return (o && o.min === false) ? want : Math.max(want, m.minTouch);
   };
 
   // ---- themed scrolling list (rows drawn by the caller) ------------

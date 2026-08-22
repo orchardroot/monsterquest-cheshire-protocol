@@ -297,7 +297,7 @@
     const top = Theme.headerBottom();
     const bot = Theme.footerTop() - 6;
     const listW = Math.min(420 * m.k, m.cw * 0.52);
-    Theme.list(sc.st, ctx, { x: m.l, y: top, w: listW, h: bot - top, rowH: Math.round(36 * m.k), gap: 3 });
+    Theme.list(sc.st, ctx, { x: m.l, y: top, w: listW, h: bot - top, rowH: Theme.rowH(36), gap: 3 });
     const px = m.l + listW + 22, pw = m.r - px;
     Theme.panel(ctx, px, top, pw, bot - top, { lit: true });
     const o = OPTIONS[sc.st.cursor];

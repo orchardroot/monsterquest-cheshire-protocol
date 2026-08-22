@@ -336,7 +336,10 @@
     if (!toasts.length) return;
     const V = MQ.View;
     const w = V.w;
-    let y = V.safe.top + 14;
+    const Theme = UI.Theme;
+    // clear of a header bar if a menu screen has one up, and of a location
+    // banner if one is coming down — all three float from the same top edge
+    let y = Math.max(V.safe.top + 14, (Theme && Theme.headerReserve) ? Theme.headerReserve() : 0, UI._floatTop || 0);
     for (let i = 0; i < toasts.length; i++) {
       const t = toasts[i];
       const k = t.t < 200 ? t.t / 200 : t.t > t.ms - 300 ? Math.max(0, (t.ms - t.t) / 300) : 1;
@@ -372,6 +375,7 @@
   const prevUpdate = UI.update, prevDraw = UI.draw;
   UI.update = function (dt) { prevUpdate(dt); if (banner.t < banner.ms) banner.t += dt; };
   UI.draw = function (ctx) {
+    UI._floatTop = 0;
     if (banner.t < banner.ms) {
       const V = MQ.View;
       const k = banner.t < 250 ? banner.t / 250 : banner.t > banner.ms - 400 ? Math.max(0, (banner.ms - banner.t) / 400) : 1;
@@ -387,6 +391,7 @@
       T.draw(ctx, banner.title, x + w / 2, y + 12, { size: "l", align: "center", color: "#fff8e0", shadow: true, maxWidth: w - 24 });
       if (banner.sub) T.draw(ctx, banner.sub, x + w / 2, y + 12 + lh + 6, { size: "s", align: "center", color: "#c8c8e0", maxWidth: w - 24 });
       ctx.globalAlpha = 1;
+      UI._floatTop = y + h + 8;
     }
     prevDraw(ctx);
   };

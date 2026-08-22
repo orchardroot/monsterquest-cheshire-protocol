@@ -222,7 +222,7 @@
     const bot = Theme.footerTop() - 6;
     const listW = m.cw * 0.58;
     Theme.list(sc.st, ctx, {
-      x: m.l, y: y0, w: listW, h: bot - y0, rowH: Math.round(38 * m.k), gap: 4,
+      x: m.l, y: y0, w: listW, h: bot - y0, rowH: Theme.rowH(38), gap: 4,
       empty: sc.tab === 0 ? "The shelves are bare today." : "Nothing here is worth selling."
     });
     const px = m.l + listW + 20, pw = m.r - px;

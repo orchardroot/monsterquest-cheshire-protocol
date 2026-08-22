@@ -28,49 +28,71 @@
       accent: sel ? C.brassLit : bad ? C.bad : e.empty ? "rgba(139,124,192,0.30)" : C.canal,
       alpha: usable ? 1 : 0.72
     });
+    // The card stacks whatever fits: on a 540-high phone four slots share
+    // ~370px, so the fixed 34/66/88 offsets used to draw the name straight
+    // through the party chips. Each row now asks whether there is room.
+    const sh = T.px("s"), mh = T.px("m"), lh = T.px("l");
+    const bottom = y + h - 8;
+    let cy = y + 10;
     const name = e.slot === "auto" ? "AUTOSAVE" : "SLOT " + e.slot;
-    T.draw(ctx, name, x + 14, y + 10, { size: "m", color: sel ? C.brassLit : C.textDim });
-    if (e.ts) T.draw(ctx, Theme.date(e.ts), x + w - 14, y + 10, { size: "s", align: "right", color: C.textDim });
+    const dateW = e.ts ? T.width(Theme.date(e.ts), "s") + 16 : 0;
+    T.draw(ctx, name, x + 14, cy, { size: "m", color: sel ? C.brassLit : C.textDim, maxWidth: w - 28 - dateW });
+    if (e.ts) T.draw(ctx, Theme.date(e.ts), x + w - 14, cy, { size: "s", align: "right", color: C.textDim });
+    cy += mh + 6;
 
     if (e.empty) {
-      T.draw(ctx, mode === "save" ? "Empty - write here" : "Empty", x + 14, y + h / 2 - 4, { size: "m", color: C.dim });
+      T.draw(ctx, mode === "save" ? "Empty - write here" : "Empty", x + 14, Math.min(cy, bottom - mh), { size: "m", color: C.dim });
       return;
     }
-    if (e.corrupt) {
-      T.draw(ctx, "Damaged data", x + 14, y + 36, { size: "m", color: C.bad });
-      T.draw(ctx, "Nothing in here survived. Starting fresh is the only option.", x + 14, y + 60, { size: "s", color: C.textDim, maxWidth: w - 28 });
-      return;
-    }
-    if (e.legacy) {
-      T.draw(ctx, "Old save (version " + (e.env && e.env.version || 0) + ")", x + 14, y + 36, { size: "m", color: C.warn });
-      T.draw(ctx, "From an older Cheshire. It cannot be read; a new game can be started over it.", x + 14, y + 60, { size: "s", color: C.textDim, maxWidth: w - 28 });
+    if (e.corrupt || e.legacy) {
+      const head = e.corrupt ? "Damaged data" : "Old save (version " + (e.env && e.env.version || 0) + ")";
+      const body = e.corrupt
+        ? "Nothing in here survived. Starting fresh is the only option."
+        : "From an older Cheshire. It cannot be read; a new game can be started over it.";
+      T.draw(ctx, head, x + 14, cy, { size: "m", color: e.corrupt ? C.bad : C.warn });
+      cy += mh + 6;
+      if (bottom - cy >= sh) T.drawWrapped(ctx, body, x + 14, cy, w - 28, { size: "s", color: C.textDim });
       return;
     }
     const s = e.summary || {};
-    T.draw(ctx, (s.name || "JIM"), x + 14, y + 34, { size: "l", color: C.text });
+    // the run's headline: name on the left, chapter/level on the right
+    const nameSize = (bottom - cy >= lh + sh * 2 + 16) ? "l" : "m";
+    const nh = T.px(nameSize);
     const right = "Ch." + (s.chapter || 1) + "   TL" + (s.level || 1);
-    T.draw(ctx, right, x + w - 14, y + 38, { size: "m", align: "right", color: C.brassLit });
-    // badges as pips
-    const bx = x + 14, by = y + 66;
-    for (let i = 0; i < 8; i++) {
-      ctx.fillStyle = i < (s.badges || 0) ? C.brass : "rgba(255,255,255,0.12)";
-      ctx.beginPath(); ctx.arc(bx + 8 + i * 18, by + 7, 6, 0, 6.3); ctx.fill();
+    const rightW = T.width(right, "m") + 18;
+    T.draw(ctx, (s.name || "JIM"), x + 14, cy, { size: nameSize, color: C.text, maxWidth: w - 28 - rightW });
+    T.draw(ctx, right, x + w - 14, cy + Math.max(0, (nh - mh) / 2), { size: "m", align: "right", color: C.brassLit });
+    cy += nh + 6;
+
+    // the map line is the one thing that always earns its place; reserve it
+    const mapH = s.map ? sh + 4 : 0;
+    const room = bottom - mapH - cy;
+
+    if (room >= 18) {
+      const by = cy;
+      for (let i = 0; i < 8; i++) {
+        ctx.fillStyle = i < (s.badges || 0) ? C.brass : "rgba(255,255,255,0.12)";
+        ctx.beginPath(); ctx.arc(x + 22 + i * 18, by + 7, 6, 0, 6.3); ctx.fill();
+      }
+      T.draw(ctx, Theme.playtime(e.playtime), x + w - 14, by, { size: "s", align: "right", color: C.textDim });
+      cy += 18 + 4;
+    } else {
+      T.draw(ctx, Theme.playtime(e.playtime), x + w - 14, y + h - sh - 8, { size: "s", align: "right", color: C.textDim });
     }
-    T.draw(ctx, Theme.playtime(e.playtime), x + w - 14, y + 62, { size: "s", align: "right", color: C.textDim });
-    // party line
-    const party = s.party || [];
-    // keep the party chips clear of the map line on a short card
-    let px = x + 14, py = Math.min(y + 88, y + h - 46);
-    for (let i = 0; i < party.length && i < 6; i++) {
-      const label = speciesName(party[i]);
-      const pw = T.width(label, "s") + 12;
-      if (px + pw > x + w - 14) break;
-      ctx.fillStyle = "rgba(255,255,255,0.08)";
-      UI.roundRect(ctx, px, py, pw, 18, 4); ctx.fill();
-      T.draw(ctx, label, px + 6, py + 2, { size: "s", color: C.textDim });
-      px += pw + 6;
+    if (bottom - mapH - cy >= sh + 4) {
+      const party = s.party || [];
+      let px = x + 14;
+      for (let i = 0; i < party.length && i < 6; i++) {
+        const label = speciesName(party[i]);
+        const pw = T.width(label, "s") + 12;
+        if (px + pw > x + w - 14) break;
+        ctx.fillStyle = "rgba(255,255,255,0.08)";
+        UI.roundRect(ctx, px, cy, pw, sh + 4, 4); ctx.fill();
+        T.draw(ctx, label, px + 6, cy + 2, { size: "s", color: C.textDim });
+        px += pw + 6;
+      }
     }
-    if (s.map) T.draw(ctx, Theme.titleCase(s.map), x + 14, y + h - 22, { size: "s", color: C.dim, maxWidth: w - 28 });
+    if (s.map) T.draw(ctx, Theme.titleCase(s.map), x + 14, y + h - sh - 8, { size: "s", color: C.dim, maxWidth: w - 28 - T.width(Theme.playtime(e.playtime), "s") - 20 });
   }
 
   // ---- the scene ---------------------------------------------------
