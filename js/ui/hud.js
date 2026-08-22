@@ -52,10 +52,11 @@
     const d = HUD.tracked();
     if (!d) return 0;
     const Theme = TH(), C = Theme.C, m = Theme.m();
+    const sh = T.px("s"), lh = sh + 3;
     const lines = T.wrap(String(d.text || ""), w - 26, "s");
     const n = Math.min(2, lines.length);
     const prog = d.progress;
-    const h = Math.round((22 + n * 15 + (prog ? 10 : 0)) * Math.min(1.2, m.k));
+    const h = Math.round(8 + sh + 4 + n * lh + (prog ? 12 : 4));
     ctx.save();
     ctx.fillStyle = "rgba(12,10,22,0.74)";
     UI.roundRect(ctx, x, y, w, h, 8); ctx.fill();
@@ -63,9 +64,9 @@
     ctx.fillRect(x + 2, y + 6, 3, h - 12);
     T.draw(ctx, String(d.name || "Casebook"), x + 12, y + 5, { size: "s", color: C.brassLit, maxWidth: w - 60 });
     if (d.total) T.draw(ctx, (d.stage + 1) + "/" + d.total, x + w - 10, y + 5, { size: "s", align: "right", color: C.textDim });
-    for (let i = 0; i < n; i++) T.draw(ctx, lines[i], x + 12, y + 21 + i * 15, { size: "s", color: C.text });
+    for (let i = 0; i < n; i++) T.draw(ctx, lines[i], x + 12, y + 8 + sh + 4 + i * lh, { size: "s", color: C.text, maxWidth: w - 24 });
     if (prog && prog.need) {
-      const by = y + 21 + n * 15 + 1;
+      const by = y + 8 + sh + 4 + n * lh + 1;
       UI.gauge(ctx, x + 12, by, w - 60, 6, U.clamp(prog.have / prog.need, 0, 1), { color: C.brass, bg: "rgba(0,0,0,0.5)", noBorder: true });
       T.draw(ctx, prog.have + "/" + prog.need, x + w - 10, by - 4, { size: "s", align: "right", color: C.textDim });
     }
@@ -96,19 +97,22 @@
     const Theme = TH(), C = Theme.C;
     const lvl = (o && o.level !== undefined) ? o.level : HUD.signalLevel();
     const t = ((MQ.Loop && MQ.Loop.time) || 0) / 1000;
-    const h = 30;
+    const sh = T.px("s");
+    const h = sh + 22;
     ctx.save();
     ctx.fillStyle = "rgba(12,10,22,0.74)";
     UI.roundRect(ctx, x, y, w, h, 8); ctx.fill();
     T.draw(ctx, "SIGNAL", x + 10, y + 3, { size: "s", color: C.signal });
-    T.draw(ctx, HUD.signalWord(lvl), x + w - 10, y + 3, { size: "s", align: "right", color: lvl > 0.75 ? C.bad : C.textDim });
+    // the word can be "LOOKING AT YOU"; give it whatever is left and no more
+    const wordX = x + 10 + T.width("SIGNAL", "s") + 8;
+    T.draw(ctx, HUD.signalWord(lvl), x + w - 10, y + 3, { size: "s", align: "right", color: lvl > 0.75 ? C.bad : C.textDim, maxWidth: Math.max(10, x + w - 10 - wordX) });
     const pips = 10, px0 = x + 10, pw = (w - 20) / pips;
     for (let i = 0; i < pips; i++) {
       const on = lvl * pips > i;
       const flick = on ? 0.62 + 0.38 * Math.abs(Math.sin(t * (1.4 + i * 0.23) + i)) : 1;
       ctx.globalAlpha = on ? flick : 0.22;
       ctx.fillStyle = !on ? "#2a2740" : i > 7 ? C.bad : i > 5 ? C.warn : C.signal;
-      ctx.fillRect(px0 + i * pw + 1, y + 18, pw - 3, 7);
+      ctx.fillRect(px0 + i * pw + 1, y + sh + 6, pw - 3, 7);
     }
     ctx.globalAlpha = 1;
     ctx.restore();
@@ -136,7 +140,11 @@
     const Theme = TH(), C = Theme.C;
     const t = ((MQ.Loop && MQ.Loop.time) || 0) / 1000;
     const pulse = s.urgent > 0 ? 0.5 + 0.5 * Math.sin(t * (2 + s.urgent * 3)) : 0;
-    const h = 34;
+    const sh = T.px("s"), mh = T.px("m");
+    // "STACK CUTOVER" and "9 DAYS" used to be drawn on top of one another on any
+    // screen narrow enough; stack them when they will not sit side by side.
+    const stacked = T.width("STACK CUTOVER", "s") + T.width(s.text, "m") + 30 > w;
+    const h = stacked ? (sh + mh + 14) : (mh + 14);
     ctx.save();
     ctx.fillStyle = "rgba(12,10,22,0.78)";
     UI.roundRect(ctx, x, y, w, h, 8); ctx.fill();
@@ -146,8 +154,8 @@
       UI.roundRect(ctx, x, y, w, h, 8); ctx.fill();
       ctx.globalAlpha = 1;
     }
-    T.draw(ctx, "STACK CUTOVER", x + 10, y + 4, { size: "s", color: s.stopped ? C.good : C.textDim });
-    T.draw(ctx, s.text, x + w - 10, y + 12, { size: "m", align: "right", color: s.stopped ? C.good : s.urgent > 0.5 ? C.bad : C.warn });
+    T.draw(ctx, "STACK CUTOVER", x + 10, y + (stacked ? 4 : Math.round((h - sh) / 2)), { size: "s", color: s.stopped ? C.good : C.textDim });
+    T.draw(ctx, s.text, x + w - 10, stacked ? (y + 6 + sh) : (y + Math.round((h - mh) / 2)), { size: "m", align: "right", color: s.stopped ? C.good : s.urgent > 0.5 ? C.bad : C.warn });
     ctx.restore();
     return h;
   };
@@ -290,9 +298,10 @@
     if (o.label !== false) {
       const nm = o.label || mapName(mapId);
       if (nm) {
+        const sh = T.px("s");
         ctx.fillStyle = "rgba(10,9,20,0.7)";
-        ctx.fillRect(x + 4, y + h - 19, w - 8, 15);
-        T.draw(ctx, nm, x + w / 2, y + h - 18, { size: "s", align: "center", color: C.textDim, maxWidth: w - 12 });
+        ctx.fillRect(x + 4, y + h - sh - 6, w - 8, sh + 2);
+        T.draw(ctx, nm, x + w / 2, y + h - sh - 5, { size: "s", align: "center", color: C.textDim, maxWidth: w - 12 });
       }
     }
     ctx.restore();
@@ -318,18 +327,31 @@
     const Theme = TH(), m = Theme.m();
     let ty = m.t;
     if (o.tracker !== false) {
-      const tw = Math.min(Math.round(300 * m.k), Math.round(m.cw * 0.42));
+      const tw = U.clamp(Math.round(300 * m.k * m.ui), 220, Math.round(m.cw * 0.46));
       ty += HUD.tracker(ctx, m.l, ty, tw);
       if (ty > m.t) ty += 6;
     }
     let ry = m.t;
-    const rw = Math.round(176 * m.k);
+    // wide enough for the longest thing that goes in it, at whatever text scale
+    const rw = U.clamp(Math.round(Math.max(176 * m.k * m.ui, T.width("LOOKING AT YOU", "s") + 24)), 150, Math.round(m.cw * 0.42));
     const rx = m.r - rw;
     if (o.cutover !== false) { const h = HUD.cutover(ctx, rx, ry, rw); if (h) ry += h + 6; }
     if (o.signal !== false) { const h = HUD.signal(ctx, rx, ry, rw); if (h) ry += h + 6; }
     if (o.miniMap !== false && HUD.miniMapOn && setting("miniMap", true) !== false) {
       const mw = Math.round(150 * m.k), mh = Math.round(122 * m.k);
-      HUD.miniMap(ctx, m.r - mw, m.b - mh, mw, mh, o.miniMapOpts || null);
+      // The bottom corners belong to the virtual stick and the A/B pad, so on a
+      // touch screen the map joins the right-hand column instead of sitting in
+      // the corner underneath them.
+      const res = (MQ.Input && MQ.Input.reserve) ? MQ.Input.reserve() : null;
+      const padded = !!(res && res.on);
+      let mx = m.r - mw, my = m.b - mh;
+      if (padded) {
+        if (res.padSide === "right") { my = Math.min(ry, m.b - mh - res.padH); }
+        else { mx = m.r - mw; my = Math.min(ry, m.b - mh - res.stickH); }
+        my = Math.max(ry, my);
+        if (my + mh > m.b) my = Math.max(m.t, m.b - mh);
+      }
+      HUD.miniMap(ctx, mx, my, mw, mh, o.miniMapOpts || null);
     }
     return ty;
   };

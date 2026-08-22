@@ -1456,8 +1456,9 @@
       const kind = map.outdoor === false ? "indoor" : MQ.Clock.weatherOf(map.weatherZone);
       const label = MQ.Clock.timeString() + "  " + weatherGlyph(kind);
       const w = MQ.Text.width(label, "s") + 18;
+      const h = MQ.Text.px("s") + 10;
       const x = 12 + MQ.View.safe.left, y = clockY > top ? clockY : top;
-      MQ.UI.box(ctx, x, y, w, 24, { style: "dark", alpha: 0.7 });
+      MQ.UI.box(ctx, x, y, w, h, { style: "dark", alpha: 0.7 });
       MQ.Text.draw(ctx, label, x + 9, y + 5, { size: "s", color: "#e8e8e0" });
     }
   }

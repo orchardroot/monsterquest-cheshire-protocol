@@ -14,7 +14,7 @@
   const KEY = "mq2_settings";
   const DEFAULTS = {
     textSpeed: "normal", music: 7, sfx: 8, difficulty: "normal",
-    touchSize: "medium", touchSide: "left", stickOpacity: 6,
+    uiScale: "auto", touchSize: "medium", touchSide: "left", stickOpacity: 6,
     screenShake: "full", battleAnim: "normal", runMode: "hold",
     vibration: true, autosave: true, hints: true, battleText: "wait"
   };
@@ -89,6 +89,7 @@
 
   // ---- applying a setting to the running engine -------------------
   const TEXT_CPS = { slow: 0.55, normal: 1, fast: 1.9, instant: 12 };
+  const UI_SCALE_IDS = { auto: "auto", small: "small", normal: "normal", large: "large" };
   const TOUCH_SCALE = { small: 0.82, medium: 1, large: 1.24 };
   const ANIM_SPEED = { off: 0, slow: 0.6, normal: 1, fast: 1.8 };
   function apply(id, v) {
@@ -101,6 +102,11 @@
       if (id === "sfx" && MQ.Audio) {
         if (MQ.Audio.setVolume) MQ.Audio.setVolume("sfx", v / 10);
         else MQ.Audio.sfxVolume = v / 10;
+      }
+      if (id === "uiScale" && MQ.View && MQ.View.setUiScale) {
+        MQ.View.setUiScale(UI_SCALE_IDS[v] || "auto");
+        // text and touch targets moved together: the pad has to be re-laid out
+        if (MQ.Input && MQ.Input.layoutButtons) MQ.Input.layoutButtons();
       }
       if (id === "touchSize" && MQ.Input && MQ.Input.setTouchScale) MQ.Input.setTouchScale(TOUCH_SCALE[v] || 1);
       if (id === "touchSide" && MQ.Input && MQ.Input.setTouchSide) MQ.Input.setTouchSide(v);
@@ -144,6 +150,9 @@
     choice("runMode", "Running", [
       { label: "Hold", value: "hold" }, { label: "Toggle", value: "toggle" }
     ], "Hold the run button, or tap it once and keep going. Full stick deflection always runs."),
+    choice("uiScale", "UI scale", [
+      { label: "Auto", value: "auto" }, { label: "Small", value: "small" }, { label: "Normal", value: "normal" }, { label: "Large", value: "large" }
+    ], "Text, padding and the size of anything you tap, all together. Auto reads it off the screen: a phone gets a nudge up, a tablet is left alone."),
     choice("touchSize", "Touch layout size", [
       { label: "Small", value: "small" }, { label: "Medium", value: "medium" }, { label: "Large", value: "large" }
     ], "Size of the on-screen stick and buttons. Larger is easier on a tablet held one-handed."),
@@ -254,7 +263,8 @@
   // ---- preview panels ----------------------------------------------
   function drawTouchPreview(ctx, x, y, w, h) {
     const Theme = TH(), C = Theme.C;
-    const scale = TOUCH_SCALE[get("touchSize")] || 1;
+    let scale = TOUCH_SCALE[get("touchSize")] || 1;
+    try { if (MQ.Input && MQ.Input.effectiveScale) scale = MQ.Input.effectiveScale(); } catch (e) { /* ignore */ }
     const alpha = U.clamp((get("stickOpacity") || 0) / 10, 0, 1);
     const side = get("touchSide") === "right" ? 1 : 0;
     ctx.save();
@@ -302,7 +312,7 @@
       T.draw(ctx, o.min + "                                     " + o.max, px + 16, py + 18, { size: "s", color: C.dim });
       py += 44;
     }
-    if (o && (o.id === "touchSize" || o.id === "touchSide" || o.id === "stickOpacity")) {
+    if (o && (o.id === "touchSize" || o.id === "touchSide" || o.id === "stickOpacity" || o.id === "uiScale")) {
       drawTouchPreview(ctx, px + 16, py, pw - 32, Math.min(130, bot - py - 20));
     } else {
       // text speed preview always runs; it is the most useful one
@@ -327,6 +337,7 @@
   sc.applyAll = applyAll;
   sc.textSpeedMultiplier = function () { return TEXT_CPS[get("textSpeed")] || 1; };
   sc.touchScale = function () { return TOUCH_SCALE[get("touchSize")] || 1; };
+  sc.uiScale = function () { return get("uiScale"); };
 
   readLocal();
   // Stored preferences used to sit there until you opened this screen; apply

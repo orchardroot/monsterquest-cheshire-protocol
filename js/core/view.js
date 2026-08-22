@@ -33,6 +33,93 @@
     };
   };
 
+  // =============================================================
+  // Layout tokens — the one place that knows how big "comfortable"
+  // is on a given screen.
+  //
+  // A logical pixel is not a fixed physical size: S is the logical→CSS
+  // scale, so a 19.5:9 phone (1169x540 logical) draws a logical px at
+  // 0.73 CSS px while a 1280x800 tablet draws it at 1.2. Anything sized
+  // in bare logical px therefore comes out roughly 40% smaller on the
+  // phone — which is exactly the screen that can least afford it.
+  //
+  // So the minimums below are stated in CSS px (≈ device-independent px,
+  // i.e. what a platform would call dp/pt) and converted back to logical
+  // px by dividing by S. Screens that are already comfortable are left
+  // alone; only the small physical ones get scaled up.
+  // =============================================================
+  const MIN_TEXT_CSS = 15.5;    // smallest comfortable body line
+  const MIN_TOUCH_CSS = 42;     // smallest comfortable finger target
+  const BASE_TEXT = 18;         // MQ.Text "m", in logical px
+
+  // Named UI scales offered in Settings. "auto" is resolved per device.
+  const UI_SCALES = { small: 0.86, normal: 1, large: 1.18 };
+  View.UI_SCALES = UI_SCALES;
+
+  function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+  // Pure: given the logical→CSS scale and a UI-scale multiplier, what
+  // does a comfortable line of text / row / gap measure in logical px?
+  // Used by resize() and by the tests.
+  View.tokens = function (S, uiScale, h) {
+    S = (S > 0) ? S : 1;
+    uiScale = (uiScale > 0) ? uiScale : 1;
+    h = (h > 0) ? h : BASE_H;
+    const dens = 1 / S;                                  // logical px per CSS px
+    // Step text up when a logical px is physically small, never down.
+    const autoText = clamp(MIN_TEXT_CSS / (BASE_TEXT * S), 1, 1.45);
+    const text = Math.round(clamp(autoText * uiScale, 0.75, 1.9) * 100) / 100;
+    const touch = Math.round(clamp(MIN_TOUCH_CSS * dens, 40, 110) * uiScale);
+    const pad = Math.round(clamp(12 * dens, 12, 22) * uiScale);
+    return {
+      scale: uiScale,
+      dens: Math.round(dens * 1000) / 1000,
+      text: text,
+      touch: touch,
+      pad: pad,
+      rowH: touch,
+      dense: dens > 1.15,        // a logical px is physically small (phone)
+      short: h <= 560            // no vertical room to spend
+    };
+  };
+
+  // What "auto" means on this screen: a gentle extra nudge on a small
+  // physical screen, on top of the automatic density term above.
+  View.suggestUiScale = function (S) {
+    const dens = 1 / ((S > 0) ? S : 1);
+    if (dens >= 1.25) return 1.06;
+    return 1;
+  };
+
+  // Resolved token block, refreshed on every resize. Read it, never write it.
+  View.ui = View.tokens(1, 1, BASE_H);
+  View.uiScaleName = "auto";
+
+  function uiMultiplier() {
+    const n = View.uiScaleName;
+    if (n === "auto" || n === undefined || n === null) return View.suggestUiScale(View.S);
+    return UI_SCALES[n] || 1;
+  }
+  function refreshTokens() {
+    const t = View.tokens(View.S, uiMultiplier(), View.h);
+    const cur = View.ui;
+    const ks = Object.keys(t);
+    for (let i = 0; i < ks.length; i++) cur[ks[i]] = t[ks[i]];
+    return cur;
+  }
+  View.refreshTokens = refreshTokens;
+
+  // Settings calls this; everything re-lays out off the resize event.
+  View.setUiScale = function (name) {
+    View.uiScaleName = (name === "auto" || UI_SCALES[name]) ? name : "auto";
+    refreshTokens();
+    if (MQ.Events) MQ.Events.emit("resize", { w: View.w, h: View.h });
+    return View.ui;
+  };
+
+  // Logical px for a size expressed in CSS px (device-independent px).
+  View.dp = function (n) { return n / (View.S || 1); };
+
   function readSafeInsets() {
     // css/style.css exposes --mq-sat/-sar/-sab/-sal from env(safe-area-inset-*)
     if (typeof getComputedStyle !== "function" || !document.documentElement) return;
@@ -65,6 +152,7 @@
     cv.style.height = H + "px";
     View.applyTransform();
     readSafeInsets();
+    refreshTokens();
     View._rect = null;
     if (MQ.Events) MQ.Events.emit("resize", { w: View.w, h: View.h });
   };

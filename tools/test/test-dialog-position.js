@@ -115,11 +115,27 @@ module.exports = function (t, assert) {
 
   t("with nowhere better to go it stays at the bottom", function () {
     const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
-    MQ.View.w = 960; MQ.View.h = 240;          // a letterboxed sliver
+    // A sliver so short that the box, even squeezed, reaches whichever end it
+    // is put at: moving up would hide the player just as thoroughly.
+    MQ.View.w = 960; MQ.View.h = 150;
     return O.warp("dp_field", 20, 28, "down", { fade: false }).then(function () {
       const sc = open(MQ);
       assert.strictEqual(sc.position, "bottom", "moving up would hide them too");
       close(MQ);
+    });
+  });
+
+  t("the box never grows past its share of a short screen", function () {
+    const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
+    MQ.View.w = 1169; MQ.View.h = 540;         // 19.5:9 phone, landscape
+    MQ.View.safe.bottom = 22;
+    return O.warp("dp_field", 20, 15, "down", { fade: false }).then(function () {
+      const sc = open(MQ);
+      assert.ok(sc.box.h <= 540 * 0.42, "box is " + sc.box.h + " of 540");
+      assert.ok(sc.box.y + sc.box.h <= 540 - 22, "box clears the gesture bar");
+      assert.ok(sc.lines.length >= 1, "and still has room for a line");
+      close(MQ);
+      MQ.View.safe.bottom = 0;
     });
   });
 

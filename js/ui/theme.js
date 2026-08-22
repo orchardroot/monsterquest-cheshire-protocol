@@ -40,21 +40,33 @@
   const Theme = { C: C, TYPE_COLOURS: TYPE_COLOURS, STATUS: STATUS, VERSION: 1 };
 
   // ---- metrics (one cached object; never allocates per frame) ----
-  const M = { w: 960, h: 540, l: 0, r: 960, t: 0, b: 540, cw: 960, ch: 540, cx: 480, cy: 270, pad: 16, rowH: 42, k: 1, touch: false, wide: false };
+  // Everything a screen needs to lay itself out: the safe content box, the
+  // roominess factor k, and the device-aware tokens from MQ.View.ui (see the
+  // note in js/core/view.js — a logical px is physically smaller on a phone,
+  // so rows and gaps are floored at a real finger's worth of screen).
+  const M = {
+    w: 960, h: 540, l: 0, r: 960, t: 0, b: 540, cw: 960, ch: 540, cx: 480, cy: 270,
+    pad: 16, rowH: 42, k: 1, ui: 1, minTouch: 44, touch: false, wide: false, short: false, dense: false
+  };
+  const NOSAFE = { top: 0, right: 0, bottom: 0, left: 0 };
+  const NOUI = { scale: 1, text: 1, touch: 44, pad: 14, rowH: 44, dense: false, short: false };
   Theme.m = function () {
     const V = MQ.View;
     const w = V.w || 960, h = V.h || 540;
-    const s = V.safe || { top: 0, right: 0, bottom: 0, left: 0 };
+    const s = V.safe || NOSAFE;
+    const t = V.ui || NOUI;
     M.w = w; M.h = h;
-    M.l = s.left + 12; M.t = s.top + 10;
-    M.r = w - s.right - 12; M.b = h - s.bottom - 10;
+    M.ui = t.scale; M.minTouch = t.touch;
+    M.dense = !!t.dense; M.short = !!t.short;
+    M.pad = t.pad;
+    M.l = s.left + M.pad; M.t = s.top + Math.round(M.pad * 0.8);
+    M.r = w - s.right - M.pad; M.b = h - s.bottom - Math.round(M.pad * 0.8);
     M.cw = M.r - M.l; M.ch = M.b - M.t;
     M.cx = w / 2; M.cy = h / 2;
     M.k = U.clamp(h / 540, 0.9, 1.4);
     M.touch = !!(MQ.Input && MQ.Input.touchVisible);
     M.wide = w / h > 1.85;
-    M.pad = Math.round(14 * M.k);
-    M.rowH = Math.round((M.touch ? 46 : 40) * M.k);
+    M.rowH = Math.max(Math.round((M.touch ? 46 : 40) * M.k * M.ui), t.rowH);
     return M;
   };
 
@@ -114,8 +126,9 @@
     if (o.accent) { ctx.fillStyle = o.accent; ctx.fillRect(x + 2, y + r, 3, h - r * 2); }
     if (o.title) {
       ctx.fillStyle = "rgba(0,0,0,0.25)";
-      UI.roundRect(ctx, x + 1, y + 1, w - 2, 26, r); ctx.fill();
-      T.draw(ctx, o.title, x + 12, y + 5, { size: "s", color: C.brassLit });
+      const th = Math.max(26, T.px("s") + 12);
+      UI.roundRect(ctx, x + 1, y + 1, w - 2, th, r); ctx.fill();
+      T.draw(ctx, o.title, x + 12, y + Math.round((th - T.px("s")) / 2), { size: "s", color: C.brassLit });
     }
     ctx.restore();
   };
@@ -124,20 +137,33 @@
   const headerRect = { x: 0, y: 0, w: 0, h: 0 };
   const backRect = { x: 0, y: 0, w: 0, h: 0 };
   Theme.HEADER_H = 46;
+  // The bar is as tall as its contents need: a title alone, or a title with a
+  // subtitle stacked under it. It used to be a flat 46*k, which at k=1 (any
+  // 16:9-or-wider screen) drew the subtitle straight through the title.
+  Theme.headerHeight = function (hasSub) {
+    const m = Theme.m();
+    const titleH = T.px("l"), subH = T.px("s");
+    const need = hasSub ? (6 + titleH + 3 + subH + 6) : (10 + titleH + 10);
+    return Math.max(Math.round(Theme.HEADER_H * m.k * m.ui), Math.round(need), m.minTouch);
+  };
   Theme.header = function (ctx, o) {
     o = o || {};
     const m = Theme.m();
-    const h = Math.round(Theme.HEADER_H * m.k);
+    const hasSub = !!o.sub;
+    const h = Theme.headerHeight(hasSub);
     const x = m.l, y = m.t, w = m.cw;
     headerRect.x = x; headerRect.y = y; headerRect.w = w; headerRect.h = h;
     const accent = o.accent || C.brass;
+    const titleH = T.px("l"), subH = T.px("s");
     ctx.save();
     ctx.fillStyle = "rgba(16,13,28,0.92)";
     UI.roundRect(ctx, x, y, w, h, 10); ctx.fill();
     ctx.fillStyle = accent; ctx.fillRect(x + 3, y + 8, 4, h - 16);
     let tx = x + 16;
     if (o.back !== false) {
-      backRect.x = x + 6; backRect.y = y + 4; backRect.w = Math.round(40 * m.k); backRect.h = h - 8;
+      // the chevron is the touch way out of every screen: never smaller than a finger
+      const bw = Math.max(Math.round(40 * m.k), Math.round(m.minTouch * 0.8));
+      backRect.x = x + 4; backRect.y = y + 3; backRect.w = bw; backRect.h = h - 6;
       ctx.fillStyle = "rgba(255,255,255,0.07)";
       UI.roundRect(ctx, backRect.x, backRect.y, backRect.w, backRect.h, 8); ctx.fill();
       ctx.strokeStyle = C.edgeDim; ctx.lineWidth = 1;
@@ -148,9 +174,12 @@
       tx = backRect.x + backRect.w + 12;
     } else { backRect.w = 0; }
     if (o.icon && UI.hasIcon && UI.hasIcon(o.icon)) { UI.icon(ctx, o.icon, tx, y + (h - 18) / 2, 1.1); tx += 26; }
-    T.draw(ctx, String(o.title || ""), tx, y + (o.sub ? 5 : (h - 26) / 2), { size: "l", color: C.brassLit, shadow: true });
-    if (o.sub) T.draw(ctx, String(o.sub), tx + 2, y + h - 20, { size: "s", color: C.textDim });
-    if (o.right) T.draw(ctx, String(o.right), x + w - 14, y + (h - 18) / 2, { size: "m", align: "right", color: C.text });
+    const rightW = o.right ? T.width(String(o.right), "m") + 22 : 0;
+    const titleW = Math.max(20, w - (tx - x) - 14 - rightW);
+    const ty = hasSub ? y + 6 : y + Math.round((h - titleH) / 2);
+    T.draw(ctx, String(o.title || ""), tx, ty, { size: "l", color: C.brassLit, shadow: true, maxWidth: titleW });
+    if (hasSub) T.draw(ctx, String(o.sub), tx + 2, ty + titleH + 3, { size: "s", color: C.textDim, maxWidth: titleW });
+    if (o.right) T.draw(ctx, String(o.right), x + w - 14, y + (h - T.px("m")) / 2, { size: "m", align: "right", color: C.text });
     ctx.restore();
     return h;
   };
@@ -172,11 +201,15 @@
   // ---- footer hint bar (tappable) ---------------------------------
   const hintRects = [];
   Theme.FOOTER_H = 30;
+  Theme.footerHeight = function () {
+    const m = Theme.m();
+    return Math.max(Math.round(Theme.FOOTER_H * m.k * m.ui), T.px("s") + 14);
+  };
   Theme.footer = function (ctx, hints) {
     if (!hints || !hints.length) return 0;
     if (UI.Settings && UI.Settings.get && UI.Settings.get("hints") === false) return 0;
     const m = Theme.m();
-    const h = Math.round(Theme.FOOTER_H * m.k);
+    const h = Theme.footerHeight();
     const y = m.b - h;
     ctx.save();
     ctx.fillStyle = "rgba(12,10,22,0.86)";
@@ -195,8 +228,8 @@
       r.x = x - 6; r.y = y; r.w = total + 12; r.h = h; r.btn = hint.btn;
       ctx.fillStyle = hint.btn === "a" ? "rgba(198,40,40,0.5)" : hint.btn === "b" ? "rgba(42,79,168,0.5)" : "rgba(120,120,150,0.35)";
       UI.roundRect(ctx, x, y + 4, gw, h - 8, 6); ctx.fill();
-      T.draw(ctx, g, x + gw / 2, y + (h - 14) / 2, { size: "s", align: "center", color: "#ffffff" });
-      T.draw(ctx, hint.label || "", x + gw + 8, y + (h - 14) / 2, { size: "s", color: C.textDim });
+      T.draw(ctx, g, x + gw / 2, y + (h - T.px("s")) / 2, { size: "s", align: "center", color: "#ffffff" });
+      T.draw(ctx, hint.label || "", x + gw + 8, y + (h - T.px("s")) / 2, { size: "s", color: C.textDim });
       // tapping a hint injects its action, so every screen has on-screen buttons
       if (tp && hint.btn && U.inRect(tp.x, tp.y, r.x, r.y, r.w, r.h)) {
         MQ.Input.inject(hint.btn); MQ.Input.consumeAll(); Theme.sfx("ui_select");
@@ -210,7 +243,7 @@
   Theme.footerTop = function () {
     const m = Theme.m();
     if (UI.Settings && UI.Settings.get && UI.Settings.get("hints") === false) return m.b - 4;
-    return m.b - Math.round(Theme.FOOTER_H * m.k) - 8;
+    return m.b - Theme.footerHeight() - 8;
   };
 
   // Pooled hint arrays so screens don't allocate per frame.
@@ -256,20 +289,22 @@
     return TYPE_COLOURS[type] || C.dim;
   };
   Theme.typeChip = function (ctx, type, x, y, w, h) {
-    w = w || 62; h = h || 18;
+    h = h || Math.max(18, T.px("s") + 4);
+    w = w || Math.max(62, T.width("NORMAL", "s") + 10);
     ctx.fillStyle = Theme.typeColour(type);
     UI.roundRect(ctx, x, y, w, h, 4); ctx.fill();
     ctx.fillStyle = "rgba(0,0,0,0.25)"; ctx.fillRect(x, y + h - 3, w, 3);
-    T.draw(ctx, String(type || "").toUpperCase(), x + w / 2, y + (h - 14) / 2, { size: "s", align: "center", color: "#12101c" });
+    T.draw(ctx, String(type || "").toUpperCase(), x + w / 2, y + (h - T.px("s")) / 2, { size: "s", align: "center", color: "#12101c" });
     return w;
   };
   Theme.statusChip = function (ctx, status, x, y) {
     if (!status) return 0;
     const s = STATUS[status] || { name: String(status).toUpperCase().slice(0, 3), col: C.dim };
-    const w = 40;
+    const h = Math.max(18, T.px("s") + 4);
+    const w = Math.max(40, T.width(s.name, "s") + 12);
     ctx.fillStyle = s.col;
-    UI.roundRect(ctx, x, y, w, 18, 4); ctx.fill();
-    T.draw(ctx, s.name, x + w / 2, y + 2, { size: "s", align: "center", color: "#12101c" });
+    UI.roundRect(ctx, x, y, w, h, 4); ctx.fill();
+    T.draw(ctx, s.name, x + w / 2, y + (h - T.px("s")) / 2, { size: "s", align: "center", color: "#12101c" });
     return w;
   };
   Theme.hpBar = function (ctx, x, y, w, h, cur, max) {
@@ -370,18 +405,22 @@
     const icon = item && item.icon;
     if (icon && UI.hasIcon && UI.hasIcon(icon)) { UI.icon(ctx, icon, tx, y + (h - 16) / 2); tx += 22; }
     const col = dis ? "rgba(150,148,170,0.65)" : (item && item.color) || C.text;
-    T.draw(ctx, String(label), tx, y + (h - 18) / 2, { size: "m", color: col, maxWidth: w - (tx - x) - 90 });
-    const right = item && item.right;
-    if (right !== undefined && right !== null && right !== "") T.draw(ctx, String(right), x + w - 12, y + (h - 18) / 2, { size: "m", align: "right", color: dis ? "rgba(150,148,170,0.65)" : C.brassLit });
+    const mh = T.px("m"), sh = T.px("s");
     const sub = item && item.sub;
-    if (sub && h > 40) T.draw(ctx, String(sub), tx, y + h - 17, { size: "s", color: C.textDim, maxWidth: w - (tx - x) - 20 });
+    const twoLine = sub && h >= mh + sh + 10;
+    const ly = twoLine ? y + 6 : y + Math.round((h - mh) / 2);
+    const right = item && item.right;
+    const rightW = (right !== undefined && right !== null && right !== "") ? T.width(String(right), "m") + 18 : 8;
+    T.draw(ctx, String(label), tx, ly, { size: "m", color: col, maxWidth: Math.max(20, w - (tx - x) - rightW) });
+    if (right !== undefined && right !== null && right !== "") T.draw(ctx, String(right), x + w - 12, y + Math.round((h - mh) / 2), { size: "m", align: "right", color: dis ? "rgba(150,148,170,0.65)" : C.brassLit });
+    if (twoLine) T.draw(ctx, String(sub), tx, ly + mh + 2, { size: "s", color: C.textDim, maxWidth: Math.max(20, w - (tx - x) - 20) });
   };
 
   // ---- tab strip (touch: tap a tab; pad/keys: left/right) ----------
   const tabRects = [];
   Theme.tabStrip = function (ctx, labels, active, o) {
     const m = Theme.m();
-    const x = o.x, y = o.y, w = o.w, h = o.h || Math.round(34 * m.k);
+    const x = o.x, y = o.y, w = o.w, h = o.h || Math.max(Math.round(34 * m.k * m.ui), Math.round(m.minTouch * 0.82));
     const n = labels.length;
     const tw = w / n;
     ctx.save();
@@ -398,7 +437,7 @@
         ctx.fillStyle = C.brass;
         UI.roundRect(ctx, tx + 2, y + 2, tw - 4, h - 4, 6); ctx.fill();
       }
-      T.draw(ctx, lab, tx + tw / 2, y + (h - 14) / 2, { size: "s", align: "center", color: on ? C.textInk : C.textDim, maxWidth: tw - 8 });
+      T.draw(ctx, lab, tx + tw / 2, y + (h - T.px("s")) / 2, { size: "s", align: "center", color: on ? C.textInk : C.textDim, maxWidth: tw - 8 });
       if (pip) { ctx.fillStyle = pip === true ? C.bad : pip; ctx.beginPath(); ctx.arc(tx + tw - 8, y + 8, 3.5, 0, 6.3); ctx.fill(); }
     }
     ctx.restore();

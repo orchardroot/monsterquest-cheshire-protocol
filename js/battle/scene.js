@@ -137,6 +137,10 @@
   // =============================================================
   const Scene = {
     id: "battle",
+    // A battle needs no walking, and the canvas pad's A/B/RUN/START sat right
+    // on top of the message box and the move menu on a short screen. Every
+    // control here is already a tap target (see `hits`), so the pad stands down.
+    touchPad: false,
     engine: null,
     enter: function (params) {
       const S = this;
@@ -358,18 +362,29 @@
     },
 
     // ---- layout ------------------------------------------------
+    // Everything else in here measures off this. It works in the safe content
+    // box rather than the raw view, so a hole-punch camera or a gesture bar
+    // never lands on a gauge, and the message box is as tall as its text needs.
     layout: function () {
-      const w = NS.View ? NS.View.w : BASE_W;
-      const h = NS.View ? NS.View.h : BASE_H;
+      const V = NS.View;
+      const w = V ? V.w : BASE_W;
+      const h = V ? V.h : BASE_H;
+      const safe = (V && V.safe) || { top: 0, right: 0, bottom: 0, left: 0 };
       const L = this._L || (this._L = {});
       L.w = w; L.h = h;
-      L.boxH = Math.max(112, h * 0.22);
-      L.boxY = h - L.boxH;
-      L.enemyX = w * 0.68; L.enemyY = h * 0.34;
-      L.playerX = w * 0.28; L.playerY = L.boxY - h * 0.08;
-      L.enemyInfoX = w * 0.04; L.enemyInfoY = h * 0.08;
-      L.playerInfoX = w * 0.52; L.playerInfoY = L.boxY - 108;
-      L.infoW = Math.min(360, w * 0.42);
+      L.left = safe.left + 12; L.right = w - safe.right - 12;
+      L.top = safe.top + 10; L.bottom = h - safe.bottom - 8;
+      L.cw = L.right - L.left;
+      const line = T.lineHeight("m") + 6;
+      L.msgLine = line;
+      L.boxH = Math.round(Math.min(Math.max(112, 3 * line + 34), (L.bottom - L.top) * 0.34));
+      L.boxY = L.bottom - L.boxH;
+      L.enemyX = L.left + L.cw * 0.66; L.enemyY = L.top + (L.boxY - L.top) * 0.30;
+      L.playerX = L.left + L.cw * 0.24; L.playerY = L.boxY - (L.boxY - L.top) * 0.10;
+      L.infoW = Math.min(360, Math.max(230, L.cw * 0.42));
+      L.infoH = Math.round(T.px("m") + T.px("s") + 30);
+      L.enemyInfoX = L.left; L.enemyInfoY = L.top + Math.max(22, T.px("s") + 10);
+      L.playerInfoX = L.right - L.infoW; L.playerInfoY = L.boxY - L.infoH - 26;
       return L;
     },
     slotPos: function (side, slot) {
@@ -723,8 +738,8 @@
     // info panels
     for (let k = 0; k < 2; k++) {
       const ev = S.vm[1][k], pv = S.vm[0][k];
-      if (ev.active) S.drawInfo(ctx, ev, L.enemyInfoX, L.enemyInfoY + k * 76, false, L);
-      if (pv.active) S.drawInfo(ctx, pv, L.w - L.infoW - L.w * 0.04, L.playerInfoY - k * 76, true, L);
+      if (ev.active) S.drawInfo(ctx, ev, L.enemyInfoX, L.enemyInfoY + k * (L.infoH + 12), false, L);
+      if (pv.active) S.drawInfo(ctx, pv, L.playerInfoX, L.playerInfoY - k * (L.infoH + 12), true, L);
     }
 
     S.drawFieldChips(ctx, L);
@@ -854,12 +869,14 @@
 
   Scene.drawInfo = function (ctx, vm, x, y, isPlayer, L) {
     const S = this;
-    const w = L.infoW, h = 64;
+    const w = L.infoW, h = L.infoH;
+    const mh = T.px("m"), sh = T.px("s");
     UI.box(ctx, x, y, w, h, { style: "dark", alpha: 0.94 });
-    T.draw(ctx, vm.name, x + 12, y + 8, { size: "m", color: "#f4f4ee" });
+    const lvW = T.width("Lv" + vm.level, "s") + 18;
+    T.draw(ctx, vm.name, x + 12, y + 8, { size: "m", color: "#f4f4ee", maxWidth: w - 24 - lvW });
     T.draw(ctx, "Lv" + vm.level, x + w - 12, y + 8, { size: "s", color: "#d8d8c8", align: "right" });
 
-    const gy = y + 32, gw = w - 24;
+    const gy = y + 12 + mh + 4, gw = w - 24;
     const ratio = U.clamp(vm.hpShown / Math.max(1, vm.max), 0, 1);
     UI.gauge(ctx, x + 12, gy, gw, 10, ratio, {});
     // Boss phase ticks: the player can see the breaks coming.
@@ -869,11 +886,11 @@
         const px = x + 12 + gw * (1 - i / (S.bossPhases + 1));
         ctx.fillRect(Math.round(px), gy, 2, 10);
       }
-      if (S.bossPhase > 0) T.draw(ctx, "PHASE " + S.bossPhase + "/" + (S.bossPhases + 1), x + 12, gy + 14, { size: "s", color: "#ff9d5c" });
+      if (S.bossPhase > 0) T.draw(ctx, "PHASE " + S.bossPhase + "/" + (S.bossPhases + 1), x + 12, gy + 13, { size: "s", color: "#ff9d5c" });
     }
     const showNumbers = isPlayer || (S.engine && S.engine.b && S.engine.b.revealHp) || vm.revealed;
     if (showNumbers) {
-      T.draw(ctx, Math.ceil(vm.hpShown) + "/" + vm.max, x + w - 12, gy + 12, { size: "s", color: "#d8d8c8", align: "right" });
+      T.draw(ctx, Math.ceil(vm.hpShown) + "/" + vm.max, x + w - 12, gy + 12, { size: "s", color: "#d8d8c8", align: "right", maxWidth: w - 24 });
     }
     // Overdrive strip
     if (vm.odShown > 0) {
@@ -883,7 +900,8 @@
     }
     // type chips
     if (vm.types) {
-      for (let i = 0; i < vm.types.length && i < 2; i++) UI.typeChip(ctx, vm.types[i], x + 12 + i * 62, y - 22, { w: 58, h: 18 });
+      const chipH = Math.max(18, sh + 4);
+      for (let i = 0; i < vm.types.length && i < 2; i++) UI.typeChip(ctx, vm.types[i], x + 12 + i * 62, y - chipH - 4, { w: 58, h: chipH });
     }
     // stat stage arrows
     if (vm.stages) {
@@ -901,12 +919,12 @@
 
   Scene.drawFieldChips = function (ctx, L) {
     const S = this;
-    let x = L.w - 16, y = 12;
+    let x = L.right, y = L.top;
     if (S.field.weather) {
       const label = BE.WEATHER_NAME[S.field.weather];
       const w = T.width(label, "s") + 20;
       x -= w;
-      UI.box(ctx, x, y, w, 24, { style: "flat", alpha: 0.85 });
+      UI.box(ctx, x, y, w, T.px("s") + 10, { style: "flat", alpha: 0.85 });
       T.draw(ctx, label, x + w / 2, y + 5, { size: "s", color: "#fff", align: "center" });
       x -= 8;
     }
@@ -914,35 +932,40 @@
       const label = BE.TERRAIN_NAME[S.field.terrain];
       const w = T.width(label, "s") + 20;
       x -= w;
-      UI.box(ctx, x, y, w, 24, { style: "flat", alpha: 0.85 });
+      UI.box(ctx, x, y, w, T.px("s") + 10, { style: "flat", alpha: 0.85 });
       T.draw(ctx, label, x + w / 2, y + 5, { size: "s", color: "#fff", align: "center" });
     }
     // turn counter, quietly
-    T.draw(ctx, "Turn " + (S.engine && S.engine.b ? S.engine.b.turn : 0), 12, L.h * 0.02, { size: "s", color: "rgba(255,255,255,0.55)" });
+    T.draw(ctx, "Turn " + (S.engine && S.engine.b ? S.engine.b.turn : 0), L.left, L.top, { size: "s", color: "rgba(255,255,255,0.55)" });
   };
 
   Scene.drawMessageBox = function (ctx, L) {
     const S = this;
-    const boxW = (S.mode === "menu") ? L.w * 0.58 : L.w;
-    UI.box(ctx, 0, L.boxY, boxW, L.boxH, { style: "default" });
+    const menuW = Math.max(230, Math.min(L.cw * 0.42, 380));
+    const boxW = (S.mode === "menu") ? (L.cw - menuW - 10) : L.cw;
+    L.menuW = menuW;
+    UI.box(ctx, L.left, L.boxY, boxW, L.boxH, { style: "default" });
     const text = S.msg.text.slice(0, S.msg.shown);
     const lines = T.wrap(text, boxW - 44, "m");
-    for (let i = 0; i < lines.length && i < 3; i++) {
-      T.draw(ctx, lines[i], 22, L.boxY + 18 + i * 28, { size: "m", color: "#22222a" });
+    const rows = Math.max(1, Math.floor((L.boxH - 26) / L.msgLine));
+    for (let i = 0; i < lines.length && i < rows; i++) {
+      T.draw(ctx, lines[i], L.left + 22, L.boxY + 14 + i * L.msgLine, { size: "m", color: "#22222a" });
     }
-    if (S.msg.done && S.anim && S.anim.kind === "msg") UI.advanceArrow(ctx, boxW - 40, L.boxY + L.boxH - 26, "#8c2f2f");
-    if (S.mode === "play") hits.add(0, L.boxY, boxW, L.boxH, "advance");
-    if (S.hint) T.draw(ctx, S.hint, 22, L.boxY + L.boxH - 22, { size: "s", color: "#a03030" });
+    if (S.msg.done && S.anim && S.anim.kind === "msg") UI.advanceArrow(ctx, L.left + boxW - 40, L.boxY + L.boxH - 26, "#8c2f2f");
+    if (S.mode === "play") hits.add(L.left, L.boxY, boxW, L.boxH, "advance");
+    if (S.hint) T.draw(ctx, S.hint, L.left + 22, L.boxY + L.boxH - T.px("s") - 8, { size: "s", color: "#a03030" });
   };
 
   Scene.drawMainMenu = function (ctx, L) {
     const S = this;
     const items = S.mainItems();
-    const x = L.w * 0.60, y = L.boxY, w = L.w * 0.40, h = L.boxH;
+    const w = L.menuW || Math.max(230, Math.min(L.cw * 0.42, 380));
+    const x = L.right - w, y = L.boxY, h = L.boxH;
     UI.box(ctx, x, y, w, h, { style: "dark" });
     const cols = 2;
     const rows = Math.ceil(items.length / cols);
     const cw = (w - 24) / cols, ch = (h - 20) / rows;
+    const mh = T.px("m");
     for (let i = 0; i < items.length; i++) {
       const cx = x + 12 + (i % cols) * cw, cy = y + 10 + Math.floor(i / cols) * ch;
       const sel = i === S.menuIndex;
@@ -951,8 +974,8 @@
         UI.roundRect(ctx, cx + 2, cy + 2, cw - 6, ch - 6, 6); ctx.fill();
       }
       const col = items[i].off ? "#787888" : (items[i].id === "overdrive" ? "#ffd84d" : "#f4f4ee");
-      T.draw(ctx, items[i].label, cx + cw / 2, cy + ch / 2 - 9, { size: "m", color: col, align: "center" });
-      if (sel) UI.pointer(ctx, cx + 6, cy + ch / 2 - 6);
+      T.draw(ctx, items[i].label, cx + cw / 2, cy + (ch - mh) / 2, { size: "m", color: col, align: "center", maxWidth: cw - 18 });
+      if (sel) UI.pointer(ctx, cx + 4, cy + (ch - 12) / 2);
       hits.add(cx, cy, cw, ch, "main", i);
     }
   };
@@ -960,39 +983,49 @@
   Scene.drawMoveMenu = function (ctx, L) {
     const S = this;
     const moves = S.options.moves;
-    const h = L.boxH + 46;
-    const y = L.h - h;
-    UI.box(ctx, 0, y, L.w, h, { style: "dark" });
+    const mh = T.px("m"), sh = T.px("s");
+    // A row is a tap target, so it is never smaller than a finger.
+    const minTouch = (NS.View && NS.View.ui && NS.View.ui.touch) || 44;
+    const ch = Math.max(46, mh + sh + 16, minTouch);
+    const rows = Math.ceil(Math.max(1, moves.length) / 2);
+    const h = Math.min(rows * ch + 26, L.bottom - L.top - 8);
+    const y = L.bottom - h;
+    UI.box(ctx, L.left, y, L.cw, h, { style: "dark" });
+    // the info panel only earns its place when there is width to spare
+    const infoW = L.cw >= 700 ? 264 : 0;
     const cols = 2;
-    const cw = (L.w - 300) / cols, ch = 46;
+    const cw = (L.cw - 32 - infoW) / cols;
     const foe = S.vm[1][0];
     for (let i = 0; i < moves.length; i++) {
       const m = moves[i];
-      const cx = 16 + (i % cols) * cw, cy = y + 12 + Math.floor(i / cols) * ch;
+      const cx = L.left + 16 + (i % cols) * cw, cy = y + 12 + Math.floor(i / cols) * ch;
       const sel = i === S.moveIndex;
       if (sel) { ctx.fillStyle = "rgba(255,255,255,0.12)"; UI.roundRect(ctx, cx, cy, cw - 10, ch - 6, 6); ctx.fill(); }
       const col = m.disabled ? "#6c6c7c" : "#f4f4ee";
-      T.draw(ctx, m.name, cx + 12, cy + 6, { size: "m", color: col });
-      UI.typeChip(ctx, m.type, cx + cw - 150, cy + 8, { w: 60, h: 18 });
+      const ppW = T.width(m.pp + "/" + m.ppMax, "s") + 10;
+      const chipW = Math.min(60, Math.max(34, cw * 0.22));
+      T.draw(ctx, m.name, cx + 12, cy + 6, { size: "m", color: col, maxWidth: cw - 22 - chipW - ppW - 24 });
+      UI.typeChip(ctx, m.type, cx + cw - 26 - ppW - chipW - 8, cy + 8, { w: chipW, h: Math.max(18, sh + 4) });
       T.draw(ctx, m.pp + "/" + m.ppMax, cx + cw - 26, cy + 10, { size: "s", color: m.pp === 0 ? "#e05a5a" : "#c8c8b8", align: "right" });
       // effectiveness hint against the current foe
       if (foe && foe.types && m.cat !== "status" && NS.Data && NS.Data.typeMultiplier) {
         const eff = NS.Data.typeMultiplier(m.type, foe.types);
         const label = eff === 0 ? "no effect" : eff > 1 ? "strong" : eff < 1 ? "weak" : "";
-        if (label) T.draw(ctx, label, cx + 12, cy + 26, { size: "s", color: eff > 1 ? "#5ad06a" : eff === 0 ? "#888" : "#e0a05a" });
+        if (label) T.draw(ctx, label, cx + 12, cy + 8 + mh + 2, { size: "s", color: eff > 1 ? "#5ad06a" : eff === 0 ? "#888" : "#e0a05a" });
       }
-      if (sel) UI.pointer(ctx, cx + 2, cy + 12);
+      if (sel) UI.pointer(ctx, cx + 2, cy + (ch - 12) / 2);
       hits.add(cx, cy, cw - 10, ch - 6, "move", i);
     }
     const sel = moves[S.moveIndex];
-    if (sel) {
-      const px = L.w - 280;
-      UI.box(ctx, px, y + 10, 264, h - 22, { style: "flat", alpha: 0.9 });
+    if (sel && infoW) {
+      const px = L.right - infoW - 6;
+      UI.box(ctx, px, y + 10, infoW, h - 22, { style: "flat", alpha: 0.9 });
       T.draw(ctx, sel.cat === "status" ? "Status" : (sel.cat === "phys" ? "Physical" : "Special"), px + 12, y + 20, { size: "s", color: "#e8e8e0" });
-      T.draw(ctx, "Power " + (sel.power || "—") + "   Acc " + (sel.acc === null ? "—" : sel.acc), px + 12, y + 40, { size: "s", color: "#e8e8e0" });
+      T.draw(ctx, "Power " + (sel.power || "—") + "   Acc " + (sel.acc === null ? "—" : sel.acc), px + 12, y + 24 + sh + 6, { size: "s", color: "#e8e8e0" });
       if (sel.desc) {
-        const lines = T.wrap(sel.desc, 240, "s");
-        for (let i = 0; i < lines.length && i < 3; i++) T.draw(ctx, lines[i], px + 12, y + 60 + i * 16, { size: "s", color: "#c8c8bc" });
+        const lines = T.wrap(sel.desc, infoW - 24, "s");
+        const room = Math.max(1, Math.floor((h - 22 - (34 + sh * 2)) / (sh + 3)));
+        for (let i = 0; i < lines.length && i < room; i++) T.draw(ctx, lines[i], px + 12, y + 34 + sh * 2 + 8 + i * (sh + 3), { size: "s", color: "#c8c8bc" });
       }
     }
     S.drawBackButton(ctx, L);
@@ -1001,9 +1034,11 @@
   Scene.drawParty = function (ctx, L) {
     const S = this;
     const list = S.options.switches;
-    const w = Math.min(560, L.w * 0.62), x = (L.w - w) / 2, rowH = 54;
-    const h = 40 + list.length * rowH;
-    const y = (L.h - h) / 2;
+    const minTouch = (NS.View && NS.View.ui && NS.View.ui.touch) || 44;
+    const w = Math.min(560, Math.max(320, L.cw * 0.72)), x = L.left + (L.cw - w) / 2;
+    const rowH = Math.max(54, minTouch);
+    const h = Math.min(40 + list.length * rowH, L.bottom - L.top);
+    const y = L.top + Math.max(0, (L.bottom - L.top - h) / 2);
     UI.box(ctx, x, y, w, h, { style: "dark", title: S.forcedSwitch ? "WHO'S NEXT?" : "PARTY" });
     for (let i = 0; i < list.length; i++) {
       const p = list[i];
@@ -1026,9 +1061,13 @@
   Scene.drawBag = function (ctx, L) {
     const S = this;
     const list = S.bagItems();
-    const w = Math.min(520, L.w * 0.60), x = (L.w - w) / 2, rowH = 38;
-    const h = 78 + Math.min(6, list.length) * rowH;
-    const y = (L.h - h) / 2;
+    const minTouch = (NS.View && NS.View.ui && NS.View.ui.touch) || 44;
+    const w = Math.min(520, Math.max(320, L.cw * 0.66)), x = L.left + (L.cw - w) / 2;
+    const rowH = Math.max(38, minTouch);
+    const avail = L.bottom - L.top;
+    const shown = Math.max(1, Math.min(6, Math.min(list.length, Math.floor((avail - 78) / rowH))));
+    const h = Math.min(78 + shown * rowH, avail);
+    const y = L.top + Math.max(0, (avail - h) / 2);
     UI.box(ctx, x, y, w, h, { style: "dark", title: "BAG" });
     const tabs = ["MEDICINE", "CAPSULES", "KIT"];
     for (let i = 0; i < tabs.length; i++) {
@@ -1039,8 +1078,8 @@
       T.draw(ctx, tabs[i], tx + tw / 2, y + 24, { size: "s", color: on ? "#ffd84d" : "#c8c8bc", align: "center" });
       hits.add(tx, y + 18, tw, 26, "bagtab", i);
     }
-    const start = Math.max(0, Math.min(S.bagIndex - 2, list.length - 6));
-    for (let i = start; i < list.length && i < start + 6; i++) {
+    const start = Math.max(0, Math.min(S.bagIndex - Math.floor(shown / 2), list.length - shown));
+    for (let i = start; i < list.length && i < start + shown; i++) {
       const it = list[i];
       const cy = y + 54 + (i - start) * rowH;
       const sel = i === S.bagIndex;
@@ -1056,9 +1095,11 @@
   Scene.drawAgents = function (ctx, L) {
     const S = this;
     const list = S.options.agents;
-    const w = Math.min(560, L.w * 0.62), x = (L.w - w) / 2, rowH = 62;
-    const h = 40 + Math.max(1, list.length) * rowH;
-    const y = (L.h - h) / 2;
+    const minTouch = (NS.View && NS.View.ui && NS.View.ui.touch) || 44;
+    const w = Math.min(560, Math.max(320, L.cw * 0.72)), x = L.left + (L.cw - w) / 2;
+    const rowH = Math.max(62, minTouch + 16);
+    const h = Math.min(40 + Math.max(1, list.length) * rowH, L.bottom - L.top);
+    const y = L.top + Math.max(0, (L.bottom - L.top - h) / 2);
     UI.box(ctx, x, y, w, h, { style: "dark", title: "AGENTS" });
     if (!list.length) T.draw(ctx, "Nobody is picking up.", x + 22, y + 34, { size: "m", color: "#8a8a98" });
     for (let i = 0; i < list.length; i++) {
@@ -1077,9 +1118,11 @@
   };
 
   Scene.drawBackButton = function (ctx, L) {
-    const w = 96, h = 34, x = L.w - w - 16, y = 16;
+    const minTouch = (NS.View && NS.View.ui && NS.View.ui.touch) || 44;
+    const h = Math.max(34, minTouch * 0.8), w = Math.max(96, h * 2.4);
+    const x = L.right - w, y = L.top;
     UI.box(ctx, x, y, w, h, { style: "flat", alpha: 0.9 });
-    T.draw(ctx, "BACK", x + w / 2, y + 9, { size: "s", color: "#f0f0e8", align: "center" });
+    T.draw(ctx, "BACK", x + w / 2, y + (h - T.px("s")) / 2, { size: "s", color: "#f0f0e8", align: "center" });
     hits.add(x, y, w, h, "back");
   };
 
@@ -1119,20 +1162,21 @@
     const S = this;
     const tm = S.timing;
     if (!tm) return;
-    const cx = L.w / 2, cy = L.h * 0.42;
+    const ringR = Math.min(90, (L.boxY - L.top) * 0.34);
+    const cx = L.w / 2, cy = L.top + (L.boxY - L.top) * 0.42;
     const k = U.clamp(tm.t / tm.dur, 0, 1);
     ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(cx, cy, 90, 0, 6.3); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, ringR, 0, 6.3); ctx.stroke();
     // green / yellow bands sit around the 75% mark
     const sweet = 0.75;
     ctx.strokeStyle = "rgba(240,200,60,0.8)"; ctx.lineWidth = 8;
-    ctx.beginPath(); ctx.arc(cx, cy, 90, (sweet - tm.yellow / 2) * 6.283 - 1.571, (sweet + tm.yellow / 2) * 6.283 - 1.571); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, ringR, (sweet - tm.yellow / 2) * 6.283 - 1.571, (sweet + tm.yellow / 2) * 6.283 - 1.571); ctx.stroke();
     ctx.strokeStyle = "rgba(90,208,106,0.95)";
-    ctx.beginPath(); ctx.arc(cx, cy, 90, (sweet - tm.green / 2) * 6.283 - 1.571, (sweet + tm.green / 2) * 6.283 - 1.571); ctx.stroke();
-    const r = 90 * (1 - k * 0.75);
+    ctx.beginPath(); ctx.arc(cx, cy, ringR, (sweet - tm.green / 2) * 6.283 - 1.571, (sweet + tm.green / 2) * 6.283 - 1.571); ctx.stroke();
+    const r = ringR * (1 - k * 0.75);
     ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 4;
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, 6.3); ctx.stroke();
-    T.draw(ctx, "TAP ON THE GREEN", cx, cy + 110, { size: "m", color: "#ffffff", align: "center", shadow: true });
+    T.draw(ctx, "TAP ON THE GREEN", cx, Math.min(cy + ringR + 20, L.boxY - T.px("m") - 6), { size: "m", color: "#ffffff", align: "center", shadow: true });
     hits.add(0, 0, L.w, L.h, "timing");
   };
 

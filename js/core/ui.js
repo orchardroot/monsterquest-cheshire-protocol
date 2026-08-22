@@ -253,8 +253,11 @@
     const n = its.length;
     const cols = o.cols || st.cols || 1;
     st.cols = cols;
-    const rowH = o.rowH || 30;
-    const pad = o.pad === undefined ? 14 : o.pad;
+    const tok = (MQ.View && MQ.View.ui) || null;
+    // A row is the thing you tap, so it never goes below a finger's worth of
+    // screen (MQ.View.ui.touch, which grows on physically small displays).
+    const rowH = Math.max(o.rowH || 30, tok ? tok.touch : 30);
+    const pad = o.pad === undefined ? (tok ? tok.pad : 14) : o.pad;
     const x = o.x, y = o.y, w = o.w;
     const colW = (w - pad * 2) / cols;
     const rowsTotal = Math.ceil(n / cols);
@@ -324,12 +327,13 @@
     for (let i = 0; i < toasts.length; i++) {
       const t = toasts[i];
       const k = t.t < 200 ? t.t / 200 : t.t > t.ms - 300 ? Math.max(0, (t.ms - t.t) / 300) : 1;
-      const tw = T.width(t.text, "s") + 28;
+      const tw = Math.min(w - 24, T.width(t.text, "s") + 28);
+      const th = T.px("s") + 16;
       ctx.globalAlpha = k;
-      UI.box(ctx, (w - tw) / 2, y, tw, 30, { style: "dark" });
-      T.draw(ctx, t.text, w / 2, y + 8, { size: "s", align: "center", color: "#f0f0f8" });
+      UI.box(ctx, (w - tw) / 2, y, tw, th, { style: "dark" });
+      T.draw(ctx, t.text, w / 2, y + 8, { size: "s", align: "center", color: "#f0f0f8", maxWidth: tw - 16 });
       ctx.globalAlpha = 1;
-      y += 36;
+      y += th + 6;
     }
   };
 
@@ -339,7 +343,7 @@
     ctx.fillStyle = active ? "#f4f0e0" : "rgba(60,60,90,0.9)";
     UI.roundRect(ctx, x, y, w, h, 8); ctx.fill();
     ctx.strokeStyle = "rgba(220,220,240,0.7)"; ctx.lineWidth = 2; UI.roundRect(ctx, x + 1, y + 1, w - 2, h - 2, 8); ctx.stroke();
-    T.draw(ctx, label, x + w / 2, y + (h - 18) / 2, { size: "m", align: "center", color: active ? "#202030" : "#f0f0f8" });
+    T.draw(ctx, label, x + w / 2, y + (h - T.px("m")) / 2, { size: "m", align: "center", color: active ? "#202030" : "#f0f0f8", maxWidth: w - 12 });
   };
   UI.hit = function (o, px, py) { return U.inRect(px, py, o.x, o.y, o.w, o.h); };
 
@@ -358,12 +362,17 @@
     if (banner.t < banner.ms) {
       const V = MQ.View;
       const k = banner.t < 250 ? banner.t / 250 : banner.t > banner.ms - 400 ? Math.max(0, (banner.ms - banner.t) / 400) : 1;
-      const w = Math.max(240, T.width(banner.title, "l") + 60);
-      const x = V.safe.left + 24, y = V.safe.top + 24 - (1 - k) * 20;
+      const lh = T.px("l"), sh = T.px("s");
+      const w = Math.min(V.w - V.safe.left - V.safe.right - 24,
+        Math.max(240, T.width(banner.title, "l") + 60, banner.sub ? T.width(banner.sub, "s") + 46 : 0));
+      const h = banner.sub ? (24 + lh + 8 + sh) : (24 + lh);
+      // Centred: the top-left corner belongs to the quest tracker, and the top
+      // corners of a phone belong to the camera cutout.
+      const x = Math.round((V.w - w) / 2), y = V.safe.top + 18 - (1 - k) * 20;
       ctx.globalAlpha = k;
-      UI.box(ctx, x, y, w, banner.sub ? 74 : 52, { style: "dark" });
-      T.draw(ctx, banner.title, x + 20, y + 12, { size: "l", color: "#fff8e0", shadow: true });
-      if (banner.sub) T.draw(ctx, banner.sub, x + 22, y + 46, { size: "s", color: "#c8c8e0" });
+      UI.box(ctx, x, y, w, h, { style: "dark" });
+      T.draw(ctx, banner.title, x + w / 2, y + 12, { size: "l", align: "center", color: "#fff8e0", shadow: true, maxWidth: w - 24 });
+      if (banner.sub) T.draw(ctx, banner.sub, x + w / 2, y + 12 + lh + 6, { size: "s", align: "center", color: "#c8c8e0", maxWidth: w - 24 });
       ctx.globalAlpha = 1;
     }
     prevDraw(ctx);

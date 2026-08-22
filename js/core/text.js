@@ -12,9 +12,18 @@
   const charW = {};          // px → advance width of one glyph (monospace)
   let measureCtx = null;
 
+  // Every size runs through the view's text scale, so one setting (and the
+  // automatic step-up on physically small screens) moves all of the type
+  // together. Rounded to whole logical px so the glyph cache stays small.
+  function scale() {
+    const V = MQ.View;
+    const k = (V && V.ui && V.ui.text) || 1;
+    return (k > 0) ? k : 1;
+  }
   function px(size) {
-    if (typeof size === "number") return size;
-    return SIZES[size] || SIZES.m;
+    const base = (typeof size === "number") ? size : (SIZES[size] || SIZES.m);
+    const k = scale();
+    return k === 1 ? base : Math.max(8, Math.round(base * k));
   }
   function font(p) {
     return fontCache[p] || (fontCache[p] = "bold " + p + "px " + FAMILY);
@@ -41,6 +50,7 @@
     SIZES: SIZES,
     FAMILY: FAMILY,
     px: px,
+    scale: scale,
     font: font,
     lineHeight: function (size) { return Math.round(px(size) * 1.3); },
     width: function (str, size) { return str.length * glyphW(px(size)); },

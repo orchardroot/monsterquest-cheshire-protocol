@@ -94,11 +94,21 @@
     if (!Input.vibrateEnabled) return;
     try { if (navigator.vibrate) navigator.vibrate(ms || 30); } catch (e) { /* ignore */ }
   };
+  // The Settings "Touch layout size" choice, on top of the device factor below.
   Input.setTouchScale = function (k) {
     Input.touchScale = U.clamp(+k || 1, 0.6, 1.6);
-    STICK.radius = Math.round(STICK_R0 * Input.touchScale);
     layoutButtons();
   };
+  // A logical px is physically smaller on a phone than on a tablet, so the pad
+  // is scaled up there to keep the buttons a real thumb wide. Never shrinks:
+  // a roomy tablet keeps the sizes the art was drawn for.
+  function deviceK() {
+    const t = MQ.View && MQ.View.ui;
+    if (!t || !t.touch) return 1;
+    return U.clamp(t.touch / 44, 1, 1.5);
+  }
+  function effScale() { return Input.touchScale * deviceK(); }
+  Input.effectiveScale = effScale;
   Input.setTouchSide = function (side) {
     Input.touchSide = side === "right" ? "right" : "left";
     layoutButtons();
@@ -203,7 +213,8 @@
     const V = MQ.View;
     const w = V ? V.w : MQ.BASE_W, h = V ? V.h : MQ.BASE_H;
     const sl = V ? V.safe.left : 0, sr = V ? V.safe.right : 0, sb = V ? V.safe.bottom : 0;
-    const k = Input.touchScale;
+    const k = effScale();
+    STICK.radius = Math.round(STICK_R0 * k);
     const A = buttons[0], B = buttons[1], ST = buttons[2], RN = buttons[3];
     A.r = A.r0 * k; B.r = B.r0 * k;
     ST.w = ST.w0 * k; ST.h = ST.h0 * k;
@@ -217,7 +228,24 @@
     ST.x = inward(84 * k) - ST.w / 2; ST.y = h - sb - 178 * k;
     RN.x = inward(84 * k + 92 * k) - RN.w / 2; RN.y = h - sb - 178 * k;
     // start/run x,y are top-left; a/b are centres
+    reserve.on = !!(Input.touchVisible && !padSuppressed());
+    reserve.padSide = padRight ? "right" : "left";
+    reserve.padW = Math.round(224 * k);
+    reserve.padH = Math.round(212 * k);
+    reserve.stickW = Math.round(180 * k);
+    reserve.stickH = Math.round(180 * k);
+    return reserve;
   }
+  // What the on-screen pad is standing on, in logical px, so HUDs and dialogue
+  // boxes can keep out of its way instead of guessing a constant.
+  const reserve = { on: false, padSide: "right", padW: 224, padH: 212, stickW: 180, stickH: 180 };
+  Input.reserve = function () {
+    reserve.on = !!(Input.touchVisible && !padSuppressed());
+    return reserve;
+  };
+  // Width to keep clear along the bottom-right (pad) and bottom-left (stick).
+  Input.padWidth = function () { return Input.reserve().on ? reserve.padW : 0; };
+  Input.padHeight = function () { return Input.reserve().on ? reserve.padH : 0; };
   // The half of the screen that starts the virtual stick.
   function inStickHalf(x) {
     const w = MQ.View ? MQ.View.w : MQ.BASE_W;
@@ -425,15 +453,16 @@
       ctx.fillStyle = "rgba(60,60,90,0.35)";
       ctx.beginPath(); ctx.arc(stick.ox, stick.oy, STICK.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "rgba(240,240,255,0.85)";
-      ctx.beginPath(); ctx.arc(stick.x, stick.y, 22, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(stick.x, stick.y, Math.round(22 * effScale()), 0, Math.PI * 2); ctx.fill();
     } else {
       // resting hint
       ctx.globalAlpha = 0.21 * A0;
       ctx.strokeStyle = "#e6e6ff";
-      const hx = Input.touchSide === "right" ? (V.w - V.safe.right - 110 * Input.touchScale) : (V.safe.left + 110 * Input.touchScale);
-      const hy = V.h - V.safe.bottom - 110 * Input.touchScale;
+      const k = effScale();
+      const hx = Input.touchSide === "right" ? (V.w - V.safe.right - 110 * k) : (V.safe.left + 110 * k);
+      const hy = V.h - V.safe.bottom - 110 * k;
       ctx.beginPath(); ctx.arc(hx, hy, STICK.radius, 0, Math.PI * 2); ctx.stroke();
-      ctx.beginPath(); ctx.arc(hx, hy, 20 * Input.touchScale, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(hx, hy, 20 * k, 0, Math.PI * 2); ctx.stroke();
     }
     // buttons
     ctx.globalAlpha = A0;
@@ -444,11 +473,11 @@
       ctx.strokeStyle = "rgba(220,220,240,0.6)";
       if (b.r) {
         ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        if (MQ.Text) MQ.Text.draw(ctx, b.label, b.x, b.y - 10, { size: "m", align: "center", color: "#f4f4ff" });
+        if (MQ.Text) MQ.Text.draw(ctx, b.label, b.x, b.y - MQ.Text.px("m") / 2, { size: "m", align: "center", color: "#f4f4ff" });
       } else {
         MQ.UI && MQ.UI.roundRect ? MQ.UI.roundRect(ctx, b.x, b.y, b.w, b.h, 8) : ctx.rect(b.x, b.y, b.w, b.h);
         ctx.fill(); ctx.stroke();
-        if (MQ.Text) MQ.Text.draw(ctx, b.label, b.x + b.w / 2, b.y + 8, { size: "s", align: "center", color: "#f4f4ff" });
+        if (MQ.Text) MQ.Text.draw(ctx, b.label, b.x + b.w / 2, b.y + (b.h - MQ.Text.px("s")) / 2, { size: "s", align: "center", color: "#f4f4ff" });
       }
     }
     ctx.restore();
