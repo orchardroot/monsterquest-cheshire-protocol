@@ -185,6 +185,27 @@
   };
 
   // Convenience for the pause menu / trainer card.
+  // ---------------------------------------------------- the title hand-off --
+  // MQ.UI.Title offers `onStart` as its integration hook. Without it the title
+  // pushed the overworld with whatever params it had (i.e. the default map) and
+  // *then* ran chapter one, so Mum's kitchen scene played out in an empty field.
+  // The story owns where the story starts, so the story wires this up.
+  S.wireTitle = function () {
+    if (!MQ.UI || !MQ.UI.Title) return false;
+    MQ.UI.Title.onStart = function (info) {
+      info = info || {};
+      if (info.newGame) { S.startNewGame({ name: info.name, difficulty: info.difficulty }); return; }
+      // Continue: the save has already been applied, so go where it says.
+      const st = (MQ.Overworld && MQ.Overworld.state) || {};
+      const where = st.map ? { map: st.map, x: st.px !== undefined ? Math.floor(st.px / MQ.TILE) : undefined,
+                               y: st.py !== undefined ? Math.floor(st.py / MQ.TILE) : undefined, dir: st.dir }
+                           : { map: S.START.map, x: S.START.x, y: S.START.y, dir: S.START.dir };
+      if (MQ.Scenes && MQ.Overworld) MQ.Scenes.replace(MQ.Overworld, where);
+    };
+    return true;
+  };
+  if (MQ.Events) MQ.Events.on("boot", function () { S.wireTitle(); });
+
   S.summary = function () {
     const ch = S.chapterInfo();
     return {
