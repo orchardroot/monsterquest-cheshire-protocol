@@ -27,6 +27,11 @@ html, body {
   top: 0;
   width: 100vw;
   height: 100vh;
+  /* dvh follows the browser chrome as it slides away, which is what
+     visualViewport (and so MQ.View.resize) is already measuring. Without it
+     the canvas box is taller than the viewport and the bottom row of the HUD
+     sits under the address bar. */
+  height: 100dvh;
   display: block;
   background: #000;
   image-rendering: pixelated;
@@ -42,13 +47,17 @@ html, body {
   z-index: 20;
   background: rgba(10, 10, 16, 0.92);
   color: #e0e0f0;
-  font-size: 22px;
+  font-size: clamp(18px, 5.5vw, 26px);
+  line-height: 1.5;
   text-align: center;
   align-items: center;
   justify-content: center;
+  padding: calc(var(--mq-sat) + 16px) calc(var(--mq-sar) + 16px)
+           calc(var(--mq-sab) + 16px) calc(var(--mq-sal) + 16px);
+  box-sizing: border-box;
   pointer-events: none;
 }
-#rotate small { color: #8a8aa0; font-size: 14px; }
+#rotate small { color: #8a8aa0; font-size: clamp(12px, 3.6vw, 16px); }
 @media (pointer: coarse) and (orientation: portrait) and (max-width: 700px) {
   #rotate { display: flex; }
 }
