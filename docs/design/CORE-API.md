@@ -35,8 +35,15 @@ Fields `canvas ctx W H (css px) w h (logical) S dpr safe{top,right,bottom,left}`
 `init(canvas?)`, `resize()`, `compute(W,H,dpr)` → `{S,dpr,w,h,cw,ch}` (pure), `applyTransform()`, `toLogical(clientX, clientY, out?)` (reuses one point object), `clear(color)`.
 Safe insets read from CSS vars `--mq-sat/-sar/-sab/-sal` (css/style.css) divided by S. Uses `visualViewport` when present.
 
+**Layout tokens.** A logical px is not a fixed physical size: S is the logical→CSS scale, so a 19.5:9 phone (1169x540 logical) draws one at 0.73 CSS px while a 1280x800 tablet draws it at 1.2. Anything sized in bare logical px therefore comes out ~40% smaller on the phone. `View.tokens(S, uiScale, h)` (pure) states the minimums in CSS px (≈ dp) and converts back:
+`{scale, dens (logical px per CSS px), text (multiplier on MQ.Text sizes), touch (min tap target, logical px), pad, rowH, dense, short}`.
+`View.ui` is the resolved block, refreshed on every `resize()`. `View.setUiScale('auto'|'small'|'normal'|'large')` (Settings → UI scale) re-resolves and emits `resize`; `'auto'` uses `View.suggestUiScale(S)`. `View.dp(n)` = logical px for n CSS px. Small physical screens step **up**; roomy ones are left at 1.
+
 ## MQ.Input
 `held(a)`, `pressed(a)` (edge, true for exactly one fixed step; press+release between steps still yields one edge), `consume(a)`, `consumeAll()`, `axis()` → `{x,y,mag,angle}` (same object every call), `tapAt()` → `{x,y}|null` (logical, this step only), `inject(a)`, `vibrate(ms)`, `setTouchVisible(bool|null=auto)`, `lastSource`, `touchVisible`, `coarse`, `enabled` (false = all input suppressed), `anyPressed()`, `dirPressed()`, `releaseAll()`, `gesture()`, `update()` (called by Loop before every step), `draw(ctx)` (called by Loop after scenes), `buttons[]`, `stick`, `KEYMAP`, `STICK {radius 60, dead 0.18, runAt 0.8}`.
+`dragState()` → `{active,x,y,x0,y0,dx,dy,moved}`: thumb drag or mouse wheel, published for exactly one step like the button edges — menu scenes hide the pad, so this is the only way a touch-only player scrolls a list. `reserve()`/`padWidth()`/`padHeight()` report the footprint the on-screen pad is standing on, so HUDs and dialogue boxes can keep out of it. `effectiveScale()` = the Settings "touch layout size" choice times a device factor that grows the pad on a physically small screen (never shrinks it).
+A scene with `touchPad === false` suppresses the stick and the A/B/RUN/START pad entirely — **every menu scene must set it**, or the pad is painted over its lists (`tools/test/test-layout.js` fails the build otherwise).
+
 Sources: keyboard (`e.code` + keyCode fallback), Pointer Events (touch/mouse; falls back to touch+mouse events), gamepad polling each step. Analogue deflection >0.5 also sets digital `up/down/left/right` (menus work from sticks); mag >0.8 sets `run`. Touch stick: dynamic origin on the left half, `pointerId` tracked; buttons A/B/START/RUN on the right; sliding between buttons is allowed; short taps anywhere not on a button become `tapAt`. Auto-visibility: last source touch, or coarse pointer and not using a pad.
 
 ## MQ.Loop
@@ -49,10 +56,13 @@ Scene hooks: `enter(params) exit(result) update(dt) draw(ctx) resume(resultFromP
 Transitions: `transition(kind 'fade'|'wipe'|'battle', ms, {color})` → Promise **resolved at the midpoint (screen fully covered)**; the reveal continues automatically. `fadeOut(ms)` covers and holds; `fadeIn(ms)` reveals; `isCovered()`. Screen FX: `shake(ms, amp)`, `flash(ms, color)`, `shakeOffset()`.
 
 ## MQ.Text
-`SIZES {s:14,m:18,l:26,xl:40}`, `draw(ctx,str,x,y,{size,color,align,shadow,maxWidth,alpha})` → width, `wrap(str,maxWidth,size)` → lines (honours `\n`, hard-breaks long words), `width(str,size)`, `charWidth(size)`, `lineHeight(size)`, `drawWrapped(ctx,str,x,y,maxWidth,opts)`, `charsPerLine`, `px(size)`, `font(px)`.
+`SIZES {s:14,m:18,l:26,xl:40}`, `draw(ctx,str,x,y,{size,color,align,shadow,maxWidth,alpha})` → width, `wrap(str,maxWidth,size)` → lines (honours `\n`, hard-breaks long words), `width(str,size)`, `charWidth(size)`, `lineHeight(size)`, `drawWrapped(ctx,str,x,y,maxWidth,opts)`, `charsPerLine`, `px(size)`, `font(px)`, `scale()`.
+Every size (named or numeric) is multiplied by `MQ.View.ui.text` and rounded, so the UI-scale setting and the automatic step-up on small physical screens move all of the type together. **Never hard-code 14/18/26 in a layout** — ask `T.px(size)` / `T.lineHeight(size)`, or the box stops fitting its text the moment the scale moves.
 
 ## MQ.UI
 `box(ctx,x,y,w,h,{style:'default'|'dark'|'flat'|'paper'|'danger', title, alpha, fill, border})`, `roundRect`, `gauge(ctx,x,y,w,h,ratio,{color,bg,border,noBorder})`, `pointer(ctx,x,y)`, `advanceArrow`, `icon(ctx,name,x,y,scale)` (heart star coin check cross ball sword shield bag map book cog save arrowR arrowL dot cat fish quest), `typeChip(ctx,type,x,y,{w,h})`, `tabs(ctx,labels,active,{x,y,w,h})` + `tabsHit`, `button`, `hit`, `toast(text,ms)`, `banner(title,sub,ms)`, `bannerActive()`, `update(dt)`, `draw(ctx)`.
+Rows drawn by `menu()` are floored at `MQ.View.ui.touch` and scroll under a thumb or a wheel via `MQ.Input.dragState()`. Toasts and location banners stack below a header bar if a menu screen has one up.
+
 Menus: `state = menuState(items, {cols, visible, wrap, cancel})`; `state.update()` → `{selected,item,value,tap?}|{cancel:true}|{moved:true}|null` (consumes input; hold-repeat; taps hit the rects recorded by the last draw); `state.setItems/setCursor/current/value`; `menu(state, ctx, items, {x,y,w,cols,rowH,visible,style,pad,title,box:false,size,color})` → box height. Item = string | `{label,value,disabled,icon,right,color}`.
 
 ## MQ.Dialog
