@@ -78,7 +78,7 @@
 
   function base(id, def) {
     const scene = {
-      id: "mg_" + id, gameId: id, over: false, overT: 0, finished: false, result: null,
+      id: "mg_" + id, touchPad: false, gameId: id, over: false, overT: 0, finished: false, result: null,
       enter: function (params) {
         this.p = params || {};
         this.over = false; this.overT = 0; this.finished = false; this.result = null;
@@ -1037,7 +1037,7 @@
   // =============================================================
   M.CABINETS = ["arcade_packet_run", "arcade_salt_rush", "arcade_type_trainer"];
   M.arcadeScene = {
-    id: "arcade",
+    id: "arcade", touchPad: false,
     enter: function (params) {
       this.p = params || {};
       this.tab = 0;

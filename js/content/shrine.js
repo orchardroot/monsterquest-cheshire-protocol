@@ -60,7 +60,7 @@
   S.lines = function () { return CROSS_LINES.slice(); };
 
   S.scene = {
-    id: "shrine",
+    id: "shrine", touchPad: false,
     enter: function (params) {
       this.p = params || {};
       this.t = 0;

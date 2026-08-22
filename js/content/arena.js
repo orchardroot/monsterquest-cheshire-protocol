@@ -571,7 +571,7 @@
   const cardRect = { x: 0, y: 0, w: 0, h: 0 };
   Arena.showCard = function (run, foe, t, weather) {
     const scene = {
-      id: "arena_card", t: 0, done: false,
+      id: "arena_card", touchPad: false, t: 0, done: false,
       enter: function () { this.t = 0; this.done = false; A.sfx("ui_open"); },
       update: function (dt) {
         this.t += dt;
@@ -607,7 +607,7 @@
 
   // The lobby: tiers, records, the chip counter.
   Arena.scene = {
-    id: "arena",
+    id: "arena", touchPad: false,
     tab: 0,
     enter: function (params) {
       this.params = params || {};

@@ -198,7 +198,9 @@
   const GLYPHS = {
     key: { a: "Z", b: "X", start: "ESC", select: "TAB", run: "SHIFT", dir: "ARROWS", up: "W", down: "S", left: "A", right: "D", lr: "< >" },
     pad: { a: "A", b: "B", start: "START", select: "SELECT", run: "LB", dir: "STICK", up: "UP", down: "DN", left: "LT", right: "RT", lr: "L/R" },
-    touch: { a: "A", b: "B", start: "MENU", select: "SEL", run: "RUN", dir: "STICK", up: "UP", down: "DN", left: "LT", right: "RT", lr: "SWIPE" }
+    // menu scenes hide the pad, so on touch the instruction is what your thumb
+    // actually does there: tap a thing, or drag the list
+    touch: { a: "A", b: "B", start: "MENU", select: "SEL", run: "RUN", dir: "TAP", up: "UP", down: "DN", left: "LT", right: "RT", lr: "SWIPE" }
   };
   Theme.source = function () { return (MQ.Input && MQ.Input.lastSource) || "key"; };
   Theme.glyph = function (btn) {

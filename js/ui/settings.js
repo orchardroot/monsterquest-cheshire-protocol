@@ -78,6 +78,8 @@
     } catch (e) { /* ignore */ }
     writeLocal();
     apply(id, v);
+    // the row shows the value, so it has to be rebuilt however the value moved
+    if (sc && sc.st) sc.rebuild();
     if (MQ.Events) MQ.Events.emit("settings", { id: id, value: v });
   }
   function values() {

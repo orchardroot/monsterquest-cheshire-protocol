@@ -215,7 +215,7 @@
 
   // ---- scene --------------------------------------------------------
   B.scene = {
-    id: "brewing",
+    id: "brewing", touchPad: false,
     enter: function (params) {
       this.p = params || {};
       this.tab = this.p.tab === "recipes" || this.p === "press" ? 1 : 0;

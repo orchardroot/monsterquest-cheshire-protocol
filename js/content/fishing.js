@@ -247,7 +247,7 @@
   // ---- the scene -------------------------------------------------------
   const R = { x: 0, y: 0, w: 0, h: 0 };
   F.scene = {
-    id: "fishing",
+    id: "fishing", touchPad: false,
     enter: function (params) {
       const a = A();
       this.p = params || {};

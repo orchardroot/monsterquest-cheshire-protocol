@@ -268,7 +268,7 @@
 
   // ---- scene ------------------------------------------------------------
   Bn.scene = {
-    id: "bounties",
+    id: "bounties", touchPad: false,
     enter: function (params) {
       this.p = params || {};
       this.tab = 0;
