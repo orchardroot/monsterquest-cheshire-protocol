@@ -133,6 +133,63 @@ module.exports = function (t, assert) {
     V.safe.left = 0; V.safe.bottom = 0;
   });
 
+  t("long lists scroll under a thumb (and a wheel), not just a d-pad", function () {
+    const Theme = MQ.UI.Theme;
+    V.init();
+    MQ.Input.init(V.canvas);
+    V.w = 960; V.h = 540; V.S = 1; V.refreshTokens();
+    const dr = MQ.Input.dragState();
+    dr.active = false; dr.dx = dr.dy = 0;
+    const items = [];
+    for (let i = 0; i < 40; i++) items.push({ label: "row " + i });
+    const st = MQ.UI.menuState(items);
+    const ctx = V.ctx || V.canvas.getContext("2d");
+    const box = { x: 20, y: 20, w: 300, h: 400, rowH: 44, gap: 4 };
+    Theme.list(st, ctx, box);
+    const step = Math.max(box.rowH, V.ui.touch) + box.gap;
+    assert.ok(st.visible < 40, "the list cannot show all 40 rows");
+    assert.strictEqual(st.scroll, 0);
+
+    // a thumb dragged upwards inside the list scrolls it down
+    dr.active = true; dr.x0 = 100; dr.y0 = 100; dr.dy = -step * 3; dr.dx = 0;
+    Theme.list(st, ctx, box);
+    assert.strictEqual(st.scroll, 3, "dragged three rows, got " + st.scroll);
+    assert.ok(st.cursor >= st.scroll, "the cursor came along, cursor=" + st.cursor);
+
+    // a hard flick past the end stops at the end, and does not leave holes
+    dr.dy = -step * 99;
+    Theme.list(st, ctx, box);
+    assert.strictEqual(st.scroll, 40 - st.visible, "clamped to the last page");
+    Theme.list(st, ctx, box);   // the very next frame must not throw on a gap
+
+    // and back up, stopping at the top rather than running off it
+    dr.dy = step * 999;
+    Theme.list(st, ctx, box);
+    assert.strictEqual(st.scroll, 0);
+
+    // a drag that starts outside the list is somebody else's business
+    dr.x0 = 900; dr.y0 = 900; dr.dy = -step * 2;
+    Theme.list(st, ctx, box);
+    assert.strictEqual(st.scroll, 0);
+    dr.active = false; dr.dy = 0;
+  });
+
+  t("Theme.list floors its rows at a finger, unless the caller opts out", function () {
+    const Theme = MQ.UI.Theme;
+    V.init();
+    MQ.Input.dragState().active = false;
+    V.w = 1169; V.h = 540; V.S = 393 / 540;
+    V.refreshTokens();
+    const items = [];
+    for (let i = 0; i < 20; i++) items.push({ label: "row " + i });
+    const st = MQ.UI.menuState(items);
+    const ctx = V.ctx || V.canvas.getContext("2d");
+    Theme.list(st, ctx, { x: 0, y: 0, w: 300, h: 400, rowH: 30, gap: 4 });
+    const floored = st.visible;
+    Theme.list(st, ctx, { x: 0, y: 0, w: 300, h: 400, rowH: 30, gap: 4, minRow: false });
+    assert.ok(st.visible > floored, "opting out packs more rows in: " + st.visible + " vs " + floored);
+  });
+
   t("Input: the pad scales up on a small screen and reports what it stands on", function () {
     V.init();
     MQ.Input.init(V.canvas);

@@ -360,17 +360,40 @@
   // st = MQ.UI.menuState(items, {visible}); this fills st.rects so
   // st.update() taps work, and draws a scrollbar. render(ctx,item,x,y,w,h,sel,i)
   Theme.list = function (st, ctx, o) {
+    const m = Theme.m();
     const x = o.x, y = o.y, w = o.w, h = o.h;
-    const rowH = o.rowH || Theme.m().rowH;
+    // A row is what you tap. Callers give the size they'd like; the floor is a
+    // real finger's worth of screen, unless they opt out (o.minRow === false)
+    // because the list is a rail that has to show every entry at once.
+    const want = o.rowH || m.rowH;
+    const rowH = Math.min(o.minRow === false ? want : Math.max(want, m.minTouch), h);
     const gap = o.gap === undefined ? 4 : o.gap;
     const n = st.items.length;
     const visible = Math.max(1, Math.floor((h + gap) / (rowH + gap)));
     st.visible = visible;
     st.cols = 1;
-    if (st.scroll > Math.max(0, n - visible)) st.scroll = Math.max(0, n - visible);
-    if (st.cursor < st.scroll) st.scroll = st.cursor;
+    const maxScroll = Math.max(0, n - visible);
+    if (st.scroll > maxScroll) st.scroll = maxScroll;
+    // Drag (thumb) or wheel scrolling, so a touch-only player can reach the
+    // bottom of a list that has no room to show itself.
+    let dragged = false;
+    if (n > visible) {
+      const dr = (MQ.Input && MQ.Input.dragState) ? MQ.Input.dragState() : null;
+      if (dr && dr.active && dr.dy && U.inRect(dr.x0, dr.y0, x, y, w, h)) {
+        st.dragAcc = (st.dragAcc || 0) + dr.dy;
+        const step = rowH + gap;
+        while (st.dragAcc >= step && st.scroll > 0) { st.scroll--; st.dragAcc -= step; }
+        while (st.dragAcc <= -step && st.scroll < maxScroll) { st.scroll++; st.dragAcc += step; }
+        if (st.scroll <= 0 || st.scroll >= maxScroll) st.dragAcc = U.clamp(st.dragAcc, -step, step);
+        dragged = true;
+      } else st.dragAcc = 0;
+    }
+    if (dragged) {
+      // keep the cursor on something you can actually see
+      st.cursor = U.clamp(st.cursor, st.scroll, Math.min(n - 1, st.scroll + visible - 1));
+    } else if (st.cursor < st.scroll) st.scroll = st.cursor;
     else if (st.cursor >= st.scroll + visible) st.scroll = st.cursor - visible + 1;
-    for (let i = 0; i < st.rects.length; i++) st.rects[i].on = false;
+    for (let i = 0; i < st.rects.length; i++) { if (st.rects[i]) st.rects[i].on = false; }
     if (n === 0) {
       T.draw(ctx, o.empty || "Nothing here.", x + w / 2, y + 20, { size: "m", align: "center", color: C.textDim });
       return;
@@ -390,8 +413,13 @@
       const trackH = h;
       const barH = Math.max(20, trackH * visible / n);
       const barY = y + (trackH - barH) * (st.scroll / (n - visible));
-      ctx.fillStyle = "rgba(255,255,255,0.08)"; ctx.fillRect(x + w + 4, y, 4, trackH);
-      ctx.fillStyle = C.brass; ctx.fillRect(x + w + 4, barY, 4, barH);
+      const bw = m.dense ? 6 : 4;
+      ctx.fillStyle = "rgba(255,255,255,0.08)"; ctx.fillRect(x + w + 4, y, bw, trackH);
+      ctx.fillStyle = C.brass; ctx.fillRect(x + w + 4, barY, bw, barH);
+      // …and little chevrons so it reads as scrollable rather than truncated
+      ctx.fillStyle = "rgba(242,214,138,0.75)";
+      if (st.scroll > 0) { ctx.beginPath(); ctx.moveTo(x + w - 12, y + 8); ctx.lineTo(x + w - 2, y + 8); ctx.lineTo(x + w - 7, y + 2); ctx.closePath(); ctx.fill(); }
+      if (st.scroll < n - visible) { ctx.beginPath(); ctx.moveTo(x + w - 12, y + h - 8); ctx.lineTo(x + w - 2, y + h - 8); ctx.lineTo(x + w - 7, y + h - 2); ctx.closePath(); ctx.fill(); }
     }
   };
   // default row renderer for {label,right,icon,color,disabled}

@@ -268,10 +268,23 @@
     const size = o.size || "m";
     const boxH = o.h || (visible * rowH + pad * 2);
     if (o.box !== false) UI.box(ctx, x, y, w, boxH, { style: o.style, title: o.title });
+    // drag / wheel scrolling, same channel Theme.list uses
+    const rowsVisible = Math.min(visible, rowsTotal);
+    if (rowsTotal > rowsVisible) {
+      const dr = (MQ.Input && MQ.Input.dragState) ? MQ.Input.dragState() : null;
+      const maxScroll = rowsTotal - rowsVisible;
+      if (dr && dr.active && dr.dy && U.inRect(dr.x0, dr.y0, x, y, w, boxH)) {
+        st.dragAcc = (st.dragAcc || 0) + dr.dy;
+        while (st.dragAcc >= rowH && st.scroll > 0) { st.scroll--; st.dragAcc -= rowH; }
+        while (st.dragAcc <= -rowH && st.scroll < maxScroll) { st.scroll++; st.dragAcc += rowH; }
+        st.cursor = U.clamp(st.cursor, st.scroll * cols, Math.min(n - 1, (st.scroll + rowsVisible) * cols - 1));
+      } else st.dragAcc = 0;
+      if (st.scroll > maxScroll) st.scroll = maxScroll;
+    }
     const start = st.scroll * cols;
     const end = Math.min(n, start + visible * cols);
     // ensure rects array sized; mark all off
-    for (let i = 0; i < st.rects.length; i++) st.rects[i].on = false;
+    for (let i = 0; i < st.rects.length; i++) { if (st.rects[i]) st.rects[i].on = false; }
     for (let i = start; i < end; i++) {
       const it = its[i];
       const col = i % cols, row = Math.floor(i / cols) - st.scroll;

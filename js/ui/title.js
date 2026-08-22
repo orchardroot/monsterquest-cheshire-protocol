@@ -141,7 +141,7 @@
     const gy = gy0 + Math.max(0, Math.floor((gh - (kh * rows + 6 * (rows - 1))) / 2));
     const gx = m.cx - (kw * COLS + 6 * (COLS - 1)) / 2;
     const st = nameSc.st;
-    for (let i = 0; i < st.rects.length; i++) st.rects[i].on = false;
+    for (let i = 0; i < st.rects.length; i++) { if (st.rects[i]) st.rects[i].on = false; }
     for (let i = 0; i < nameSc.keys.length; i++) {
       const k = nameSc.keys[i];
       const col = i % COLS, row = Math.floor(i / COLS);

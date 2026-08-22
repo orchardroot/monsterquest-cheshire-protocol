@@ -42,6 +42,12 @@
     latch[ACTIONS[i]] = cur[ACTIONS[i]] = prev[ACTIONS[i]] = edge[ACTIONS[i]] = false;
   }
 
+  // Drag/wheel scrolling. Menu scenes turn the pad off (touchPad === false), so
+  // without this a touch-only player cannot reach anything below the fold of a
+  // long list — the Dex is 177 species. Deltas accumulate between fixed steps
+  // and are published for exactly one step, like the button edges.
+  const drag = { active: false, id: null, x: 0, y: 0, x0: 0, y0: 0, dx: 0, dy: 0, _dx: 0, _dy: 0, moved: false };
+
   const axis = { x: 0, y: 0, mag: 0, angle: 0 };
   const padAxis = { x: 0, y: 0, mag: 0 };
   const stick = { active: false, id: null, ox: 0, oy: 0, x: 0, y: 0, vx: 0, vy: 0, mag: 0 };
@@ -88,6 +94,7 @@
   Input.consume = function (action) { edge[action] = false; };
   Input.consumeAll = function () { for (let i = 0; i < ACTIONS.length; i++) edge[ACTIONS[i]] = false; tapThisFrame = false; };
   Input.axis = function () { return axis; };
+  Input.dragState = function () { return drag; };
   Input.tapAt = function () { return tapThisFrame ? tap : null; };
   Input.inject = function (action) { if (ACTIONS.indexOf(action) >= 0) injected.push(action); };
   Input.vibrate = function (ms) {
@@ -309,11 +316,17 @@
       Input.vibrate(8);
       return;
     }
-    const V = MQ.View;
     if (isTouch && Input.touchVisible && !padSuppressed() && !stick.active && inStickHalf(x)) {
       stick.active = true; stick.id = id; stick.ox = x; stick.oy = y; stick.x = x; stick.y = y;
       stick.vx = stick.vy = stick.mag = 0;
       p.stick = true;
+      return;
+    }
+    // anything else is a candidate drag (list scrolling)
+    if (!drag.active) {
+      drag.active = true; drag.id = id; drag.moved = false;
+      drag.x = drag.x0 = x; drag.y = drag.y0 = y;
+      drag._dx = drag._dy = 0;
     }
   }
   function pointerMove(id, cx, cy) {
@@ -322,6 +335,11 @@
     MQ.View.toLogical(cx, cy, pt);
     p.x = pt.x; p.y = pt.y;
     if (!p.moved && (Math.abs(p.x - p.x0) > TAP_MOVE || Math.abs(p.y - p.y0) > TAP_MOVE)) p.moved = true;
+    if (drag.active && drag.id === id) {
+      drag._dx += p.x - drag.x; drag._dy += p.y - drag.y;
+      drag.x = p.x; drag.y = p.y;
+      if (p.moved) drag.moved = true;
+    }
     if (p.stick && stick.active && stick.id === id) { updateStickFrom(p.x, p.y); return; }
     if (p.btn || (p.isTouch && Input.touchVisible)) {
       // allow sliding between buttons
@@ -347,6 +365,7 @@
       tapPending.x = p.x; tapPending.y = p.y;
     }
     p.btn = null;
+    if (drag.active && drag.id === id) { drag.active = false; drag.id = null; }
     delete pointers[id];
     refreshTouchDown();
   }
@@ -354,9 +373,26 @@
     const ids = Object.keys(pointers);
     for (let i = 0; i < ids.length; i++) delete pointers[ids[i]];
     stick.active = false; stick.id = null; stick.vx = stick.vy = stick.mag = 0;
+    drag.active = false; drag.id = null; drag._dx = drag._dy = 0;
     refreshTouchDown();
   }
   Input.releaseAll = releaseAllPointers;
+
+  // A wheel notch feeds the same drag channel a thumb does, so list code only
+  // has to understand one thing.
+  function bindWheel(canvas) {
+    canvas.addEventListener("wheel", function (e) {
+      if (e.preventDefault) e.preventDefault();
+      MQ.View.toLogical(e.clientX, e.clientY, pt);
+      const unit = e.deltaMode === 1 ? 24 : e.deltaMode === 2 ? 240 : 1;
+      drag.active = true; drag.id = "wheel"; drag.moved = true;
+      drag.x = drag.x0 = pt.x; drag.y = drag.y0 = pt.y;
+      drag._dx -= e.deltaX * unit;
+      drag._dy -= e.deltaY * unit;
+      wheelIdle = 0;
+    }, { passive: false });
+  }
+  let wheelIdle = 0;
 
   function bindPointer(canvas) {
     if (window.PointerEvent) {
@@ -372,6 +408,7 @@
       canvas.addEventListener("pointercancel", up);
       window.addEventListener("pointerup", up);
       canvas.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+      bindWheel(canvas);
     } else {
       // Legacy touch + mouse fallback
       const teach = function (fn) {
@@ -386,6 +423,7 @@
       canvas.addEventListener("touchend", teach(function (t) { pointerUp("t" + t.identifier); }), { passive: false });
       canvas.addEventListener("touchcancel", teach(function (t) { pointerUp("t" + t.identifier); }), { passive: false });
       let mdown = false;
+      bindWheel(canvas);
       canvas.addEventListener("mousedown", function (e) { mdown = true; pointerDown("m", e.clientX, e.clientY, false); });
       window.addEventListener("mousemove", function (e) { if (mdown) pointerMove("m", e.clientX, e.clientY); });
       window.addEventListener("mouseup", function () { if (mdown) { mdown = false; pointerUp("m"); } });
@@ -436,6 +474,14 @@
     // taps
     if (tapPending) { tap.x = tapPending.x; tap.y = tapPending.y; tapThisFrame = true; tapPending = null; }
     else tapThisFrame = false;
+    // drag: publish the movement since the last step, then start a fresh tally
+    drag.dx = drag._dx; drag.dy = drag._dy;
+    drag._dx = 0; drag._dy = 0;
+    if (drag.id === "wheel") {
+      wheelIdle = (drag.dy || drag.dx) ? 0 : wheelIdle + 1;
+      if (wheelIdle > 6) { drag.active = false; drag.id = null; }
+    }
+    if (!Input.enabled) { drag.dx = drag.dy = 0; }
   };
 
   // ---- draw touch overlay (called by MQ.Loop after scenes) ---------

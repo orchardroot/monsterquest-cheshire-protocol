@@ -288,7 +288,7 @@
     st.visible = rows;
     const maxScroll = Math.max(0, Math.ceil(ids.length / cols) - rows);
     if (st.scroll > maxScroll) st.scroll = maxScroll;
-    for (let i = 0; i < st.rects.length; i++) st.rects[i].on = false;
+    for (let i = 0; i < st.rects.length; i++) { if (st.rects[i]) st.rects[i].on = false; }
     if (!ids.length) {
       T.draw(ctx, "Nothing matches that. Try a wider net.", m.cx, gy + gh / 2 - 9, { size: "m", align: "center", color: C.textDim });
     }
