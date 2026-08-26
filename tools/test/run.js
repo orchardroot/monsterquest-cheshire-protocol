@@ -28,8 +28,17 @@ function runFile(f) {
 }
 
 let all = Promise.resolve();
+let finished = false;
 files.forEach(function (f) { all = all.then(function () { console.log(f); return runFile(f); }); });
 all.then(function () {
+  finished = true;
   console.log("\n" + pass + " passed, " + fail + " failed");
   if (fail) { console.log("\nFailures:\n" + failures.join("\n\n")); process.exit(1); }
+});
+// A test that awaits something nothing will ever resolve drains the event
+// loop and node exits 0 with no summary — which reads as a pass. Say so.
+process.on("beforeExit", function () {
+  if (finished) return;
+  console.log("\nFAIL the runner stalled: a test's promise never settled (" + pass + " passed, " + fail + " failed so far)");
+  process.exit(1);
 });

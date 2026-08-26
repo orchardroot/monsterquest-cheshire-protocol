@@ -12,8 +12,26 @@ node tools/validate.js            # MQ.Data validators + MQ.World.validate(); ex
 node tools/gen-index.js           # regenerate <script> block in index.html + sw.js ASSETS/CACHE
 node tools/gen-index.js --check   # exit 1 if index/sw are stale
 node tools/headless.js            # smoke-load every script and print MQ keys
+node tools/playtest.js            # boot through the real title, walk 300 frames, report invariants
+node tools/fuzz.js [--hostile] [--ui] [--full] [--runs=8] [--seed=1]   # seeded monkey play, see below
 python3 -m http.server 8811 --bind 127.0.0.1   # then open http://127.0.0.1:8811/
 ```
+
+**Playtesting (flow bugs the unit tests cannot see).** `tools/playtest.js` boots the
+real game and drives it: `PT.boot({seed, quick, ui, difficulty})` → session with
+`pump(n)`, `until(pred,max)`, `settle()`, `press(action,n)`, `hold(dir,frames)`,
+`walkTo(x,y)` (BFS over the current map), `nearestTile(pred)`, `rig({partyHp, enemyLevel})`
+(force a loss or a win), `state()`, `battles[]`, `violations[]`. Every frame it checks:
+`battle-with-wiped-party`, `wiped-freewalk`, `no-respawn-after-loss`, `inside-wall`,
+`softlock`, `stuck-scene`, `scene-depth`, `party-sanity`, `warn`, `unhandled-rejection`.
+`tools/test/test-playtest.js` is the regression file (the whiteout loop lives there);
+`tools/fuzz.js` plays at random with a seed — `--hostile` rigs every fight to be lost,
+`--ui` drives the real `BattleScene` with A presses instead of `autoRun`, `--full` goes
+through the title and the opening, roaming drops the player on random maps so all four
+regions get walked. Same seed and flags = same run; violations go to `fuzz-out/`.
+Rule of thumb: a game promise (`Script.run`, `Overworld.recover`, `Dialog.say`) needs
+frames to finish — `until(() => done)` it, never bare `await` it, or the runner stalls
+(run.js now fails loudly when that happens).
 
 `tools/headless.js` → `load({files?, width?, height?, dpr?, boot?})` returns
 `{MQ, window, document, screen, step(n,dt), tick(n), key(code, down), fire(evt), render()}`.

@@ -83,6 +83,8 @@ A connected gamepad works too — the D-pad/stick, A/B, and start/select all map
 
 Everything is hand-rolled — a chunked tile renderer, procedural monster and tile art, a Gen-1-style battle engine with the full type chart, and a chiptune sequencer that composes the soundtrack from note tables at load time. Every file is an IIFE that publishes onto a single `MQ` namespace on `window`; there's no framework, no bundler and no build step — `git clone`, open a file, play. The whole thing is ES2015 and generators (used for the dialogue/cutscene scripting), so it runs unmodified in anything from the last decade. CI builds a signed WebView APK on every push and publishes it to a rolling release, and a Pages workflow is ready to go if you want it hosted.
 
+It also plays itself. `node tools/test/run.js` runs the unit tests, but the bugs that actually reached my tablet (lose a fight, come round nowhere, get dragged into another fight with nothing to fight with) were all in the seams between systems, so `tools/playtest.js` boots the real game headlessly and walks it with a set of invariants that must hold every frame, and `node tools/fuzz.js --hostile` plays it badly on purpose, losing every battle across the whole county, with a seed so anything it finds can be replayed. If you change how battles end or how maps join up, run it.
+
 ## Project layout
 
 ```
