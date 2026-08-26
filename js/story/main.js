@@ -139,7 +139,9 @@
   S.rivalStarter = function () { const s = S.starter(); return s ? S.COUNTER_PICK[s] : null; };
 
   // ------------------------------------------------------ the new game -----
-  S.START = { map: "macclesfield_home", x: 7, y: 9, dir: "down" };
+  // (8,9): wood floor beside the cats. (7,9) was the wall between the two
+  // rooms — the opening played with Jim standing inside it.
+  S.START = { map: "macclesfield_home", x: 8, y: 9, dir: "down" };
   S.startNewGame = function (opts) {
     opts = opts || {};
     const F = flags();

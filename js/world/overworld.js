@@ -580,8 +580,10 @@
       runTrigger(tr);
       return;
     }
-    // wild encounters
+    // wild encounters — never for a party that cannot fight; that is a wipe
+    // the game somehow missed, so deal with it instead of rolling a battle
     if (!O.locked()) {
+      if (partyWiped()) { O.recover(); return; }
       const enc = MQ.Encounters.step(map, x, y, { boating: O.state.boating });
       if (enc) { startWild(enc); return; }
     }
@@ -868,7 +870,7 @@
 
   // ---- trainer sight-lines ------------------------------------------------
   function checkSightLines() {
-    if (O.locked()) return;
+    if (O.locked() || partyWiped()) return;
     for (let i = 0; i < npcs.length; i++) {
       const e = npcs[i];
       const d = MQ.NPC.sightCheck(e, player, blockedTile);
@@ -1572,19 +1574,98 @@
     return O.warp(mapId, sp.x, sp.y, "down", opts || { fade: true });
   };
 
-  // Party wipe / faint: back to the last care centre (or the map's heal point).
-  O.recover = function () {
-    const r = O.state.respawn || (map && map.healPoint ? { map: map.id, x: map.healPoint.x, y: map.healPoint.y, dir: "down" } : null);
-    if (!r) return Promise.resolve();
-    return O.warp(r.map, r.x, r.y, r.dir || "down", { fade: true }).then(function () {
-      if (MQ.Party && MQ.Party.heal) MQ.Party.heal();
-      if (MQ.Dialog) MQ.Dialog.say("You come round on a bench with a cup of tea you don't remember accepting.");
-    });
+  // Nobody left who can fight. (Battle.start uses the same test: hp > 0
+  // across the whole party, benched cats included.)
+  function partyWiped() {
+    const P = MQ.Party;
+    if (!P || !P.list || !P.list.length) return false;
+    for (let i = 0; i < P.list.length; i++) if (P.list[i] && P.list[i].hp > 0) return false;
+    return true;
+  }
+  O.partyWiped = partyWiped;
+
+  // Where a wipe puts you: the last care centre, else this map's heal point,
+  // else home. Before this there was no "else": lose a fight on a route
+  // before you had visited a kettle and nothing happened at all — you were
+  // left in the grass with a fainted party, and the next step rolled another
+  // battle you could not fight, and the next, and the next.
+  O.recoverPoint = function () {
+    let r = O.state.respawn || null;
+    if (!r && map && map.healPoint) r = { map: map.id, x: map.healPoint.x, y: map.healPoint.y, dir: "down" };
+    if (!r && MQ.Story && MQ.Story.START && MQ.World.has(MQ.Story.START.map)) r = { map: MQ.Story.START.map, x: MQ.Story.START.x, y: MQ.Story.START.y, dir: MQ.Story.START.dir || "down" };
+    if (!r && map) r = { map: map.id, x: 0, y: 0, dir: "down", spawn: true };
+    if (!r) return null;
+    const m = MQ.World.get(r.map);
+    if (!m) return null;
+    if (r.spawn || MQ.World.blocked(m, r.x, r.y, null)) {
+      const sp = MQ.World.spawnOf(m);
+      r = { map: r.map, x: sp.x, y: sp.y, dir: "down" };
+    }
+    return r;
   };
 
-  // A lost battle walks you back to the last place that had a kettle.
+  // Nearest tile within `radius` that the player could actually stand on.
+  function nearestFreeTile(x, y, radius) {
+    for (let r = 1; r <= radius; r++) {
+      for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+        if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
+        const tx = x + dx, ty = y + dy;
+        if (blockedTile(tx, ty)) continue;
+        if (!boxClear(tx * T + T / 2, ty * T + T / 2)) continue;
+        return { x: tx, y: ty };
+      }
+    }
+    return null;
+  }
+  O.nearestFreeTile = nearestFreeTile;
+
+  let recovering = null;
+  O.recover = function () {
+    if (recovering) return recovering;
+    const r = O.recoverPoint();
+    const heal = function () { if (MQ.Party && MQ.Party.heal) MQ.Party.heal(); };
+    if (!r) { heal(); return Promise.resolve(); }
+    // The whiteout tax the difficulty picker promises (SYSTEMS-SPEC: a tenth
+    // on Normal, nothing on Story).
+    let lost = 0;
+    const diffId = (MQ.Settings && MQ.Settings.get && MQ.Settings.get("difficulty")) || "normal";
+    const diff = MQ.Settings && MQ.Settings.DIFFICULTY ? MQ.Settings.DIFFICULTY[diffId] : null;
+    if (diff && diff.whiteoutLoss && MQ.Inventory && typeof MQ.Inventory.money === "number" && MQ.Inventory.money > 0) {
+      lost = Math.floor(MQ.Inventory.money * diff.whiteoutLoss);
+      if (lost > 0) { if (MQ.Inventory.addMoney) MQ.Inventory.addMoney(-lost); else MQ.Inventory.money -= lost; }
+    }
+    MQ.Events.emit("recover", { to: r, lost: lost });
+    recovering = O.warp(r.map, r.x, r.y, r.dir || "down", { fade: true }).then(function () {
+      // A heal point can have somebody standing on it (Mamgu at Y Berllan
+      // did); a bench is no good if you come round inside the nurse.
+      if (!boxClear(player.px, player.py)) {
+        const free = nearestFreeTile(player.x, player.y, 4);
+        if (free) O.place(free.x, free.y, player.dir);
+      }
+      heal();
+      recovering = null;
+      if (MQ.Dialog) {
+        const lines = ["You come round on a bench with a cup of tea you don't remember accepting."];
+        if (lost > 0) lines.push("Your wallet is " + (U.fmtMoney ? U.fmtMoney(lost) : lost + " credits") + " lighter. Somebody had to pay for the tea.");
+        return MQ.Dialog.say(lines);
+      }
+    }, function (e) { recovering = null; heal(); MQ.warn("[Overworld] recover failed", e); });
+    return recovering;
+  };
+
+  // A lost battle walks you back to the last place that had a kettle. If a
+  // cutscene is mid-flow (a story fight, a trainer's parting line) let it
+  // finish first, then go — warping out from under a script was its own bug.
+  let recoverAfterScript = false;
   MQ.Events.on("battle:end", function (d) {
     if (!d || d.outcome !== "lose") return;
+    if (MQ.Scenes.top() !== O && !MQ.Scenes.has(O.id)) return;
+    if (MQ.Script && MQ.Script.busy()) { recoverAfterScript = true; return; }
+    O.recover();
+  });
+  MQ.Events.on("script:end", function () {
+    if (!recoverAfterScript && !partyWiped()) return;
+    recoverAfterScript = false;
     if (MQ.Scenes.top() !== O && !MQ.Scenes.has(O.id)) return;
     O.recover();
   });

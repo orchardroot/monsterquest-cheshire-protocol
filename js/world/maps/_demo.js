@@ -6,7 +6,7 @@
   const W = MQ.World;
 
   W.defineTemplate("house_small", {
-    name: "House", region: "interior", outdoor: false, music: "house", ambience: "town",
+    name: "House", region: "interior", outdoor: false, music: "town_macc", ambience: "town",
     legend: { "#": "wall_interior", "_": "floor_wood", "r": "rug", "D": "mat_welcome", "b": "bed", "t": "table", "c": "chair", "s": "shelf", "T": "tv", " ": null },
     layers: {
       ground: [

@@ -195,7 +195,15 @@
         if (!World.inBounds(m, m.spawnPoint.x, m.spawnPoint.y)) err(P + "spawnPoint out of bounds");
         else if (T && World.isSolid(m, m.spawnPoint.x, m.spawnPoint.y)) err(P + "spawnPoint on solid tile");
       }
-      if (m.healPoint && !World.inBounds(m, m.healPoint.x, m.healPoint.y)) err(P + "healPoint out of bounds");
+      // heal point: where a whiteout puts you, so it has to be standable and empty
+      if (m.healPoint) {
+        if (!World.inBounds(m, m.healPoint.x, m.healPoint.y)) err(P + "healPoint out of bounds");
+        else {
+          if (T && World.isSolid(m, m.healPoint.x, m.healPoint.y)) err(P + "healPoint on solid tile");
+          const occ = npcs.filter(function (n) { return n && n.x === m.healPoint.x && n.y === m.healPoint.y; });
+          if (occ.length) err(P + "healPoint has NPC '" + occ[0].id + "' standing on it");
+        }
+      }
     }
     return errors;
   };

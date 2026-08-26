@@ -180,7 +180,7 @@
       expShare: true, doubles: false, noItems: false, oneAgent: false,
       overdriveCarry: false, weather: null, terrain: null
     });
-    const difficulty = opts.difficulty || (NS.Settings && NS.Settings.difficulty) || "normal";
+    const difficulty = opts.difficulty || settingsDifficulty();
     const seed = opts.seed === undefined ? (Date.now() ^ Math.floor(Math.random() * 1e9)) : opts.seed;
 
     const b = {
@@ -2028,10 +2028,21 @@
     });
   };
 
+  // The difficulty the player picked. Settings keeps it in its values table
+  // (Settings.get), not as a property — reading `.difficulty` always came
+  // back undefined, so every fight was Normal whatever the title said.
+  function settingsDifficulty() {
+    const S = NS.Settings;
+    if (!S) return "normal";
+    const v = S.get ? S.get("difficulty") : S.difficulty;
+    return v || "normal";
+  }
+  Battle.settingsDifficulty = settingsDifficulty;
+
   // Build an enemy party from trainer data, honouring difficulty and
   // the rematch ladder (SIDE-CONTENT §2.3 / SYSTEMS-SPEC §9).
   function buildTrainerParty(trainer, difficulty) {
-    const diff = BE.DIFF[difficulty || "normal"] || BE.DIFF.normal;
+    const diff = BE.DIFF[difficulty || settingsDifficulty()] || BE.DIFF.normal;
     let list = trainer.party || [];
     let tier = 0;
     if (NS.Flags && NS.Flags.get && trainer.id) tier = Number(NS.Flags.get("rematch_" + trainer.id)) || 0;

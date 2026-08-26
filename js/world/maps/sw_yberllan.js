@@ -73,7 +73,7 @@
     ambience: "forest", dialogue: "town_y_berllan",
     legend: ORCH, layers: c.layers(),
     spawnPoint: { x: 22, y: 33 },
-    healPoint: { x: 17, y: 32 },
+    healPoint: { x: 17, y: 33 },   // one south of Mamgu, not under her
     landmark: { name: "Y Berllan", x: 22, y: 24 },
     // Nothing is awake in the orchard until the drive is read. The Ch.6
     // script sets `orchard_open` and the wilds come back with it.

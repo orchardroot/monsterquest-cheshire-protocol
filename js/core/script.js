@@ -152,6 +152,9 @@
     if (!st) return P({ won: true, fled: false, caught: null, outcome: "win", result: { outcome: "win", fake: true } });
     return P(st(opts)).then(function (r) {
       r = r || { outcome: "win" };
+      // The overworld and the trainer card listen for this; without it a
+      // story fight that was lost never counted, and never sent you home.
+      if (MQ.Events && !r.stub) MQ.Events.emit("battle:end", r);
       return { won: r.outcome === "win" || r.outcome === "catch", fled: r.outcome === "run", caught: r.caught || null, lost: r.outcome === "lose", outcome: r.outcome, result: r };
     });
   };
