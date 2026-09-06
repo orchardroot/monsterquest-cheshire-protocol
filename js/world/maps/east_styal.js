@@ -159,7 +159,7 @@
       { x: 5, y: 22, item: "cat_token_7", n: 1, flag: "catgap_styal_1",
         say: "MEADOW goes along the sill above the race — four inches of wet stone over a fifty-tonne wheel — and comes back with a length of blue cable in her teeth." }
     ],
-    restPoints: [{ x: 33, y: 30, flag: "bigboy_sat_styal" }],
+    restPoints: [{ x: 33, y: 30, flag: "meadow_sat_styal" }],
     npcs: [
       { id: "npc_styal_enid", x: 5, y: 29, dir: "right", sprite: "npc_weaver", behaviour: "still", script: "east_styal_enid" },
       { id: "npc_styal_kwame", x: 38, y: 8, dir: "up", sprite: "npc_birder", behaviour: "still", script: "east_styal_kwame" },

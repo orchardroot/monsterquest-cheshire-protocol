@@ -135,7 +135,7 @@ module.exports = function (t, assert) {
   });
 
   t("traitWords describes standout traits without numbers", function () {
-    const good = D.makeMonster("bigboy", 10, { ivs: 15, temperament: "plain" });
+    const good = D.makeMonster("meadow", 10, { ivs: 15, temperament: "plain" });
     const words = D.traitWords(good);
     assert.ok(words.length >= 1);
     words.forEach(function (w) { assert.ok(!/\d/.test(w), "no numbers in '" + w + "'"); });

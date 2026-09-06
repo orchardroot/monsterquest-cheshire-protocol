@@ -380,26 +380,6 @@ function talkToNpc(npc) {
       });
       break;
     }
-    case "vet": {
-      showDialog([
-        "VET: Jim! I hoped you'd come by. It's BIGBOY — he's through the worst of it.",
-        "VET: Blocked urethra. We nearly lost him, and surgery was on the table. He fought instead.",
-        "VET: He's been sitting by the door for a week, listening for you.",
-        "BIGBOY headbutts your shin hard enough to bruise. He's ready.",
-        "BIGBOY joined the team!",
-        "VET: Mind him — he came back from the brink once. He doesn't intend to do it twice for free.",
-      ], {
-        onDone: () => {
-          const cat = makeMonster("bigboy", 18);
-          cat.nickname = "BIGBOY";
-          G.markCaught("bigboy");
-          if (G.party.length < 6) G.party.push(cat); else G.box.push(cat);
-          G.flags.bigboyJoined = true;
-          Sound.sfx("catch");
-        },
-      });
-      break;
-    }
     case "oracleboss": {
       const tr = TRAINERS[npc.trainerId];
       if (G.flags.oracleDefeated) {
@@ -1148,7 +1128,7 @@ function endBattle() {
   const res = b.result;
   const trainerKey = G.currentTrainerKey;
   const badge = b.trainer && b.trainer.badge;
-  for (const m of G.party) { delete m.faintedShown; delete m.brinkUsed; }
+  for (const m of G.party) { delete m.faintedShown; }
   G.battle = null;
   G.currentTrainerKey = null;
   G.mode = "overworld";

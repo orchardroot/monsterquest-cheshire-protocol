@@ -1,7 +1,7 @@
 // =============================================================
 // MonsterQuest v2 — MQ.NPC: overworld entities
 // Behaviours: still / wander / path / look / follow.
-// Trainer line-of-sight challenges, companion cats (MEADOW & BIGBOY)
+// Trainer line-of-sight challenges, the companion cat (MEADOW)
 // following the player on a breadcrumb trail, emote bubbles, and a
 // procedural fallback sprite so the world is legible before art lands.
 // Owned by: world workstream.  Consumers: MQ.Overworld, MQ.Interact.
@@ -267,11 +267,10 @@
     return sampleOut;
   };
 
-  // Companion cats. MEADOW is quick and darts ahead when you dawdle; BIGBOY
-  // lumbers and sits down at rest points (SIDE-CONTENT §3).
+  // Companion cat. MEADOW is quick and darts ahead when you dawdle, and sits
+  // down at rest points when you finally stop (SIDE-CONTENT §3).
   NPC.CATS = {
-    meadow: { id: "cat_meadow", sprite: "cat_meadow", name: "MEADOW", back: 30, speed: NPC.SPEED.cat, sniffs: "items" },
-    bigboy: { id: "cat_bigboy", sprite: "cat_bigboy", name: "BIGBOY", back: 58, speed: NPC.SPEED.lumber, sniffs: "creatures" }
+    meadow: { id: "cat_meadow", sprite: "cat_meadow", name: "MEADOW", back: 30, speed: NPC.SPEED.cat, sniffs: "items" }
   };
 
   NPC.makeCat = function (which) {
@@ -284,10 +283,10 @@
   };
 
   // Which cats are out? MQ.Cats decides when it exists; otherwise the story
-  // flag `cats_joined` puts both at your heel.
+  // flag `cats_joined` puts MEADOW at your heel.
   NPC.followingCats = function () {
     if (MQ.Cats && MQ.Cats.following) { const l = MQ.Cats.following(); if (l) return l; }
-    if (MQ.Flags.get("cats_joined")) return ["meadow", "bigboy"];
+    if (MQ.Flags.get("cats_joined")) return ["meadow"];
     return [];
   };
 
@@ -303,7 +302,7 @@
     if (d > 1.2) {
       const k = Math.min(1, maxStep / d);
       e.px += dx * k; e.py += dy * k;
-      e.animT += dt * (e.cat === "meadow" ? 1.3 : 0.85);
+      e.animT += dt * 1.3;
       e.frame = NPC.FRAMES[Math.floor(e.animT / 110) % 4];
       e.dir = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : (dy < 0 ? "up" : "down");
       e.sitting = false; e.idleT = 0;
@@ -316,29 +315,34 @@
     if (d > T * 12) {                              // teleport home if left behind (warps, cutscenes)
       e.px = p.px; e.py = p.py; e.idleT = 0;
     }
-    if (e.cat === "bigboy") bigboyIdle(e, dt, world);
-    else if (e.cat === "meadow") meadowIdle(e, dt, world);
+    // How long since *you* last moved. e.idleT is reset by the cat's own
+    // darting, so it can never measure a stop; this can.
+    if (e._lpx !== p.px || e._lpy !== p.py) { e._lpx = p.px; e._lpy = p.py; e.stillT = 0; }
+    else e.stillT = (e.stillT || 0) + dt;
+    if (e.cat === "meadow") meadowIdle(e, dt, world);
   };
 
-  function bigboyIdle(e, dt, world) {
-    const restNear = world.restPoint ? world.restPoint(e.x, e.y) : null;
-    if (e.idleT > 1500 && !e.sitting) {
-      e.sitting = true; e.sitT = 0;
-      if (MQ.Audio && MQ.Audio.sfx) MQ.Audio.sfx("cat_sit");
-      if (restNear) MQ.Events.emit("cat:rest", { cat: "bigboy", point: restNear });
-    }
-    if (e.sitting) { e.sitT += dt; e.bob = Math.sin(e.sitT / 700) * 0.7; }
-    if (e.idleT > 6000 && e.idleT < 6100) NPC.emote(e, "zzz", 1400);
-  }
-
+  // She darts ahead while you dawdle, gives up on you, and settles.
+  const DART_FROM = 1200, DART_UNTIL = 1800;
   function meadowIdle(e, dt, world) {
-    if (e.idleT > 1200) {
+    if (e.stillT < DART_FROM) {
+      e.dartT = 0; e.dartOffset = 0;
+    } else if (e.stillT < DART_UNTIL) {
       e.dartT += dt;
-      if (e.dartT > 900) {                         // dart ahead a little, then settle
+      if (e.dartT > 300) {
         e.dartT = 0;
         e.dartOffset = e.dartOffset ? 0 : -Math.min(48, e.trailBack);
       }
-    } else { e.dartT = 0; e.dartOffset = 0; }
+    } else if (e.dartOffset) {
+      e.dartOffset = 0;                            // come back and have done with it
+    } else if (!e.sitting && e.idleT > 150) {
+      const restNear = world.restPoint ? world.restPoint(e.x, e.y) : null;
+      e.sitting = true; e.sitT = 0;
+      if (MQ.Audio && MQ.Audio.sfx) MQ.Audio.sfx("cat_sit");
+      if (restNear) MQ.Events.emit("cat:rest", { cat: "meadow", point: restNear });
+    }
+    if (e.sitting) { e.sitT += dt; e.bob = Math.sin(e.sitT / 700) * 0.7; }
+    if (e.stillT > 6000 && e.stillT < 6100) NPC.emote(e, "zzz", 1400);
     e.sniffT += dt;
     if (e.sniffT > 1800) {
       e.sniffT = 0;
@@ -420,25 +424,20 @@
 
   // Draw a cat 18x14 with feet at (x,y).
   NPC.drawCat = function (ctx, which, dir, frame, x, y, sitting, bob) {
-    const big = which === "bigboy";
-    const w = big ? 11 : 8, h = big ? 9 : 7;
-    const body = big ? "#1a1a1e" : "#141418";
-    const patch = "#f0f0f4";
+    const w = 8, h = 7;
+    const body = "#141418";
     const top = Math.round(y - h - 4 + (bob || 0));
     const left = Math.round(x - w);
-    NPC.shadow(ctx, x, y, big ? 10 : 7);
+    NPC.shadow(ctx, x, y, 7);
     ctx.fillStyle = body;
     if (sitting) {
       ctx.fillRect(left + 2, top + 2, w * 2 - 4, h + 2);
       ctx.fillRect(left + 3, top - 4, w, 6);        // head up
-      if (big) { ctx.fillStyle = patch; ctx.fillRect(left + 4, top + 6, 5, 5); ctx.fillStyle = body; }
       ctx.fillRect(left + 4, top - 7, 2, 3); ctx.fillRect(left + 8, top - 7, 2, 3);   // ears
-      ctx.fillStyle = body;
       ctx.fillRect(left + w * 2 - 4, top + 4, 3, 7);  // curled tail
     } else {
       const step = frame === 1 ? -1 : frame === 2 ? 1 : 0;
       ctx.fillRect(left, top + 2, w * 2, h);
-      if (big) { ctx.fillStyle = patch; ctx.fillRect(left + 3, top + 5, 6, 5); ctx.fillStyle = body; }
       const hx = dir === "left" ? left - 3 : dir === "right" ? left + w * 2 - 4 : left + w - 4;
       ctx.fillRect(hx, top - 2, 7, 7);
       ctx.fillRect(hx, top - 5, 2, 3); ctx.fillRect(hx + 5, top - 5, 2, 3);
@@ -448,7 +447,7 @@
       ctx.fillRect(left + w * 2 - 4, top + h + 1, 3, 3 - step);
     }
     if (dir !== "up") {
-      ctx.fillStyle = big ? "#c8e070" : "#78e0b0";
+      ctx.fillStyle = "#78e0b0";
       const ex = dir === "left" ? left - 2 : dir === "right" ? left + w * 2 - 3 : left + w - 3;
       ctx.fillRect(ex, top + (sitting ? -2 : 0), 2, 2);
       ctx.fillRect(ex + (dir === "down" ? 4 : 3), top + (sitting ? -2 : 0), 2, 2);

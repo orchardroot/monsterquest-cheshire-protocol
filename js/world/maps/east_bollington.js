@@ -137,7 +137,7 @@
       { id: "npc_bollington_dev", x: 8, y: 21, dir: "up", sprite: "npc_dev", behaviour: "still",
         say: ["I work in the mill. Not in the mill — in the mill. Desk where a loom was.", "The floor still shakes at ten past the hour and nobody can tell me why."] }
     ],
-    restPoints: [{ x: 39, y: 17, flag: "bigboy_sat_bollington" }]
+    restPoints: [{ x: 39, y: 17, flag: "meadow_sat_bollington" }]
   });
 
   // --------------------------------------------------------- Kerridge Hill --
@@ -209,7 +209,7 @@
       { id: "npc_kerridge_bram", x: 17, y: 11, dir: "down", sprite: "npc_cultist", behaviour: "look", radius: 4, trainer: "tr_kerridge_hill_3", sight: 4, cond: "quest.case_02_white_nancy >= 1" },
       { id: "npc_kerridge_painter", x: 20, y: 6, dir: "left", sprite: "npc_kid", behaviour: "still", script: "east_kerridge_painter", cond: "quest.case_02_white_nancy >= 1 && time.night" }
     ],
-    restPoints: [{ x: 14, y: 5, flag: "bigboy_sat_kerridge" }],
+    restPoints: [{ x: 14, y: 5, flag: "meadow_sat_kerridge" }],
     triggers: [
       { x: 14, y: 7, w: 7, h: 1, script: "east_white_nancy", once: "white_nancy_seen", cond: "!white_nancy_seen" }
     ]

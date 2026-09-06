@@ -317,7 +317,7 @@
     { w: "sine", n: 55, to: 79, d: 0.09, v: 0.2, rep: { n: 3, every: 0.13, dn: 3, dv: 0.85 } }
   ]});
 
-  // ---- cats (MEADOW, BIGBOY and every stray in the county) ------------
+  // ---- cats (MEADOW and every stray in the county) ---------------------
   d("cat_meow", { vol: 0.8, rand: 0.1, grains: [
     { w: "sawtooth", n: 72, to: 79, d: 0.16, v: 0.16, lp: 1600, sweep: 2600, vib: 25, vibHz: 7 },
     { w: "sawtooth", n: 79, to: 69, t: 0.16, d: 0.3, v: 0.16, lp: 2400, sweep: 900, vib: 35, vibHz: 6 },

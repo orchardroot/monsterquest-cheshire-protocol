@@ -277,7 +277,7 @@ module.exports = function (t, assert) {
     });
   });
 
-  t("the region carries its share of pickups, signs, cat gaps and BIGBOY rest points", function () {
+  t("the region carries its share of pickups, signs, cat gaps and rest points", function () {
     let items = 0, signs = 0, npcs = 0, gaps = 0, rests = 0, tiles = 0;
     midIds.forEach(function (id) {
       const m = W.get(id);
@@ -292,12 +292,12 @@ module.exports = function (t, assert) {
     assert.ok(signs >= 50, "signs: " + signs);
     assert.ok(npcs >= 130, "npcs: " + npcs);
     assert.ok(gaps >= 8, "cat gaps: " + gaps);
-    assert.ok(rests >= 6, "BIGBOY rest points: " + rests);
+    assert.ok(rests >= 6, "rest points: " + rests);
     assert.ok(tiles >= 40000, "tiles: " + tiles);
-    assert.ok(MQ.Flags.get("bigboy_sat_tatton") === undefined, "rest flags are not pre-set");
+    assert.ok(MQ.Flags.get("meadow_sat_tatton") === undefined, "rest flags are not pre-set");
     const tatton = W.get("tatton_park");
-    assert.ok((tatton.restPoints || []).some(function (r) { return r.flag === "bigboy_sat_tatton"; }),
-      "DESIGN-INDEX: bigboy_sat_tatton lives at Tatton");
+    assert.ok((tatton.restPoints || []).some(function (r) { return r.flag === "meadow_sat_tatton"; }),
+      "DESIGN-INDEX: meadow_sat_tatton lives at Tatton");
   });
 
   t("the Jodrell dish dungeon is a climb: grounds -> control room -> tower -> bowl", function () {

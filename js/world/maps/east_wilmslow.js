@@ -196,7 +196,7 @@
       { x: 21, y: 28, item: "cat_token_6", n: 1, flag: "catgap_wilmslow_1",
         say: "MEADOW slides through the box hedge into somebody's immaculate garden, walks the whole length of it on the flower bed, and returns with a look of complete moral clarity." }
     ],
-    restPoints: [{ x: 29, y: 19, flag: "bigboy_sat_wilmslow" }],
+    restPoints: [{ x: 29, y: 19, flag: "meadow_sat_wilmslow" }],
     npcs: [
       { id: "npc_wilmslow_ines", x: 33, y: 19, dir: "left", sprite: "npc_dev", behaviour: "look", radius: 3, trainer: "tr_wilmslow_1", sight: 3 },
       { id: "npc_wilmslow_osk", x: 12, y: 24, dir: "up", sprite: "npc_dev", behaviour: "look", radius: 3, trainer: "tr_wilmslow_2", sight: 3 },

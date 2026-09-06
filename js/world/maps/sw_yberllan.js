@@ -115,14 +115,12 @@
       { x: 10, y: 19, item: "perry_pear", n: 3, flag: "catgap_y_berllan_1",
         say: "MEADOW goes under the orchard gate without breaking stride and comes back with a pear that is far too big for her and entirely her own business." }
     ],
-    restPoints: [{ x: 20, y: 20, flag: "bigboy_sat_berllan" }],
+    restPoints: [{ x: 20, y: 20, flag: "meadow_sat_berllan" }],
     npcs: [
       { id: "npc_y_berllan_mamgu", x: 17, y: 32, dir: "down", sprite: "mamgu", behaviour: "still", script: "sw_mamgu" },
       { id: "npc_y_berllan_dai", x: 27, y: 31, dir: "down", sprite: "dai", behaviour: "still", trainer: "tr_y_berllan_1", sight: 0, script: "sw_dai" },
       { id: "cat_meadow_orchard", x: 12, y: 18, dir: "down", sprite: "cat_meadow", behaviour: "wander", radius: 4, cond: "orchard_open",
-        say: ["MEADOW is hunting in the long grass at the end of the rows and has not looked up in forty minutes."] },
-      { id: "cat_bigboy_orchard", x: 20, y: 20, dir: "down", sprite: "cat_bigboy", behaviour: "still", cond: "orchard_open",
-        say: ["BIGBOY has found the one flagstone the sun has been on all afternoon and has no further plans."] }
+        say: ["MEADOW is hunting in the long grass at the end of the rows and has not looked up in forty minutes."] }
     ],
     triggers: [
       { x: 21, y: 30, w: 3, h: 1, script: "sw_berllan_arrival", once: "berllan_arrival", cond: "!berllan_arrival", kind: "step" }
@@ -437,7 +435,7 @@
     triggers: [
       { x: 19, y: 16, w: 3, h: 1, script: "sw_coed_guardian", once: "coed_guardian", cond: "!coed_guardian && welsh_word_learned", kind: "step" }
     ],
-    restPoints: [{ x: 21, y: 15, flag: "bigboy_sat_coed" }]
+    restPoints: [{ x: 21, y: 15, flag: "meadow_sat_coed" }]
   });
 
   // ================================================= the lane to the sea ===
@@ -488,7 +486,7 @@
       { x: 10, y: 6, item: "sloe", n: 4, flag: "item_y_berllan_aberaeron_lane_1" },
       { x: 38, y: 20, item: "blackberry", n: 4, hidden: true, flag: "item_y_berllan_aberaeron_lane_2" }
     ],
-    restPoints: [{ x: 22, y: 22, flag: "bigboy_sat_lane" }],
+    restPoints: [{ x: 22, y: 22, flag: "meadow_sat_lane" }],
     npcs: [
       { id: "npc_y_berllan_lane_walker", x: 26, y: 13, dir: "left", sprite: "npc_walker", behaviour: "path", path: [[16, 13], [36, 13]], pathMode: "pingpong",
         say: ["Two miles down, two miles back, every day since I retired.", "Prynhawn da. Good afternoon. Either does."] }
@@ -552,7 +550,7 @@
       { x: 29, y: 3, item: "capsule_brine", n: 3, hidden: true, flag: "item_aberaeron_2" },
       { x: 6, y: 24, item: "honey", n: 3, hidden: true, flag: "item_aberaeron_3" }
     ],
-    restPoints: [{ x: 26, y: 22, flag: "bigboy_sat_aberaeron" }],
+    restPoints: [{ x: 26, y: 22, flag: "meadow_sat_aberaeron" }],
     npcs: [
       { id: "npc_aberaeron_lowri", x: 24, y: 21, dir: "up", sprite: "npc_birder", behaviour: "look", radius: 4, trainer: "tr_aberaeron_1", sight: 4, script: "sw_aberaeron_lowri" },
       { id: "npc_aberaeron_icecream", x: 14, y: 22, dir: "down", sprite: "npc_shopkeep", behaviour: "still", shop: "shop_aberaeron",

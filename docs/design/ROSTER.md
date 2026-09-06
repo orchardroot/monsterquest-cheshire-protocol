@@ -32,228 +32,227 @@ Dex order = roughly the order the player meets them. `overdrive` = the line's Ov
 | 008 | `stokerel` | STOKEREL | fire | mill | unique | → `furnacore` level:34 | mid | `firebox_overload` | Furnace-doored bruiser; shovels its own coal | Ch2 (evolve) |
 | 009 | `furnacore` | FURNACORE | fire/electric | mill | unique | — | high | `firebox_overload` | Mill engine come alive: firebox, flywheel, arcing brushes | Ch4 (evolve) |
 | 010 | `meadow` | MEADOW | normal | town | unique | — | mid | `zoomies` | Small black cat, absurdly fast; ability `slipstream`; never boxed | Ch1 gift |
-| 011 | `bigboy` | BIGBOY | normal | town | unique | — | high | `brink_roar` | Huge black-and-white cat; ability `back_from_the_brink`; sits down when he likes | Ch1 gift |
 
 ### 1b. Chapter 1 belt — Macclesfield, Bollington, Prestbury, Poynton, Lyme (Lv 3–8)
 
 | # | id | Name | Types | Habitat | Rarity | Evolution | Tier | Overdrive | Concept | First found |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 012 | `nibbit` | NIBBIT | normal | canal | common | → `gnawlord` level:18 | low | `od_normal` | Towpath rat with a bottle-top shield | Ch1 R1 |
-| 013 | `gnawlord` | GNAWLORD | normal | canal | uncommon | — | mid | `od_normal` | Rat king of the Hovis mill cellars | Ch3 |
-| 014 | `flitchick` | FLITCHICK | normal/flying | town | common | → `galewing` level:18 | low | `od_flying` | Treacle Market pigeon; steals pastry | Ch1 Macclesfield |
-| 015 | `galewing` | GALEWING | normal/flying | moor | uncommon | — | mid | `od_flying` | Broad-winged hill pigeon riding the Kerridge updraught | Ch3 |
-| 016 | `flitmoth` | FLITMOTH | bug | canal | common (night) | → `bollinmoth` level:14 | low | `od_bug` | Canal silk-moth; swarms Clarence Mill lights | Ch1 R1 night |
-| 017 | `bollinmoth` | BOLLINMOTH | bug/flying | canal | uncommon (night) | — | mid | `od_bug` | Big grey Bollin moth with mill-window eyespots | Ch2 R4 night |
-| 018 | `bobbinet` | BOBBINET | bug/psychic | silk | uncommon | → `jacquarda` level:30 | low | `od_psychic` | Loom-sprite: a bobbin that runs its own pattern | Ch1 Paradise Mill |
-| 019 | `jacquarda` | JACQUARDA | bug/psychic | silk | rare | — | high | `od_psychic` | Punch-card weaver; the first programmable thing in Cheshire | Ch5 |
-| 020 | `towpaddle` | TOWPADDLE | water | canal | common | → `mallardier` level:20 | low | `od_water` | Canal duckling in a bread-bag | Ch1 R1 |
-| 021 | `mallardier` | MALLARDIER | water/flying | canal | uncommon | — | mid | `od_water` | Drake in a lock-keeper's cap; commandeers narrowboats | Ch3 |
-| 022 | `sootling` | SOOTLING | fire | mill | common | → `chimnyx` level:24 | low | `od_fire` | Chimney-soot imp from the mill stacks | Ch1 Macclesfield |
-| 023 | `chimnyx` | CHIMNYX | fire/ghost | mill | uncommon | — | mid | `od_fire` | Ghost of a chimney sweep's brush, still smouldering | Ch4 |
-| 024 | `nancylith` | NANCYLITH | rock | moor | rare | — | mid | `od_rock` | Sugar-loaf folly spirit off White Nancy; repainted every year | Ch1 Kerridge Hill |
-| 025 | `mistlop` | MISTLOP | normal | moor | common | → `harrowlop` level:22 | low | `od_normal` | Moor hare that hides in mist | Ch1 R2 |
-| 026 | `harrowlop` | HARROWLOP | normal/ground | moor | uncommon | — | mid | `od_ground` | Gritstone hare with quarry-slab feet | Ch3 |
-| 027 | `pitpony` | PITPONY | ground | mill | common | → `coalcob` level:26 | low | `od_ground` | Poynton pit pony, lamp on its brow | Ch1 Poynton |
-| 028 | `coalcob` | COALCOB | ground/fire | mill | uncommon | — | mid | `od_ground` | Coal-black cob that breathes seam gas | Ch4 |
-| 029 | `sparkit` | SPARKIT | electric | town | common | → `fulgurcat` level:22 | low | `od_electric` | Static kitten that lives behind CCTV boxes | Ch1 Prestbury |
-| 030 | `fulgurcat` | FULGURCAT | electric | town | uncommon | — | mid | `od_electric` | Lightning wildcat; fur stands on end permanently | Ch3 |
-| 031 | `puddlish` | PUDDLISH | water | mere | common | → `torrentide` level:20 | low | `od_water` | Poynton Pool minnow (fishing tutorial) | Ch1 Poynton Pool |
-| 032 | `torrentide` | TORRENTIDE | water | river | uncommon | — | mid | `od_water` | Weir-jumping river fish | Ch3 |
-| 033 | `peepcam` | PEEPCAM | cyber | town | uncommon | → `panoptix` level:30 | low | `od_cyber` | A CCTV camera that grew legs; Prestbury has too many | Ch1 Prestbury |
-| 034 | `panoptix` | PANOPTIX | cyber/psychic | urban | rare | — | high | `od_cyber` | Many-lensed watcher; sees every stat stage | Ch5 |
-| 035 | `grousel` | GROUSEL | flying/ground | moor | common | → `moorcock` level:26 | low | `od_flying` | Red grouse in the heather | Ch1 R3 |
-| 036 | `moorcock` | MOORCOCK | flying/ground | moor | uncommon | — | mid | `od_flying` | Strutting moor bird with a fell-runner's stamina | Ch4 |
-| 037 | `mistewe` | MISTEWE | normal | moor | common | — | mid | `od_normal` | Mist-sheep of the Peak fringe; ability `thick_fleece` | Ch1 R3 |
-| 038 | `piphart` | PIPHART | normal | estate | common | → `stagwire` level:24 | low | `od_electric` | Lyme/Tatton fawn; MEADOW chases them | Ch1 Lyme Park |
-| 039 | `stagwire` | STAGWIRE | normal/electric | estate | uncommon | — | mid | `od_electric` | Red stag whose antlers pick up the signal; census species (8 antler patterns) | Ch3 Tatton |
+| 011 | `nibbit` | NIBBIT | normal | canal | common | → `gnawlord` level:18 | low | `od_normal` | Towpath rat with a bottle-top shield | Ch1 R1 |
+| 012 | `gnawlord` | GNAWLORD | normal | canal | uncommon | — | mid | `od_normal` | Rat king of the Hovis mill cellars | Ch3 |
+| 013 | `flitchick` | FLITCHICK | normal/flying | town | common | → `galewing` level:18 | low | `od_flying` | Treacle Market pigeon; steals pastry | Ch1 Macclesfield |
+| 014 | `galewing` | GALEWING | normal/flying | moor | uncommon | — | mid | `od_flying` | Broad-winged hill pigeon riding the Kerridge updraught | Ch3 |
+| 015 | `flitmoth` | FLITMOTH | bug | canal | common (night) | → `bollinmoth` level:14 | low | `od_bug` | Canal silk-moth; swarms Clarence Mill lights | Ch1 R1 night |
+| 016 | `bollinmoth` | BOLLINMOTH | bug/flying | canal | uncommon (night) | — | mid | `od_bug` | Big grey Bollin moth with mill-window eyespots | Ch2 R4 night |
+| 017 | `bobbinet` | BOBBINET | bug/psychic | silk | uncommon | → `jacquarda` level:30 | low | `od_psychic` | Loom-sprite: a bobbin that runs its own pattern | Ch1 Paradise Mill |
+| 018 | `jacquarda` | JACQUARDA | bug/psychic | silk | rare | — | high | `od_psychic` | Punch-card weaver; the first programmable thing in Cheshire | Ch5 |
+| 019 | `towpaddle` | TOWPADDLE | water | canal | common | → `mallardier` level:20 | low | `od_water` | Canal duckling in a bread-bag | Ch1 R1 |
+| 020 | `mallardier` | MALLARDIER | water/flying | canal | uncommon | — | mid | `od_water` | Drake in a lock-keeper's cap; commandeers narrowboats | Ch3 |
+| 021 | `sootling` | SOOTLING | fire | mill | common | → `chimnyx` level:24 | low | `od_fire` | Chimney-soot imp from the mill stacks | Ch1 Macclesfield |
+| 022 | `chimnyx` | CHIMNYX | fire/ghost | mill | uncommon | — | mid | `od_fire` | Ghost of a chimney sweep's brush, still smouldering | Ch4 |
+| 023 | `nancylith` | NANCYLITH | rock | moor | rare | — | mid | `od_rock` | Sugar-loaf folly spirit off White Nancy; repainted every year | Ch1 Kerridge Hill |
+| 024 | `mistlop` | MISTLOP | normal | moor | common | → `harrowlop` level:22 | low | `od_normal` | Moor hare that hides in mist | Ch1 R2 |
+| 025 | `harrowlop` | HARROWLOP | normal/ground | moor | uncommon | — | mid | `od_ground` | Gritstone hare with quarry-slab feet | Ch3 |
+| 026 | `pitpony` | PITPONY | ground | mill | common | → `coalcob` level:26 | low | `od_ground` | Poynton pit pony, lamp on its brow | Ch1 Poynton |
+| 027 | `coalcob` | COALCOB | ground/fire | mill | uncommon | — | mid | `od_ground` | Coal-black cob that breathes seam gas | Ch4 |
+| 028 | `sparkit` | SPARKIT | electric | town | common | → `fulgurcat` level:22 | low | `od_electric` | Static kitten that lives behind CCTV boxes | Ch1 Prestbury |
+| 029 | `fulgurcat` | FULGURCAT | electric | town | uncommon | — | mid | `od_electric` | Lightning wildcat; fur stands on end permanently | Ch3 |
+| 030 | `puddlish` | PUDDLISH | water | mere | common | → `torrentide` level:20 | low | `od_water` | Poynton Pool minnow (fishing tutorial) | Ch1 Poynton Pool |
+| 031 | `torrentide` | TORRENTIDE | water | river | uncommon | — | mid | `od_water` | Weir-jumping river fish | Ch3 |
+| 032 | `peepcam` | PEEPCAM | cyber | town | uncommon | → `panoptix` level:30 | low | `od_cyber` | A CCTV camera that grew legs; Prestbury has too many | Ch1 Prestbury |
+| 033 | `panoptix` | PANOPTIX | cyber/psychic | urban | rare | — | high | `od_cyber` | Many-lensed watcher; sees every stat stage | Ch5 |
+| 034 | `grousel` | GROUSEL | flying/ground | moor | common | → `moorcock` level:26 | low | `od_flying` | Red grouse in the heather | Ch1 R3 |
+| 035 | `moorcock` | MOORCOCK | flying/ground | moor | uncommon | — | mid | `od_flying` | Strutting moor bird with a fell-runner's stamina | Ch4 |
+| 036 | `mistewe` | MISTEWE | normal | moor | common | — | mid | `od_normal` | Mist-sheep of the Peak fringe; ability `thick_fleece` | Ch1 R3 |
+| 037 | `piphart` | PIPHART | normal | estate | common | → `stagwire` level:24 | low | `od_electric` | Lyme/Tatton fawn; MEADOW chases them | Ch1 Lyme Park |
+| 038 | `stagwire` | STAGWIRE | normal/electric | estate | uncommon | — | mid | `od_electric` | Red stag whose antlers pick up the signal; census species (8 antler patterns) | Ch3 Tatton |
 
 ### 1c. Chapter 2 belt — Wilmslow, Styal, Lindow Moss, Alderley Edge, Edge Caverns (Lv 8–14)
 
 | # | id | Name | Types | Habitat | Rarity | Evolution | Tier | Overdrive | Concept | First found |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 040 | `sheepwire` | SHEEPWIRE | electric | estate | common | → `ramvolt` level:24 | low | `od_electric` | Farm sheep with a fleece full of static; the Stuffers farm them for compute | Ch2 R6 |
-| 041 | `ramvolt` | RAMVOLT | electric | estate | uncommon | — | mid | `od_electric` | Ram with copper-coil horns | Ch4 |
-| 042 | `heronet` | HERONET | water/flying | river | common | → `herowing` level:22 | low | `od_water` | Bollin heron chick, all legs | Ch2 The Carrs |
-| 043 | `herowing` | HEROWING | water/flying | river | uncommon | — | mid | `od_water` | Grey heron of the Trentabank heronry | Ch3 |
-| 044 | `sluiceling` | SLUICELING | water | mill | common | → `millrace` level:25 | low | `od_water` | Water-wheel sprite from Quarry Bank's sluices | Ch2 Styal |
-| 045 | `millrace` | MILLRACE | water/rock | mill | uncommon | — | mid | `od_water` | Iron-wheel golem; turns at 3am if it must | Ch4 |
-| 046 | `puppetacct` | PUPPETACCT | cyber | fog | common (fog only) | — | low | `od_cyber` | Credential Stuffer puppet; spawns and despawns like a bad login | Ch2 Lindow fog |
-| 047 | `botling` | BOTLING | cyber/bug | cyber | uncommon | → `botnetle` level:22 | low | `od_cyber` | Botnet beetle nesting in a smart fridge | Ch2 Styal |
-| 048 | `botnetle` | BOTNETLE | cyber/bug | cyber | uncommon | — | high | `od_cyber` | Armoured C2 beetle; the tuba nest at Bollington | Ch5 |
-| 049 | `mistwisp` | MISTWISP | ghost/poison | bog | common (night) | → `phantasmal` level:30 | low | `od_ghost` | Bog wisp of Lindow Moss | Ch2 Lindow |
-| 050 | `phantasmal` | PHANTASMAL | ghost/poison | bog | uncommon | — | mid | `od_ghost` | Marsh-gas phantom that keeps a data lake | Ch6 |
-| 051 | `bogleap` | BOGLEAP | water/poison | bog | common | → `toadlore` level:26 | low | `od_water` | Peat-brown newt-toad | Ch2 Lindow |
-| 052 | `toadlore` | TOADLORE | water/poison | bog | uncommon | — | high | `od_water` | Great toad that remembers every story told on the Moss | Ch4 |
-| 053 | `peatkin` | PEATKIN | ground/ghost | bog | uncommon | → `lindowan` level:28 | low | `od_ghost` | Preserved husk in the peat | Ch2 Lindow |
-| 054 | `lindowan` | LINDOWAN | ground/ghost | bog | rare | — | high | `od_ghost` | The Preserved One — Lindow's bog-body guardian (mini-boss) | Ch2 Lindow boss |
-| 055 | `cuprabug` | CUPRABUG | bug/rock | cave | common | → `verdigrit` level:26 | low | `od_rock` | Copper-mine beetle with a verdigris shell | Ch2 Edge Caverns |
-| 056 | `verdigrit` | VERDIGRIT | bug/rock | cave | uncommon | — | mid | `od_rock` | Ore-armoured stag beetle; ability `stonemason` | Ch5 |
-| 057 | `squeakwing` | SQUEAKWING | poison/flying | cave | common | → `shriekwing` level:22 | low | `od_flying` | Pipistrelle with a sour bite | Ch2 Edge Caverns |
-| 058 | `shriekwing` | SHRIEKWING | poison/flying | cave | uncommon | — | mid | `od_poison` | Cave bat whose shriek curdles milk | Ch4 |
-| 059 | `gloamite` | GLOAMITE | ghost/rock | cave | uncommon | → `gloamguard` location:alderley_edge_caverns_b3 | low | `od_rock` | A sleeping knight's helm that dreams | Ch2 Edge Caverns |
-| 060 | `gloamguard` | GLOAMGUARD | ghost/rock | cave | rare | — | high | `od_rock` | One of the Edge's sleeping knights, woken early | Ch8 |
-| 061 | `owlume` | OWLUME | flying/psychic | forest | uncommon (dusk/night) | → `strigyx` level:26 | low | `od_psychic` | Sandhills owlet with lamp-glow eyes | Ch2 R7 dusk |
-| 062 | `strigyx` | STRIGYX | flying/psychic | forest | rare | — | high | `od_psychic` | Great owl that reads the wind's mind | Ch8 Arley night |
-| 063 | `webshade` | WEBSHADE | bug/ghost | mill | common (night) | → `widowisp` level:27 | low | `od_bug` | Cobweb spider from a derelict weaving shed | Ch2 Styal night |
-| 064 | `widowisp` | WIDOWISP | bug/ghost | mill | uncommon | — | high | `od_bug` | Ghost-silk spider; ability `silk_weave` | Ch6 |
-| 065 | `merlynx` | MERLYNX | psychic/ghost | cave | legendary | — | legendary | `knights_waking` | The Wizard's cat; guards the Cave of the Knights and MEADOW's opinion of everyone | Ch2 sighting; PG catchable |
+| 039 | `sheepwire` | SHEEPWIRE | electric | estate | common | → `ramvolt` level:24 | low | `od_electric` | Farm sheep with a fleece full of static; the Stuffers farm them for compute | Ch2 R6 |
+| 040 | `ramvolt` | RAMVOLT | electric | estate | uncommon | — | mid | `od_electric` | Ram with copper-coil horns | Ch4 |
+| 041 | `heronet` | HERONET | water/flying | river | common | → `herowing` level:22 | low | `od_water` | Bollin heron chick, all legs | Ch2 The Carrs |
+| 042 | `herowing` | HEROWING | water/flying | river | uncommon | — | mid | `od_water` | Grey heron of the Trentabank heronry | Ch3 |
+| 043 | `sluiceling` | SLUICELING | water | mill | common | → `millrace` level:25 | low | `od_water` | Water-wheel sprite from Quarry Bank's sluices | Ch2 Styal |
+| 044 | `millrace` | MILLRACE | water/rock | mill | uncommon | — | mid | `od_water` | Iron-wheel golem; turns at 3am if it must | Ch4 |
+| 045 | `puppetacct` | PUPPETACCT | cyber | fog | common (fog only) | — | low | `od_cyber` | Credential Stuffer puppet; spawns and despawns like a bad login | Ch2 Lindow fog |
+| 046 | `botling` | BOTLING | cyber/bug | cyber | uncommon | → `botnetle` level:22 | low | `od_cyber` | Botnet beetle nesting in a smart fridge | Ch2 Styal |
+| 047 | `botnetle` | BOTNETLE | cyber/bug | cyber | uncommon | — | high | `od_cyber` | Armoured C2 beetle; the tuba nest at Bollington | Ch5 |
+| 048 | `mistwisp` | MISTWISP | ghost/poison | bog | common (night) | → `phantasmal` level:30 | low | `od_ghost` | Bog wisp of Lindow Moss | Ch2 Lindow |
+| 049 | `phantasmal` | PHANTASMAL | ghost/poison | bog | uncommon | — | mid | `od_ghost` | Marsh-gas phantom that keeps a data lake | Ch6 |
+| 050 | `bogleap` | BOGLEAP | water/poison | bog | common | → `toadlore` level:26 | low | `od_water` | Peat-brown newt-toad | Ch2 Lindow |
+| 051 | `toadlore` | TOADLORE | water/poison | bog | uncommon | — | high | `od_water` | Great toad that remembers every story told on the Moss | Ch4 |
+| 052 | `peatkin` | PEATKIN | ground/ghost | bog | uncommon | → `lindowan` level:28 | low | `od_ghost` | Preserved husk in the peat | Ch2 Lindow |
+| 053 | `lindowan` | LINDOWAN | ground/ghost | bog | rare | — | high | `od_ghost` | The Preserved One — Lindow's bog-body guardian (mini-boss) | Ch2 Lindow boss |
+| 054 | `cuprabug` | CUPRABUG | bug/rock | cave | common | → `verdigrit` level:26 | low | `od_rock` | Copper-mine beetle with a verdigris shell | Ch2 Edge Caverns |
+| 055 | `verdigrit` | VERDIGRIT | bug/rock | cave | uncommon | — | mid | `od_rock` | Ore-armoured stag beetle; ability `stonemason` | Ch5 |
+| 056 | `squeakwing` | SQUEAKWING | poison/flying | cave | common | → `shriekwing` level:22 | low | `od_flying` | Pipistrelle with a sour bite | Ch2 Edge Caverns |
+| 057 | `shriekwing` | SHRIEKWING | poison/flying | cave | uncommon | — | mid | `od_poison` | Cave bat whose shriek curdles milk | Ch4 |
+| 058 | `gloamite` | GLOAMITE | ghost/rock | cave | uncommon | → `gloamguard` location:alderley_edge_caverns_b3 | low | `od_rock` | A sleeping knight's helm that dreams | Ch2 Edge Caverns |
+| 059 | `gloamguard` | GLOAMGUARD | ghost/rock | cave | rare | — | high | `od_rock` | One of the Edge's sleeping knights, woken early | Ch8 |
+| 060 | `owlume` | OWLUME | flying/psychic | forest | uncommon (dusk/night) | → `strigyx` level:26 | low | `od_psychic` | Sandhills owlet with lamp-glow eyes | Ch2 R7 dusk |
+| 061 | `strigyx` | STRIGYX | flying/psychic | forest | rare | — | high | `od_psychic` | Great owl that reads the wind's mind | Ch8 Arley night |
+| 062 | `webshade` | WEBSHADE | bug/ghost | mill | common (night) | → `widowisp` level:27 | low | `od_bug` | Cobweb spider from a derelict weaving shed | Ch2 Styal night |
+| 063 | `widowisp` | WIDOWISP | bug/ghost | mill | uncommon | — | high | `od_bug` | Ghost-silk spider; ability `silk_weave` | Ch6 |
+| 064 | `merlynx` | MERLYNX | psychic/ghost | cave | legendary | — | legendary | `knights_waking` | The Wizard's cat; guards the Cave of the Knights and MEADOW's opinion of everyone | Ch2 sighting; PG catchable |
 
 ### 1d. Chapter 3 belt — Knutsford, Tatton, Rostherne, Chelford (Lv 13–18)
 
 | # | id | Name | Types | Habitat | Rarity | Evolution | Tier | Overdrive | Concept | First found |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 066 | `quillet` | QUILLET | psychic | town | common | → `scriptorix` level:28 | low | `od_psychic` | Inkwell sprite from the Gaskell tower | Ch3 Knutsford |
-| 067 | `scriptorix` | SCRIPTORIX | psychic | town | uncommon | — | high | `od_psychic` | A manuscript that writes back; runs Knutsford's rumour network | Ch5 |
-| 068 | `perchip` | PERCHIP | water | mere | common | → `piketide` level:22 | low | `od_water` | Mere perch, stripy and cross | Ch3 Tatton Mere |
-| 069 | `piketide` | PIKETIDE | water | mere | uncommon | — | mid | `od_water` | Tatton pike; the carp-line's worst enemy | Ch4 |
-| 070 | `swanling` | SWANLING | water/flying | mere | common | → `swanguard` level:26 | low | `od_flying` | Cygnet with a bad temper | Ch3 Tatton |
-| 071 | `swanguard` | SWANGUARD | water/flying | mere | uncommon | — | high | `od_flying` | Mute swan of the Knutsford Gate; breaks arms, apparently | Ch6 |
-| 072 | `manorwraith` | MANORWRAITH | ghost | estate | rare (night) | — | high | `od_ghost` | Tudor ghost trainer of the Old Hall | Ch3 Tatton night |
-| 073 | `bellmere` | BELLMERE | water/ghost | mere | rare | — | mid | `od_ghost` | The drowned bell of Rostherne; rings under the water | Ch3 Rostherne |
-| 074 | `prickpip` | PRICKPIP | grass | heath | common | → `bramblehog` level:20 | low | `od_grass` | Hedgehog with bramble spines | Ch3 R8 |
-| 075 | `bramblehog` | BRAMBLEHOG | grass | heath | uncommon | → `thornarch` item:billhook_charm | mid | `od_grass` | Bramble-backed hedgehog | Ch4 |
-| 076 | `thornarch` | THORNARCH | grass | heath | rare | — | high | `od_grass` | Laid-hedge colossus; ability `deep_roots` | Ch8 Tarporley |
+| 065 | `quillet` | QUILLET | psychic | town | common | → `scriptorix` level:28 | low | `od_psychic` | Inkwell sprite from the Gaskell tower | Ch3 Knutsford |
+| 066 | `scriptorix` | SCRIPTORIX | psychic | town | uncommon | — | high | `od_psychic` | A manuscript that writes back; runs Knutsford's rumour network | Ch5 |
+| 067 | `perchip` | PERCHIP | water | mere | common | → `piketide` level:22 | low | `od_water` | Mere perch, stripy and cross | Ch3 Tatton Mere |
+| 068 | `piketide` | PIKETIDE | water | mere | uncommon | — | mid | `od_water` | Tatton pike; the carp-line's worst enemy | Ch4 |
+| 069 | `swanling` | SWANLING | water/flying | mere | common | → `swanguard` level:26 | low | `od_flying` | Cygnet with a bad temper | Ch3 Tatton |
+| 070 | `swanguard` | SWANGUARD | water/flying | mere | uncommon | — | high | `od_flying` | Mute swan of the Knutsford Gate; breaks arms, apparently | Ch6 |
+| 071 | `manorwraith` | MANORWRAITH | ghost | estate | rare (night) | — | high | `od_ghost` | Tudor ghost trainer of the Old Hall | Ch3 Tatton night |
+| 072 | `bellmere` | BELLMERE | water/ghost | mere | rare | — | mid | `od_ghost` | The drowned bell of Rostherne; rings under the water | Ch3 Rostherne |
+| 073 | `prickpip` | PRICKPIP | grass | heath | common | → `bramblehog` level:20 | low | `od_grass` | Hedgehog with bramble spines | Ch3 R8 |
+| 074 | `bramblehog` | BRAMBLEHOG | grass | heath | uncommon | → `thornarch` item:billhook_charm | mid | `od_grass` | Bramble-backed hedgehog | Ch4 |
+| 075 | `thornarch` | THORNARCH | grass | heath | rare | — | high | `od_grass` | Laid-hedge colossus; ability `deep_roots` | Ch8 Tarporley |
 
 ### 1e. Chapter 4 belt — Holmes Chapel, Jodrell grounds, Congleton, the Cloud, Mow Cop, Little Moreton (Lv 17–22)
 
 | # | id | Name | Types | Habitat | Rarity | Evolution | Tier | Overdrive | Concept | First found |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 077 | `poltergrid` | POLTERGRID | cyber/ghost | rail | rare (night) | — | high | `od_cyber` | Nests in signal-box telemetry noise; moves the levers at 03:00 | Ch4 Holmes Chapel night |
-| 078 | `keystone` | KEYSTONE | rock | rail | common | → `viaductus` level:30 | low | `od_rock` | Viaduct-arch sprite; one per arch at Twemlow | Ch4 R10 |
-| 079 | `viaductus` | VIADUCTUS | rock | rail | uncommon | — | high | `od_rock` | Twenty-three arches walking | Ch7 |
-| 080 | `dishlet` | DISHLET | cyber/psychic | sky | uncommon | → `parabolus` location:jodrell_bank | low | `od_cyber` | Small radio-dish creature; turns to face the signal | Ch4 Jodrell grounds |
-| 081 | `parabolus` | PARABOLUS | cyber/psychic | sky | rare | — | high | `od_cyber` | Lovell-dish sentinel; listens for seventy years | Ch10 |
-| 082 | `pulsaris` | PULSARIS | electric/psychic | sky | rare (night) | — | high | `od_electric` | Static tuned to a pulsar; ticks in a fixed period | Ch4 Jodrell night |
-| 083 | `cubbin` | CUBBIN | normal/ground | town | uncommon | → `bruinhall` level:28 | low | `od_ground` | Beartown cub; the town sold its Bible for it | Ch4 Congleton |
-| 084 | `bruinhall` | BRUINHALL | normal/ground | town | rare | — | high | `od_ground` | The Congleton Bear; Otis's ace | Ch4 gym; wild on the Cloud |
-| 085 | `runestane` | RUNESTANE | rock/psychic | moor | uncommon | → `dolmenor` level:30 | low | `od_rock` | Bridestone rune-rock that hums in fog | Ch4 the Cloud |
-| 086 | `dolmenor` | DOLMENOR | rock/psychic | moor | rare | — | high | `od_rock` | Chambered-tomb guardian | Ch8 |
-| 087 | `mowstane` | MOWSTANE | rock/ground | moor | rare | — | high | `od_rock` | The Old Man of Mow: a gritstone pillar that walks at night | Ch4 Mow Cop |
-| 088 | `tudorling` | TUDORLING | ghost/grass | estate | uncommon | → `timberwraith` level:32 | low | `od_ghost` | Wonky black-and-white timber sprite of Little Moreton Hall | Ch4 Little Moreton |
-| 089 | `timberwraith` | TIMBERWRAITH | ghost/grass | estate | rare | — | high | `od_ghost` | The whole crooked house, standing up | Ch8 |
-| 090 | `otterkin` | OTTERKIN | water | river | common | → `lutrarch` level:28 | low | `od_water` | Dane otter pup | Ch4 R11 |
-| 091 | `lutrarch` | LUTRARCH | water/ground | river | uncommon | — | high | `od_water` | River-lord otter with a fish-bone crown | Ch7 |
-| 092 | `rottling` | ROTTLING | grass/poison | orchard | uncommon | → `mulchmaw` level:26 | low | `od_poison` | Rotten-apple imp that steals berries (Bounty "Bramble") | Ch4 Sandbach bounty |
-| 093 | `mulchmaw` | MULCHMAW | grass/poison | orchard | uncommon | — | mid | `od_poison` | Compost-heap maw | Ch6 |
+| 076 | `poltergrid` | POLTERGRID | cyber/ghost | rail | rare (night) | — | high | `od_cyber` | Nests in signal-box telemetry noise; moves the levers at 03:00 | Ch4 Holmes Chapel night |
+| 077 | `keystone` | KEYSTONE | rock | rail | common | → `viaductus` level:30 | low | `od_rock` | Viaduct-arch sprite; one per arch at Twemlow | Ch4 R10 |
+| 078 | `viaductus` | VIADUCTUS | rock | rail | uncommon | — | high | `od_rock` | Twenty-three arches walking | Ch7 |
+| 079 | `dishlet` | DISHLET | cyber/psychic | sky | uncommon | → `parabolus` location:jodrell_bank | low | `od_cyber` | Small radio-dish creature; turns to face the signal | Ch4 Jodrell grounds |
+| 080 | `parabolus` | PARABOLUS | cyber/psychic | sky | rare | — | high | `od_cyber` | Lovell-dish sentinel; listens for seventy years | Ch10 |
+| 081 | `pulsaris` | PULSARIS | electric/psychic | sky | rare (night) | — | high | `od_electric` | Static tuned to a pulsar; ticks in a fixed period | Ch4 Jodrell night |
+| 082 | `cubbin` | CUBBIN | normal/ground | town | uncommon | → `bruinhall` level:28 | low | `od_ground` | Beartown cub; the town sold its Bible for it | Ch4 Congleton |
+| 083 | `bruinhall` | BRUINHALL | normal/ground | town | rare | — | high | `od_ground` | The Congleton Bear; Otis's ace | Ch4 gym; wild on the Cloud |
+| 084 | `runestane` | RUNESTANE | rock/psychic | moor | uncommon | → `dolmenor` level:30 | low | `od_rock` | Bridestone rune-rock that hums in fog | Ch4 the Cloud |
+| 085 | `dolmenor` | DOLMENOR | rock/psychic | moor | rare | — | high | `od_rock` | Chambered-tomb guardian | Ch8 |
+| 086 | `mowstane` | MOWSTANE | rock/ground | moor | rare | — | high | `od_rock` | The Old Man of Mow: a gritstone pillar that walks at night | Ch4 Mow Cop |
+| 087 | `tudorling` | TUDORLING | ghost/grass | estate | uncommon | → `timberwraith` level:32 | low | `od_ghost` | Wonky black-and-white timber sprite of Little Moreton Hall | Ch4 Little Moreton |
+| 088 | `timberwraith` | TIMBERWRAITH | ghost/grass | estate | rare | — | high | `od_ghost` | The whole crooked house, standing up | Ch8 |
+| 089 | `otterkin` | OTTERKIN | water | river | common | → `lutrarch` level:28 | low | `od_water` | Dane otter pup | Ch4 R11 |
+| 090 | `lutrarch` | LUTRARCH | water/ground | river | uncommon | — | high | `od_water` | River-lord otter with a fish-bone crown | Ch7 |
+| 091 | `rottling` | ROTTLING | grass/poison | orchard | uncommon | → `mulchmaw` level:26 | low | `od_poison` | Rotten-apple imp that steals berries (Bounty "Bramble") | Ch4 Sandbach bounty |
+| 092 | `mulchmaw` | MULCHMAW | grass/poison | orchard | uncommon | — | mid | `od_poison` | Compost-heap maw | Ch6 |
 
 ### 1f. Chapter 5 belt — Sandbach, Crewe, Wybunbury (Lv 21–26)
 
 | # | id | Name | Types | Habitat | Rarity | Evolution | Tier | Overdrive | Concept | First found |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 094 | `belfrit` | BELFRIT | normal | town | common | → `crossbell` level:30 | low | `od_normal` | Bell-sprite from the Sandbach Old Hall bell; sound moves | Ch5 Sandbach |
-| 095 | `crossbell` | CROSSBELL | rock/normal | roman | uncommon | — | high | `od_normal` | Saxon-cross bell-golem; ability `loud_bell` | Ch7 |
-| 096 | `chuglet` | CHUGLET | fire | rail | common | → `shunterra` level:24 | low | `od_fire` | Tank-engine hatchling with a whistle | Ch5 R14 |
-| 097 | `shunterra` | SHUNTERRA | fire/ground | rail | uncommon | → `steamloco` level:40 | mid | `od_fire` | Shunting loco with buffers for shoulders | Ch5 Crewe Works |
-| 098 | `steamloco` | STEAMLOCO | fire/ground | rail | rare | form:`steamloco_overfired` (Di's ace at 50%; changeForm keepHp) | high | `od_fire` | Express steam locomotive; Di's ace | Ch5 gym; wild PG Crewe Works |
-| 099 | `sparkrail` | SPARKRAIL | electric | rail | common (night) | → `pantogriff` level:30 | low | `od_electric` | Third-rail spark that jumps the sidings | Ch5 R14 night |
-| 100 | `pantogriff` | PANTOGRIFF | electric/flying | rail | uncommon | — | high | `od_electric` | Pantograph griffin that rides the overhead line | Ch7 |
-| 101 | `sleeperk` | SLEEPERK | ground/grass | rail | uncommon | — | mid | `od_ground` | Creosoted rail sleeper that sleeps; ability `cold_storage` | Ch5 R14 |
-| 102 | `bricklum` | BRICKLUM | rock/ground | rail | uncommon | — | high | `od_rock` | Works-brick golem, sooty and square | Ch5 Crewe Works |
-| 103 | `curdli` | CURDLI | normal | town | common | → `cheshwheel` level:26 | low | `od_normal` | Cheese-curd blob | Ch5 Sandbach market |
-| 104 | `cheshwheel` | CHESHWHEEL | normal/ground | town | uncommon | — | high | `od_normal` | Rolling Cheshire cheese wheel; Nantwich Cheese Show champion | Ch6 |
+| 093 | `belfrit` | BELFRIT | normal | town | common | → `crossbell` level:30 | low | `od_normal` | Bell-sprite from the Sandbach Old Hall bell; sound moves | Ch5 Sandbach |
+| 094 | `crossbell` | CROSSBELL | rock/normal | roman | uncommon | — | high | `od_normal` | Saxon-cross bell-golem; ability `loud_bell` | Ch7 |
+| 095 | `chuglet` | CHUGLET | fire | rail | common | → `shunterra` level:24 | low | `od_fire` | Tank-engine hatchling with a whistle | Ch5 R14 |
+| 096 | `shunterra` | SHUNTERRA | fire/ground | rail | uncommon | → `steamloco` level:40 | mid | `od_fire` | Shunting loco with buffers for shoulders | Ch5 Crewe Works |
+| 097 | `steamloco` | STEAMLOCO | fire/ground | rail | rare | form:`steamloco_overfired` (Di's ace at 50%; changeForm keepHp) | high | `od_fire` | Express steam locomotive; Di's ace | Ch5 gym; wild PG Crewe Works |
+| 098 | `sparkrail` | SPARKRAIL | electric | rail | common (night) | → `pantogriff` level:30 | low | `od_electric` | Third-rail spark that jumps the sidings | Ch5 R14 night |
+| 099 | `pantogriff` | PANTOGRIFF | electric/flying | rail | uncommon | — | high | `od_electric` | Pantograph griffin that rides the overhead line | Ch7 |
+| 100 | `sleeperk` | SLEEPERK | ground/grass | rail | uncommon | — | mid | `od_ground` | Creosoted rail sleeper that sleeps; ability `cold_storage` | Ch5 R14 |
+| 101 | `bricklum` | BRICKLUM | rock/ground | rail | uncommon | — | high | `od_rock` | Works-brick golem, sooty and square | Ch5 Crewe Works |
+| 102 | `curdli` | CURDLI | normal | town | common | → `cheshwheel` level:26 | low | `od_normal` | Cheese-curd blob | Ch5 Sandbach market |
+| 103 | `cheshwheel` | CHESHWHEEL | normal/ground | town | uncommon | — | high | `od_normal` | Rolling Cheshire cheese wheel; Nantwich Cheese Show champion | Ch6 |
 
 ### 1g. Chapter 6 belt — Nantwich, Y Berllan (Lv 25–30)
 
 | # | id | Name | Types | Habitat | Rarity | Evolution | Tier | Overdrive | Concept | First found |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 105 | `saltling` | SALTLING | rock | salt | common | → `cryssal` level:22 | low | `od_rock` | Salt-golem pup; runs away from the mine | Ch6 Nantwich lido |
-| 106 | `cryssal` | CRYSSAL | rock | salt | uncommon | → `salberg` level:38 | mid | `od_rock` | Halite crystal golem; ability `salt_crust` | Ch6 |
-| 107 | `salberg` | SALBERG | rock/water | salt | rare | — | high | `od_rock` | Salt berg with a brine core | Ch7 Salt Mine |
-| 108 | `brinelet` | BRINELET | water | brine | common | → `saltmaid` level:30 | low | `od_water` | Brine sprite from the springs; ability `brine_body` | Ch6 Nantwich |
-| 109 | `saltmaid` | SALTMAID | water/psychic | brine | uncommon | — | high | `od_water` | Brine-pool naiad; Nell's ace | Ch6 gym |
-| 110 | `crabbex` | CRABBEX | water/rock | river | common | → `krabbaron` location:anderton | low | `od_water` | Weaver salt-crab | Ch6 R16 |
-| 111 | `krabbaron` | KRABBARON | water/rock | canal | uncommon | — | high | `od_water` | Boat-lift crab, iron-clawed | Ch7 Anderton |
-| 112 | `volteel` | VOLTEEL | electric/water | river | uncommon | — | high | `od_electric` | Weaver eel that shorts out swing bridges | Ch6 R16 (fishing) |
-| 113 | `perrypip` | PERRYPIP | grass | orchard | common | → `perryarch` location:y_berllan | low | `od_grass` | Perry-pear sprite from Y Berllan | Ch6 Y Berllan |
-| 114 | `perryarch` | PERRYARCH | grass/ground | orchard | uncommon | — | high | `od_grass` | Elm-press treant; ability `deep_roots` | Ch6 Y Berllan |
-| 115 | `brithyll` | BRITHYLL | water | orchard | rare | — | mid | `od_water` | Welsh brown trout from the orchard pond (Welsh-only riddle) | Ch6 Y Berllan pond |
-| 116 | `ceffylwen` | CEFFYLWEN | normal/psychic | orchard | rare | — | high | `od_psychic` | The milk-white mare of the legend; opens the knights' chamber | Ch6 Y Berllan (Welsh riddle) |
-| 117 | `derwydd` | DERWYDD | grass/psychic | orchard | rare | — | high | `od_grass` | Oak-druid guardian of Coed y Berllan | Ch6 Coed y Berllan |
-| 118 | `panscald` | PANSCALD | fire/water | salt | uncommon | — | mid | `od_fire` | Hot brine-pan spirit from the Lion Salt Works | Ch6 Nantwich; Ch7 Northwich |
+| 104 | `saltling` | SALTLING | rock | salt | common | → `cryssal` level:22 | low | `od_rock` | Salt-golem pup; runs away from the mine | Ch6 Nantwich lido |
+| 105 | `cryssal` | CRYSSAL | rock | salt | uncommon | → `salberg` level:38 | mid | `od_rock` | Halite crystal golem; ability `salt_crust` | Ch6 |
+| 106 | `salberg` | SALBERG | rock/water | salt | rare | — | high | `od_rock` | Salt berg with a brine core | Ch7 Salt Mine |
+| 107 | `brinelet` | BRINELET | water | brine | common | → `saltmaid` level:30 | low | `od_water` | Brine sprite from the springs; ability `brine_body` | Ch6 Nantwich |
+| 108 | `saltmaid` | SALTMAID | water/psychic | brine | uncommon | — | high | `od_water` | Brine-pool naiad; Nell's ace | Ch6 gym |
+| 109 | `crabbex` | CRABBEX | water/rock | river | common | → `krabbaron` location:anderton | low | `od_water` | Weaver salt-crab | Ch6 R16 |
+| 110 | `krabbaron` | KRABBARON | water/rock | canal | uncommon | — | high | `od_water` | Boat-lift crab, iron-clawed | Ch7 Anderton |
+| 111 | `volteel` | VOLTEEL | electric/water | river | uncommon | — | high | `od_electric` | Weaver eel that shorts out swing bridges | Ch6 R16 (fishing) |
+| 112 | `perrypip` | PERRYPIP | grass | orchard | common | → `perryarch` location:y_berllan | low | `od_grass` | Perry-pear sprite from Y Berllan | Ch6 Y Berllan |
+| 113 | `perryarch` | PERRYARCH | grass/ground | orchard | uncommon | — | high | `od_grass` | Elm-press treant; ability `deep_roots` | Ch6 Y Berllan |
+| 114 | `brithyll` | BRITHYLL | water | orchard | rare | — | mid | `od_water` | Welsh brown trout from the orchard pond (Welsh-only riddle) | Ch6 Y Berllan pond |
+| 115 | `ceffylwen` | CEFFYLWEN | normal/psychic | orchard | rare | — | high | `od_psychic` | The milk-white mare of the legend; opens the knights' chamber | Ch6 Y Berllan (Welsh riddle) |
+| 116 | `derwydd` | DERWYDD | grass/psychic | orchard | rare | — | high | `od_grass` | Oak-druid guardian of Coed y Berllan | Ch6 Coed y Berllan |
+| 117 | `panscald` | PANSCALD | fire/water | salt | uncommon | — | mid | `od_fire` | Hot brine-pan spirit from the Lion Salt Works | Ch6 Nantwich; Ch7 Northwich |
 
 ### 1h. Chapter 7 belt — Middlewich, Winsford, Northwich, Salt Mine, Anderton, Marbury, Great Budworth (Lv 29–34)
 
 | # | id | Name | Types | Habitat | Rarity | Evolution | Tier | Overdrive | Concept | First found |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 119 | `terrataur` | TERRATAUR | rock/ground | salt | legendary | — | legendary | `salt_cathedral` | Salt-cathedral bull asleep under Northwich; buildings tilt when it turns | Ch7 Salt Mine |
-| 120 | `pillarnaut` | PILLARNAUT | rock/ground | salt | uncommon | — | mid | `od_rock` | Pillar-and-stall support golem | Ch7 Salt Mine |
-| 121 | `bargemog` | BARGEMOG | normal/water | canal | uncommon | — | mid | `od_normal` | Narrowboat cat; sleeps on the tiller | Ch7 canals |
-| 122 | `ladymere` | LADYMERE | ghost/psychic | mere | rare (night) | — | high | `od_ghost` | The Marbury Lady | Ch7 Marbury night |
-| 123 | `flashfin` | FLASHFIN | water/rock | salt | uncommon | → `subsidon` level:34 | low | `od_water` | Winsford Flashes fish, salt-scaled | Ch7 Winsford (fishing) |
-| 124 | `subsidon` | SUBSIDON | water/ground | salt | rare (dawn) | — | high | `od_ground` | The thing that surfaces in the flashes | Ch7 Winsford dawn (fishing) |
-| 125 | `chordle` | CHORDLE | cyber/normal | town | rare | — | mid | `od_cyber` | Sings on the third turn; mimics the ClickFix hymn (Q21, flees) | Ch7 Middlewich |
-| 126 | `bitmite` | BITMITE | cyber | cyber | common | → `teramite` level:34 | low | `od_cyber` | Data mite from the DeepStore archives | Ch7 Winsford DeepStore |
-| 127 | `teramite` | TERAMITE | cyber | cyber | rare | — | high | `od_cyber` | Archive-devouring mite queen | Ch9 THE STACK |
-| 128 | `virling` | VIRLING | cyber/poison | cyber | common | → `wormhack` level:25 | low | `od_cyber` | Self-replicating worm larva | Ch7 masts |
-| 129 | `wormhack` | WORMHACK | cyber/poison | cyber | uncommon | — | high | `od_cyber` | Lateral-movement worm; DARKBYTE construct | Ch7 hideout |
-| 130 | `phishfin` | PHISHFIN | cyber/water | mere | uncommon | → `spearphish` level:28 | low | `od_cyber` | Lure-fish wearing a tracker tag | Ch7 Winsford (fishing) |
-| 131 | `spearphish` | SPEARPHISH | cyber/water | mere | uncommon | — | high | `od_cyber` | Targeted lure-fish; DARKBYTE construct | Ch7 |
-| 132 | `trojanox` | TROJANOX | cyber/ground | cyber | rare | — | high | `od_cyber` | Wooden-ox construct hiding a payload; ability `payload` | Ch7 DARKBYTE hideout |
+| 118 | `terrataur` | TERRATAUR | rock/ground | salt | legendary | — | legendary | `salt_cathedral` | Salt-cathedral bull asleep under Northwich; buildings tilt when it turns | Ch7 Salt Mine |
+| 119 | `pillarnaut` | PILLARNAUT | rock/ground | salt | uncommon | — | mid | `od_rock` | Pillar-and-stall support golem | Ch7 Salt Mine |
+| 120 | `bargemog` | BARGEMOG | normal/water | canal | uncommon | — | mid | `od_normal` | Narrowboat cat; sleeps on the tiller | Ch7 canals |
+| 121 | `ladymere` | LADYMERE | ghost/psychic | mere | rare (night) | — | high | `od_ghost` | The Marbury Lady | Ch7 Marbury night |
+| 122 | `flashfin` | FLASHFIN | water/rock | salt | uncommon | → `subsidon` level:34 | low | `od_water` | Winsford Flashes fish, salt-scaled | Ch7 Winsford (fishing) |
+| 123 | `subsidon` | SUBSIDON | water/ground | salt | rare (dawn) | — | high | `od_ground` | The thing that surfaces in the flashes | Ch7 Winsford dawn (fishing) |
+| 124 | `chordle` | CHORDLE | cyber/normal | town | rare | — | mid | `od_cyber` | Sings on the third turn; mimics the ClickFix hymn (Q21, flees) | Ch7 Middlewich |
+| 125 | `bitmite` | BITMITE | cyber | cyber | common | → `teramite` level:34 | low | `od_cyber` | Data mite from the DeepStore archives | Ch7 Winsford DeepStore |
+| 126 | `teramite` | TERAMITE | cyber | cyber | rare | — | high | `od_cyber` | Archive-devouring mite queen | Ch9 THE STACK |
+| 127 | `virling` | VIRLING | cyber/poison | cyber | common | → `wormhack` level:25 | low | `od_cyber` | Self-replicating worm larva | Ch7 masts |
+| 128 | `wormhack` | WORMHACK | cyber/poison | cyber | uncommon | — | high | `od_cyber` | Lateral-movement worm; DARKBYTE construct | Ch7 hideout |
+| 129 | `phishfin` | PHISHFIN | cyber/water | mere | uncommon | → `spearphish` level:28 | low | `od_cyber` | Lure-fish wearing a tracker tag | Ch7 Winsford (fishing) |
+| 130 | `spearphish` | SPEARPHISH | cyber/water | mere | uncommon | — | high | `od_cyber` | Targeted lure-fish; DARKBYTE construct | Ch7 |
+| 131 | `trojanox` | TROJANOX | cyber/ground | cyber | rare | — | high | `od_cyber` | Wooden-ox construct hiding a payload; ability `payload` | Ch7 DARKBYTE hideout |
 
 ### 1i. Chapter 8 belt — Delamere, Tarporley, Beeston, Peckforton (Lv 33–37)
 
 | # | id | Name | Types | Habitat | Rarity | Evolution | Tier | Overdrive | Concept | First found |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 133 | `zephyrion` | ZEPHYRION | electric/flying | sky | legendary | — | legendary | `ridge_storm` | Ridge-wind storm bird; nests on Beeston crag; ability `ridge_wind` | Ch8 Beeston |
-| 134 | `mossling` | MOSSLING | grass | forest | common | → `mossbear` level:26 | low | `od_grass` | Moss-covered cub | Ch8 Delamere |
-| 135 | `mossbear` | MOSSBEAR | grass/ground | forest | uncommon | — | high | `od_grass` | Blakemere moss bear; ability `deep_roots` | Ch8 Delamere |
-| 136 | `oakling` | OAKLING | grass | forest | common | → `groveguard` level:25 | low | `od_grass` | Acorn sprite | Ch8 Delamere |
-| 137 | `groveguard` | GROVEGUARD | grass | forest | uncommon | — | mid | `od_grass` | Old Pale oak-warden | Ch8 |
-| 138 | `drownwood` | DROWNWOOD | grass/ghost | forest | rare (night) | — | high | `od_ghost` | Drowned-wood stump from Blakemere Moss | Ch8 Delamere night glade |
-| 139 | `lampyr` | LAMPYR | bug/electric | forest | uncommon (night) | — | mid | `od_bug` | Glow-worm lantern | Ch8 Delamere night |
-| 140 | `hornhound` | HORNHOUND | normal | heath | uncommon | — | mid | `od_normal` | Tarporley hunt hound; ability `scavenger` | Ch8 Tarporley |
-| 141 | `falconet` | FALCONET | flying | sandstone | common | → `peregrint` level:30 | low | `od_flying` | Falconer's kestrel-kit | Ch8 Peckforton |
-| 142 | `peregrint` | PEREGRINT | flying | sandstone | uncommon | — | high | `od_flying` | Peregrine of Beeston crag; ability `ridge_wind` (rare second) | Ch8 |
-| 143 | `gargoylet` | GARGOYLET | rock/flying | sandstone | uncommon | → `grotesquire` level:34 | low | `od_rock` | Sandstone gargoyle chick | Ch8 Beeston |
-| 144 | `grotesquire` | GROTESQUIRE | rock/flying | sandstone | rare | — | high | `od_rock` | Cathedral grotesque, come down for the night | Ch12 Chester |
+| 132 | `zephyrion` | ZEPHYRION | electric/flying | sky | legendary | — | legendary | `ridge_storm` | Ridge-wind storm bird; nests on Beeston crag; ability `ridge_wind` | Ch8 Beeston |
+| 133 | `mossling` | MOSSLING | grass | forest | common | → `mossbear` level:26 | low | `od_grass` | Moss-covered cub | Ch8 Delamere |
+| 134 | `mossbear` | MOSSBEAR | grass/ground | forest | uncommon | — | high | `od_grass` | Blakemere moss bear; ability `deep_roots` | Ch8 Delamere |
+| 135 | `oakling` | OAKLING | grass | forest | common | → `groveguard` level:25 | low | `od_grass` | Acorn sprite | Ch8 Delamere |
+| 136 | `groveguard` | GROVEGUARD | grass | forest | uncommon | — | mid | `od_grass` | Old Pale oak-warden | Ch8 |
+| 137 | `drownwood` | DROWNWOOD | grass/ghost | forest | rare (night) | — | high | `od_ghost` | Drowned-wood stump from Blakemere Moss | Ch8 Delamere night glade |
+| 138 | `lampyr` | LAMPYR | bug/electric | forest | uncommon (night) | — | mid | `od_bug` | Glow-worm lantern | Ch8 Delamere night |
+| 139 | `hornhound` | HORNHOUND | normal | heath | uncommon | — | mid | `od_normal` | Tarporley hunt hound; ability `scavenger` | Ch8 Tarporley |
+| 140 | `falconet` | FALCONET | flying | sandstone | common | → `peregrint` level:30 | low | `od_flying` | Falconer's kestrel-kit | Ch8 Peckforton |
+| 141 | `peregrint` | PEREGRINT | flying | sandstone | uncommon | — | high | `od_flying` | Peregrine of Beeston crag; ability `ridge_wind` (rare second) | Ch8 |
+| 142 | `gargoylet` | GARGOYLET | rock/flying | sandstone | uncommon | → `grotesquire` level:34 | low | `od_rock` | Sandstone gargoyle chick | Ch8 Beeston |
+| 143 | `grotesquire` | GROTESQUIRE | rock/flying | sandstone | rare | — | high | `od_rock` | Cathedral grotesque, come down for the night | Ch12 Chester |
 
 ### 1j. Chapter 9 belt — Frodsham, Runcorn, Daresbury, THE STACK, Helsby marsh (Lv 36–41)
 
 | # | id | Name | Types | Habitat | Rarity | Evolution | Tier | Overdrive | Concept | First found |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 145 | `egrette` | EGRETTE | flying/water | marsh | common | — | mid | `od_flying` | Little egret of Frodsham Marsh | Ch9 R23 |
-| 146 | `curlewind` | CURLEWIND | flying | marsh | uncommon | — | mid | `od_flying` | Curlew whose call raises the wind; ability `ridge_wind` | Ch9 R23 |
-| 147 | `turbinix` | TURBINIX | electric/flying | marsh | uncommon | — | high | `od_electric` | Wind-turbine construct that turns against the wind | Ch9 Frodsham Marsh |
-| 148 | `beaconflare` | BEACONFLARE | fire/flying | sandstone | rare (event) | — | high | `od_fire` | Beacon-fire phoenix from Frodsham Hill | Ch9 beacon event |
-| 149 | `smogling` | SMOGLING | poison | chem | common | → `chlorodon` level:30 | low | `od_poison` | Fume-cupboard cloudlet | Ch9 Runcorn |
-| 150 | `chlorodon` | CHLORODON | poison | chem | uncommon | — | high | `od_poison` | Chemical-works smog beast; Ria's ace | Ch9 gym |
-| 151 | `proxling` | PROXLING | poison/cyber | fog | common (fog only) | — | low | `od_poison` | Residential-proxy puppet in the fog; ability `proxy_fog` | Ch9 R22 fog |
-| 152 | `sludgeon` | SLUDGEON | water/poison | river | rare | — | high | `od_poison` | Mersey sturgeon, sludge-scaled (Poison morph fishing) | Ch9 Mersey (fishing) |
-| 153 | `grinkit` | GRINKIT | normal | town | uncommon | → `grinmalkin` friendship:night + location:daresbury_church | low | `grin_remains` | A kitten that is mostly grin; the eleven hidden cats are grinkits | Ch9 Daresbury (and 11 hidden across map) |
-| 154 | `grinmalkin` | GRINMALKIN | normal/psychic | town | rare | — | high | `grin_remains` | The Cheshire Cat; ability `cheshire_grin`; the story instance is ORACLE's oldest thread | Ch9 Daresbury (story NPC from Ch1) |
-| 155 | `mirrorling` | MIRRORLING | psychic/ghost | town | rare | — | high | `od_psychic` | Alice-window mirror creature | Ch9 Daresbury church |
-| 156 | `quarkling` | QUARKLING | cyber/electric | cyber | uncommon | → `hadronaut` level:36 | low | `od_cyber` | Beamline particle sprite | Ch9 Daresbury lab |
-| 157 | `hadronaut` | HADRONAUT | cyber/electric | cyber | rare | — | high | `od_cyber` | Collider knight; Mo's second | Ch10 |
-| 158 | `firewaul` | FIREWAUL | cyber/fire | cyber | rare | — | high | `od_cyber` | Hot-aisle firewall beast; ability `overclock`; Mo's ace | Ch9 THE STACK / Ch10 gym |
-| 159 | `droneling` | DRONELING | cyber/flying | cyber | uncommon | → `datadrake` level:30 | low | `od_cyber` | Quad-rotor drone chick | Ch9 THE STACK |
-| 160 | `datadrake` | DATADRAKE | cyber/flying | cyber | rare | — | high | `od_cyber` | Exfil dragon made of packet trails | Ch10 |
-| 161 | `amoslurk` | AMOSLURK | cyber/ghost | fog | rare | form:`understudy` (boss; changeForm cycles faces) | mid | `od_cyber` | AMOS Lineage stealer wearing a borrowed face | Ch4 glimpse; Ch7+ battles |
-| 162 | `shardmind` | SHARDMIND | cyber/psychic | cyber | unique | — | high | `od_cyber` | ORACLE fragment; boss add | Ch9/Ch11 boss adds |
-| 163 | `oracle_core` | ORACLE CORE | cyber/psychic | cyber | unique | form:`oracle_core_p2`,`oracle_core_p3` | legendary | `oracle_escalate` | ORACLE's core; three-phase finale boss (cannotCatch) | Ch9/Ch11/PG |
+| 144 | `egrette` | EGRETTE | flying/water | marsh | common | — | mid | `od_flying` | Little egret of Frodsham Marsh | Ch9 R23 |
+| 145 | `curlewind` | CURLEWIND | flying | marsh | uncommon | — | mid | `od_flying` | Curlew whose call raises the wind; ability `ridge_wind` | Ch9 R23 |
+| 146 | `turbinix` | TURBINIX | electric/flying | marsh | uncommon | — | high | `od_electric` | Wind-turbine construct that turns against the wind | Ch9 Frodsham Marsh |
+| 147 | `beaconflare` | BEACONFLARE | fire/flying | sandstone | rare (event) | — | high | `od_fire` | Beacon-fire phoenix from Frodsham Hill | Ch9 beacon event |
+| 148 | `smogling` | SMOGLING | poison | chem | common | → `chlorodon` level:30 | low | `od_poison` | Fume-cupboard cloudlet | Ch9 Runcorn |
+| 149 | `chlorodon` | CHLORODON | poison | chem | uncommon | — | high | `od_poison` | Chemical-works smog beast; Ria's ace | Ch9 gym |
+| 150 | `proxling` | PROXLING | poison/cyber | fog | common (fog only) | — | low | `od_poison` | Residential-proxy puppet in the fog; ability `proxy_fog` | Ch9 R22 fog |
+| 151 | `sludgeon` | SLUDGEON | water/poison | river | rare | — | high | `od_poison` | Mersey sturgeon, sludge-scaled (Poison morph fishing) | Ch9 Mersey (fishing) |
+| 152 | `grinkit` | GRINKIT | normal | town | uncommon | → `grinmalkin` friendship:night + location:daresbury_church | low | `grin_remains` | A kitten that is mostly grin; the eleven hidden cats are grinkits | Ch9 Daresbury (and 11 hidden across map) |
+| 153 | `grinmalkin` | GRINMALKIN | normal/psychic | town | rare | — | high | `grin_remains` | The Cheshire Cat; ability `cheshire_grin`; the story instance is ORACLE's oldest thread | Ch9 Daresbury (story NPC from Ch1) |
+| 154 | `mirrorling` | MIRRORLING | psychic/ghost | town | rare | — | high | `od_psychic` | Alice-window mirror creature | Ch9 Daresbury church |
+| 155 | `quarkling` | QUARKLING | cyber/electric | cyber | uncommon | → `hadronaut` level:36 | low | `od_cyber` | Beamline particle sprite | Ch9 Daresbury lab |
+| 156 | `hadronaut` | HADRONAUT | cyber/electric | cyber | rare | — | high | `od_cyber` | Collider knight; Mo's second | Ch10 |
+| 157 | `firewaul` | FIREWAUL | cyber/fire | cyber | rare | — | high | `od_cyber` | Hot-aisle firewall beast; ability `overclock`; Mo's ace | Ch9 THE STACK / Ch10 gym |
+| 158 | `droneling` | DRONELING | cyber/flying | cyber | uncommon | → `datadrake` level:30 | low | `od_cyber` | Quad-rotor drone chick | Ch9 THE STACK |
+| 159 | `datadrake` | DATADRAKE | cyber/flying | cyber | rare | — | high | `od_cyber` | Exfil dragon made of packet trails | Ch10 |
+| 160 | `amoslurk` | AMOSLURK | cyber/ghost | fog | rare | form:`understudy` (boss; changeForm cycles faces) | mid | `od_cyber` | AMOS Lineage stealer wearing a borrowed face | Ch4 glimpse; Ch7+ battles |
+| 161 | `shardmind` | SHARDMIND | cyber/psychic | cyber | unique | — | high | `od_cyber` | ORACLE fragment; boss add | Ch9/Ch11 boss adds |
+| 162 | `oracle_core` | ORACLE CORE | cyber/psychic | cyber | unique | form:`oracle_core_p2`,`oracle_core_p3` | legendary | `oracle_escalate` | ORACLE's core; three-phase finale boss (cannotCatch) | Ch9/Ch11/PG |
 
 ### 1k. Chapters 10–12 and post-game — Lymm, Warrington, Jodrell, Chester, Zoo, Ellesmere Port, Parkgate (Lv 40–70)
 
 | # | id | Name | Types | Habitat | Rarity | Evolution | Tier | Overdrive | Concept | First found |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 164 | `glitchra` | GLITCHRA | cyber/ghost | sky | legendary | form:`glitchra_static` (boss phase 2/3) | legendary | `static_scream` | Static outline in the dish; ORACLE's herald | Ch10 Lymm sighting; Ch11 boss; PG catchable |
-| 165 | `legionet` | LEGIONET | ghost | roman | common (night) | → `centurigeist` level:40 | low | `od_ghost` | Roman legionary ghost from the amphitheatre | Ch12 Chester walls night |
-| 166 | `centurigeist` | CENTURIGEIST | ghost/rock | roman | uncommon | — | high | `od_ghost` | Centurion of the Twentieth, still on watch | Ch12 |
-| 167 | `salmoneer` | SALMONEER | water | river | rare (dawn/dusk) | — | high | `od_water` | Dee salmon that leaps the weir | Ch12 Chester Dee (Legendary fishing table) |
-| 168 | `pengwyn` | PENGWYN | water/flying | zoo | rare | — | mid | `od_water` | Escaped zoo penguin, Welsh-speaking (pen gwyn = white head) | PG Chester Zoo |
-| 169 | `girafflor` | GIRAFFLOR | normal/grass | zoo | rare | — | mid | `od_normal` | Zoo giraffe browsing Cheshire hedges | PG Chester Zoo |
-| 170 | `pandember` | PANDEMBER | fire | zoo | rare | — | mid | `od_fire` | Red panda with a smouldering tail | PG Chester Zoo |
-| 171 | `flarestack` | FLARESTACK | fire/poison | chem | uncommon | — | high | `od_fire` | Refinery flare that signals in code | PG Ellesmere Port |
-| 172 | `ebbwraith` | EBBWRAITH | ghost/water | marsh | rare (dusk) | — | high | `od_ghost` | The tide that never came back | PG Parkgate |
+| 163 | `glitchra` | GLITCHRA | cyber/ghost | sky | legendary | form:`glitchra_static` (boss phase 2/3) | legendary | `static_scream` | Static outline in the dish; ORACLE's herald | Ch10 Lymm sighting; Ch11 boss; PG catchable |
+| 164 | `legionet` | LEGIONET | ghost | roman | common (night) | → `centurigeist` level:40 | low | `od_ghost` | Roman legionary ghost from the amphitheatre | Ch12 Chester walls night |
+| 165 | `centurigeist` | CENTURIGEIST | ghost/rock | roman | uncommon | — | high | `od_ghost` | Centurion of the Twentieth, still on watch | Ch12 |
+| 166 | `salmoneer` | SALMONEER | water | river | rare (dawn/dusk) | — | high | `od_water` | Dee salmon that leaps the weir | Ch12 Chester Dee (Legendary fishing table) |
+| 167 | `pengwyn` | PENGWYN | water/flying | zoo | rare | — | mid | `od_water` | Escaped zoo penguin, Welsh-speaking (pen gwyn = white head) | PG Chester Zoo |
+| 168 | `girafflor` | GIRAFFLOR | normal/grass | zoo | rare | — | mid | `od_normal` | Zoo giraffe browsing Cheshire hedges | PG Chester Zoo |
+| 169 | `pandember` | PANDEMBER | fire | zoo | rare | — | mid | `od_fire` | Red panda with a smouldering tail | PG Chester Zoo |
+| 170 | `flarestack` | FLARESTACK | fire/poison | chem | uncommon | — | high | `od_fire` | Refinery flare that signals in code | PG Ellesmere Port |
+| 171 | `ebbwraith` | EBBWRAITH | ghost/water | marsh | rare (dusk) | — | high | `od_ghost` | The tide that never came back | PG Parkgate |
 
 
 ### 1l. Species notes for implementers
 
-- **Story instances.** `meadow`, `bigboy`, the three starter lines, `merlynx`, `terrataur`, `zephyrion`, `glitchra`, `grinmalkin` (story), `oracle_core`, `shardmind`, `amoslurk` (boss form `understudy`) are created by scripts, never rolled from wild tables (except where the table lists them explicitly, e.g. `spindrake` night morph, `grinkit`).
+- **Story instances.** `meadow`, the three starter lines, `merlynx`, `terrataur`, `zephyrion`, `glitchra`, `grinmalkin` (story), `oracle_core`, `shardmind`, `amoslurk` (boss form `understudy`) are created by scripts, never rolled from wild tables (except where the table lists them explicitly, e.g. `spindrake` night morph, `grinkit`).
 - **Boss forms** are separate species entries with the same dex number and `dexHidden:true`: `steamloco_overfired`, `glitchra_static`, `oracle_core_p2`, `oracle_core_p3`, `understudy`.
 - **VEX's team** (ids only; levels per STORY-BIBLE bands): starter `stokerel`→`furnacore` if the player took `silkin`; `silkin` line if player took `brinewt`; `brinewt` line if player took `kindlin` (VEX takes the one that beats yours — "tagged" flag `tagged:true` on the instance). Ch1: starter L5. Ch3: starter, `flitchick`, `sparkit`. Ch5: starter, `galewing`, `fulgurcat`, `stagwire`. Ch8 (Understudy copy): mirror of the current VEX party. Ch12 hand-built (Verify): `furnacore`/`loomoth`/`halosaur` (ace, L64), `strigyx`, `stagwire`, `krabbaron`, `datadrake`, `bruinhall`. Ch12 ORACLE-tuned (Challenge): ace, `parabolus`, `teramite`, `wormhack`, `gloamguard`, `panoptix`.
 - **DARKBYTE constructs** (Cyber, spawn near masts/labs/hideouts/THE STACK): `puppetacct`, `botling`, `botnetle`, `bitmite`, `teramite`, `virling`, `wormhack`, `phishfin`, `spearphish`, `trojanox`, `droneling`, `datadrake`, `firewaul`, `quarkling`, `hadronaut`, `dishlet`, `parabolus`, `poltergrid`, `peepcam`, `panoptix`, `chordle`, `proxling`, `amoslurk`, `shardmind`, `glitchra`, `oracle_core`. Cyber is 26/172 (15%) and mostly uncommon/rare — "Cyber rarer" holds because pure-Cyber commons are fog/infra-gated.
 - **Type coverage** (primary or secondary): bug 14 · grass 20 · water 38 · ground 24 · fire 14 · electric 15 · normal 24 · flying 27 · psychic 21 · ghost 23 · rock 24 · cyber 26 · poison 15.
-- **Ability assignment (fixed, one per species; rare second in brackets):** `back_from_the_brink` bigboy [gloamguard, lindowan] · `slipstream` meadow, grinkit · `silk_weave` silkin line, widowisp · `brine_body` brinewt line, brinelet/saltmaid · `salt_crust` saltling line, pillarnaut, crossbell · `firebox` kindlin line, chuglet line · `overclock` firewaul, hadronaut · `sandbox` toadlore, chlorodon · `rootkit` wormhack, trojanox [amoslurk] · `honeypot` phishfin line, panoptix · `proxy_fog` proxling, puppetacct, amoslurk · `rain_caller` heronet line, saltmaid (2nd), egrette · `ridge_wind` zephyrion, curlewind, peregrint (2nd), turbinix · `damp_squib` sluiceling line, bogleap line · `thick_fleece` mistewe, sheepwire line, cubbin line · `iron_will` bruinhall, mowstane, viaductus, dolmenor · `nightshift` owlume line, manorwraith, ladymere, chimnyx · `cheshire_grin` grinmalkin · `deep_roots` thornarch, perryarch, mossbear, derwydd, groveguard · `static_charge` sparkit line, sparkrail line, stagwire, volteel · `signal_jammer` poltergrid, dishlet line, pulsaris · `scavenger` hornhound, nibbit line, shriekwing, spearphish · `wetlander` otterkin line, towpaddle line, brithyll, salmoneer · `sun_trap` panscald, beaconflare, flarestack, pandember · `cold_storage` sleeperk, bitmite line, teramite · `payload` trojanox (primary), droneling line, botling line · `fail_safe` bricklum, keystone line, cryssal, salberg · `loud_bell` belfrit line, bellmere, chordle · `stonemason` verdigrit, gargoylet line, nancylith, runestane · `kernel_panic` glitchra, teramite, shardmind, oracle_core, mirrorling. Every remaining species takes the most thematic of the above (see species table `concept`); the data workstream fills the exact per-species field.
+- **Ability assignment (fixed, one per species; rare second in brackets):** `back_from_the_brink` gloamguard, lindowan · `slipstream` meadow, grinkit · `silk_weave` silkin line, widowisp · `brine_body` brinewt line, brinelet/saltmaid · `salt_crust` saltling line, pillarnaut, crossbell · `firebox` kindlin line, chuglet line · `overclock` firewaul, hadronaut · `sandbox` toadlore, chlorodon · `rootkit` wormhack, trojanox [amoslurk] · `honeypot` phishfin line, panoptix · `proxy_fog` proxling, puppetacct, amoslurk · `rain_caller` heronet line, saltmaid (2nd), egrette · `ridge_wind` zephyrion, curlewind, peregrint (2nd), turbinix · `damp_squib` sluiceling line, bogleap line · `thick_fleece` mistewe, sheepwire line, cubbin line · `iron_will` bruinhall, mowstane, viaductus, dolmenor · `nightshift` owlume line, manorwraith, ladymere, chimnyx · `cheshire_grin` grinmalkin · `deep_roots` thornarch, perryarch, mossbear, derwydd, groveguard · `static_charge` sparkit line, sparkrail line, stagwire, volteel · `signal_jammer` poltergrid, dishlet line, pulsaris · `scavenger` hornhound, nibbit line, shriekwing, spearphish · `wetlander` otterkin line, towpaddle line, brithyll, salmoneer · `sun_trap` panscald, beaconflare, flarestack, pandember · `cold_storage` sleeperk, bitmite line, teramite · `payload` trojanox (primary), droneling line, botling line · `fail_safe` bricklum, keystone line, cryssal, salberg · `loud_bell` belfrit line, bellmere, chordle · `stonemason` verdigrit, gargoylet line, nancylith, runestane · `kernel_panic` glitchra, teramite, shardmind, oracle_core, mirrorling. Every remaining species takes the most thematic of the above (see species table `concept`); the data workstream fills the exact per-species field.
 - **Growth groups:** starters, cats, legendaries `medium`; commons `fast`; rares/high-tier `slow`.
 
 ---
@@ -280,7 +279,6 @@ Schema per SYSTEMS-SPEC §4 / ENGINE-ARCHITECTURE §4. Columns: **Cat** phys/spe
 | `white_nancy_stand` | White Nancy Stand | normal | status | — | — | 5 | +4 | — | endure; overdrive +25 | Stand like the folly: survive at 1 HP, gain Overdrive |
 | `belfry_toll` | Belfry Toll | normal | spec | 75 | 100 | 15 | 0 | s | stage foe spd −1 20% | Sandbach bell peal |
 | `skitter` | Skitter | normal | status | — | — | 20 | +1 | — | stage self eva +1, spe +1 | MEADOW's dart-and-vanish |
-| `big_sit` | Big Sit | normal | status | — | — | 5 | 0 | — | cleanse foe stages (reset foe stages only); stage self def +2 | BIGBOY sits on the problem (cat trust 5) |
 | `bear_hug` | Bear Hug | normal | phys | 80 | 100 | 15 | 0 | c | trap 4 | Otis's Skill Card (`tm_bear_hug`) |
 
 ### 2.2 Fire (10)
@@ -496,7 +494,6 @@ Generic per-type signatures are used by every line whose species table `overdriv
 | `od_ghost` | Grave Bell | ghost | spec | 130 | status cnf 30% | generic |
 | `od_cyber` | Root Shell | cyber | spec | 130 | pp_drain 2 on the foe's last-used move | generic |
 | `zoomies` | Zoomies | normal | phys | 40 | priority +2; multihit 3–3; stage self spe +1 | `meadow` |
-| `brink_roar` | Brink Roar | normal | status | — | heal 0.5 self; stage self def +1, spd +1; stage foe atk −1 | `bigboy` |
 | `jacquard_weave` | Jacquard Weave | bug | spec | 130 | terrain silk 5; stage foe spe −1 | `silkin` line |
 | `brine_tide` | Brine Tide | water | spec | 130 | weather rain 8; stage self spd +1 | `brinewt` line |
 | `firebox_overload` | Firebox Overload | fire | spec | 140 | status brn 30%; stage self spe −1 | `kindlin` line |
@@ -517,7 +514,7 @@ Hook names per SYSTEMS-SPEC §2. `impl` key in `abilities.js` = the id.
 
 | id | Name | Rule summary |
 |---|---|---|
-| `back_from_the_brink` | Back from the Brink | Once per battle a hit that would KO from ≥50% HP leaves 1 HP (BIGBOY; upgrade flag `bigboy_shield` lets it shield an ally once) |
+| `back_from_the_brink` | Back from the Brink | Once per battle a hit that would KO from ≥50% HP leaves 1 HP (`gloamguard`, `lindowan`) |
 | `slipstream` | Slipstream | +1 spe stage on switch-in |
 | `silk_weave` | Silk Weave | Contact moves against holder: 30% attacker spe −1 |
 | `brine_body` | Brine Body | Immune to Burn; heals 1/16 per turn in Rain |
@@ -691,7 +688,7 @@ Traversal is gated by the eleven **ability ids** in DESIGN-INDEX §3 (`bike sque
 | `photo_album` | Sighting Album | key | 1 | Photo storage |
 | `collectible_<n>` (1–25) | see WORLD-BIBLE §5 | key | var | e.g. `collectible_1` Nancy's Paint Tin … `collectible_25` Beeston collar tag |
 | `viewpoint_<map>` (12) | Viewpoint plaque | key | var | Summit collectibles |
-| `cat_token_<n>` (1–11) | Cat token | key | var | Hidden grinkit cats → MEADOW/BIGBOY skins |
+| `cat_token_<n>` (1–11) | Cat token | key | var | Hidden grinkit cats → MEADOW skins |
 
 ### 4.8 Fishing rods
 
@@ -817,7 +814,6 @@ Sprite sheets are procedural (`art/sprites.js`); id = sheet key. Player/cats hav
 | `treacle_tam` | Treacle Tam (npc id `npc_macclesfield_tam`) |
 | `spokes` | Spokes, bike hire (npc id `npc_bollington_spokes`) |
 | `cat_meadow` | MEADOW: small black cat, fast walk cycle, sit, sniff |
-| `cat_bigboy` | BIGBOY: huge black-and-white, slow walk, sit, purr |
 | `cat_grinkit` | Hidden cats (grin overlay) |
 | `dog` | Village dog |
 | `deer` | Tatton/Lyme deer (overworld herd) |
@@ -1011,14 +1007,14 @@ Every species name above is an id from §1. Wild `spindrake` and `grinkit` are t
 
 DESIGN-INDEX §6 and §9 are canonical for everything in this section; it is repeated here so implementers have one page. Where an older draft of this file differed (`t_*`, `npc_*_met`, `skill_*`, `main_chNN`, `ach_<slug>`, `perk_hunter/warden/handler`, `vex_chNN`), the DESIGN-INDEX forms below replaced it.
 
-**Flags** (`MQ.Flags`): story flags are exactly STORY-BIBLE §10 / DESIGN-INDEX §6 ids (`contract_signed`, `starter_chosen` (value = starter line id `silkin` | `brinewt` | `kindlin`), `cats_joined`, `white_nancy_seen`, `vex_battle_1`, `agent_sleet`, `wheel_fridge_fixed`, `lindow_lake_seen`, `elis_met`, `merlynx_seen`, `badge_packet` … `badge_admin`, `all_badges`, `nino_letter_1..4`, `nino_letter_final`, `agent_vigil`, `overdrive_unlocked`, `deer_census_done`, `rostherne_relay_seen`, `tbilisi_domain_found`, `gaskell_network`, `vex_battle_2`, `agent_arbiter`, `jodrell_turned_away`, `signal_meter`, `cutover_started`, `cutover_days`, `amos_first_glimpse`, `crewe_fog_cleared`, `apt_boss_beaten`, `sandbach_crosses_lit`, `sandbach_shrine`, `twelvek_lanyard_seen`, `salon_seen`, `welsh_word_learned`, `rail_fast_travel`, `cambrian_ticket`, `lido_battle_done`, `kellan_handed_in` | `kellan_walked`, `orchard_open`, `vet_story_told`, `pippin_found`, `choice_agents` (`wipe` | `feed`), `agents_hardened`, `bigboy_shield`, `brewing_open`, `aberaeron_open`, `amos_alder_face`, `narrowboat_licence`, `mine_descended`, `checkpoints_seen`, `terrataur_woken`, `boat_lift_silence`, `lift_pass`, `stack_on_map`, `vex_missing`, `vex_release_stopped`, `choice_vex` (`verify` | `challenge`), `vex_ally`, `beeston_well_note`, `zephyrion_seen`, `root_bench_talk`, `invoice_holder` (`root` | `alder`), `runcorn_fog_fridges` (0–6), `gateway_cleared`, `stack_doors_opened` (0–8), `plug_pulled`, `mo_alerts`, `grin_remained`, `transporter_phase`, `cutover_restarted`, `jodrell_open`, `root_defeated`, `glitchra_defeated`, `oracle_you_came_back`, `choice_plug` (`delete` | `quarantine` | `custody`), `agent_pippin`, `glitchra_catchable`, `whitehat_sue/raj/kim/doc`, `champion_fought`, `champion_result` (`won` | `lost` | `thrown`), `vex_name_revealed`, `postgame_open`, PG `fifth_pulse penguin_case ellesmere_mirror lymm_pumps_talk amos_jim_face knights_hall_open merlynx_on_press roodee_rematch nino_letter_final`, rest points `bigboy_sat_kerridge bigboy_sat_tatton bigboy_sat_frodsham bigboy_sat_roodee`, beacons `beacon_lit_<mapid>`). Additional conventions (DESIGN-INDEX §6 "side systems" and §9):
+**Flags** (`MQ.Flags`): story flags are exactly STORY-BIBLE §10 / DESIGN-INDEX §6 ids (`contract_signed`, `starter_chosen` (value = starter line id `silkin` | `brinewt` | `kindlin`), `cats_joined`, `white_nancy_seen`, `vex_battle_1`, `agent_sleet`, `wheel_fridge_fixed`, `lindow_lake_seen`, `elis_met`, `merlynx_seen`, `badge_packet` … `badge_admin`, `all_badges`, `nino_letter_1..4`, `nino_letter_final`, `agent_vigil`, `overdrive_unlocked`, `deer_census_done`, `rostherne_relay_seen`, `tbilisi_domain_found`, `gaskell_network`, `vex_battle_2`, `agent_arbiter`, `jodrell_turned_away`, `signal_meter`, `cutover_started`, `cutover_days`, `amos_first_glimpse`, `crewe_fog_cleared`, `apt_boss_beaten`, `sandbach_crosses_lit`, `sandbach_shrine`, `twelvek_lanyard_seen`, `salon_seen`, `welsh_word_learned`, `rail_fast_travel`, `cambrian_ticket`, `lido_battle_done`, `kellan_handed_in` | `kellan_walked`, `orchard_open`, `vet_story_told`, `pippin_found`, `choice_agents` (`wipe` | `feed`), `agents_hardened`, `brewing_open`, `aberaeron_open`, `amos_alder_face`, `narrowboat_licence`, `mine_descended`, `checkpoints_seen`, `terrataur_woken`, `boat_lift_silence`, `lift_pass`, `stack_on_map`, `vex_missing`, `vex_release_stopped`, `choice_vex` (`verify` | `challenge`), `vex_ally`, `beeston_well_note`, `zephyrion_seen`, `root_bench_talk`, `invoice_holder` (`root` | `alder`), `runcorn_fog_fridges` (0–6), `gateway_cleared`, `stack_doors_opened` (0–8), `plug_pulled`, `mo_alerts`, `grin_remained`, `transporter_phase`, `cutover_restarted`, `jodrell_open`, `root_defeated`, `glitchra_defeated`, `oracle_you_came_back`, `choice_plug` (`delete` | `quarantine` | `custody`), `agent_pippin`, `glitchra_catchable`, `whitehat_sue/raj/kim/doc`, `champion_fought`, `champion_result` (`won` | `lost` | `thrown`), `vex_name_revealed`, `postgame_open`, PG `fifth_pulse penguin_case ellesmere_mirror lymm_pumps_talk amos_jim_face knights_hall_open merlynx_on_press roodee_rematch nino_letter_final`, rest points `meadow_sat_kerridge meadow_sat_tatton meadow_sat_frodsham meadow_sat_roodee`, beacons `beacon_lit_<mapid>`). Additional conventions (DESIGN-INDEX §6 "side systems" and §9):
 - Item pickup: `item_<mapid>_<n>`; hidden: `hitem_<mapid>_<n>`.
 - NPC talked once: `talked_<npcId>` (e.g. `talked_npc_sandbach_nia`); trigger seen: `seen_<mapid>_<name>`.
 - Trainer beaten: `beat_<trainerId>`; rematch tier: `rematch_<trainerId>` (0–5).
-- Side-system flags: `arena_open`, `arena_<tier>_clear`, `bounty_board_open`, `photo_mode`, `fish_rod_tier` (int), `brew_tier` (int), `trust_meadow` / `trust_bigboy` (0–5), `season_<mm>_done`, `ach_<nn>`.
+- Side-system flags: `arena_open`, `arena_<tier>_clear`, `bounty_board_open`, `photo_mode`, `fish_rod_tier` (int), `brew_tier` (int), `trust_meadow` (0–5), `season_<mm>_done`, `ach_<nn>`.
 - Traversal unlocks are **not flags**: they are the eleven ability ids in `MQ.Overworld.state.abilities` (`bike squeeze shove billhook lamp boat lift waders climb goggles railcard`, DESIGN-INDEX §3), granted by `unlock(id)` when the matching key item / cat / badge is obtained (§4.7). `squeeze` comes with `cats_joined`, `shove` with `badge_bear`.
 - Legendary state: `leg_<species>_state` ∈ `unseen | seen | fled | caught` and `leg_<species>_site` (rotation index).
-- Counters (`MQ.Flags.add`): `count_puppets_beaten`, `count_amos_exposed`, `count_lures_refused`, `count_brink_saves`, `count_overdrives`, `count_lido_heals`, `count_bounties`, `count_warrants`, `count_photos`, `steps_total`, `steps_rain`, plus the story counters `runcorn_fog_fridges`, `stack_doors_opened`, `cutover_days`.
+- Counters (`MQ.Flags.add`): `count_puppets_beaten`, `count_amos_exposed`, `count_lures_refused`, `count_overdrives`, `count_lido_heals`, `count_bounties`, `count_warrants`, `count_photos`, `steps_total`, `steps_rain`, plus the story counters `runcorn_fog_fridges`, `stack_doors_opened`, `cutover_days`.
 - Chapter accessor: `chapter` (int 1–12, 13 = post-game).
 
 **Quests** (`MQ.Quests`): main chapters `main_<nn>_<slug>` — `main_01_silk_and_static main_02_the_wheel_and_the_edge main_03_picnic_blankets main_04_the_dish_goes_dark main_05_puppets_on_the_line main_06_brine_and_perry main_07_salt main_08_the_ruin main_09_bridge_traffic main_10_draw_your_own_conclusions main_11_the_sky_is_quiet main_12_the_firewall main_13_fifth_pulse`; casebook cases `case_<nn>_<slug>` for SIDE-CONTENT §1: `case_01_silk_thread case_02_white_nancy_watch case_03_middlewood_escort case_04_wizards_well case_05_quarry_bank_overtime case_06_deer_census case_07_poynton_pool_ledger case_08_gaskell_draft case_09_penny_farthing_rally case_10_bear_of_congleton case_11_signal_box case_12_saxon_crosses_cipher case_13_bounty_fenced_goods case_14_deepfake_vicar case_15_timetable_tangle case_16_stokers_ladder case_17_brine_of_nantwich case_18_nantwich_ram case_19_middlewich_salt_roads case_20_winsford_flashes case_21_whistle_test case_22_lift_logic case_23_frodsham_beacon case_24_runcorn_gauntlet case_25_weaver_hall_ghost case_26_delamere_watch case_27_lymm_dam_reflection case_28_wire_arcade case_29_chester_walls_round case_30_elm_press`; bounties `bounty_<slug>` (generated: `bounty_<species>_<n>`, `kind:'bounty'`); trails `trail_gritstone trail_sandstone`; season cases `season_<mm>_<slug>` (e.g. `season_01_wassail`, `season_05_mayday`, `season_10_static_surge`); epilogues `epilogue_<slug>`. Quest stage ids are `s1..sN` within a quest; quest step flags are `case_<nn>_<step>` / `main_<nn>_<step>` (e.g. `case_12_handed_in`, `case_25_pup_returned`); completion sets `case_<nn>_done` / `main_<nn>_done`.
@@ -1032,4 +1028,4 @@ DESIGN-INDEX §6 and §9 are canonical for everything in this section; it is rep
 
 **Temperaments:** lower-case of SYSTEMS-SPEC §1 names (`brisk stubborn sharp blunt wary bold rash patient nosy gruff mardy canny steadfast placid skittish sly solid windy plain ordinary even fair`). **Weather:** overworld `clear rain fog wind sun snow`, battle `rain sun fog wind`. **Terrain:** `grass wet salt static silk`. **Day bands:** `dawn day dusk night`. **Statuses:** `psn tox par brn slp frz cnf`. **Difficulty:** `story normal hard nightmare`. **Currencies:** credits; `marks` (Casebook Marks), `chips` (Arena Chips).
 
-**Trainer ids** (DESIGN-INDEX §9): route/area trainers `tr_<mapid>_<n>` (class from §5 in the trainer's data); leaders `leader_ada leader_gaskell leader_otis leader_di leader_nell leader_jack leader_ria leader_mo`; rival fights `vex_1 vex_2 vex_3 vex_4` (Ch.1/3/8/12 pre-league) and `champion_vex`; White Hats `whitehat_sue whitehat_raj whitehat_kim whitehat_doc`; bosses `boss_preserved_one` (Lindow), `boss_apt`, `boss_kellan`, `boss_understudy_beeston`, `boss_terrataur`, `boss_hack_green_ops`, `boss_gateway` (Ch.9 chokepoint), `boss_root`, `boss_glitchra`, `boss_oracle` (`oracle_core`, Ch.9/11/PG), `boss_stack_remnant`; faction grunts `darkbyte_grunt_<n>`, `stuffer_1..3`. **Character ids** (dialogue speakers; DESIGN-INDEX §7): `player vex alder root elis mamgu nino grinmalkin oracle kellan twelve_k understudy cat_meadow cat_bigboy agent_sleet agent_vigil agent_arbiter agent_pippin`, leaders `leader_*`, named NPCs `npc_<town>_<firstname>`.
+**Trainer ids** (DESIGN-INDEX §9): route/area trainers `tr_<mapid>_<n>` (class from §5 in the trainer's data); leaders `leader_ada leader_gaskell leader_otis leader_di leader_nell leader_jack leader_ria leader_mo`; rival fights `vex_1 vex_2 vex_3 vex_4` (Ch.1/3/8/12 pre-league) and `champion_vex`; White Hats `whitehat_sue whitehat_raj whitehat_kim whitehat_doc`; bosses `boss_preserved_one` (Lindow), `boss_apt`, `boss_kellan`, `boss_understudy_beeston`, `boss_terrataur`, `boss_hack_green_ops`, `boss_gateway` (Ch.9 chokepoint), `boss_root`, `boss_glitchra`, `boss_oracle` (`oracle_core`, Ch.9/11/PG), `boss_stack_remnant`; faction grunts `darkbyte_grunt_<n>`, `stuffer_1..3`. **Character ids** (dialogue speakers; DESIGN-INDEX §7): `player vex alder root elis mamgu nino grinmalkin oracle kellan twelve_k understudy cat_meadow agent_sleet agent_vigil agent_arbiter agent_pippin`, leaders `leader_*`, named NPCs `npc_<town>_<firstname>`.

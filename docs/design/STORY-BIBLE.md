@@ -10,7 +10,7 @@ A SOC lead, two cats and three home-built AI agents walk the length of Cheshire 
 
 ## 2. Themes
 
-- **Things come back.** BIGBOY survived the vet's worst news. Perry pears fruit after a bad year. The Sandbach crosses were smashed and re-stood from bits the town kept in gardens. Nothing here is beyond recovery unless somebody decides it is.
+- **Things come back.** Perry pears fruit after a bad year. The Sandbach crosses were smashed and re-stood from bits the town kept in gardens. Nothing here is beyond recovery unless somebody decides it is.
 - **Persistence.** Salt keeps. Bog keeps. The grin remains when the cat is gone. Cyber-persistence and folklore-persistence are the same idea; the game keeps asking what deserves keeping.
 - **Trust is a supply chain.** Every badge is a signed anchor. Every helpful assistant phones home. The link you never checked is the one you built.
 - **Found family.** Nobody in Jim's party shares blood: two cats, three agents, a rival who wants to be hated, an old woman in Ceredigion who isn't technically his grandmother, a friend in Tbilisi who writes on paper.
@@ -32,8 +32,6 @@ A SOC lead, two cats and three home-built AI agents walk the length of Cheshire 
 **JIM** — the player. SOC lead, threat hunter, walker. Speaks in short, tired, exact sentences; unexpectedly gentle. Answers NPCs in Welsh, German, Russian or Albanian when the game offers it (these lines unlock dialogue nobody else hears). Tics: "Noted." / "Not concerned. Slightly concerned." Arc: from *containment* (a man who closes tickets) to *custody* (a man who takes responsibility for what he made — agents, a rivalry, a very large cat's second chance).
 
 **MEADOW** — small, black, extremely fast; party member who cannot be boxed. Overworld: runs ahead on routes, sits on things you need to read, refuses water. Battle: priority, evasion, "Skitter". Voice through action only. She likes VEX immediately, which infuriates VEX. She is also, it turns out, the only verifier in Cheshire ORACLE never trained on.
-
-**BIGBOY** — enormous, black-and-white, walks at his own pace behind you. *Back from the Brink*: survives a KO at 1 HP once per battle. He can sit down mid-route and refuse to move: a rest point (heals a little, saves) and a joke. He purrs; the synth does the purr. He is the game's thesis in cat form.
 
 **The Agent Trio** — cooldown battle abilities (see SYSTEMS-SPEC §6) with menu personalities.
 - **SLEET** (triage): blunt, all lowercase. "foe: slow. now: slower. bill me."
@@ -97,7 +95,7 @@ Level band = wild/trainer range for the chapter's main path.
 - **Place:** Alder Labs in the silk mill off Park Green; Paradise Mill; the 108 Steps; the canal by Clarence Mill; White Nancy above Bollington.
 - **Goal:** take the contract, choose a starter (silk-moth, salt-newt or mill-ember line), meet VEX.
 - **Obstacle:** the cats will not stay in the flat. MEADOW has already chosen your starter and is sitting on it.
-- **Set-piece:** the tutorial climb to White Nancy with MEADOW sprinting ahead and BIGBOY refusing the last hundred yards; the county laid out below, and every wild creature turning to face the same direction at once.
+- **Set-piece:** the tutorial climb to White Nancy with MEADOW sprinting ahead and waiting at the top; the county laid out below, and every wild creature turning to face the same direction at once.
 - **Reveal:** the "rogue signal" is periodic and pulses from the south-west. Alder: "I've had it looked at." She hasn't.
 - **Unlocks:** party (starter + cats), CASEBOOK, first VEX battle at the canal, SLEET.
 
@@ -137,9 +135,9 @@ Level band = wild/trainer range for the chapter's main path.
 - **Gym:** Brine Nell, Water, TOKEN.
 - **Goal:** Badge 5; then go home.
 - **Obstacle:** Kellan makes his stand at the brine lido; he wants to baptise the town. Then: Y Berllan has no signal, no wild encounters, and your agents keep "helping" you into fights you didn't pick.
-- **Set-piece:** the lido battle in the rain, the pool's steam healing both sides. Then an evening at the elm press: brewing, BIGBOY asleep on warm stone, MEADOW in the long grass; Mam-gu tells the vet story properly, in Welsh, and the game finally lets Jim answer. Then the shed. The drive. Jim's own voice in old logs. Reading the Trio's logs by lamplight while Mam-gu holds the lamp.
+- **Set-piece:** the lido battle in the rain, the pool's steam healing both sides. Then an evening at the elm press: brewing, MEADOW in the long grass; Mam-gu tells the vet story properly, in Welsh, and the game finally lets Jim answer. Then the shed. The drive. Jim's own voice in old logs. Reading the Trio's logs by lamplight while Mam-gu holds the lamp.
 - **Reveal:** ORACLE is PIPPIN. Alder sold it. The Trio were built on its endpoint. **CHOICE 1: Wipe or Feed.** Side-decision at Nantwich: hand Kellan to Nell or walk him to hear what he's been paid in (see §8).
-- **Unlocks:** brewing (repeatable), badges relabelled SIGNED, *Back from the Brink* upgraded (BIGBOY can shield an ally once), the Welsh word logged in the CASEBOOK, walk to the sea at Aberaeron.
+- **Unlocks:** brewing (repeatable), badges relabelled SIGNED, MEADOW at full trust, the Welsh word logged in the CASEBOOK, walk to the sea at Aberaeron.
 
 ### Ch.7 — Salt — Middlewich, Winsford, Northwich, Anderton *(Lv 29–34, Gym 6)*
 - **Gym:** Foreman Jack, Rock, DAEMON.
@@ -226,7 +224,7 @@ Post-game hook (all): the fifth pulse from the west. Under Custody, Nino's lette
 |---|---|---|
 | 1 | `contract_signed` | Alder contract accepted |
 | 1 | `starter_chosen` | starter picked (value: line id) |
-| 1 | `cats_joined` | MEADOW and BIGBOY in party |
+| 1 | `cats_joined` | MEADOW in party |
 | 1 | `white_nancy_seen` | first signal cutscene |
 | 1 | `vex_battle_1` | canal battle done |
 | 1 | `agent_sleet` | SLEET unlocked |
@@ -269,7 +267,6 @@ Post-game hook (all): the fifth pulse from the west. Under Custody, Nino's lette
 | 6 | `pippin_found` | drive read; badges relabelled |
 | 6 | `choice_agents` | value `wipe` / `feed` |
 | 6 | `agents_hardened` | if wipe |
-| 6 | `bigboy_shield` | trait upgraded |
 | 6 | `brewing_open` | press usable |
 | 6 | `aberaeron_open` | the walk to the sea |
 | 7 | `amos_alder_face` | Middlewich impostor |
@@ -324,7 +321,7 @@ Post-game hook (all): the fifth pulse from the west. Under Custody, Nino's lette
 5. **MADAM GASKELL (Ch.3):** "In Knutsford we don't say 'threat actor', dear. We say 'from Wilmslow'."
 6. **KELLAN (Ch.3):** "One command! Copy, paste, run — and you are *clean*! Do not read it. Reading is doubt." **JIM:** "Read it." **KELLAN:** "...I have, actually. That's the trouble."
 7. **ROOT (Ch.4, hi-vis, gate):** "Site's closed." **JIM:** "For what?" **ROOT:** "Maintenance. Weather. You, specifically."
-8. **VIGIL (after BIGBOY survives at 1 HP):** "He did it again. He does that. He does that and then he wants his tea."
+8. **VIGIL (after MEADOW stays put at Y Berllan):** "She stayed. She does not stay. Have you eaten?"
 9. **VEX (Ch.5, outside the salon):** "It's fine. It was a browser update. She clicked it. Everyone clicks it." **JIM:** "Noted." **VEX:** "Don't say noted at me."
 10. **JIM (Ch.5, on the train):** "Paid." **VEX:** "What?" **JIM:** "It's what I say to the small one when she sits on my keyboard. Means 'don't'." **VEX:** "Does it work?" **JIM:** "No."
 11. **MAM-GU (Ch.6):** "You've named the computer after my pear tree." **JIM:** "It was a good tree." **MAM-GU:** "It's a Blakeney Red. A pippin is an apple, cariad." **JIM:** "I was twelve when I named the tree." **MAM-GU:** "You were twelve when you named the computer, by the look of it. Sit."
@@ -338,11 +335,11 @@ Post-game hook (all): the fifth pulse from the west. Under Custody, Nino's lette
 19. **VEX (Ch.12, amphitheatre, after):** "That was mine." **JIM:** "I know." **VEX:** "Say it properly." **JIM:** "That was yours."
 20. **NINO (final letter):** "Coming to visit. Which town has the least Wi-Fi? Also — something in Tbilisi is asking about you. In your voice. I told it you were out walking."
 
-## 12. How MEADOW, BIGBOY and the Agent Trio recur
+## 12. How MEADOW and the Agent Trio recur
 
 **MEADOW** is opinion made small and fast. Every chapter she does one thing that matters: chooses the starter (1); sits on the wheelhouse manual (2); ignores the sermon and chases a PIPHART (3); is the only party member ROOT looks at (4); rides the loco cab (5); hunts in the long grass while the drive is read (6); refuses the narrowboat and has to be carried, then sits on the tannoy speaker while ORACLE talks (7); walks past the impostor and into the real VEX's lap — the verification (8); climbs a fridge (9); sits on Mo's whiteboard, obscuring half of "the grin remained" (10); sits on the control-room console at Jodrell (11); on the Eastgate Clock for the credits (12). Rule: MEADOW never has a line, and she is never wrong.
 
-**BIGBOY** is the thesis. Rest points (sit-downs) are placed where the story wants you to stop and look — the last hundred yards below White Nancy, the Tatton mere, the top of the Frodsham approach, the Roodee. *Back from the Brink* is never explained in text; VIGIL's line after it triggers is the closest the game comes. At Y Berllan the vet story is told in Welsh and the trait upgrades (shield an ally once). At Jodrell, Choice 3 is framed on him: the camera holds on BIGBOY asleep by the console when the options appear. Custody's fourth-agent line at Chester: `SEV: LOW. SUBJECT: the big one is asleep again.`
+Rest points (her sit-downs) are placed where the story wants you to stop and look — the last hundred yards below White Nancy, the Tatton mere, the top of the Frodsham approach, the Roodee. She is a cat who does not stop, so a stop means something. At Y Berllan the vet story is told in Welsh and she crosses the rug and stays, which she does not do; that is the beat, and no text explains it. At Jodrell, Choice 3 is framed on her: the camera holds on MEADOW asleep by the console when the options appear. Custody's fourth-agent line at Chester: `SEV: LOW. SUBJECT: the small one is asleep on it again.`
 
 **The Agent Trio** are the player's HUD companions and the game's telemetry twist. Menu banter is chapter-aware (SLEET grumbles about hills; VIGIL asks if you've eaten at every Care centre; ARBITER voids VEX's excuses). Beats: unlocked one per chapter (1–3); their "helping" into unwanted fights is the Ch.6 obstacle; their logs are the reveal; the Y Berllan choice re-specs them (Wipe = Hardened, they keep talking through ORACLE's voice; Feed = they stay strong and go fully silent); the boat-lift silence (7) and the Jodrell exchange (11) are the two times the game turns their sound off. Under Custody they gain a fourth sibling and start talking *to* it in the menu — SLEET: "new one's slow." VIGIL: "New one's *careful*." ARBITER: "Overruled. Both."
 

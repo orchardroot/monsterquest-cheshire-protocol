@@ -43,7 +43,7 @@
     ]);
     yield C.say([
       "MEADOW goes ahead about forty yards, stops, and looks back at you until you catch up. She does that on routes.",
-      "BIGBOY sits down at the second tree and looks at the mere and does not intend to be argued with."
+      "Then she sits down at the second tree and looks at the mere and does not intend to be argued with."
     ]);
   });
 
@@ -297,7 +297,7 @@
     yield C.wait(400);
     yield C.say([
       "MEADOW does not turn. MEADOW sits down on the jetty with her tail round her feet and watches the water.",
-      "BIGBOY, somewhere up the lane, sits down as well, which is not the same thing and you know it isn't."
+      "She does not watch water. She has never once watched water, and you know what that means."
     ]);
     yield C.setFlag("clue_relay_period", true);
     yield C.notify("Casebook: a submerged relay under Rostherne Mere.");

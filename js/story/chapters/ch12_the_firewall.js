@@ -202,7 +202,7 @@
     yield C.music("battle_champion");
     yield C.say([
       "The Roman amphitheatre. Seven thousand seats, half of them still under the road, and the town stood on the wall above.",
-      "Both cats come down the ramp with you. MEADOW goes first because MEADOW always goes first. BIGBOY arrives in his own time and sits where he will be in the way."
+      "MEADOW comes down the ramp with you. MEADOW goes first because MEADOW always goes first, and then sits where she will be in the way."
     ]);
     if (verified) {
       yield C.say([

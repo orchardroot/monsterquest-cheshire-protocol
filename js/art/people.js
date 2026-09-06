@@ -125,7 +125,6 @@
 
   // ---- animals ---------------------------------------------------------
   ANI("cat_meadow",  { body: "cat", dark: "#0e0d13", mid: "#1f1d28", light: "#3a3746", acc: "#7fd66b", scale: 0.78, fast: true });
-  ANI("cat_bigboy",  { body: "cat", dark: "#171520", mid: "#2b2933", light: "#efece4", acc: "#f6bcc9", scale: 1.18, patches: true, slow: true });
   ANI("cat_grinkit", { body: "cat", dark: "#2b2338", mid: "#553f74", light: "#ab90cf", acc: "#f5e05a", scale: 0.72, grin: true });
   ANI("dog",         { body: "dog", dark: "#3a2a1c", mid: "#7a5a34", light: "#c2a06a", acc: "#e2d8c4", scale: 0.95 });
   ANI("deer",        { body: "deer", dark: "#4a3524", mid: "#8a6540", light: "#c8a173", acc: "#efe6d2", scale: 1.15 });
@@ -492,7 +491,7 @@
     brine_nell: "nell", stoker_di: "di", foreman_jack: "jack", chemist_ria: "ria",
     bearward_otis: "otis", sysadmin_ada: "ada", brother_kellan: "kellan",
     understudy: "npc_amos", the_understudy: "npc_amos", meadow: "cat_meadow",
-    bigboy: "cat_bigboy", nurse: "npc_nurse", twelvek: "twelve_k"
+    nurse: "npc_nurse", twelvek: "twelve_k"
   };
 
   function portraitHuman(d) {
@@ -745,7 +744,7 @@
   };
 
   PA.warm = function (ids) {
-    const list = ids || ["player", "cat_meadow", "cat_bigboy", "vex", "npc_walker"];
+    const list = ids || ["player", "cat_meadow", "vex", "npc_walker"];
     for (let i = 0; i < list.length; i++) {
       for (let r = 0; r < DIRS.length; r++) for (let f = 0; f < FRAMES; f++) {
         try { PA.frame(list[i], DIRS[r], f); } catch (e) { MQ.warn("[PeopleArt] " + list[i] + " failed", e); }

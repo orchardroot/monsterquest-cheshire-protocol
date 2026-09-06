@@ -179,7 +179,7 @@
       { x: 50, y: 22, item: "collectible_11", n: 1, flag: "catgap_chester_1",
         say: "MEADOW goes up the Eastgate's ironwork, sits under the clock face for eleven seconds, and comes back with something small and brass in her mouth." }
     ],
-    restPoints: [{ x: 32, y: 20, flag: "bigboy_sat_chester" }],
+    restPoints: [{ x: 32, y: 20, flag: "meadow_sat_chester" }],
     npcs: [
       { id: "npc_chester_bledig", x: 30, y: 21, dir: "down", sprite: "npc_historian", behaviour: "still", trainer: "tr_chester_1", sight: 0, script: "nw_chester_crier" },
       { id: "npc_chester_anwen", x: 36, y: 18, dir: "up", sprite: "npc_shopkeep", behaviour: "still", trainer: "tr_chester_2", sight: 0, script: "nw_chester_rows_merchant" },
@@ -369,7 +369,7 @@
       { x: 3, y: 30, item: "full_restore", n: 2, flag: "item_chester_amphitheatre_1" },
       { x: 36, y: 30, item: "capsule_root", n: 5, hidden: true, flag: "item_chester_amphitheatre_2" }
     ],
-    restPoints: [{ x: 22, y: 27, flag: "bigboy_sat_amphitheatre" }],
+    restPoints: [{ x: 22, y: 27, flag: "meadow_sat_amphitheatre" }],
     npcs: [
       { id: "npc_chester_champion", x: 20, y: 14, dir: "down", sprite: "vex", behaviour: "still", script: "nw_champion_vex",
         cond: "whitehat_doc && !champion_fought" },
@@ -443,7 +443,7 @@
       { x: 3, y: 27, item: "lucky_coin", n: 1, hidden: true, flag: "item_chester_roodee_1" },
       { x: 35, y: 4, item: "capsule_quick", n: 4, flag: "item_chester_roodee_2" }
     ],
-    restPoints: [{ x: 11, y: 22, flag: "bigboy_sat_roodee" }],
+    restPoints: [{ x: 11, y: 22, flag: "meadow_sat_roodee" }],
     npcs: [
       { id: "npc_chester_roodee_desk", x: 26, y: 23, dir: "left", sprite: "npc_shopkeep", behaviour: "still", script: "nw_roodee_betting" },
       { id: "npc_chester_roodee_vex", x: 19, y: 15, dir: "down", sprite: "vex", behaviour: "still", script: "nw_roodee_rematch",

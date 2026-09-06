@@ -340,20 +340,20 @@
     else if (MQ.Trainer && MQ.Trainer.badges && MQ.Trainer.badges.add) yield C.custom(function () { MQ.Trainer.badges.add("badge_bear"); });
     yield C.say([
       "Now. Your big lad. The black-and-white one who sits down when he's had enough.",
-      "Bring him here."
+      "Come here."
     ], { name: "Otis" });
     yield C.wait(400);
     yield C.say([
-      "Otis puts a hand flat on the pit wall and leans on it and says something to BIGBOY that you do not catch.",
-      "BIGBOY gets up, walks over, puts his shoulder against the wheelie bin at the back of the pit, and moves it four feet without appearing to try."
+      "Otis puts a hand flat on the pit wall, leans on it, and says something to it that you do not catch.",
+      "Then he puts his shoulder to the wheelie bin at the back of the pit and moves it four feet without appearing to try."
     ]);
     yield C.say([
       "There you are. That's a bearward's trick and it is four hundred years old and it is not a trick.",
       "You ask them once, properly, and then you let them decide. Works on bears. Works on cats. Works on people, mostly."
     ], { name: "Otis" });
     yield C.unlock("shove");
-    yield C.setFlag("bigboy_shove", true);
-    yield C.notify("BIGBOY Shove: he will move things, if asked properly.");
+    yield C.setFlag("shove_learned", true);
+    yield C.notify("Shove: things will move, if asked properly.");
     yield C.say([
       "One more thing and then I'll let you go.",
       "There's a memo on the board in the keeper's hut. Landlord's circular. I thought it was a bill and I've ignored it a fortnight.",

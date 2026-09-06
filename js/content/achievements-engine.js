@@ -82,8 +82,8 @@
   hook("ach_16", "On Time, Every Time", "A perfect Crewe timetable.", 1, function () { return flagGet("timetable_perfect") ? 1 : 0; });
   hook("ach_17", "Wallwalker", "Walk the whole Chester circuit without stepping off.", 1, function () { return questDone("case_29_chester_walls_round") ? 1 : 0; });
   hook("ach_18", "Small Black Fast", "MEADOW trusts you completely.", 5, function () { return MQ.Cats ? MQ.Cats.trust("meadow") : num("trust_meadow"); });
-  hook("ach_19", "Back From The Brink", "BIGBOY survives at 1 HP twenty-five times. He knows exactly what he is doing.", 25, function () { return stat("brinkSaves"); });
-  hook("ach_20", "Big Boy Energy", "BIGBOY trusts you completely. He still sits down when he likes.", 5, function () { return MQ.Cats ? MQ.Cats.trust("bigboy") : num("trust_bigboy"); });
+  hook("ach_19", "Every Stopping Place", "MEADOW sits down in all six places that are worth stopping in.", 6, function () { return MQ.Cats && MQ.Cats.restsFound ? MQ.Cats.restsFound() : 0; });
+  hook("ach_20", "Best Dressed", "Every collar in the county, and she will wear the plain one anyway.", 10, function () { return MQ.Cats ? Object.keys(MQ.Cats.collarsOwned || {}).length : 0; });
   hook("ach_21", "First Press", "Brew something at the elm press.", 1, function () { return stat("brews"); });
   hook("ach_22", "Mam-gu Would Approve", "Complete a Mam-gu's Cask.", 1, function () { return flagGet("brewed_brew_mamgu_cask") ? 1 : 0; });
   hook("ach_23", "Cambrian Line", "Ride the Cambrian line to the orchard.", 1, function () { return flagGet("orchard_open") ? 1 : 0; });

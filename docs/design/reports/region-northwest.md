@@ -26,7 +26,7 @@ the same thing from Delamere to the Dee.
 | `nw_chester.js` | Chester (four Roman streets, the Rows, Eastgate), **`chester_walls`** as a walkable two-mile circuit with four towers, the Northgate, the cathedral chapter house, the amphitheatre, the Roodee, the Groves, Edgar's Field, 6 townhouses + care/post/mart/inn |
 | `nw_wirral.js` | R29 to Chester Zoo (+ penguin pool, keeper's hut), Ellesmere Port (+ boat museum, the sixty-first boat, the outlet), the Wirral Way, Parkgate, Ince Marshes, the cooling-water intake, the Weaver Bend back to Frodsham |
 
-283 NPCs, 232 signs, 197 pickups, 73 trainer placements, 9 cat gaps, 15 BIGBOY
+283 NPCs, 232 signs, 197 pickups, 73 trainer placements, 9 cat gaps, 15
 rest points, 591 warps — every one of them reachable on foot and round-tripping.
 
 **Data** — `js/data/encounters_nw.js` (108 tables incl. night/fog/rain/wind

@@ -87,7 +87,7 @@
       { x: 36, y: 5, item: "collectible_12", n: 1, hidden: true, flag: "item_bosley_cloud_4" },
       { x: 34, y: 24, item: "tonic", n: 3, flag: "item_bosley_cloud_5" }
     ],
-    restPoints: [{ x: 20, y: 22, flag: "bigboy_sat_bosley" }],
+    restPoints: [{ x: 20, y: 22, flag: "meadow_sat_bosley" }],
     npcs: [
       { id: "npc_bosley_aeronwy", x: 12, y: 26, dir: "up", sprite: "npc_fellrunner", behaviour: "look", radius: 3, trainer: "tr_bosley_cloud_1", sight: 3 },
       { id: "npc_bosley_idwal", x: 27, y: 19, dir: "right", sprite: "npc_historian", behaviour: "still", trainer: "tr_bosley_cloud_2", sight: 0, script: "mid_bosley_idwal" },
@@ -254,7 +254,7 @@
       { x: 5, y: 5, item: "elixir", n: 2, hidden: true, flag: "item_mow_cop_3" },
       { x: 31, y: 4, item: "capsule_heavy", n: 3, hidden: true, flag: "item_mow_cop_4" }
     ],
-    restPoints: [{ x: 14, y: 20, flag: "bigboy_sat_mowcop" }],
+    restPoints: [{ x: 14, y: 20, flag: "meadow_sat_mowcop" }],
     npcs: [
       { id: "npc_mowcop_keeper", x: 12, y: 10, dir: "down", sprite: "npc_historian", behaviour: "still", trainer: "tr_mow_cop_1", sight: 0,
         script: "mid_mowcop_keeper" },

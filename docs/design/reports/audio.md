@@ -61,7 +61,7 @@ The county theme (`COUNTY_A` / `COUNTY_B` over `PROG_COUNTY`) is Cheshire's leit
 plays it in Dorian, Chester in Ionian with an organ, the routes walk it, `battle_wild` shreds it and
 the credits reprise it. Regional families share colour — flute and strings on `east`/`bollin`, rail
 snare on `dane`/`south`, wind pads on `salt`/`mersey`/`west`, harp alone on `wales`. Both cats have a
-motif (`MEADOW`, `BIGBOY`) and ORACLE has a four-note tag that turns up wherever it is listening.
+motif (`MEADOW`, answered an octave up) and ORACLE has a four-note tag that turns up wherever it is listening.
 
 Every looping song is 32-64 bars with an intro before `loop.from`, a B section and real chord changes;
 the stingers are 3-8 bars and do not loop. Variants gate tracks: `town_prestbury` grows an engine chug

@@ -132,7 +132,7 @@
       { x: 24, y: 24, item: "cat_token_1", n: 1, flag: "catgap_sandbach_1",
         say: "MEADOW squeezes between the plinth and the railing, sits in the shadow of the north cross exactly where the carving of the animals is, and looks at you until you look at the carving." }
     ],
-    restPoints: [{ x: 27, y: 24, flag: "bigboy_sat_sandbach" }],
+    restPoints: [{ x: 27, y: 24, flag: "meadow_sat_sandbach" }],
     npcs: [
       { id: "npc_sandbach_nia", x: 19, y: 24, dir: "up", sprite: "npc_historian", behaviour: "still", script: "mid_sandbach_nia" },
       { id: "npc_sandbach_hild", x: 25, y: 20, dir: "left", sprite: "npc_granny", behaviour: "still", script: "mid_sandbach_hild" },

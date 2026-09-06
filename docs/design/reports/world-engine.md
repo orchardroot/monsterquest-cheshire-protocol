@@ -38,7 +38,7 @@ World.invalidate(id?)  World.stats()
 
 **New optional map fields** (additive to ENGINE §5.2; all ignored if absent):
 `open:['x,y']` (punch a hole through a solid tile), `catGaps:[{x,y,item,n,flag,lever,tile,say,solid}]`,
-`restPoints:[{x,y,flag}]` (BIGBOY sit-downs), `billhookGaps:['x,y']`, `encounterParent:'mapid'`
+`restPoints:[{x,y,flag}]` (MEADOW sit-downs), `billhookGaps:['x,y']`, `encounterParent:'mapid'`
 (sub-maps borrowing a parent's tables), `dark:true` (cave lighting), `bg:'#hex'`, `dialogue:'poolId'`,
 `shop:'shopId'`, `berry`/`ore` (item id a map's bushes/veins give), `underBoulder` (tile revealed by a shove),
 `fishing:'fish_<mapid>'`, `landmark`, `healPoint`, `station`.
@@ -76,7 +76,7 @@ Behaviours `still` (turns to a player who stands next to them) · `wander` (radi
 `path` (waypoints, `pathMode:'loop'|'pingpong'`, `pathPause`) · `look` (turns; locks on inside `radius`) ·
 `follow` (cats). Trainers get an `!` bubble, walk up their sight line, then battle.
 Cats trail on a 256-entry breadcrumb ring buffer (MEADOW 30 px back and darts ahead when you idle;
-BIGBOY 58 px back, sits when you stop, and fires `cat:rest` at a `restPoint` → heal 25 %, autosave, flag).
+MEADOW 30 px back, darts ahead when you dawdle, sits when you stop, and fires `cat:rest` at a `restPoint` → heal 25 %, autosave, flag).
 Without `MQ.PeopleArt` everyone is drawn procedurally (jacket/hair/skin hashed from the sprite id), so the
 world is legible before the art lands.
 
@@ -92,7 +92,7 @@ in the game's voice.
 
 ## 4. `MQ.Encounters`
 `step(map,x,y,opts)` (per tile enter) · `rollZone` · `force` · `tableId(map,zone)` (night replaces, rain/fog
-overlay 50 %, missing variant falls back) · `rateFor` · `pickRow` · `preview(map,x,y)` (Tracker perk / BIGBOY's
+overlay 50 %, missing variant falls back) · `rateFor` · `pickRow` · `preview(map,x,y)` (Tracker perk / MEADOW's
 nose; returns rows with percentages) · `fish(map,x,y,{rod})` with chain bonus and rod-tier gating
 (`bamboo|weighted|carbon|elm`; legendary only dawn/dusk, ghost only night + Ghost Lens) · `repel/lure/
 clearRepel/breakChain/afterBattle` · `signalLevel()` (uses `MQ.Signal.level`, else derives from
@@ -145,7 +145,7 @@ overworld:enter overworld:exit`.
 - **ui** — push the scene: `MQ.Scenes.push(MQ.Overworld, {map, x, y, dir})` from Title/continue; provide
   `MQ.UI.Pause` (start opens it). Nothing else pushes the overworld.
 - **art** — `MQ.PeopleArt.get(spriteId, dir, frame, pose)` → canvas (poses `null`/`'sit'`), `portrait(key)`;
-  sprite ids used: `player player_boat player_bike cat_meadow cat_bigboy` + whatever maps name.
+  sprite ids used: `player player_boat player_bike cat_meadow` + whatever maps name.
   Optional `MQ.FX.weather(ctx, kind, dt, {w,h,ox,oy})` overrides the built-in weather.
   **A `cat_gap` tile id** in `art/tiles.js` (solid, `interact:'catgap'`) would let maps draw gaps in the
   legend; until then they list `catGaps` on the map. Note `cliff_climb` is treated as solid until you hold
@@ -172,7 +172,7 @@ Flags written by this engine (all `<system>_<thing>` shaped, per DESIGN-INDEX §
 `visited_care_<mapid>`, `gather_<mapid>_<x>_<y>`, `shook_<mapid>_<x>_<y>`, `mined_<mapid>_<x>_<y>`,
 `lures_taken`, `lures_declined`, `lured`, `trinket_<itemId>` (fallback until `MQ.Trainer.trinkets` exists),
 `no_encounters` (debug). Existing canon reused unchanged: `talked_<npcId>`, `item_<mapid>_<n>`,
-`unlock_<ability>`, `bigboy_sat_<place>` (via `restPoints[].flag`), `trust_meadow`/`trust_bigboy`.
+`unlock_<ability>`, `meadow_sat_<place>` (via `restPoints[].flag`), `trust_meadow`.
 No new species/move/item/song/sfx ids; fallback pickups use ROSTER ids (`blackberry`, `apple`, `copper_wire`).
 
 ## Known gaps

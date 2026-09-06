@@ -105,8 +105,8 @@ module.exports = function (t, assert) {
     MQ.Flags.set("contract_signed", true);
     assert.ok(!MQ.Flags.get("cats_joined"));
     return pump(env, MQ.Script.run(MQ.Story.npcScripts.east_macc_first_step, {}), 1500, "first step").then(function () {
-      assert.ok(MQ.Flags.get("cats_joined"), "MEADOW and BIGBOY joined");
-      assert.ok(MQ.Party.list.length >= 2, "the cats are in the party");
+      assert.ok(MQ.Flags.get("cats_joined"), "MEADOW joined");
+      assert.ok(MQ.Party.list.length >= 1, "the cat is in the party");
       assert.ok(MQ.Flags.get("macc_first_step"));
     });
   });

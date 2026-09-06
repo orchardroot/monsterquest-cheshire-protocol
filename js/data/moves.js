@@ -143,7 +143,6 @@
   M("white_nancy_stand", "White Nancy Stand", "normal", "status", 0, null, 5, 4, "", [END(), OD(25)], "Stand like the folly on the hill: survive at 1 HP and gain Overdrive.");
   M("belfry_toll", "Belfry Toll", "normal", "spec", 75, 100, 15, 0, "s", [G("foe", "spd", -1, 20)], "A Sandbach peal that goes straight through you.");
   M("skitter", "Skitter", "normal", "status", 0, null, 20, 1, "", [G("self", "eva", 1), G("self", "spe", 1)], "MEADOW's dart-and-vanish. Blink and she's behind you.");
-  M("big_sit", "Big Sit", "normal", "status", 0, null, 5, 0, "", [CLEANSE("foe", "stages"), G("self", "def", 2)], "BIGBOY sits on the problem until the problem stops.");
   M("bear_hug", "Bear Hug", "normal", "phys", 80, 100, 15, 0, "c", [TRAP(4)], "Otis's Skill Card. Beartown's oldest argument.");
 
   // =================================================================
@@ -343,7 +342,6 @@
   OM("od_ghost", "Grave Bell", "ghost", "spec", 130, [S("cnf", 30)], "generic", "One toll, from under the water.");
   OM("od_cyber", "Root Shell", "cyber", "spec", 130, [PPD(2)], "generic", "Root, obtained. The foe's last move stops working.");
   OM("zoomies", "Zoomies", "normal", "phys", 40, [MH(3, 3), G("self", "spe", 1)], "meadow", "MEADOW at eleven at night, three times, before you can stand up.").priority = 2;
-  OM("brink_roar", "Brink Roar", "normal", "status", 0, [HEAL(0.5), G("self", "def", 1), G("self", "spd", 1), G("foe", "atk", -1)], "bigboy", "BIGBOY makes a noise no cat that size should make.");
   OM("jacquard_weave", "Jacquard Weave", "bug", "spec", 130, [TR("silk", 5), G("foe", "spe", -1)], "silkin", "A punch-card pattern woven straight through the foe.");
   OM("brine_tide", "Brine Tide", "water", "spec", 130, [WX("rain", 8), G("self", "spd", 1)], "brinewt", "The springs come up through the floor of the world.");
   OM("firebox_overload", "Firebox Overload", "fire", "spec", 140, [S("brn", 30), G("self", "spe", -1)], "kindlin", "Every door open, every damper wrong, and glorious.");

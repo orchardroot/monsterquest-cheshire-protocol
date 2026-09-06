@@ -128,7 +128,7 @@
       { x: 25, y: 24, item: "cat_token_10", n: 1, flag: "catgap_daresbury_1",
         say: "MEADOW slips under the datacentre fence. Four seconds. She comes back with a lanyard clip and no lanyard, and she is extremely pleased with herself." }
     ],
-    restPoints: [{ x: 27, y: 21, flag: "bigboy_sat_daresbury" }],
+    restPoints: [{ x: 27, y: 21, flag: "meadow_sat_daresbury" }],
     npcs: [
       { id: "npc_daresbury_quill", x: 38, y: 14, dir: "down", sprite: "npc_dev", behaviour: "still", trainer: "tr_daresbury_1", sight: 0, script: "nw_daresbury_quill" },
       { id: "npc_daresbury_verger", x: 15, y: 15, dir: "down", sprite: "npc_historian", behaviour: "still", trainer: "tr_daresbury_2", sight: 0, script: "nw_daresbury_verger" },

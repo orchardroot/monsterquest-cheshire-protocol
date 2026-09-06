@@ -214,7 +214,7 @@ module.exports = function (t, assert) {
     });
   });
 
-  t("Ch.4: Otis gates his arch, hands over BEAR, and teaches BIGBOY to shove", function () {
+  t("Ch.4: Otis gates his arch, hands over BEAR, and teaches you to shove", function () {
     const env = H.load();
     const MQ = env.MQ;
     MQ.Dialog.auto = true; MQ.Dialog.autoChoice = 0;
@@ -235,7 +235,7 @@ module.exports = function (t, assert) {
     }).then(function () {
       assert.ok(MQ.Flags.get("badge_bear"), "badge_bear");
       assert.ok(MQ.Inventory.count("tm_bear_hug") >= 1, "the Skill Card");
-      assert.ok(MQ.Overworld.state.abilities.has("shove"), "BIGBOY Shove unlocked with the badge");
+      assert.ok(MQ.Overworld.state.abilities.has("shove"), "Shove unlocked with the badge");
       MQ.Flags.set("cutover_started", true);
       return pump(env, MQ.Script.run(N.mid_gym3_memo, {}), 1500, "the memo");
     }).then(function () {

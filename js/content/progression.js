@@ -131,11 +131,11 @@
   ]);
   node("escalate", "rollback", 5, [R("Rollback", "Once per gauntlet or Arena run, revert a single faint.", { rollbackFaints: 1 })]);
   node("escalate", "fail_safe_protocol", 6, [
-    R("Fail-Safe Protocol", "BIGBOY's Back from the Brink triggers twice per battle.", { brinkUses: 2 }),
+    R("Fail-Safe Protocol", "Back from the Brink triggers twice per battle.", { brinkUses: 2 }),
     R("Quiet Cat", "MEADOW's Slipstream grants +2 instead of +1.", { meadowSlipstreamStage: 2 })
   ]);
   node("escalate", "cat_handler", 7, [
-    R("Cat Handler", "Trust with MEADOW and BIGBOY grows half again as fast.", { trustGainMult: 1.5 }),
+    R("Cat Handler", "Trust with MEADOW grows half again as fast.", { trustGainMult: 1.5 }),
     R("Bond", "Friendship gains ×1.5 for the whole party.", { friendshipGainMult: 1.5 })
   ]);
   node("escalate", "escalation", 8, [R("Escalation", "VIGIL's cooldown is one turn shorter and it heals 10% more.", { vigilCooldown: -1, vigilHealMult: 1.1 })]);

@@ -159,7 +159,7 @@ module.exports = function (t, assert) {
       return run(env, "sw_vet_story");
     }).then(function () {
       assert.ok(MQ.Flags.get("vet_story_told"));
-      assert.ok(MQ.Flags.get("bigboy_shield"), "Back from the Brink is upgraded");
+      assert.ok(MQ.Flags.get("welsh_word_learned"), "and the Welsh word lands with it");
       assert.ok(MQ.Flags.get("welsh_word_learned"), "and the Welsh is logged");
     });
   });

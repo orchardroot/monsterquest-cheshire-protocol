@@ -64,7 +64,7 @@ module.exports = function (t, assert) {
     ["silkin", "spindrake", "loomoth", "brinewt", "saltander", "halosaur",
      "kindlin", "stokerel", "furnacore",
      "merlynx", "terrataur", "zephyrion", "glitchra",
-     "meadow", "bigboy", "grinmalkin", "grinkit",
+     "meadow", "grinmalkin", "grinkit",
      "oracle_core", "oracle_core_p2", "oracle_core_p3", "shardmind",
      "amoslurk", "understudy", "trojanox", "wormhack", "panoptix", "datadrake"]
       .forEach(function (id) {
@@ -131,7 +131,7 @@ module.exports = function (t, assert) {
      "npc_walker npc_cyclist npc_fisher npc_weaver npc_shopkeep npc_dev npc_ranger npc_miner npc_caver npc_historian " +
      "npc_signaller npc_boater npc_saltworker npc_chemist npc_birder npc_fellrunner npc_farmer npc_bandsman npc_kid " +
      "npc_granny npc_cultist npc_stuffer npc_shadow_it npc_amos npc_darkbyte npc_whitehat npc_ghost_trainer npc_vex " +
-     "npc_nurse npc_sysadmin npc_stoker treacle_tam spokes cat_meadow cat_bigboy cat_grinkit dog deer sheep duck heron " +
+     "npc_nurse npc_sysadmin npc_stoker treacle_tam spokes cat_meadow cat_grinkit dog deer sheep duck heron " +
      "boat_narrow boat_lift_caisson train train_loco train_apt oracle_terminal grinmalkin_wall")
       .split(" ").forEach(function (id) { assert.ok(PA.has(id), "missing sprite id " + id); });
   });
@@ -158,7 +158,7 @@ module.exports = function (t, assert) {
 
   t("portraits exist for the cast, the cats and the sigils", function () {
     ("player jim vex alder ada gaskell otis di nell jack ria mo root elis mamgu dai sue raj kim doc kellan twelve_k " +
-     "mum mrs_bobbin npc_nurse npc_amos cat_meadow cat_bigboy meadow bigboy oracle pippin sleet vigil arbiter grinmalkin")
+     "mum mrs_bobbin npc_nurse npc_amos cat_meadow meadow oracle pippin sleet vigil arbiter grinmalkin")
       .split(" ").forEach(function (k) {
         const c = PA.portrait(k);
         assert.ok(c && c.width === 32 && c.height === 32, "portrait " + k + " should be 32x32");
@@ -271,7 +271,7 @@ module.exports = function (t, assert) {
   // ================= integration ====================================
   t("Boot.buildArt warms the art without throwing", function () {
     MQ.Boot.buildArt();
-    MA.warm(["silkin", "meadow", "bigboy"]);
+    MA.warm(["silkin", "meadow", "grinmalkin"]);
     PA.warm();
     FX.warm();
     assert.ok(MA.stats().cached > 0 && PA.stats().cached > 0);

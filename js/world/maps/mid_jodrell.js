@@ -102,7 +102,7 @@
       { x: 22, y: 33, item: "cat_token_10", n: 1, flag: "catgap_jodrell_1",
         say: "MEADOW goes under the site fence in front of two DARKBYTE contractors who watch her do it, look at each other, and decide it is not their department." }
     ],
-    restPoints: [{ x: 24, y: 38, flag: "bigboy_sat_jodrell" }],
+    restPoints: [{ x: 24, y: 38, flag: "meadow_sat_jodrell" }],
     npcs: [
       { id: "npc_jodrell_root", x: 23, y: 34, dir: "down", sprite: "root_hivis", behaviour: "still", script: "mid_jodrell_root", cond: "!jodrell_open" },
       { id: "npc_jodrell_rhian", x: 20, y: 37, dir: "right", sprite: "npc_darkbyte", behaviour: "look", radius: 3, trainer: "tr_jodrell_bank_1", sight: 3, cond: "!jodrell_open" },

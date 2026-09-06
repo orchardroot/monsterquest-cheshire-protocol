@@ -174,7 +174,7 @@
       { x: 20, y: 24, item: "cat_token_7", n: 1, flag: "catgap_knutsford_1",
         say: "MEADOW goes under the railings of the assembly rooms, walks the length of the sanded pattern nobody is allowed to walk on, and comes back with a brass bell in her mouth and no remorse whatsoever." }
     ],
-    restPoints: [{ x: 22, y: 36, flag: "bigboy_sat_knutsford" }],
+    restPoints: [{ x: 22, y: 36, flag: "meadow_sat_knutsford" }],
     npcs: [
       { id: "npc_knutsford_percy", x: 16, y: 21, dir: "down", sprite: "npc_kid", behaviour: "still", script: "mid_knutsford_percy" },
       { id: "npc_knutsford_mair", x: 10, y: 22, dir: "down", sprite: "npc_granny", behaviour: "still", script: "mid_knutsford_mair" },

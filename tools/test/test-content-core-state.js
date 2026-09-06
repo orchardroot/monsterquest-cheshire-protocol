@@ -11,7 +11,6 @@ module.exports = function (t, assert) {
   MQ.Data.define("species", "brinewt", { name: "BRINEWT", types: ["water"], habitat: "brine", growth: "medium", base: { hp: 50, atk: 42, def: 44, spa: 46, spd: 46, spe: 32 }, abilities: ["brine_body"], learnset: [[1, "tackle"]] });
   MQ.Data.define("species", "saltling", { name: "SALTLING", types: ["rock"], habitat: "salt", growth: "fast", base: { hp: 40, atk: 45, def: 55, spa: 30, spd: 35, spe: 25 }, abilities: ["salt_crust"], learnset: [[1, "tackle"]] });
   MQ.Data.define("species", "meadow", { name: "MEADOW", types: ["normal"], habitat: "town", growth: "medium", base: { hp: 50, atk: 55, def: 40, spa: 40, spd: 45, spe: 95 }, abilities: ["slipstream"], learnset: [[1, "tackle"]] });
-  MQ.Data.define("species", "bigboy", { name: "BIGBOY", types: ["normal"], habitat: "town", growth: "medium", base: { hp: 90, atk: 70, def: 70, spa: 40, spd: 60, spe: 25 }, abilities: ["back_from_the_brink"], learnset: [[1, "tackle"]] });
   MQ.Data.define("moves", "tackle", { name: "Tackle", type: "normal", cat: "phys", power: 40, acc: 100, pp: 30 });
   MQ.Data.define("moves", "silk_wrapper", { name: "Silk Wrapper", type: "bug", cat: "status", pp: 20 });
   MQ.Data.define("items", "silk_wrap", { name: "Silk Wrap", kind: "gear", price: 0 });

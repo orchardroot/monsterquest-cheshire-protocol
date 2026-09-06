@@ -258,11 +258,10 @@ function cmdStarters(args) {
     early.forEach(function (tid) {
       const t = D().trainers[tid];
       const lvl = Math.round(mean(t.party.map(function (p) { return p.level; })));
-      // Ch.1 expects a party of three: starter + MEADOW + BIGBOY.
+      // Ch.1 expects a party of two: starter + MEADOW.
       const s = simulate({
         label: st + " vs " + tid, n: Math.max(6, Math.round(n / 6)),
-        player: [{ species: st, level: lvl }, { species: "meadow", level: Math.max(2, lvl - 1) },
-          { species: "bigboy", level: Math.max(2, lvl - 1) }],
+        player: [{ species: st, level: lvl }, { species: "meadow", level: Math.max(2, lvl - 1) }],
         trainerId: tid, seed: 8000
       });
       agg.n += s.n; agg.wins += Math.round(s.winRate * s.n);
@@ -526,7 +525,7 @@ function cmdItems(args) {
     });
     hps.sort(function (a, b) { return a - b; });
     const hp = hps[Math.floor(hps.length / 2)] || 1;
-    const probe = { low: ["nibbit", "flitchick", "sootling", "mistlop"], mid: ["gnawlord", "galewing", "spindrake", "saltander"], high: ["loomoth", "halosaur", "furnacore", "bigboy"] }[tier];
+    const probe = { low: ["nibbit", "flitchick", "sootling", "mistlop"], mid: ["gnawlord", "galewing", "spindrake", "saltander"], high: ["loomoth", "halosaur", "furnacore", "gloamguard"] }[tier];
     let frac = 0;
     for (let j = 0; j < probe.length; j++) {
       frac += simulate({

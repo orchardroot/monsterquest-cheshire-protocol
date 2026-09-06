@@ -174,7 +174,7 @@
       { x: 24, y: 24, item: "cat_token_2", n: 1, flag: "catgap_prestbury_1",
         say: "MEADOW slips under the wire, sits directly beneath a camera for a full minute, and comes back with a collar tag that is not hers and not the village's." }
     ],
-    restPoints: [{ x: 24, y: 26, flag: "bigboy_sat_prestbury" }],
+    restPoints: [{ x: 24, y: 26, flag: "meadow_sat_prestbury" }],
     npcs: [
       { id: "npc_prestbury_ffion", x: 21, y: 12, dir: "right", sprite: "npc_granny", behaviour: "still", script: "east_prestbury_ffion" },
       { id: "npc_prestbury_penhaligon", x: 30, y: 12, dir: "down", sprite: "npc_historian", behaviour: "still", trainer: "tr_prestbury_3", sight: 0, script: "east_prestbury_penhaligon" },
@@ -351,7 +351,7 @@
       { id: "npc_prestbury_maze_cat", x: 9, y: 7, dir: "down", sprite: "cat_grinkit", behaviour: "wander", radius: 3,
         say: ["A ginger cat sits precisely where the path forks and does not move.", "You go the other way. It looks pleased."] }
     ],
-    restPoints: [{ x: 15, y: 3, flag: "bigboy_sat_prestbury_maze" }]
+    restPoints: [{ x: 15, y: 3, flag: "meadow_sat_prestbury_maze" }]
   });
 
   // The Norman chapel — small, cold, unlocked

@@ -165,7 +165,7 @@
       { x: 6, y: 13, item: "cat_token_4", n: 1, flag: "catgap_lyme_1",
         say: "MEADOW is through the garden hedge before you can say her name. She returns carrying a brass tag stamped LYME 1904, and is unbearable about it." }
     ],
-    restPoints: [{ x: 22, y: 31, flag: "bigboy_sat_lyme" }],
+    restPoints: [{ x: 22, y: 31, flag: "meadow_sat_lyme" }],
     npcs: [
       { id: "npc_lyme_hesketh", x: 30, y: 31, dir: "down", sprite: "npc_ranger", behaviour: "still", trainer: "tr_lyme_park_1", sight: 0, script: "east_lyme_hesketh" },
       { id: "npc_lyme_hale", x: 8, y: 30, dir: "right", sprite: "npc_granny", behaviour: "still", trainer: "tr_lyme_park_2", sight: 3 },
@@ -400,7 +400,7 @@
     triggers: [
       { x: 17, y: 12, w: 1, h: 1, script: "east_bowstones_rubbing", once: "bowstones_rubbing", cond: "!bowstones_rubbing" }
     ],
-    restPoints: [{ x: 15, y: 12, flag: "bigboy_sat_bowstones" }]
+    restPoints: [{ x: 15, y: 12, flag: "meadow_sat_bowstones" }]
   });
 
   W.defineMap("lyme_park_bowstone_hut", W.builtin("house_small", {

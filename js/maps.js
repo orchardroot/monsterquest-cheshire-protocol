@@ -1541,12 +1541,6 @@ MAPS.route16.npcs.push({ id: "r16_cult1", x: 12, y: 6, dir: "down", sprite: "gru
 MAPS.route16.npcs.push({ id: "r16_cult2", x: 28, y: 8, dir: "up", sprite: "grunt", type: "trainer", trainerId: "clickfix3" });
 MAPS.arcade.npcs.push({ id: "amos_kiosk", x: 11, y: 6, dir: "left", sprite: "clerk", type: "trainer", trainerId: "amos_arcade" });
 
-// Bigboy's vet at the Macclesfield care centre (after 3 badges)
-MAPS.care_macclesfield.npcs.push({
-  id: "vet", x: 7, y: 4, dir: "left", sprite: "prof", type: "vet",
-  showIfFlag: "badge3", hideIfFlag: "bigboyJoined",
-});
-
 // quest NPC placements across the region
 MAPS.macclesfield.npcs.push(
   { id: "labassist", x: 6, y: 9, dir: "down", sprite: "assistant", type: "quest", questId: "shadowit" },

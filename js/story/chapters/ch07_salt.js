@@ -459,7 +459,7 @@
     yield C.music("cutscene_signal");
     yield C.say([
       "The caisson gate comes down behind the boat with two hundred and fifty tonnes of water either side of it and absolutely no drama at all.",
-      "MEADOW had to be carried aboard and has not forgiven anybody. BIGBOY walked on unassisted, sat down in the exact middle of the roof, and began, audibly, to purr."
+      "MEADOW had to be carried aboard and has not forgiven anybody. She sits in the exact middle of the roof with her back to you, making her point."
     ]);
     yield C.wait(500);
     yield C.say([
@@ -520,7 +520,7 @@
     yield C.wait(400);
     yield C.say([
       "Fifty feet, fifty seconds, and then the top gate opens onto a canal that is exactly as ordinary as the one at the bottom.",
-      "The cats get off. BIGBOY is still purring. It is the only sound on the site."
+      "MEADOW gets off first, as always. Her feet on the wet boards are the only sound on the site."
     ]);
     yield C.setFlag("stack_on_map", true);
     yield C.notify("THE STACK at Daresbury is now on your map.");

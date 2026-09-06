@@ -266,7 +266,7 @@
     yield C.say([
       "ZEPHYRION. Ridge-wind. It nests on this crag and it has nested on this crag since before anybody built anything on it.",
       "It looks at you on the way past. Not at your party. At you.",
-      "MEADOW, who is afraid of exactly nothing, gets behind BIGBOY."
+      "MEADOW, who is afraid of exactly nothing, gets behind your boot."
     ]);
     yield C.notify("ZEPHYRION — sighting recorded.");
     yield C.music("route_west");
@@ -655,7 +655,7 @@
     const C = ctx.S;
     yield C.say([
       "A kitten on the churchyard wall which is mostly grin and only technically a cat.",
-      "MEADOW sits down four feet away and washes a paw. BIGBOY sits down eight feet away and does not."
+      "MEADOW sits down four feet away and washes a paw, which is what she does instead of staring."
     ]);
     if (!flag("grinkit_daresbury")) {
       yield C.setFlag("grinkit_daresbury", true);

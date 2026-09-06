@@ -150,7 +150,7 @@
       { x: 33, y: 37, item: "salt_lick", n: 3, flag: "catgap_northwich_1",
         say: "MEADOW goes under the salt-works fence, walks the rim of a pan that has been cold for forty years, and comes back tasting of 1894." }
     ],
-    restPoints: [{ x: 30, y: 27, flag: "bigboy_sat_northwich" }],
+    restPoints: [{ x: 30, y: 27, flag: "meadow_sat_northwich" }],
     npcs: [
       { id: "npc_northwich_sal", x: 44, y: 32, dir: "down", sprite: "npc_saltworker", behaviour: "still", trainer: "tr_northwich_1", sight: 0, script: "sw_northwich_sal" },
       { id: "npc_northwich_dafydd", x: 15, y: 25, dir: "down", sprite: "npc_signaller", behaviour: "still", trainer: "tr_northwich_2", sight: 0, script: "sw_bridge_keeper" },

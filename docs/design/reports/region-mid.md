@@ -25,7 +25,7 @@ region-east's `MQ.EastBuild`; that file is not edited).
 | `mid_zlinks.js` | The east↔mid seam: return warps added to `alderley_edge` and `teggs_nose` at registration time (see below) |
 
 254 NPCs, 124 signs, 136 pickups, 69 trainer placements, 14 cat gaps and 11
-BIGBOY rest points (including `bigboy_sat_tatton`).
+rest points (including `meadow_sat_tatton`).
 
 **Data** — `js/data/encounters_mid.js` (64 tables: grass/water/cave with
 night/rain/fog variants and `fish_<mapid>`, banded to the Ch.3–5 levels and
@@ -57,7 +57,7 @@ Shutlingsloe and Sandhills exits still work.
 
 - **Ch.3** `deer_census_done`, `rostherne_relay_seen`, `tbilisi_domain_found`,
   `gaskell_network`, `vex_battle_2`, `badge_cipher`, `agent_arbiter`,
-  `bigboy_sat_tatton`
+  `meadow_sat_tatton`
 - **Ch.4** `jodrell_turned_away`, `signal_meter`, `cutover_started` +
   `cutover_days` (via `MQ.Story.applyCutover(4)` → 38), `amos_first_glimpse`,
   `badge_bear` (+ `unlock('shove')`)
@@ -103,7 +103,7 @@ opening runs to completion under `MQ.Dialog.auto`** (and is idempotent); the
 Tatton census set-piece through its battles to `agent_arbiter`; the Rostherne
 bell; VEX at Tatton; Gym 2's lecterns in shelf order (and refusing out of
 order); Gaskell's badge/anchor/card/network; ROOT's gate → SIGNAL METER →
-CUTOVER 38; Otis's arch, badge and BIGBOY Shove; the crosses, the shrine and
+CUTOVER 38; Otis's arch, badge and Shove; the crosses, the shrine and
 Nino #2; the yard chase, the APT, TWELVE-K, Di and the Railcard; the Welsh
 word; the completion hooks; and all six scripted Casebook cases end to end.
 
@@ -159,7 +159,7 @@ passed, 0 failed**.
   `case_10_posters`, `case_11_poltergrid`, `case_12_drop_found`, …); a set of
   `clue_*` casebook breadcrumbs (`clue_alder_sold`, `clue_dish_elevation`,
   `clue_interlace_key`, `clue_thirteenth_minute`, `clue_orchard_holdings`, …);
-  `bigboy_sat_knutsford|_tatton|_holmes|_congleton|_bosley|_mowcop|_sandbach|_crewe|_jodrell|_twemlow|_rodeheath`.
+  `meadow_sat_knutsford|_tatton|_holmes|_congleton|_bosley|_mowcop|_sandbach|_crewe|_jodrell|_twemlow|_rodeheath`.
 
 ## Known gaps
 

@@ -135,7 +135,7 @@
       { x: 20, y: 21, item: "cat_token_9", n: 1, flag: "catgap_holmes_1",
         say: "MEADOW goes under the crossing fence, sits on the down line for exactly as long as it takes your heart to stop, and comes back with a signal-box lamp key." }
     ],
-    restPoints: [{ x: 17, y: 33, flag: "bigboy_sat_holmes" }],
+    restPoints: [{ x: 17, y: 33, flag: "meadow_sat_holmes" }],
     npcs: [
       { id: "npc_holmes_dot", x: 34, y: 31, dir: "up", sprite: "npc_signaller", behaviour: "still", script: "mid_holmes_dot" },
       { id: "npc_holmes_bev", x: 34, y: 13, dir: "down", sprite: "npc_shopkeep", behaviour: "still", script: "mid_holmes_bev" },

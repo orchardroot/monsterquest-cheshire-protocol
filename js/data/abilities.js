@@ -29,9 +29,9 @@
   }
 
   A("back_from_the_brink", "Back from the Brink",
-    ["onTryHit", "onFaint"], { oncePerBattle: true, minHpFrac: 0.5, trustHealFrac: 0.25, shieldFlag: "bigboy_shield", twicePerk: "perk_escalate_fail_safe_protocol" },
+    ["onTryHit", "onFaint"], { oncePerBattle: true, minHpFrac: 0.5, twicePerk: "perk_escalate_fail_safe_protocol" },
     "Once per battle, a hit that would knock it out from over half health leaves it on 1 HP.",
-    "He has done this before. He will do it again. He is not sorry.");
+    "It has done this before. It will do it again. It is not sorry.");
 
   A("slipstream", "Slipstream",
     ["onSwitchIn"], { stat: "spe", delta: 1, perkDelta: 2, perk: "perk_escalate_quiet_cat" },

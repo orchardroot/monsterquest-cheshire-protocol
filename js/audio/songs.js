@@ -203,9 +203,9 @@
   const ORACLE_TAG_SLOW = "0:4 7:2 6:4 1:6";
   S.ORACLE_TAG = ORACLE_TAG;
 
-  // Cat motifs (MEADOW is a rising third, BIGBOY a lumbering fifth).
+  // Cat motif (MEADOW is a rising third, answered an octave up).
   const MEADOW = "0:0.5 4:0.5 7:1";
-  const BIGBOY = "0:1 -5:1 0:2";
+  const MEADOW_HI = "12:1 16:1 19:2";
 
   // Common drum cells (one bar of 4/4 at step 0.25 = 16 chars)
   const D_ROCK = "k...s...k...s...";
@@ -1235,7 +1235,7 @@
       lead_a: m("ionian", COUNTY_A),
       lead_b: m("ionian", COUNTY_B),
       lead_c: m("ionian", "7:0.5 6:0.5 4:1 2:0.5 4:0.5 6:1 | 7:1.5 9:0.5 7:2 | 6:0.5 4:0.5 2:1 4:1 6:1 | 4:4"),
-      cats: m("ionian", MEADOW + " " + MEADOW + " | " + BIGBOY + " | " + MEADOW + " 9:2 | " + BIGBOY),
+      cats: m("ionian", MEADOW + " " + MEADOW + " | " + MEADOW_HI + " | " + MEADOW + " 9:2 | " + MEADOW_HI),
       org_a: ch("ionian", PROG_COUNTY, "push"),
       org_b: ch("ionian", [4, 5, 3, 4, 2, 5, 4, 0], "push"),
       bass_a: bl("ionian", PROG_COUNTY, "pump"),
@@ -1331,7 +1331,7 @@
       kit: "k...s...k...s...",
       kit2: "k...s...k..ks..s",
       hum: m("ionian", "0+4:8 | 5+2:8 | 3+0:8 | 4+1:8"),
-      cats: m("ionian", MEADOW + " " + MEADOW + " | " + BIGBOY + " | " + MEADOW + " 9:2 | " + BIGBOY),
+      cats: m("ionian", MEADOW + " " + MEADOW + " | " + MEADOW_HI + " | " + MEADOW + " 9:2 | " + MEADOW_HI),
       tag: ORACLE_TAG_SLOW + " .:48"
     },
     tracks: [

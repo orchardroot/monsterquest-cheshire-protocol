@@ -216,7 +216,7 @@
     K("viewpoint_" + VIEWPOINTS[i], "Viewpoint Plaque", "var", "A brass plaque with the far hills named on it. Two of them are wrong.", { viewpoint: VIEWPOINTS[i] });
   }
   for (let i = 1; i <= 11; i++) {
-    K("cat_token_" + i, "Cat Token", "var", "A wooden disc with a grin burnt into it. Cat " + i + " of eleven; unlocks a coat for MEADOW or BIGBOY.", { catToken: i });
+    K("cat_token_" + i, "Cat Token", "var", "A wooden disc with a grin burnt into it. Cat " + i + " of eleven; unlocks a coat for MEADOW.", { catToken: i });
   }
 
   // =================================================================

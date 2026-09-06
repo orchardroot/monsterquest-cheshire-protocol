@@ -670,7 +670,7 @@
     MQ.Events.emit("boat", { on: !!on });
   };
 
-  // BIGBOY leans on a boulder: shove it one tile away from the player.
+  // Put your shoulder to a boulder: shove it one tile away from the player.
   O.shove = function (x, y) {
     const v = U.dirVec[player.dir];
     const nx = x + v[0], ny = y + v[1];
@@ -729,16 +729,13 @@
       return null;
     },
     sniff: function (cat) {
-      // MEADOW smells items; BIGBOY smells creatures (SIDE-CONTENT §3)
+      // MEADOW smells items first, then what is in the grass (SIDE-CONTENT §3)
       const range = 3 + (MQ.Flags.get("trust_" + cat.cat) >= 1 ? 2 : 0);
-      if (cat.cat === "meadow") {
-        const items = map.items || [];
-        for (let i = 0; i < items.length; i++) {
-          const it = items[i];
-          if (MQ.Flags.get(it.flag)) continue;
-          if (Math.abs(it.x - cat.x) + Math.abs(it.y - cat.y) <= range) return it;
-        }
-        return null;
+      const items = map.items || [];
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        if (MQ.Flags.get(it.flag)) continue;
+        if (Math.abs(it.x - cat.x) + Math.abs(it.y - cat.y) <= range) return it;
       }
       const zone = MQ.World.zoneAt(map, cat.x, cat.y);
       return zone ? { zone: zone } : null;
@@ -956,15 +953,15 @@
   O.refreshCats = resetCats;
   O.catSit = function () { for (let i = 0; i < cats.length; i++) { cats[i].sitting = true; cats[i].idleT = 3000; } };
 
-  // BIGBOY's rest points: heal a bit, autosave, set the flag (SYSTEMS-SPEC §16)
+  // Rest points: heal a bit, autosave, set the flag (SYSTEMS-SPEC §16)
   MQ.Events.on("cat:rest", function (d) {
-    if (!d || !d.point || d.cat !== "bigboy") return;
+    if (!d || !d.point || d.cat !== "meadow") return;
     const p = d.point;
     if (p.flag && MQ.Flags.get(p.flag)) return;
     if (p.flag) MQ.Flags.set(p.flag, true);
     if (MQ.Party && MQ.Party.healPct) MQ.Party.healPct(0.25);
     if (MQ.Save && MQ.Save.autosave) MQ.Save.autosave();
-    if (MQ.Dialog) MQ.Dialog.notify("BIGBOY sits down. Everyone feels better for it.");
+    if (MQ.Dialog) MQ.Dialog.notify("MEADOW settles. Everyone feels better for it.");
   });
 
   // ---- buttons -----------------------------------------------------------

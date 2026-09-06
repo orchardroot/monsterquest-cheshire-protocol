@@ -140,7 +140,7 @@
       { x: 18, y: 13, item: "cat_token_2", n: 1, flag: "catgap_crewe_1",
         say: "MEADOW goes under the platform barrier, walks the full length of platform six against the crowd, and is back before the announcement finishes apologising." }
     ],
-    restPoints: [{ x: 14, y: 30, flag: "bigboy_sat_crewe" }],
+    restPoints: [{ x: 14, y: 30, flag: "meadow_sat_crewe" }],
     npcs: [
       { id: "npc_crewe_ted", x: 27, y: 18, dir: "down", sprite: "npc_signaller", behaviour: "still", script: "mid_crewe_ted" },
       { id: "npc_crewe_mags", x: 33, y: 23, dir: "down", sprite: "npc_dev", behaviour: "still", script: "mid_crewe_mags" },

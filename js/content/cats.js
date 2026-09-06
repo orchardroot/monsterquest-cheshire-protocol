@@ -1,8 +1,8 @@
 // =============================================================
 // MonsterQuest v2 — MQ.Cats (content)
-// MEADOW and BIGBOY: unlock, following, trust 0-5 and its perks,
+// MEADOW: unlock, following, trust 0-5 and its perks,
 // sniffing out hidden things, rest points, collars, cat-only paths
-// and the data the battle engine needs for them.
+// and the data the battle engine needs for her.
 // SIDE-CONTENT §3, DESIGN-INDEX §3 (`squeeze`), ROSTER §1a.
 // =============================================================
 (function () {
@@ -26,26 +26,19 @@
       id: "meadow", species: "meadow", npc: "cat_meadow", name: "MEADOW",
       blurb: "Small, black, absurdly fast. Arrives before you have finished deciding to go.",
       ability: "slipstream", overdrive: "zoomies", signature: "skitter",
-      sniffs: ["item", "ingredient", "hidden"], gait: "darts ahead and waits, visibly disappointed",
+      sniffs: ["item", "ingredient", "hidden", "creature", "bounty"], gait: "darts ahead and waits, visibly disappointed",
       restFlagPrefix: "meadow_sat"
-    },
-    bigboy: {
-      id: "bigboy", species: "bigboy", npc: "cat_bigboy", name: "BIGBOY",
-      blurb: "Huge, black and white, and entirely in charge of when the walk stops.",
-      ability: "back_from_the_brink", overdrive: "brink_roar", signature: "big_sit",
-      sniffs: ["creature", "bounty"], gait: "lumbers, then sits down without warning",
-      restFlagPrefix: "bigboy_sat"
     }
   };
-  C.IDS = ["meadow", "bigboy"];
+  C.IDS = ["meadow"];
   C.get = function (id) { return C.DEFS[id] || null; };
 
-  // Rest points — BIGBOY sits down and something in the story notices.
+  // Rest points — MEADOW stops, and something in the story notices.
   C.REST_POINTS = [
-    { map: "kerridge_hill", flag: "bigboy_sat_kerridge", cat: "bigboy", text: "BIGBOY sits down on the hill and looks at White Nancy for a long time." },
-    { map: "tatton_park", flag: "bigboy_sat_tatton", cat: "bigboy", text: "BIGBOY sits in the middle of the deer park. The deer decide to be elsewhere." },
-    { map: "frodsham_hill", flag: "bigboy_sat_frodsham", cat: "bigboy", text: "BIGBOY sits above the Mersey with the bridges laid out below him, unimpressed." },
-    { map: "chester_amphitheatre", flag: "bigboy_sat_roodee", cat: "bigboy", text: "BIGBOY sits in the middle of the Roodee. Racing is suspended." },
+    { map: "kerridge_hill", flag: "meadow_sat_kerridge", cat: "meadow", text: "MEADOW stops on the hill and watches White Nancy for a long time without blinking." },
+    { map: "tatton_park", flag: "meadow_sat_tatton", cat: "meadow", text: "MEADOW sits down in the middle of the deer park. The deer decide to be elsewhere." },
+    { map: "frodsham_hill", flag: "meadow_sat_frodsham", cat: "meadow", text: "MEADOW sits above the Mersey with the bridges laid out below her, unimpressed." },
+    { map: "chester_amphitheatre", flag: "meadow_sat_roodee", cat: "meadow", text: "MEADOW crosses the middle of the Roodee at a walk. Racing is suspended." },
     { map: "alderley_edge", flag: "meadow_sat_edge", cat: "meadow", text: "MEADOW tucks herself into a hollow at Stormy Point and refuses to be a cat you can pick up." },
     { map: "y_berllan", flag: "meadow_sat_orchard", cat: "meadow", text: "MEADOW walks the orchard wall end to end, twice, then sits on the press." }
   ];
@@ -65,10 +58,9 @@
   ];
 
   C.state = {
-    meadow: { points: 0, trust: 0, collar: "collar_plain", holding: null, dispatched: null, giftDay: 0, gifts: 0 },
-    bigboy: { points: 0, trust: 0, collar: "collar_plain", holding: null, dispatched: null, giftDay: 0, gifts: 0 }
+    meadow: { points: 0, trust: 0, collar: "collar_plain", holding: null, dispatched: null, giftDay: 0, gifts: 0 }
   };
-  C.following = null;         // 'meadow' | 'bigboy' | null
+  C.following = null;         // 'meadow' | null
   C.collarsOwned = { collar_plain: true };
   C.lastSniff = null;
   C.sniffedTiles = {};        // "map:x,y" → true, so one paw-print per find
@@ -77,7 +69,7 @@
   C.unlock = function () {
     if (C.unlocked()) return false;
     flagSet("cats_joined", true);
-    // The cats join the party and stay there — they are never boxed.
+    // She joins the party and stays there — she is never boxed.
     if (MQ.Party) {
       for (let i = 0; i < C.IDS.length; i++) {
         const d = C.DEFS[C.IDS[i]];
@@ -102,10 +94,12 @@
     return true;
   };
   C.stopFollowing = function () { return C.follow(null); };
+  // One cat: the whistle calls her in, or lets her go off and be a cat.
   C.whistle = function () {
     if (!C.unlocked()) return null;
-    const next = C.following === "meadow" ? "bigboy" : "meadow";
+    const next = C.following === "meadow" ? null : "meadow";
     C.follow(next);
+    if (!next) toast("MEADOW goes off to be a cat somewhere else for a bit.");
     return next;
   };
   C.follower = function () { return C.following ? C.DEFS[C.following] : null; };
@@ -154,9 +148,9 @@
     switch (level) {
       case 1: return name + " ranges further now — sniffing out things five tiles off.";
       case 2: return name + " will carry a held item for you.";
-      case 3: return id === "meadow" ? "MEADOW dodges the first hit of a battle, once a fight." : "BIGBOY's Back from the Brink now heals him a quarter as well.";
+      case 3: return "MEADOW dodges the first hit of a battle, once a fight.";
       case 4: return name + " can be sent off alone to fish or gather while you get on.";
-      case 5: return name + " goes everywhere with you now — gyms and the Arena included — and has learned " + (id === "meadow" ? "Skitter." : "Big Sit.");
+      case 5: return name + " goes everywhere with you now — gyms and the Arena included — and has learned Skitter.";
       default: return "";
     }
   };
@@ -200,11 +194,8 @@
       cat: id, species: d.species, ability: d.ability, overdrive: d.overdrive,
       trust: t, held: C.state[id].holding,
       extraMove: t >= 5 ? d.signature : null,
-      dodgeFirstHit: id === "meadow" && t >= 3,
-      brinkHeals: id === "bigboy" && t >= 3 ? 0.25 : 0,
-      brinkUses: id === "bigboy" ? (MQ.Progression ? MQ.Progression.effect("brinkUses") : 1) : 0,
-      brinkShield: id === "bigboy" && !!flagGet("bigboy_shield"),
-      slipstreamStages: id === "meadow" ? (MQ.Progression ? MQ.Progression.effect("meadowSlipstreamStage") : 1) : 0,
+      dodgeFirstHit: t >= 3,
+      slipstreamStages: MQ.Progression ? MQ.Progression.effect("meadowSlipstreamStage") : 1,
       allowedInGyms: C.allowedInGyms(id)
     };
   };
@@ -228,7 +219,7 @@
   C.collar = function (id) { return C.state[id] ? C.state[id].collar : null; };
 
   // ---- sniffing ----------------------------------------------------
-  // MEADOW smells items and ingredients; BIGBOY smells creatures and bounties.
+  // MEADOW smells items and ingredients first, and what is in the grass second.
   function tileKey(map, x, y) { return map + ":" + x + "," + y; }
   C.candidates = function (map) {
     const out = [];
@@ -273,9 +264,10 @@
         emit("cat:sniff", hit);
         return hit;
       }
-      return null;
+      // Nothing to dig up here — fall through to the grass.
     }
-    // BIGBOY: tells you what is likely to come out of the grass here.
+    if (!C.smells(catId, "creature")) return null;
+    // What is likely to come out of the grass here.
     const def = MQ.World && MQ.World.get ? MQ.World.get(map) : null;
     const tables = def && def.encounters ? def.encounters : null;
     const tid = tables ? (tables.grass || tables.cave || tables.water) : null;
@@ -308,7 +300,7 @@
     emit("cat:reveal", s);
     if (s.kind === "creature") {
       const names = (s.chances || []).map(function (r) { return String(r.species).toUpperCase(); });
-      toast("BIGBOY stares at the grass: " + (names.join(", ") || "nothing worth the effort") + ".");
+      toast("MEADOW stares at the grass: " + (names.join(", ") || "nothing worth the effort") + ".");
     } else {
       toast(C.DEFS[s.cat].name + " paws at the ground — something is here.");
     }
@@ -355,7 +347,7 @@
     if (!C.canDispatch(catId)) return { ok: false, msg: C.DEFS[catId].name + " will not go off alone yet." };
     if (C.state[catId].dispatched) return { ok: false, msg: "Already out." };
     C.state[catId].dispatched = { job: job || "gather", until: Date.now() + (minutes || 10) * 60000 };
-    if (C.following === catId) C.follow(catId === "meadow" ? "bigboy" : "meadow");
+    if (C.following === catId) C.follow(null);
     emit("cat:dispatch", { cat: catId, job: job });
     return { ok: true, msg: C.DEFS[catId].name + " sets off, tail up." };
   };
@@ -417,15 +409,13 @@
     if (!C.giftReady(id)) return null;
     const t = C.trust(id);
     const pool = C.GIFT_POOL.filter(function (g) { return !g.trust || t >= g.trust; });
-    const rnd = U.rng(C.today() * 31 + (id === "meadow" ? 1 : 2));
+    const rnd = U.rng(C.today() * 31 + 1);
     const g = U.weightedPick(pool, "w", rnd);
     C.state[id].giftDay = C.today();
     C.state[id].gifts++;
     if (MQ.Inventory) MQ.Inventory.add(g.id, 1, { toast: false });
     C.addTrust(id, 1, "gift");
-    const line = id === "meadow"
-      ? "MEADOW drops something at your feet and walks away before you can react."
-      : "BIGBOY has brought you a thing. He sits on it first, to be sure.";
+    const line = "MEADOW drops something at your feet and walks away before you can react.";
     toast(line + " (" + (MQ.Inventory ? MQ.Inventory.name(g.id) : g.id) + ")");
     emit("cat:gift", { cat: id, item: g.id });
     return g.id;
@@ -464,8 +454,7 @@
     },
     load: function (o) {
       C.state = {
-        meadow: { points: 0, trust: 0, collar: "collar_plain", holding: null, dispatched: null, giftDay: 0, gifts: 0 },
-        bigboy: { points: 0, trust: 0, collar: "collar_plain", holding: null, dispatched: null, giftDay: 0, gifts: 0 }
+        meadow: { points: 0, trust: 0, collar: "collar_plain", holding: null, dispatched: null, giftDay: 0, gifts: 0 }
       };
       C.following = null;
       C.collarsOwned = { collar_plain: true };

@@ -284,7 +284,7 @@
       { x: 24, y: 9, item: "cat_token_5", n: 1, flag: "catgap_r10_1",
         say: "MEADOW walks into arch nine, does not come out of arch nine, and appears twenty seconds later out of arch fourteen with an expression of enormous private satisfaction." }
     ],
-    restPoints: [{ x: 29, y: 27, flag: "bigboy_sat_twemlow" }],
+    restPoints: [{ x: 29, y: 27, flag: "meadow_sat_twemlow" }],
     npcs: [
       { id: "npc_r10_pryce", x: 14, y: 20, dir: "down", sprite: "npc_fisher", behaviour: "look", radius: 3, trainer: "tr_route_holmes_jodrell_1", sight: 3 },
       { id: "npc_r10_ivor", x: 43, y: 16, dir: "left", sprite: "npc_dev", behaviour: "still", trainer: "tr_route_holmes_jodrell_2", sight: 0, script: "mid_r10_ham" },
@@ -542,7 +542,7 @@
       { x: 24, y: 10, item: "cat_bell", n: 1, flag: "catgap_r14_1",
         say: "MEADOW slips through the hedge into the old wharf yard, walks round something rusting under a tarpaulin twice, and sits down facing it." }
     ],
-    restPoints: [{ x: 35, y: 19, flag: "bigboy_sat_rodeheath" }],
+    restPoints: [{ x: 35, y: 19, flag: "meadow_sat_rodeheath" }],
     npcs: [
       { id: "npc_r14_del", x: 20, y: 14, dir: "down", sprite: "npc_boater", behaviour: "look", radius: 3, trainer: "tr_route_congleton_sandbach_1", sight: 3, script: "mid_r14_del" },
       { id: "npc_r14_rhodri", x: 45, y: 12, dir: "up", sprite: "npc_fisher", behaviour: "look", radius: 3, trainer: "tr_route_congleton_sandbach_2", sight: 3, script: "mid_r14_rhodri" },

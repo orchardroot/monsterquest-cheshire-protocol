@@ -71,7 +71,7 @@
     const C = ctx.S;
     yield C.say([
       "MEADOW gets on the plinth and will not be moved.",
-      "BIGBOY, who has walked eleven months at his own speed behind a man who kept stopping to look at masts, sits down in the middle of the sand and begins to purr.",
+      "She has walked eleven months out in front of a man who kept stopping to look at masts, and she sits down now and begins, audibly, to purr.",
       "It is picked up by the amphitheatre's acoustics, which were designed in AD 100 to carry a voice to seven thousand people."
     ]);
     yield C.sfx("cat_purr");
@@ -215,8 +215,7 @@
     }
     yield C.say([
       "JIM — walked it. All of it. On foot.",
-      "MEADOW — went first.",
-      "BIGBOY — arrived in his own time and sat where he would be in the way."
+      "MEADOW — went first, and waited, and never once said so."
     ]);
     yield C.say([
       "SLEET — triage. VIGIL — escalation. ARBITER — adjudication.",
