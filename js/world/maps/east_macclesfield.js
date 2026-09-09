@@ -217,7 +217,7 @@
       { id: "npc_macclesfield_boater", x: 30, y: 33, dir: "down", sprite: "npc_boater", behaviour: "path", path: [[30, 37], [48, 37]], pathMode: "pingpong",
         say: ["Four mile an hour. Any faster and you wash the bank away and the swans write to the papers."] }
     ],
-    restPoints: [{ x: 8, y: 26, flag: "bigboy_sat_macclesfield" }],
+    restPoints: [{ x: 8, y: 26, flag: "meadow_sat_macclesfield" }],
     triggers: [
       { x: 24, y: 20, w: 3, h: 1, script: "east_macc_first_step", once: "macc_first_step", cond: "!macc_first_step" }
     ]
@@ -234,7 +234,6 @@
     npcs: [
       { id: "npc_macclesfield_mum", x: 10, y: 4, dir: "down", sprite: "mum", behaviour: "still", script: "east_home_mum" },
       { id: "cat_meadow_home", x: 10, y: 9, dir: "down", sprite: "cat_meadow", behaviour: "still", script: "east_home_meadow", cond: "!cats_joined" },
-      { id: "cat_bigboy_home", x: 11, y: 9, dir: "down", sprite: "cat_bigboy", behaviour: "still", script: "east_home_bigboy", cond: "!cats_joined" }
     ],
     signs: [{ x: 15, y: 11, text: ["A stairs you never go up. The bulb went in 2019."] }],
     items: [{ x: 1, y: 3, item: "salve", n: 2, flag: "item_macclesfield_home_1" }],

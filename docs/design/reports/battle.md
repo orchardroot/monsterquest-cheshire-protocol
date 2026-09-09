@@ -155,7 +155,7 @@ Everything SYSTEMS-SPEC asks of the battle layer:
   entry, Sysadmin's Reboot, contact-status riders, a jammed agent, and Mo's jam-until-super-effective.
 - **Doubles** (2 v 2), **difficulty** (all seven rows of §13), **arena rules**
   (`noItems`, `oneAgent`, `overdriveCarry`), **escort GUARD**, and the **cat hooks**
-  (MEADOW trust-3 dodge, BIGBOY trust-3 Brink heal, *Fail-Safe Protocol* double Brink).
+  (MEADOW trust-3 dodge, *Fail-Safe Protocol* double Brink).
 - All 33 perks that touch battle read from `MQ.Trainer.perks` (Set or array) or `MQ.Flags`.
 
 ## 3. Tests
@@ -195,7 +195,7 @@ Everything below is optional at runtime — the engine and scene degrade rather 
   `catchRate`, `learnset`, `evolutions`; optionally `MQ.Data.temperaments` (I ship the 20).
 - **content** — `MQ.Party.list`, `MQ.Inventory.{count, remove, addMoney, money, list()}`
   (`list()` should return `[{id, n}]` for the in-battle bag), `MQ.Trainer.{level, perks,
-  addXp(n)}`, `MQ.Cats.trust.{meadow,bigboy}`, `MQ.Settings.{difficulty, battleSpeed,
+  addXp(n)}`, `MQ.Cats.trust.meadow`, `MQ.Settings.{difficulty, battleSpeed,
   captureMode:'auto'|'timing'}`. Someone must consume `result.pending` (evolution prompts and
   the four-move replace flow) and apply escort HP for GUARD.
 - **art** — `MQ.MonsterArt` with any of `get(id,{back,size})`, `sprite(id,back,size)` or
@@ -240,7 +240,7 @@ Everything below is optional at runtime — the engine and scene degrade rather 
   the numbers have only been checked against synthetic fixtures. The §15 chapter targets want a
   balance pass once real data lands — `MQ.Battle.autoResolve({seed})` exists precisely for that.
 - **Doubles are minimal** (2 v 2, single-target moves, `move.spread`/`target:'all_foes'` honoured).
-  No ally-targeting menu, no redirection, and BIGBOY's `bigboy_shield` ally-shield upgrade is
+  No ally-targeting menu and no redirection; doubles support is
   stubbed to the ordinary Brink until doubles get a proper targeting UI.
 - **The bag in battle** lists `MQ.Inventory.list()` when it exists and otherwise shows a small
   hardcoded stock so the screen is testable. It needs the real inventory to be useful.

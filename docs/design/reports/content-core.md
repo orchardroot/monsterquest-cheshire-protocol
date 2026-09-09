@@ -7,7 +7,7 @@ js/content/state.js               MQ.Party, MQ.Inventory, MQ.Trainer, MQ.Setting
 js/content/progression.js         MQ.Progression (trainer curve, perk tree, effect registry)
 js/content/quests-engine.js       MQ.Quests (state machine, casebook, clue board, bounties)
 js/content/achievements-engine.js MQ.Achievements (40 hooks, unlock-once, progress)
-js/content/cats.js                MQ.Cats (MEADOW / BIGBOY)
+js/content/cats.js                MQ.Cats (MEADOW)
 js/content/daycare.js             MQ.Daycare (Pit-Pony Pat's yard)
 tools/test/test-content-core-{state,quests,progression,cats}.js
 ```
@@ -22,7 +22,7 @@ for `Boot.registerProviders`.
 
 ## MQ.Party  (save `party`)
 
-`MAX 6`, `BOX_PAGES 16 × BOX_SIZE 30`, `CATS ['meadow','bigboy']`.
+`MAX 6`, `BOX_PAGES 16 × BOX_SIZE 30`, `CATS ['meadow']`.
 
 `make(species, level, opts)` (defers to `MQ.Data.makeMonster` when the data team
 ships it; otherwise builds the full instance shape from `MQ.Data.species` — stats,
@@ -34,7 +34,7 @@ box) · `indexOf`, `find`, `has(species)`, `hasAnywhere` · `alive()`, `firstAli
 `reserve(uid,on)` / `reserved(uid)` for benching a cat without removing it ·
 `giveGear`/`takeGear` · `nickname`, `displayName`, `hpRatio`, `isCat`.
 
-MEADOW and BIGBOY cannot be removed, deposited or boxed — `remove`/`deposit`/
+MEADOW cannot be removed, deposited or boxed — `remove`/`deposit`/
 `addBox` all refuse them.
 
 Events: `party:add remove release order deposit withdraw heal faint revive gear reserve`.
@@ -192,7 +192,7 @@ dex:caught dex:milestone cat:trust battle:end brew:done arena:clear photo`.
 
 ## MQ.Cats  (save `cats`)
 
-`DEFS` for `meadow`/`bigboy` (species, ability, Overdrive signature, trust-5
+`DEFS` for `meadow` (species, ability, Overdrive signature, trust-5
 signature move, what each smells), `unlocked()`, `unlock()` (adds both to the
 party and grants the `squeeze` ability), `follow/stopFollowing/whistle/follower/
 monster(id)`.
@@ -206,7 +206,7 @@ Brink heal, `canDispatch` (T4), `allowedInGyms` + signature move (T5).
 
 Sniffing: `scan(map,x,y,cat)` / `onTile` / `update()` emits **`cat:sniff`** with
 `{cat, kind, tile:{x,y}, map, dist, item, flag}` for MEADOW (uncollected map items
-and `MQ.Gathering` nodes) or `{kind:'creature', table, chances[]}` for BIGBOY
+and `MQ.Gathering` nodes) or `{kind:'creature', table, chances[]}` when there is nothing left to dig up
 (the tile's encounter table); one paw-print per find. `reveal()` (tap the cat)
 emits `cat:reveal` and pays a trust point.
 
@@ -261,7 +261,7 @@ Bonus: two occupied pens for 2,000 steps lay an egg (`layEgg`, `eggReady`,
   (`active()` skips reserved cats), items via `MQ.Inventory.use(id, target,
   {battle:true})`, perks via `MQ.Progression.effect(key)`, cats via
   `MQ.Cats.battleData(id)`, difficulty via `MQ.Settings.rules()`; bump
-  `MQ.Trainer.bump('overdrives'|'brinkSaves'|'puppetsBeaten'|'knockouts')`.
+  `MQ.Trainer.bump('overdrives'|'puppetsBeaten'|'knockouts')`.
 - **ui** — screens for `MQ.Trainer.card()`, `MQ.Progression.tree` +
   `blockedReason`, `MQ.Quests.casebook()`/`clueBoard()`/`tracked()`,
   `MQ.Achievements.list()`, `MQ.Inventory.pocket()`, `MQ.Settings.LABELS/RANGES`.

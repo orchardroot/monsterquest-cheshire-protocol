@@ -83,7 +83,7 @@
         { id: "npc_route_crewe_nantwich_kid", x: 29, y: 8, dir: "up", sprite: "npc_kid", behaviour: "wander", radius: 2,
           say: ["You can stand at the bottom and look up and it looks like it's coming down on you.", "It isn't. Probably."] }
       ],
-      restPoints: [{ x: 27, y: 8, flag: "bigboy_sat_wybunbury" }]
+      restPoints: [{ x: 27, y: 8, flag: "meadow_sat_wybunbury" }]
     });
   }
 

@@ -105,7 +105,7 @@
       { id: "npc_route_nantwich_winsford_walker", x: 23, y: 8, dir: "down", sprite: "npc_walker", behaviour: "path", path: [[23, 8], [23, 22]], pathMode: "pingpong",
         say: ["Six miles by the lane, nine by the river, and the river's the one worth doing."] }
     ],
-    restPoints: [{ x: 14, y: 21, flag: "bigboy_sat_weaver" }],
+    restPoints: [{ x: 14, y: 21, flag: "meadow_sat_weaver" }],
     catGaps: [
       { x: 11, y: 30, item: "capsule_kernel", n: 1, flag: "catgap_route_nantwich_winsford_1",
         say: "MEADOW goes under the churchyard railings and comes back out with something that was, until recently, in somebody's offering box." }
@@ -216,7 +216,7 @@
       { id: "npc_route_middlewich_winsford_dilys", x: 33, y: 15, dir: "left", sprite: "npc_walker", behaviour: "look", radius: 4, trainer: "tr_route_middlewich_winsford_2", sight: 4 },
       { id: "npc_route_middlewich_winsford_meredith", x: 44, y: 14, dir: "left", sprite: "npc_saltworker", behaviour: "look", radius: 4, trainer: "tr_route_middlewich_winsford_3", sight: 4 }
     ],
-    restPoints: [{ x: 21, y: 12, flag: "bigboy_sat_croxton" }]
+    restPoints: [{ x: 21, y: 12, flag: "meadow_sat_croxton" }]
   }, c);
 
   // ================= R19 — Rudheath & Broken Cross =========================
@@ -336,7 +336,7 @@
       { id: "npc_route_winsford_northwich_huw", x: 15, y: 30, dir: "right", sprite: "npc_boater", behaviour: "look", radius: 4, trainer: "tr_route_winsford_northwich_1", sight: 4 },
       { id: "npc_route_winsford_northwich_gwen", x: 25, y: 14, dir: "left", sprite: "npc_birder", behaviour: "look", radius: 4, trainer: "tr_route_winsford_northwich_2", sight: 4 }
     ],
-    restPoints: [{ x: 16, y: 25, flag: "bigboy_sat_vale_royal" }]
+    restPoints: [{ x: 16, y: 25, flag: "meadow_sat_vale_royal" }]
   }, c);
 
   // ================= R33 — Weaver towpath (Northwich ↔ Anderton) ==========
@@ -427,7 +427,7 @@
       { id: "npc_route_anderton_budworth_bedwyr", x: 16, y: 13, dir: "right", sprite: "npc_walker", behaviour: "look", radius: 4, trainer: "tr_route_anderton_budworth_1", sight: 4 },
       { id: "npc_route_anderton_budworth_nesta", x: 32, y: 13, dir: "left", sprite: "npc_ranger", behaviour: "look", radius: 4, trainer: "tr_route_anderton_budworth_2", sight: 4 }
     ],
-    restPoints: [{ x: 6, y: 17, flag: "bigboy_sat_marbury" }]
+    restPoints: [{ x: 6, y: 17, flag: "meadow_sat_marbury" }]
   }, c);
 
   // ================= R20 — Arley & the Bollin crossing =====================

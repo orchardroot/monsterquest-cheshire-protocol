@@ -232,9 +232,9 @@
       ry += 40;
     }
     // cats
-    const tm = flag("trust_meadow"), tb = flag("trust_bigboy");
-    if (tm !== undefined || tb !== undefined) {
-      T.draw(ctx, "MEADOW " + (tm || 0) + "/5    BIGBOY " + (tb || 0) + "/5", x + 16, y + h - 26, { size: "s", color: C.dim });
+    const tm = flag("trust_meadow");
+    if (tm !== undefined) {
+      T.draw(ctx, "MEADOW " + (tm || 0) + "/5", x + 16, y + h - 26, { size: "s", color: C.dim });
     }
   }
 

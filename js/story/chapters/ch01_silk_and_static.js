@@ -76,7 +76,7 @@
     // ---- the cats have already gone -------------------------------------
     yield C.say([
       "The cat flap is swinging.",
-      "MEADOW's bowl is untouched. BIGBOY's bowl is untouched, which has never happened in his life and is therefore alarming.",
+      "MEADOW's bowl is untouched, which has never happened in her life and is therefore alarming.",
       "The front door is open a hand's width. Somebody has leaned on it from the inside until it gave."
     ]);
     yield C.say([
@@ -168,7 +168,7 @@
       yield C.say([
         "Well? Did she do the tea thing?",
         "She did the tea thing. She's done the tea thing since 2012. It means she's already decided and she's giving you time to catch up.",
-        "Eat something. Both cats have. Twice, if BIGBOY is to be believed, which he is not."
+        "Eat something. The cat has. Twice, if MEADOW is to be believed, which she is not."
       ], { name: "Mum" });
       yield C.giveItem("salve", 3);
       return;
@@ -182,15 +182,6 @@
     yield C.say([
       "MEADOW is on the windowsill facing the glass, tail moving at the end only.",
       "She is not watching birds. There are no birds. She is watching the mast on the far ridge."
-    ]);
-  });
-
-  def("east_home_bigboy", function* (ctx) {
-    const C = ctx.S;
-    yield C.say([
-      "BIGBOY occupies the doorway the way a parked van occupies a road.",
-      "He looks at you. He looks at the bowl. He looks at you.",
-      "The bowl has food in it. This is not relevant to BIGBOY's position on the matter."
     ]);
   });
 
@@ -264,15 +255,15 @@
     ]);
     if (!flag("cats_joined")) {
       yield C.say([
-        "Two cats are sitting on the kerb.",
-        "MEADOW is upright and alert and has clearly been here for some time. BIGBOY is lying down and has clearly walked here at his own pace and would like that acknowledged.",
-        "Neither of them was let out. Both of them are out."
+        "MEADOW is sitting on the kerb.",
+        "She is upright and alert and has clearly been here for some time, waiting, with the air of somebody who has had to wait.",
+        "She was not let out. She is out."
       ]);
       yield C.say(["Right.", "Noted."]);
       yield C.custom(function () { if (MQ.Cats && MQ.Cats.unlock) MQ.Cats.unlock(); else MQ.Flags.set("cats_joined", true); });
-      yield C.notify("MEADOW and BIGBOY joined you.");
+      yield C.notify("MEADOW joined you.");
       yield C.say([
-        "They cannot be boxed, they cannot be left, and BIGBOY will sit down in the middle of a route and refuse to continue.",
+        "She cannot be boxed, she cannot be left, and she will sit down in the middle of a route and refuse to continue.",
         "You have known this for six years. You have never once won."
       ]);
     }
@@ -333,7 +324,6 @@
     const C = ctx.S;
     yield C.freeze(true);
     yield C.say(["The last hundred yards. MEADOW is already at the top, sitting on the folly like she built it."]);
-    yield C.say(["BIGBOY sits down. BIGBOY has decided.", "You carry him the last thirty feet. He allows it and does not enjoy it and neither do you."]);
     yield C.wait(400);
     yield C.say([
       "White Nancy: a sugar loaf of whitewashed stone with a door that goes nowhere, and the whole county underneath.",

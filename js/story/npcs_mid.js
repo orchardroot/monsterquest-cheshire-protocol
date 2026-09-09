@@ -726,7 +726,7 @@
     ]);
     yield C.say([
       "MEADOW walks the moat wall, which is four inches wide, looks into the water, and declines.",
-      "BIGBOY does not even come to look."
+      "She does not come back for a second look, either."
     ]);
     yield C.setFlag("moreton_moat_seen", true);
   });
@@ -774,12 +774,12 @@
         "The trail book, in a tin, under a stone. Four hundred names, a lot of dogs, and three separate people who have written 'never again'.",
         "Two of them have written it twice, in different years."
       ]);
-      yield C.say(["You sign it. JIM, and the date, and — because there is a column for it — MEADOW and BIGBOY."]);
+      yield C.say(["You sign it. JIM, and the date, and — because there is a column for it — MEADOW."]);
       yield C.giveItem("viewpoint_mow_cop", 1);
       yield C.notify("Viewpoint recorded: Mow Cop.");
       return;
     }
-    yield C.say(["Your name's still in it. So are the cats'."]);
+    yield C.say(["Your name's still in it. So is hers."]);
   });
 
   // ============================== SANDBACH side =========================

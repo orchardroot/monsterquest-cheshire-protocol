@@ -125,7 +125,7 @@
       { x: 18, y: 28, item: "cat_token_7", n: 1, flag: "catgap_tarporley_1",
         say: "MEADOW goes through the churchyard railings and returns with a small brass tag that says a name nobody in Tarporley remembers." }
     ],
-    restPoints: [{ x: 27, y: 21, flag: "bigboy_sat_tarporley" }],
+    restPoints: [{ x: 27, y: 21, flag: "meadow_sat_tarporley" }],
     npcs: [
       { id: "npc_tarporley_delyth", x: 30, y: 21, dir: "down", sprite: "npc_walker", behaviour: "still", trainer: "tr_tarporley_1", sight: 0, script: "nw_tarporley_delyth" },
       { id: "npc_tarporley_cadoc", x: 22, y: 22, dir: "down", sprite: "npc_farmer", behaviour: "still", script: "nw_tarporley_cadoc" },

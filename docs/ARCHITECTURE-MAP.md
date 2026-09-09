@@ -50,12 +50,12 @@ Result: 139 maps (29 towns, 27 routes, ~9 sites/caves, ~70 interiors). NPCs are 
 - Damage: `floor(floor(floor(2L/5+2)*P*A/D)/50)+2`, STAB 1.5, `typeMultiplier`, roll (217+rand39)/255, crit `baseSpd/512` (×8 cap 0.9 for `highCrit`, ignores stages, doubles level). Stages atk/def/spd only, ±6, `stageMult`. Burn halves atk, para quarters spd, 25% full-para, sleep 1–3 turns, psn/brn = maxHP/16. No accuracy/evasion, freeze, confusion, multi-hit, charge, weather, abilities, held items.
 - Catch: `(3M-2H)*rate*bonus/(3M)`, ×2 asleep, ×1.5 other status; ball bonuses 1/1.5/2; overflow to `game.box`.
 - Exp: `max(1, floor(baseExp*L/7))` to the single active mon only; `expForLevel = L^3`; level-ups recompute via `statsAtLevel`, queue learns/evos to `G.pending*`. `expEarned` Map is dead.
-- Enemy AI: uniform random over moves with PP. Custom mechanics: `brink` (survive at 1 HP once, only `bigboy`), `piward` status immunity, one-shot agents SLEET/VIGIL/ARBITER.
+- Enemy AI: uniform random over moves with PP. Custom mechanics: `piward` status immunity, one-shot agents SLEET/VIGIL/ARBITER.
 - `Battle.phase` shadows a second state machine, `battleUi.phase` in game.js (`msg|menu|moves`), which also holds `menuIdx` (hardcoded 2×2 grid of exactly 4 options), `dispHpP/E`, `introT` (450 ms slide-in). `drawBattle` is fully procedural with literal pixel coordinates.
 
 ## 5. Data model
 
-- **Monster instance** (`makeMonster`): `{species, nickname, level, exp, hp, stats:{hp,atk,def,spd,spc}, status: null|psn|par|brn|slp, sleepTurns, moves:[{id,pp}] (≤4)}` plus transient fields bolted on at runtime (`fainted`, `faintedShown`, `brinkUsed`). No IVs/EVs/natures/held items; single `spc` stat.
+- **Monster instance** (`makeMonster`): `{species, nickname, level, exp, hp, stats:{hp,atk,def,spd,spc}, status: null|psn|par|brn|slp, sleepTurns, moves:[{id,pp}] (≤4)}` plus transient fields bolted on at runtime (`fainted`, `faintedShown`). No IVs/EVs/natures/held items; single `spc` stat.
 - **SPECIES**: `{name, types[1-2], base:[hp,atk,def,spd,spc] (positional), catchRate (0 = uncatchable/scripted), baseExp, evolvesTo?, evolveLevel?, learnset:[[level,moveId]], art+pal (38 hand-drawn 16×16) XOR gen:{body,size,feats} (75 procedural), brink?}`. Assembled from a base literal plus two `Object.assign` expansion blocks. Starter trio and rival triangle are hardcoded in game.js and maps.js, not data.js.
 - **MOVES**: `{name, type, kind: phys|spec|status, power?, acc (999=always), pp, priority?, highCrit?, effect?:{status,chance} | stat?:{who,stat,delta} | heal?}` — one effect kind per move.
 - **ITEMS**: `{name, price, kind: heal|cure|ball|key|agent|ward|boombox, amount?/cures?/bonus?, desc}` — key/story items mixed with mechanical ones.

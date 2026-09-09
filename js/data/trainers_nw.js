@@ -909,7 +909,7 @@
     party: p("zephyrion:68,glitchra:68,merlynx:70"), payout: 22000, song: "battle_legendary",
     boss: { cannotCatch: true, arenaWeather: "wind", phases: [
       { hpFrac: 0.6, events: [{ say: "The wind arrives before the second one does." }, { setWeather: "wind", turns: 99 }] },
-      { hpFrac: 0.25, events: [{ say: "A cat that is not MEADOW and not BIGBOY sits down beside it and washes a paw." }, { healSelf: 0.2 }, { boostSelf: { spe: 1 } }] }
+      { hpFrac: 0.25, events: [{ say: "A cat that is not MEADOW sits down beside it and washes a paw." }, { healSelf: 0.2 }, { boostSelf: { spe: 1 } }] }
     ] },
     intro: [
       "Three of them, stood together, which the county record office says has never happened.",

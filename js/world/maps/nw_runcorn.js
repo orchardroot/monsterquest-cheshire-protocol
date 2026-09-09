@@ -154,7 +154,7 @@
       { x: 22, y: 21, item: "cat_token_9", n: 1, flag: "catgap_runcorn_1",
         say: "MEADOW goes under the works fence, walks the length of a pipe bridge that is forty feet up, and returns bored." }
     ],
-    restPoints: [{ x: 26, y: 27, flag: "bigboy_sat_runcorn" }],
+    restPoints: [{ x: 26, y: 27, flag: "meadow_sat_runcorn" }],
     npcs: [
       { id: "npc_runcorn_bevan", x: 26, y: 22, dir: "down", sprite: "npc_chemist", behaviour: "still", trainer: "tr_runcorn_1", sight: 4 },
       { id: "npc_runcorn_dilwen", x: 12, y: 28, dir: "down", sprite: "npc_stuffer", behaviour: "look", radius: 4, trainer: "tr_runcorn_2", sight: 4 },

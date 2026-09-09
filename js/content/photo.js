@@ -56,7 +56,7 @@
     { id: "sec_glitchra_dish", name: "GLITCHRA over the dish", species: "glitchra", phase: "night",
       line: "The dish is pointed at nothing. Something is pointed back." },
     { id: "sec_cats_kerridge", name: "Both cats on Kerridge", map: "kerridge_hill", cats: true,
-      line: "Meadow ahead, Bigboy sat down. The whole county behind them." }
+      line: "Meadow ahead, already sat down. The whole county behind her." }
   ];
 
   P.unlocked = function () { return !!A().flag("photo_mode"); };

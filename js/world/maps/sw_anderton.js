@@ -106,7 +106,7 @@
       { x: 36, y: 21, item: "capsule_net", n: 3, hidden: true, flag: "item_anderton_2" },
       { x: 3, y: 3, item: "roe", n: 2, hidden: true, flag: "item_anderton_3" }
     ],
-    restPoints: [{ x: 5, y: 18, flag: "bigboy_sat_anderton" }],
+    restPoints: [{ x: 5, y: 18, flag: "meadow_sat_anderton" }],
     npcs: [
       { id: "npc_anderton_beth", x: 32, y: 16, dir: "down", sprite: "npc_signaller", behaviour: "still", script: "sw_beth" },
       { id: "npc_anderton_osian", x: 22, y: 23, dir: "up", sprite: "npc_boater", behaviour: "look", radius: 4, trainer: "tr_anderton_2", sight: 4 },
@@ -279,9 +279,7 @@
     items: [],
     npcs: [
       { id: "npc_anderton_boat_cat_meadow", x: 13, y: 5, dir: "down", sprite: "cat_meadow", behaviour: "still",
-        say: ["MEADOW is sitting on the roof. She had to be carried aboard and she has not forgiven anybody."] },
-      { id: "npc_anderton_boat_cat_bigboy", x: 17, y: 5, dir: "down", sprite: "cat_bigboy", behaviour: "still",
-        say: ["BIGBOY walked on unassisted, sat down in the exact middle of the roof, and began, audibly, to purr."] }
+        say: ["MEADOW sits in the exact middle of the roof with her back to you. She had to be carried aboard and she has not forgiven anybody."] }
     ]
   });
 
@@ -431,7 +429,7 @@
       { x: 5, y: 25, item: "blackberry", n: 4, flag: "item_great_budworth_1" },
       { x: 32, y: 25, item: "capsule_mesh", n: 3, hidden: true, flag: "item_great_budworth_2" }
     ],
-    restPoints: [{ x: 7, y: 16, flag: "bigboy_sat_budworth" }],
+    restPoints: [{ x: 7, y: 16, flag: "meadow_sat_budworth" }],
     npcs: [
       { id: "npc_great_budworth_elin", x: 25, y: 12, dir: "down", sprite: "npc_historian", behaviour: "still", trainer: "tr_great_budworth_1", sight: 0, script: "sw_elin" },
       { id: "npc_great_budworth_huw", x: 24, y: 13, dir: "up", sprite: "npc_bandsman", behaviour: "still", trainer: "tr_great_budworth_2", sight: 0, script: "sw_ringing_master" },

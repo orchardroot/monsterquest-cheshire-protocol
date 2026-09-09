@@ -140,7 +140,7 @@
       { x: 20, y: 8, item: "cat_token_8", n: 1, flag: "catgap_tatton_1",
         say: "MEADOW slips under the deer fence, walks straight through a herd of animals four times her size, and every single one of them gets out of her way." }
     ],
-    restPoints: [{ x: 22, y: 32, flag: "bigboy_sat_tatton" }],
+    restPoints: [{ x: 22, y: 32, flag: "meadow_sat_tatton" }],
     npcs: [
       { id: "npc_tatton_nerys", x: 30, y: 20, dir: "down", sprite: "npc_ranger", behaviour: "still", script: "mid_tatton_nerys" },
       { id: "npc_tatton_kellan", x: 34, y: 38, dir: "up", sprite: "kellan", behaviour: "still", script: "mid_tatton_kellan" },

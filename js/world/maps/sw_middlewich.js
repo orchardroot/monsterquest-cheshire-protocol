@@ -138,7 +138,7 @@
       { x: 38, y: 33, item: "salt_crystal", n: 2, flag: "catgap_middlewich_1",
         say: "MEADOW slips under the salt-works fence, walks the length of a warm pan without hurrying, and brings back a lump of halite the size of her head." }
     ],
-    restPoints: [{ x: 19, y: 25, flag: "bigboy_sat_middlewich" }],
+    restPoints: [{ x: 19, y: 25, flag: "meadow_sat_middlewich" }],
     npcs: [
       { id: "npc_middlewich_carys", x: 28, y: 36, dir: "up", sprite: "npc_boater", behaviour: "still", script: "sw_carys" },
       { id: "npc_middlewich_jonah", x: 30, y: 21, dir: "down", sprite: "npc_bandsman", behaviour: "still", trainer: "tr_middlewich_2", sight: 0, script: "sw_middlewich_jonah" },

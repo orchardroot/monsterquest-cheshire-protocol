@@ -172,7 +172,7 @@
       { x: 13, y: 21, item: "cat_token_3", n: 1, flag: "catgap_poynton_1",
         say: "MEADOW goes through the paddock rail as if it were a suggestion, greets a very large Ground-type nose to nose, and comes back smelling of hay." }
     ],
-    restPoints: [{ x: 25, y: 28, flag: "bigboy_sat_poynton" }],
+    restPoints: [{ x: 25, y: 28, flag: "meadow_sat_poynton" }],
     npcs: [
       { id: "npc_poynton_bea", x: 38, y: 10, dir: "down", sprite: "npc_signaller", behaviour: "still", trainer: "tr_poynton_2", sight: 0, script: "east_poynton_bea" },
       { id: "npc_poynton_pat", x: 9, y: 24, dir: "up", sprite: "npc_farmer", behaviour: "still", script: "east_poynton_pat" },

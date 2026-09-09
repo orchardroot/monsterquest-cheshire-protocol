@@ -322,7 +322,7 @@ module.exports = function (t, assert) {
       const lvl = Math.round(SIM.mean(D.trainers[tid].party.map(function (p) { return p.level; })));
       const s = SIM.simulate({
         label: tid, n: 6,
-        player: [{ species: "silkin", level: lvl }, { species: "meadow", level: lvl - 1 }, { species: "bigboy", level: lvl - 1 }],
+        player: [{ species: "silkin", level: lvl }, { species: "meadow", level: lvl - 1 }],
         trainerId: tid, seed: 8000
       });
       agg.n += s.n;
@@ -359,9 +359,9 @@ module.exports = function (t, assert) {
   // =================================================================
   // 5b. Late game (Gyms 5-8, the White Hats, Champion VEX, ORACLE).
   //
-  // Measured with a dedicated five-mon "high" tier party (not the cats —
-  // MEADOW and BIGBOY are mandatory extra slots every real run carries,
-  // and dragging two mid-tier cats into a fight tuned around a full team
+  // Measured with a dedicated five-mon "high" tier party (not the cat —
+  // MEADOW is a mandatory extra slot every real run carries,
+  // and dragging a mid-tier cat into a fight tuned around a full team
   // of high-tier commons will always read harder than the fight actually
   // is; this isolates whether the *fight itself* is winnable). None of
   // these battles use items either (the AI never reaches for the bag),
@@ -452,7 +452,7 @@ module.exports = function (t, assert) {
         hps.push(D.statsAtLevel(sp, lvl, { hp: 8, atk: 8, def: 8, spa: 8, spd: 8, spe: 8 }, "plain").hp);
       });
       hps.sort(function (a, b) { return a - b; });
-      const probe = { low: ["nibbit", "flitchick", "sootling", "mistlop"], mid: ["gnawlord", "galewing", "spindrake", "saltander"], high: ["loomoth", "halosaur", "furnacore", "bigboy"] }[tier];
+      const probe = { low: ["nibbit", "flitchick", "sootling", "mistlop"], mid: ["gnawlord", "galewing", "spindrake", "saltander"], high: ["loomoth", "halosaur", "furnacore", "gloamguard"] }[tier];
       let frac = 0;
       for (let j = 0; j < probe.length; j++) {
         frac += SIM.simulate({

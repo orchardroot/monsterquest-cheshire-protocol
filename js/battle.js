@@ -165,15 +165,7 @@ class Battle {
     }
     const flashTarget = isPlayer ? "enemy" : "player";
     let dealt = dmg;
-    // Bigboy's "Back from the Brink": once per battle, survive a KO hit at 1 HP
-    if (SPECIES[defender.species].brink && !defender.brinkUsed && defender.hp > 1 && dealt >= defender.hp) {
-      dealt = defender.hp - 1;
-      defender.brinkUsed = true;
-      defender.hp = Math.max(0, defender.hp - dealt);
-      this.say(`${defenderName} refuses to go down — back from the brink!`);
-    } else {
-      defender.hp = Math.max(0, defender.hp - dealt);
-    }
+    defender.hp = Math.max(0, defender.hp - dealt);
     this.queue.push({
       text: null, // silent entry: flash + thud when the attack lands on screen
       apply: () => {

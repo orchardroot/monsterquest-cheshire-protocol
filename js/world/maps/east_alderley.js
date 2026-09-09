@@ -178,7 +178,7 @@
       { x: 5, y: 32, item: "cat_token_9", n: 1, flag: "catgap_alderley_1",
         say: "MEADOW walks straight up the rock beside the Well, sits level with the carved face, and looks at it. The face has been looked at by a great many people. This is the first time it has been looked at back." }
     ],
-    restPoints: [{ x: 24, y: 31, flag: "bigboy_sat_alderley" }],
+    restPoints: [{ x: 24, y: 31, flag: "meadow_sat_alderley" }],
     npcs: [
       { id: "npc_alderley_elis", x: 35, y: 24, dir: "down", sprite: "elis", behaviour: "still", script: "east_alderley_elis" },
       { id: "npc_alderley_gwil", x: 42, y: 26, dir: "up", sprite: "npc_miner", behaviour: "still", script: "east_alderley_gwil" },

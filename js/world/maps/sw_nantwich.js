@@ -201,7 +201,7 @@
       { x: 43, y: 6, item: "collectible_16", n: 1, flag: "catgap_nantwich_1",
         say: "MEADOW goes under the pool railings, walks the whole length of the tiled edge without getting wet, and comes back with a key on a float." }
     ],
-    restPoints: [{ x: 9, y: 23, flag: "bigboy_sat_nantwich" }],
+    restPoints: [{ x: 9, y: 23, flag: "meadow_sat_nantwich" }],
     npcs: [
       { id: "npc_nantwich_huw", x: 11, y: 19, dir: "down", sprite: "npc_shopkeep", behaviour: "still", trainer: "tr_nantwich_1", sight: 0, script: "sw_nantwich_huw" },
       { id: "npc_nantwich_alys", x: 34, y: 24, dir: "down", sprite: "npc_historian", behaviour: "still", trainer: "tr_nantwich_2", sight: 0, script: "sw_nantwich_alys" },

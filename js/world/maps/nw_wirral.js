@@ -321,7 +321,7 @@
       { x: 49, y: 37, item: "full_restore", n: 1, hidden: true, flag: "item_ellesmere_port_2" },
       { x: 4, y: 21, item: "roe", n: 4, hidden: true, flag: "item_ellesmere_port_3" }
     ],
-    restPoints: [{ x: 30, y: 25, flag: "bigboy_sat_ellesmere" }],
+    restPoints: [{ x: 30, y: 25, flag: "meadow_sat_ellesmere" }],
     npcs: [
       { id: "npc_ellesmere_ffred", x: 20, y: 7, dir: "down", sprite: "npc_boater", behaviour: "still", trainer: "tr_ellesmere_port_1", sight: 0, script: "nw_ellesmere_bosun" },
       { id: "npc_ellesmere_kez", x: 40, y: 29, dir: "left", sprite: "npc_shopkeep", behaviour: "wander", radius: 3, trainer: "tr_ellesmere_port_2", sight: 4 },
@@ -536,7 +536,7 @@
       { x: 41, y: 29, item: "capsule_night", n: 4, hidden: true, flag: "item_parkgate_2" },
       { x: 4, y: 4, item: "cream", n: 4, hidden: true, flag: "item_parkgate_3" }
     ],
-    restPoints: [{ x: 27, y: 12, flag: "bigboy_sat_parkgate" }],
+    restPoints: [{ x: 27, y: 12, flag: "meadow_sat_parkgate" }],
     npcs: [
       { id: "npc_parkgate_non", x: 22, y: 21, dir: "down", sprite: "npc_birder", behaviour: "still", trainer: "tr_parkgate_1", sight: 0, script: "nw_parkgate_watcher" },
       { id: "npc_parkgate_ceinwen", x: 34, y: 12, dir: "down", sprite: "npc_shopkeep", behaviour: "still", script: "nw_parkgate_ceinwen" },

@@ -12,7 +12,7 @@ You are **JIM** — SOC lead, threat hunter, long-distance walker, unbothered by
 
 Take back Jodrell Bank from ROOT's DARKBYTE front, climb the Lovell Telescope while ORACLE talks to you through its own speakers, and decide what happens to it — delete it, quarantine it, or take custody of it, which is its own kind of trouble. Then walk into Chester's league — the **WHITE HATS** and, past them, **THE FIREWALL**, where your rival **VEX** holds the title, under whichever name the ending gave them. A post-game pulse from the west reopens most of the county again, with rematches, a sleeping-knights vault under Alderley Edge, and a friend from Georgia who is, finally, coming to visit.
 
-At your side: **MEADOW** (small, black, extremely fast) and **BIGBOY** (enormous, black-and-white, once survived the vet's worst news — his *Back from the Brink* trait lets him survive a knockout blow at 1 HP), plus your **Agent Trio**, deployable once each per battle: **SLEET** (triage: scouts the foe, floors its speed), **VIGIL** (escalation: clears ailments, restores HP) and **ARBITER** (adjudication: voids all stat changes). Side stories reach from a Welsh orchard in **Ceredigion** (brew perry and stout on the century-old elm press) to letters that follow you across the region from an old friend in Georgia, to a grinning cat on the walls and rooftops who is not, quite, an NPC.
+At your side: **MEADOW** (small, black, extremely fast, and never wrong), plus your **Agent Trio**, deployable once each per battle: **SLEET** (triage: scouts the foe, floors its speed), **VIGIL** (escalation: clears ailments, restores HP) and **ARBITER** (adjudication: voids all stat changes). Side stories reach from a Welsh orchard in **Ceredigion** (brew perry and stout on the century-old elm press) to letters that follow you across the region from an old friend in Georgia, to a grinning cat on the walls and rooftops who is not, quite, an NPC.
 
 ## The region
 
@@ -23,7 +23,7 @@ At your side: **MEADOW** (small, black, extremely fast) and **BIGBOY** (enormous
 - **South-west** (Ch.6–7) — Nantwich and its brine lido, Y Berllan and Aberaeron on the Welsh coast, Middlewich, Winsford, the Northwich Salt Mine, Anderton and its boat lift, Great Budworth.
 - **North-west** (Ch.8–12 and post-game) — Delamere Forest, Tarporley, Beeston Castle, Frodsham, Runcorn, Daresbury (THE STACK), Lymm, Warrington, Chester, Chester Zoo, Ellesmere Port, Ince Marshes.
 
-Every town has its own care centre, mart, inn and homes; gym and station towns get the matching interiors too. Traversal opens up as you go — a bike, MEADOW's squeeze through cat-gaps, BIGBOY's shove, a billhook through hedges, a Davy lamp for the dark levels, a boat for the canals, waders for the marshes, gritstone grips for the crags, proxy goggles for the fog, and a railcard for fast travel between stations.
+Every town has its own care centre, mart, inn and homes; gym and station towns get the matching interiors too. Traversal opens up as you go — a bike, MEADOW's squeeze through cat-gaps, a shoulder to a boulder, a billhook through hedges, a Davy lamp for the dark levels, a boat for the canals, waders for the marshes, gritstone grips for the crags, proxy goggles for the fog, and a railcard for fast travel between stations.
 
 ### The 8 gyms
 
@@ -105,4 +105,4 @@ android/        WebView wrapper project (built by CI into the APK)
 
 ---
 
-*orchardroot — made in Cheshire, under the close supervision of MEADOW and BIGBOY, who did not consent to being in a video game.*
+*orchardroot — made in Cheshire, under the close supervision of MEADOW, who did not consent to being in a video game.*

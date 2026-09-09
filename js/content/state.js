@@ -24,7 +24,7 @@
   Party.MAX = 6;
   Party.BOX_PAGES = 16;
   Party.BOX_SIZE = 30;
-  Party.CATS = ["meadow", "bigboy"];
+  Party.CATS = ["meadow"];
   Party.list = [];
   Party.box = [];            // array of pages; page = array of monsters (sparse-safe)
   Party.boxNames = [];
@@ -184,7 +184,7 @@
     const i = Party.indexOf(uid);
     if (i < 0) return null;
     const m = Party.list[i];
-    if (Party.isCat(m)) return null;        // MEADOW and BIGBOY stay
+    if (Party.isCat(m)) return null;        // MEADOW stays
     Party.list.splice(i, 1);
     emit("party:remove", { mon: m });
     return m;
@@ -732,7 +732,7 @@
   Tr.dex = {};
   Tr.STATS = ["steps", "stepsRain", "stepsRun", "battles", "wins", "losses", "runs", "catches", "faints", "knockouts",
     "overdrives", "photos", "brews", "bounties", "warrants", "casesClosed", "fish", "itemsUsed",
-    "moneyEarned", "moneySpent", "healsLido", "puppetsBeaten", "amosExposed", "luresRefused", "brinkSaves", "gymsBeaten", "arenaClears"];
+    "moneyEarned", "moneySpent", "healsLido", "puppetsBeaten", "amosExposed", "luresRefused", "gymsBeaten", "arenaClears"];
   Tr.stats = {};
   function zeroStats() { Tr.stats = {}; for (let i = 0; i < Tr.STATS.length; i++) Tr.stats[Tr.STATS[i]] = 0; }
   zeroStats();
@@ -740,7 +740,7 @@
   // Counters that mirror into MQ.Flags so condition expressions can read them.
   const STAT_FLAG = {
     steps: "steps_total", stepsRain: "steps_rain", puppetsBeaten: "count_puppets_beaten",
-    amosExposed: "count_amos_exposed", luresRefused: "count_lures_refused", brinkSaves: "count_brink_saves",
+    amosExposed: "count_amos_exposed", luresRefused: "count_lures_refused",
     overdrives: "count_overdrives", healsLido: "count_lido_heals", bounties: "count_bounties",
     warrants: "count_warrants", photos: "count_photos"
   };

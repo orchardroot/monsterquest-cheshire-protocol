@@ -100,7 +100,7 @@
 | R25 Whitegate Way (old rail) | Delamere ↔ Winsford/Northwich (the Ch.7→Ch.8 walk) | — (Bike for the sprint lane only) |
 | R26 Kelsall & the Sandstone Trail | Delamere ↔ Tarporley | Badge 6 |
 | R27 Bunbury & the Shropshire Union | Tarporley ↔ Beeston | — |
-| D-Crag Beeston Crag & Peckforton | inside Beeston | wall & keep open (Ch.8 story); crag summit/Peckforton climb: Gritstone Grips; well: BIGBOY Shove + Davy Lamp |
+| D-Crag Beeston Crag & Peckforton | inside Beeston | wall & keep open (Ch.8 story); crag summit/Peckforton climb: Gritstone Grips; well: Shove + Davy Lamp |
 | R28 Tarvin & Christleton | Tarporley ↔ Chester | Badge 6 |
 | D-Walls Chester walls circuit & amphitheatre | inside Chester | — |
 | R29 Shropshire Union north | Chester ↔ Zoo ↔ Ellesmere Port | — |
@@ -112,7 +112,7 @@
 | R32 Tegg's Nose lane | Macclesfield ↔ Tegg's Nose | Gritstone Grips for the quarry top; lane open |
 | R33 Weaver towpath | Northwich ↔ Anderton (lower level) | — |
 | R34 Marbury avenues | Anderton (upper level) ↔ Great Budworth | Anderton Lift Pass or the long walk round |
-| Kerridge Hill | Bollington ↔ White Nancy summit (Ch.1 climb; BIGBOY rest point) | — |
+| Kerridge Hill | Bollington ↔ White Nancy summit (Ch.1 climb; rest point) | — |
 
 Canonical snake_case map ids for every node, edge and interior above are listed in **DESIGN-INDEX.md §5** — use those ids in `MQ.World.defineMap`, warps and story scripts.
 | D-Bunker Hack Green | Nantwich south | Bunker Key |
@@ -228,7 +228,7 @@ Old royal forest. **Landmarks:** Blakemere Moss (drowned wood), the Old Pale sum
 Georgian high street, hunt town. **Palette:** brick, coaching inns, hunting green. **NPCs:** *Hedge-layer Cadoc* (his yard; hedge-laying contest — he first taught you the **Billhook** at Prestbury), *Hunt Master*. **Hooks:** hedge-laying contest; stolen horses.
 
 ### Beeston Castle & Peckforton (C7)
-Ruined castle on a crag; Victorian castle opposite. **Landmarks:** Beeston keep and well (Richard II's treasure legend), Peckforton Castle, the Bunbury locks. **Palette:** crag red, keep grey, mist. **NPCs:** *Custodian Roz*, *Peckforton Falconer*. **Hooks:** ZEPHYRION's ruin (seen from the wall in Ch.8; storm-weather rematch post-game); the "bottomless" well as DARKBYTE's dead-drop (BIGBOY Shove + Davy Lamp) — ROOT's note names Frodsham (`beeston_well_note`); the two VEXes on the wall (Choice 2).
+Ruined castle on a crag; Victorian castle opposite. **Landmarks:** Beeston keep and well (Richard II's treasure legend), Peckforton Castle, the Bunbury locks. **Palette:** crag red, keep grey, mist. **NPCs:** *Custodian Roz*, *Peckforton Falconer*. **Hooks:** ZEPHYRION's ruin (seen from the wall in Ch.8; storm-weather rematch post-game); the "bottomless" well as DARKBYTE's dead-drop (Shove + Davy Lamp) — ROOT's note names Frodsham (`beeston_well_note`); the two VEXes on the wall (Choice 2).
 
 ### Chester (B5) — League: THE FIREWALL
 Roman walls, Tudor Rows, red sandstone. **Landmarks:** the full wall circuit, Eastgate Clock, Northgate, King Charles' Tower, the Water Tower, the Rows, the Cathedral, the Roman amphitheatre, the Roodee racecourse, Minerva's shrine at Edgar's Field, the Groves and Dee weir, Grosvenor Bridge, the Cross. **Palette:** red sandstone, black-and-white Rows, cathedral gold, Dee green. **NPCs:** the WHITE HATS (Sue/Raj/Kim/Doc) in the Cathedral chapter house, *VEX* at the amphitheatre arena, *Watchman Idris* (Casebook Q29), *Town Crier*, *Rows Merchant*; the post office (Nino letter #4). **Activity:** wall-circuit timed lap; racecourse betting mini-game. **Shops:** everything. **Hooks:** Roman ghost legion; the clock's chime; VEX's final rival arc.
@@ -308,7 +308,7 @@ Encounter archetypes by biome (species detailing left to the creature designer):
 |---|---|---|---|
 | **Middlewood Bike** | cycle hire, Bollington | Spokes | speed on cycleways/towpaths, tunnel shortcut |
 | **MEADOW Squeeze** | small black cat slips through railings, cat-flaps, culverts | Ch.1 | side pockets everywhere |
-| **BIGBOY Shove** | the big cat pushes boulders/wheelie bins | Badge 3 | rock puzzles, Beeston well |
+| **Shove** | put your shoulder to boulders/wheelie bins | Badge 3 | rock puzzles, Beeston well |
 | **Billhook** | hedge-laying | Hedge-layer Cadoc at Prestbury (Ch.1–2 lesson; his yard is Tarporley) | hedge gaps, mere paths, lane diagonals — pockets only, never the story path |
 | **Davy Lamp** | copper-mine lamp | Miner-Warden Gwil, Alderley (end of Casebook Q4, Ch.2) | dark levels, night glades, hidden cave-floor items |
 | **Narrowboat Licence** | canal boating | Boatwoman Carys, Middlewich (Ch.7, after Badge 5) | all canals, Weaver, lift |
@@ -327,7 +327,7 @@ Encounter archetypes by biome (species detailing left to the creature designer):
 ## 5. 25 collectibles and secrets
 
 1. Nancy's Paint Tin (quarry cache). 2. Turing's Apple (Wilmslow attic). 3. Lindow torc (bog). 4. Wizard's Well coin (say the Welsh line). 5. Copper Knight helm (Cave of the Knights). 6. Gaskell letter fragment 1/5 (tower). 7. Penny-farthing bell. 8. Tatton bonsai. 9. Signal-box lamp. 10. Twemlow arch #13 plaque. 11. Bear-token (Congleton bear on the Cloud). 12. Bridestones rune. 13. Sandbach cross rubbing. 14. Crewe Works nameplate. 15. Wybunbury leaning brick. 16. Brine pool key. 17. Bunker switchboard tag. 18. DeepStore file "ORACLE-0". 19. Salt-golem heart. 20. Lion Salt Works pan. 21. Marbury Lady's locket. 22. Alice mirror shard (Daresbury). 23. Halton spyglass. 24. Old Pale seven-counties medal. 25. Beeston well "treasure" (a cat collar tag).
-Plus: **eleven cats to find** across the map (each a Grinmalkin cousin, gives a MEADOW/BIGBOY skin), **twelve viewpoints** (all summits and towers), and the **five Nino letters** from Georgia (post offices at Wilmslow, Sandbach, Frodsham and Chester; the last at Y Berllan in the post-game).
+Plus: **eleven cats to find** across the map (each a Grinmalkin cousin, gives a MEADOW skin), **twelve viewpoints** (all summits and towers), and the **five Nino letters** from Georgia (post offices at Wilmslow, Sandbach, Frodsham and Chester; the last at Y Berllan in the post-game).
 
 ---
 

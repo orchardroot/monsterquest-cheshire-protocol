@@ -11,7 +11,7 @@
   const U = MQ.U, T = MQ.Text, UI = MQ.UI;
   function TH() { return UI.Theme; }
 
-  const CATS = { meadow: true, bigboy: true };
+  const CATS = { meadow: true };
   const artCache = {};
 
   // ---- data helpers (everything degrades if content is absent) -----

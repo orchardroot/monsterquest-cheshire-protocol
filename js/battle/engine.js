@@ -53,7 +53,6 @@
     od_ghost: { name: "Grave Bell", type: "ghost", cat: "spec", power: 130, effects: [{ kind: "status", status: "cnf", chance: 30 }] },
     od_cyber: { name: "Root Shell", type: "cyber", cat: "spec", power: 130, effects: [{ kind: "pp_drain", n: 2 }] },
     zoomies: { name: "Zoomies", type: "normal", cat: "phys", power: 40, priority: 2, effects: [{ kind: "multihit", min: 3, max: 3 }, { kind: "stage", who: "self", stat: "spe", delta: 1 }] },
-    brink_roar: { name: "Brink Roar", type: "normal", cat: "status", power: 0, effects: [{ kind: "heal", who: "self", frac: 0.5 }, { kind: "stage", who: "self", stat: "def", delta: 1 }, { kind: "stage", who: "self", stat: "spd", delta: 1 }, { kind: "stage", who: "foe", stat: "atk", delta: -1 }] },
     jacquard_weave: { name: "Jacquard Weave", type: "bug", cat: "spec", power: 130, effects: [{ kind: "terrain", tr: "silk", turns: 5 }, { kind: "stage", who: "foe", stat: "spe", delta: -1 }] },
     brine_tide: { name: "Brine Tide", type: "water", cat: "spec", power: 130, effects: [{ kind: "weather", w: "rain", turns: 8 }, { kind: "stage", who: "self", stat: "spd", delta: 1 }] },
     firebox_overload: { name: "Firebox Overload", type: "fire", cat: "spec", power: 140, effects: [{ kind: "status", status: "brn", chance: 30 }, { kind: "stage", who: "self", stat: "spe", delta: -1 }] },

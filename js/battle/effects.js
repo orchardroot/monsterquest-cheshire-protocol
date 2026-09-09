@@ -387,13 +387,6 @@
         target = 1;
         b.msg(b.name(mon) + " came back from the brink!");
         b.emit("anim", { name: "brink", side: b.sideIndexOf(mon), uid: mon.uid });
-        if (b.catTrust("bigboy") >= 3 && mon.species === "bigboy") {
-          const back = Math.floor(max * 0.25);
-          mon.hp = 1;
-          BE.heal(b, mon, back, { quiet: true });
-          b.msg(b.name(mon) + " shook it off and sat down heavily.");
-          target = mon.hp;
-        }
       } else if (BE.gearOf(b, mon) === "focus_band" && b.rng() < 0.1) {
         target = 1;
         b.msg(b.name(mon) + " hung on with its Focus Band!");

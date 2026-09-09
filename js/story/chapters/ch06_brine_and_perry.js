@@ -424,7 +424,7 @@
     yield C.wait(400);
     yield C.say([
       "Outside, MEADOW is hunting in the long grass at the end of the rows and has not looked up in forty minutes.",
-      "BIGBOY has found the one flagstone the sun was on all afternoon.",
+      "The one flagstone the sun was on all afternoon is empty, and stays empty.",
       "Mam-gu holds the lamp and says nothing at all, for two hours, which is the single kindest thing anybody does in this entire county."
     ]);
     yield C.setFlag("pippin_found", true);
@@ -530,20 +530,18 @@
     ], { name: "Mam-gu" });
     yield C.wait(400);
     yield C.say([
-      "BIGBOY, who has been asleep, gets up, crosses the rug, and sits down against your shin with his whole weight, which is considerable.",
-      "He does not look at anybody. He simply arrives and stays, the way he did in the waiting room, from the wrong side of the news."
+      "MEADOW, who has been asleep on the press since four, gets up, crosses the rug, and sits down against your shin.",
+      "She does not look at anybody. She simply arrives and stays, which is not a thing she does, and everybody in the room notices and nobody says so."
     ]);
     yield C.setFlag("vet_story_told", true);
-    yield C.setFlag("bigboy_shield", true);
     yield C.setFlag("welsh_word_learned", true);
     yield C.custom(function () {
-      if (MQ.Cats && MQ.Cats.upgrade) return MQ.Cats.upgrade("bigboy", "shield");
-      if (MQ.Cats && MQ.Cats.setTrust) return MQ.Cats.setTrust("bigboy", 5);
+      if (MQ.Cats && MQ.Cats.setTrust) return MQ.Cats.setTrust("meadow", 5);
     });
-    yield C.notify("BACK FROM THE BRINK upgraded: BIGBOY can shield an ally once per battle.");
+    yield C.notify("MEADOW trusts you completely.");
     yield C.say([
-      "Back from the Brink. Nobody in this game will ever explain it in text and nobody needs to.",
-      "VIGIL, in the menu, hours later, unprompted: 'He did it again. He does that. He does that and then he wants his tea.'"
+      "Things come back. Nobody in this game will ever explain it in text and nobody needs to.",
+      "VIGIL, in the menu, hours later, unprompted: 'She stayed. She does not stay. Have you eaten?'"
     ]);
     yield C.music("town_berllan");
     yield C.freeze(false);

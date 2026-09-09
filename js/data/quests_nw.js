@@ -30,7 +30,7 @@
       { id: "s4", text: "There are two of them. Decide how you are going to know which.", hint: "Verify with the word from the train, or challenge them both.",
         cond: f("choice_vex"),
         reward: { xp: 600, perk: 1 } },
-      { id: "s5", text: "Open the well and read what DARKBYTE left in it.", hint: "BIGBOY's shove and the Davy Lamp. Three hundred and seventy feet.",
+      { id: "s5", text: "Open the well and read what DARKBYTE left in it.", hint: "A shoulder to the capstone and the Davy Lamp. Three hundred and seventy feet.",
         cond: f("beeston_well_note") }
     ],
     reward: { money: 3000, xp: 900, items: [{ id: "full_restore", n: 2 }], flags: ["chapter_8_done"] },

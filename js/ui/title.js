@@ -247,7 +247,6 @@
     "JIM - who says 'noted' when he is angry",
     "VEX - who was right, eventually",
     "MEADOW - small, black, absurdly fast",
-    "BIGBOY - huge, black and white, came back from the brink",
     "SLEET, VIGIL, ARBITER - three agents, one bell",
     "GRINMALKIN - the smile that stayed",
     "",

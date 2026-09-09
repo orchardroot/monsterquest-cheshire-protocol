@@ -90,7 +90,7 @@ Rows: sprite (via `MQ.MonsterArt` when it exists, else a typed placeholder), nam
 level, HP gauge and numbers, status chip, gear marker, reserve marker, a full
 Overdrive stripe, and a brass bar on the leader. Row options: Summary, Give/Take
 gear (through the bag), Nickname, Move in the order (pick-then-place reorder),
-Send to the front, and **Keep in reserve** for MEADOW/BIGBOY (calls
+Send to the front, and **Keep in reserve** for MEADOW (calls
 `MQ.Cats.setReserve` when present).
 
 `MQ.UI.PartySummary.open({mons, index, page})` — four pages, left/right or tabs:

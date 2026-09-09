@@ -492,7 +492,7 @@ module.exports = function (t, assert) {
     assert.ok(E.state.chain > 0, "a chain is being tracked");
   });
 
-  t("preview lists what lives here (Tracker perk / BIGBOY's nose)", function () {
+  t("preview lists what lives here (Tracker perk / MEADOW's nose)", function () {
     const env = boot(); const MQ = env.MQ;
     const p = MQ.Encounters.preview(MQ.World.get("we_field"), 13, 2);
     assert.ok(p && p.rows.length === 3);
@@ -632,27 +632,24 @@ module.exports = function (t, assert) {
   });
 
   // ---- cats --------------------------------------------------------------
-  t("MEADOW and BIGBOY follow on the breadcrumb trail, BIGBOY sits", function () {
+  t("MEADOW follows on the breadcrumb trail, and sits when you stop", function () {
     const env = boot(); const MQ = env.MQ, O = MQ.Overworld;
     MQ.Flags.set("cats_joined", true);
     O.refreshCats();
     const cats = O.cats();
-    assert.strictEqual(cats.length, 2);
+    assert.strictEqual(cats.length, 1);
     assert.strictEqual(cats[0].cat, "meadow");
-    assert.strictEqual(cats[1].cat, "bigboy");
     O.place(13, 9, "down");
     MQ.NPC.trailReset(O.player.px, O.player.py, "down");
     env.key("ArrowDown");
     return pump(env, 60).then(function () {
       env.key("ArrowDown", false);
       const d0 = Math.abs(cats[0].py - O.player.py);
-      const d1 = Math.abs(cats[1].py - O.player.py);
       assert.ok(d0 > 8, "MEADOW trails behind (" + d0.toFixed(1) + "px)");
-      assert.ok(d1 > d0, "BIGBOY trails further back (" + d1.toFixed(1) + "px)");
-      assert.ok(d1 < 32 * 4, "…but keeps up");
+      assert.ok(d0 < 32 * 4, "…but keeps up");
       return pump(env, 140);                 // stand still
     }).then(function () {
-      assert.strictEqual(cats[1].sitting, true, "BIGBOY sat down when you stopped");
+      assert.strictEqual(cats[0].sitting, true, "MEADOW sat down when you stopped");
     });
   });
 

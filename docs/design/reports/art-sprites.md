@@ -51,7 +51,7 @@ construct also gets the faction mark so the family reads as one.
 **Hand-tuned (29):** the three starter lines (`silkin` `spindrake` `loomoth`,
 `brinewt` `saltander` `halosaur`, `kindlin` `stokerel` `furnacore`), the four
 legendaries (`merlynx` `terrataur` `zephyrion` `glitchra`), `meadow`,
-`bigboy`, `grinmalkin`, `grinkit`, and the DARKBYTE flagships `oracle_core`
+`grinmalkin`, `grinkit`, and the DARKBYTE flagships `oracle_core`
 (+ `_p2` `_p3`), `shardmind`, `amoslurk`/`understudy`, `trojanox`,
 `wormhack`, `panoptix`, `datadrake`, `glitchra_static`,
 `steamloco_overfired`. These are bespoke draw routines, not overrides of the
@@ -75,7 +75,7 @@ MQ.PeopleArt.DIRS = ['down','left','right','up']   FRAMES = 3
 79 sprite ids from ROSTER §6: the player (walk / bike / narrowboat tiller),
 every named cast member, the 28 trainer-class sprites, `npc_nurse`,
 `npc_sysadmin`, `npc_stoker`, Treacle Tam, Spokes, the impostor variants,
-MEADOW / BIGBOY / GRINKIT as small 4-direction cats, dog, deer, sheep, duck,
+MEADOW / GRINKIT as small 4-direction cats, dog, deer, sheep, duck,
 heron, the narrowboat, the Anderton caisson, three trains, the ORACLE
 terminal and the GRINMALKIN wall grin.
 

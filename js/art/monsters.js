@@ -1082,23 +1082,6 @@
       for (let i = 0; i < 3; i++) g.line((0.14 + i * 0.03) * SS, (0.70 + i * 0.07) * SS, (0.30 + i * 0.03) * SS, (0.68 + i * 0.07) * SS, GL, 1); // speed lines
     };
   };
-  OV_PAL.bigboy = ["#141218", "#2b2933", "#f0ede5", "#f6bcc9"];
-  OV.bigboy = function (P) {
-    const f = P.f, S = P.S;
-    P.E(0.5, 0.72, 0.31 * f, 0.24 * f, MD);
-    P.E(0.5, 0.76, 0.20 * f, 0.19 * f, LT);                                  // white bib/belly
-    P.E(0.5 - 0.20 * f, 0.92, 0.09 * f, 0.05 * f, LT);
-    P.E(0.5, 0.40, 0.22 * f, 0.20 * f, MD);
-    P.E(0.5, 0.47, 0.13 * f, 0.10 * f, LT);                                  // white muzzle
-    P.T(0.5 - 0.20 * f, 0.18, 0.5 - 0.11 * f, 0.36, 0.11 * f, MD);
-    P.head = { x: 0.5 * S, y: 0.40 * S, r: 0.21 * f * S, cat: true };
-    P.ground = 0.97;
-    P.extra = function (Q) {
-      const g = Q.g, SS = Q.S, ff = Q.f;
-      g.line(0.78 * SS, 0.86 * SS, 0.95 * SS, 0.84 * SS, MD, SS * 0.07 * ff); // tail, flat on the floor
-      g.ellOver(0.34 * SS, 0.34 * SS, SS * 0.06 * ff, SS * 0.05 * ff, LT);    // white blaze
-    };
-  };
   OV_PAL.grinmalkin = ["#221a30", "#4a3468", "#a487cc", "#f5e05a"];
   OV.grinmalkin = function (P) {
     const f = P.f, S = P.S;

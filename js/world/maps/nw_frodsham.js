@@ -139,7 +139,7 @@
       { x: 18, y: 34, item: "cat_token_8", n: 1, flag: "catgap_frodsham_1",
         say: "MEADOW slips between the memorial railings, sits on the plinth, and will not be told." }
     ],
-    restPoints: [{ x: 27, y: 37, flag: "bigboy_sat_frodsham_town" }],
+    restPoints: [{ x: 27, y: 37, flag: "meadow_sat_frodsham_town" }],
     npcs: [
       { id: "npc_frodsham_gethin", x: 38, y: 38, dir: "down", sprite: "npc_walker", behaviour: "still", script: "nw_frodsham_gethin" },
       { id: "npc_frodsham_ivor", x: 26, y: 34, dir: "down", sprite: "npc_signaller", behaviour: "still", script: "nw_frodsham_ivor" },
@@ -337,7 +337,7 @@
       { x: 35, y: 32, item: "beacon_ember", n: 1, hidden: true, flag: "item_frodsham_hill_4" },
       { x: 26, y: 20, item: "timber_birch", n: 2, hidden: true, flag: "item_frodsham_hill_5" }
     ],
-    restPoints: [{ x: 13, y: 24, flag: "bigboy_sat_frodsham" }],
+    restPoints: [{ x: 13, y: 24, flag: "meadow_sat_frodsham" }],
     npcs: [
       { id: "npc_frodsham_alaw", x: 20, y: 23, dir: "left", sprite: "npc_fellrunner", behaviour: "look", radius: 4, trainer: "tr_frodsham_hill_1", sight: 4 },
       { id: "npc_frodsham_cerith", x: 19, y: 5, dir: "up", sprite: "npc_birder", behaviour: "still", trainer: "tr_frodsham_hill_2", sight: 0, script: "nw_frodsham_cerith" },

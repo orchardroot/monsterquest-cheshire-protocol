@@ -360,7 +360,7 @@
   H.push = function (d, world) {
     if (!MQ.Overworld.state.abilities.has("shove")) return say("It won't shift. You'd need something with more shoulder than you.");
     const ok = MQ.Overworld.shove(d.x, d.y);
-    if (!ok) return say("BIGBOY leans on it. It leans back. Nothing doing.");
+    if (!ok) return say("You lean on it. It leans back. Nothing doing.");
     MQ.Events.emit("boulder:push", { map: world.map.id, x: d.x, y: d.y });
     return P();
   };

@@ -144,7 +144,7 @@
       { x: 25, y: 33, item: "cat_bell", n: 1, flag: "catgap_warrington_1",
         say: "MEADOW goes up the transporter bridge's maintenance ladder like a rumour and comes down with a small brass bell and no explanation." }
     ],
-    restPoints: [{ x: 50, y: 34, flag: "bigboy_sat_warrington" }],
+    restPoints: [{ x: 50, y: 34, flag: "meadow_sat_warrington" }],
     npcs: [
       { id: "npc_warrington_marge", x: 42, y: 8, dir: "down", sprite: "npc_shopkeep", behaviour: "still", trainer: "tr_warrington_1", sight: 0, script: "nw_warrington_marge" },
       { id: "npc_warrington_ffowc", x: 21, y: 32, dir: "down", sprite: "npc_shadow_it", behaviour: "still", trainer: "tr_warrington_2", sight: 3, script: "nw_transporter_rigger" },

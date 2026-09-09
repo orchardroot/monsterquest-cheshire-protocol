@@ -120,7 +120,7 @@
     triggers: [
       { x: 15, y: 26, w: 3, h: 1, script: "east_r1_vex", once: "vex_battle_1", cond: "starter_chosen && !vex_battle_1" }
     ],
-    restPoints: [{ x: 14, y: 16, flag: "bigboy_sat_canal" }]
+    restPoints: [{ x: 14, y: 16, flag: "meadow_sat_canal" }]
   }, c);
 
   // island (Narrowboat secret)
@@ -285,7 +285,7 @@
       { id: "npc_r3_deer", x: 20, y: 15, dir: "left", sprite: "deer", behaviour: "wander", radius: 4,
         say: ["The stag looks at you the way a bank looks at a small overdraft."] }
     ],
-    restPoints: [{ x: 15, y: 22, flag: "bigboy_sat_gritstone" }]
+    restPoints: [{ x: 15, y: 22, flag: "meadow_sat_gritstone" }]
   }, c);
 
   // =============== R4 — Bollin Valley lane (E-W) ==========================
@@ -595,6 +595,6 @@
       { id: "npc_r7_owl", x: 27, y: 14, dir: "down", sprite: "npc_ranger", behaviour: "wander", radius: 3,
         say: ["Owlets on the spur twenty minutes before dark. Not nineteen. Not twenty-five."] }
     ],
-    restPoints: [{ x: 18, y: 30, flag: "bigboy_sat_sandhills" }]
+    restPoints: [{ x: 18, y: 30, flag: "meadow_sat_sandhills" }]
   }, c);
 })();

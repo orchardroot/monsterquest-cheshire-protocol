@@ -12,7 +12,7 @@ Scope: the turn-based core stays Gen-1-shaped (types, STAB, stages, status, catc
 - `hp = floor((2B + T) * L / 100) + L + 10`
 - other = `floor((floor((2B + T) * L / 100) + 5) * N)`
 
-**Traits (IV-like; the `ivs` field in ENGINE-ARCHITECTURE's monster instance, range 0–15).** Each monster rolls six integers 0–15 at creation. Traits are surfaced in the summary screen as flavour words rather than numbers ("Keen eyes" = high spe, "Thick coat" = high def, "Never misses breakfast" = high hp), unlocking numeric display at Trainer level 20. Story gifts (starter, MEADOW, BIGBOY, whistleblower gift) roll a floor of 8. Legendaries roll a floor of 10.
+**Traits (IV-like; the `ivs` field in ENGINE-ARCHITECTURE's monster instance, range 0–15).** Each monster rolls six integers 0–15 at creation. Traits are surfaced in the summary screen as flavour words rather than numbers ("Keen eyes" = high spe, "Thick coat" = high def, "Never misses breakfast" = high hp), unlocking numeric display at Trainer level 20. Story gifts (starter, MEADOW, whistleblower gift) roll a floor of 8. Legendaries roll a floor of 10.
 
 **Temperaments (natures).** 20 temperaments; each is `{up, down}` over `atk|def|spa|spd|spe` (×1.1 / ×0.9) with 4 neutral. Names are Cheshire-flavoured: *Brisk* (+spe −def), *Stubborn* (+def −spe), *Sharp* (+spa −atk), *Blunt* (+atk −spa), *Wary* (+spd −atk), *Bold* (+atk −spd), *Rash* (+spa −spd), *Patient* (+spd −spe), *Nosy* (+spe −spa), *Gruff* (+def −spa), *Mardy* (+atk −def), *Canny* (+spa −def), *Steadfast* (+spd −def), *Placid* (+def −atk), *Skittish* (+spe −atk), *Sly* (+spa −spe), *Solid* (+spd −spa), *Windy* (+spe −spd), plus neutral *Plain*, *Ordinary*, *Even*, *Fair*. Temperament also biases AI-side flavour lines and the "likes/dislikes" of Y Berllan snacks (a snack that matches `up` gives +2 friendship instead of +1).
 
@@ -26,7 +26,7 @@ Every species has one fixed ability (a few have a rare second on catch, 20%). Ab
 
 | # | Ability | Rule |
 |---|---|---|
-| 1 | **Back from the Brink** | Once per battle, a hit that would KO from ≥50% HP leaves 1 HP. (BIGBOY, plus 2 rare species.) After the Y Berllan story (`bigboy_shield`) BIGBOY may instead spend it to shield an ally from one KO in doubles; cat trust T3 adds a 25% heal on trigger; *Fail-Safe Protocol* perk lets it fire twice. |
+| 1 | **Back from the Brink** | Once per battle, a hit that would KO from ≥50% HP leaves 1 HP. (2 rare species: `gloamguard`, `lindowan`.) The *Fail-Safe Protocol* perk lets it fire twice. |
 | 2 | **Slipstream** | +1 spe stage on switch-in. (MEADOW line.) |
 | 3 | **Silk Weave** | Contact moves against this monster have 30% to drop the attacker's spe by 1. |
 | 4 | **Brine Body** | Immune to Burn; heals 1/16 max HP per turn in Rain. |
@@ -190,7 +190,7 @@ Cooldowns tick at end of turn; start at 0 each battle. Each perk branch has one 
 
 ## 7. OVERDRIVE meter
 
-Per-monster meter 0–100, resets each battle. The meter appears after Badge 1 (`overdrive_unlocked`, Ch.2); before that it is hidden and does not fill. Gains: +8 taking a hit, +12 taking a super-effective hit, +6 dealing damage, +15 when an ally faints, +20 landing a KO, plus move `overdrive` effects. Some gear/perks modify gain. At 100, the **OVERDRIVE** menu option lights up: using it fires the species' **signature move** (each evolutionary line has one, ~130 total, defined like normal moves with `overdriveOnly:true`, typically power 120–150 or a big status swing; MEADOW: *Zoomies* — priority +2, 3 hits, spe +1; BIGBOY: *Brink Roar* — heal 50%, def/spd +1, foe atk −1). Overdrive moves ignore `protect`, cannot miss, do not use PP, and drain the meter to 0. Enemy monsters at *greedy*/*smart* AI tiers and all bosses also build Overdrive (visible small bar), so the player can plan around it (e.g. switch or Protect on the turn it fills). Kevlar Waistcoat disables it.
+Per-monster meter 0–100, resets each battle. The meter appears after Badge 1 (`overdrive_unlocked`, Ch.2); before that it is hidden and does not fill. Gains: +8 taking a hit, +12 taking a super-effective hit, +6 dealing damage, +15 when an ally faints, +20 landing a KO, plus move `overdrive` effects. Some gear/perks modify gain. At 100, the **OVERDRIVE** menu option lights up: using it fires the species' **signature move** (each evolutionary line has one, ~130 total, defined like normal moves with `overdriveOnly:true`, typically power 120–150 or a big status swing; MEADOW: *Zoomies* — priority +2, 3 hits, spe +1). Overdrive moves ignore `protect`, cannot miss, do not use PP, and drain the meter to 0. Enemy monsters at *greedy*/*smart* AI tiers and all bosses also build Overdrive (visible small bar), so the player can plan around it (e.g. switch or Protect on the turn it fills). Kevlar Waistcoat disables it.
 
 ---
 
@@ -201,7 +201,7 @@ The trainer has a level 1–50 with its own XP: +1 per wild win, +5 per trainer 
 The three branches are named for Jim's job and mirror the Agent Trio (STORY-BIBLE §6). Ids are `perk_<branch>_<slug>`.
 
 - **TRIAGE** (SLEET — offence, speed, scouting): *Focused* (crit stage +1 for all), *Exploit* (super-effective ×2.2 instead of 2), *First Strike* (+10% dmg turn 1), *Overclocker* (Overdrive gain ×1.25), *Big Game* (dmg ×1.1 vs bosses), *Tracker* (encounter table shown per tile; *Ambush*: +1 spe stage vs wild on turn 1), *Quick Draw* (first move +1 priority once per battle), *Trailblazer* (run speed +8% overworld; *Deep Cuts*: recoil halved), **agent node *Sharp Triage*** (SLEET cooldown −1), capstone *Kill Chain* (each KO +1 atk/spa stage that battle; ignore foe positive stages on the KO turn).
-- **ESCALATE** (VIGIL — healing, status, the cats): *Containment* (status inflicted on you lasts 1 turn less), *Patch* (bag heals ×1.25), *Steady* (own negative stages halved), *Second Wind* (switch-in heals 1/16), *Isolation* (switching out never eats a free hit; *Umbrella Discipline*: party ignores Fog), *Rollback* (revert one faint per gauntlet/arena run), *Fail-Safe Protocol* (Brink works twice per battle for BIGBOY; *Quiet Cat*: MEADOW's Slipstream is +2), *Cat Handler* (trust gain ×1.5; *Bond*: friendship gains ×1.5), **agent node *Escalation*** (VIGIL cooldown −1, heal +10%), capstone *Incident Commander* (all party +1 def/spd when a monster faints).
+- **ESCALATE** (VIGIL — healing, status, the cats): *Containment* (status inflicted on you lasts 1 turn less), *Patch* (bag heals ×1.25), *Steady* (own negative stages halved), *Second Wind* (switch-in heals 1/16), *Isolation* (switching out never eats a free hit; *Umbrella Discipline*: party ignores Fog), *Rollback* (revert one faint per gauntlet/arena run), *Fail-Safe Protocol* (Brink works twice per battle; *Quiet Cat*: MEADOW's Slipstream is +2), *Cat Handler* (trust gain ×1.5; *Bond*: friendship gains ×1.5), **agent node *Escalation*** (VIGIL cooldown −1, heal +10%), capstone *Incident Commander* (all party +1 def/spd when a monster faints).
 - **ADJUDICATE** (ARBITER — stat control, catching, information, boss phase breaks): *Enumerate* (see foe moves), *Fingerprint* (foe ability and traits visible; *Naturalist*: own traits/temperament shown), *Timeline* (turn order shown), *Steady Hand* (capture timing window ×1.5), *Soft Touch* (capsule bonus +0.2; *Golden Ratio*: rare-palette odds ×2), *Zero Trust* (ignore foe positive stages), *Phase Break* (boss phase-transition heal cap 30% → 15%; *Sniper*: crit ×2), *Ledger Keeper* (money ×1.25; *Trader*: shops −10%; *Wide Share*: non-participant XP 75%), **agent node *Iron Bell*** (ARBITER cooldown −2), capstone *Attribution* (once per battle copy the foe's stat stages; *Overkill*: Overdrive carries over 25%).
 
 Perks in parentheses after a semicolon are the same node's second rank (rows unlock at TL 1/5/10/15/20/25/30/35/40/45). Perks are respec-able for Casebook Marks at any Care centre's casebook desk; the Wipe/Feed choice at Y Berllan re-specs the three agent nodes for free.
@@ -318,7 +318,7 @@ Chapters and level bands are STORY-BIBLE's (wild/trainer range for the chapter's
 
 | Ch | Story beat | Wild lvl | Trainer lvl | Gym ace / boss | Party size expected | Notes |
 |---|---|---|---|---|---|---|
-| 1 | Silk and Static — Macclesfield, Bollington (no gym) | 3–8 | 4–9 | VEX 8 (canal) | 3 (starter + MEADOW + BIGBOY) | SLEET; held items from Q1; no Overdrive yet |
+| 1 | Silk and Static — Macclesfield, Bollington (no gym) | 3–8 | 4–9 | VEX 8 (canal) | 2 (starter + MEADOW) | SLEET; held items from Q1; no Overdrive yet |
 | 2 | The Wheel and the Edge — Wilmslow PACKET, Styal, Lindow, Alderley | 8–14 | 10–15 | Ada 16 | 3–4 | VIGIL; Overdrive unlocks with Badge 1; night tables begin |
 | 3 | Picnic Blankets — Knutsford CIPHER, Tatton, Rostherne | 13–18 | 14–19 | Gaskell 20; VEX 17 | 4 | ARBITER; Kellan's first sermon; Gaskell rumour drops |
 | 4 | The Dish Goes Dark — Holmes Chapel, Jodrell gate, Congleton BEAR | 17–22 | 18–23 | Otis 24 (2-v-1 phase) | 4 | SIGNAL METER, CUTOVER 38; first AMOS glimpse |
@@ -341,7 +341,7 @@ Targets assume Normal difficulty and a player who fights ~70% of visible trainer
 These are referenced by SIDE-CONTENT and STORY-BIBLE and are owned by `js/content/*` but need engine hooks; ids are canonical.
 
 - **Casebook Marks** (`marks`, in `MQ.Inventory`): currency from bounties, quiz perfects, Knutsford sanding favours, dex milestones; spent on perk respec, cat collars, rare brew ingredients, instant brews.
-- **Cat trust** (`cats.trust.meadow|bigboy`, 0–5; SIDE-CONTENT §3): battle hooks — T3 MEADOW dodges the first hit of a battle once; T3 BIGBOY Brink heals 25%; T5 cats allowed inside gyms/Arena and learn *Skitter* / *Big Sit*. Cats never enter the box; `reserve` flag keeps them out of the active six without leaving.
+- **Cat trust** (`cats.trust.meadow`, 0–5; SIDE-CONTENT §3): battle hooks — T3 MEADOW dodges the first hit of a battle once; T5 she is allowed inside gyms/Arena and learns *Skitter*. Cats never enter the box; `reserve` flag keeps them out of the active six without leaving.
 - **Skill Cards** (`items.kind === 'tm'`): teach a move once (consumed); the Knutsford bookshop sells them bound as "chapters"; gym leaders reward one each (§9).
 - **Photo mode** (`MQ.Photo`; unlocked by Q4): battle-free; sightings fill `dex.seen` with a habitat note; photos stored as `{species, pose, phase, weather}` seeds.
 - **Fishing** (`MQ.Fishing`): rod tiers Bamboo/Weighted/Carbon/Elm-handled; tables `fish_<place>` with tiers common/uncommon/rare/legendary(dawn/dusk)/ghost(night + Ghost Lens).
@@ -357,4 +357,4 @@ These are referenced by SIDE-CONTENT and STORY-BIBLE and are owned by `js/conten
 - **Overworld rain**: walk speed ×0.9 unless the *Rain Cloak* trinket is worn; tall grass ×0.85 (ENGINE §5.3).
 - **Trainer trinkets** (`trainer.trinkets[0..1]`, TL20/TL35): Sprint Soles, Davy Lamp, Ghost Lens, Bait Tin, Rain Cloak, Wool Cap, Field Notebook (passive overworld effects only).
 - **Rematch ladder** (`rematch.<trainerId>` tier 0–5) as §9.
-- **Rest points** (BIGBOY sit-downs, STORY-BIBLE §12): scripted tiles where BIGBOY sits — heal 25%, autosave, `bigboy_sat_<place>`.
+- **Rest points** (MEADOW sit-downs, STORY-BIBLE §12): scripted tiles where MEADOW settles — heal 25%, autosave, `meadow_sat_<place>`.

@@ -147,7 +147,7 @@
       { x: 33, y: 8, item: "collectible_19", n: 1, flag: "catgap_winsford_1",
         say: "MEADOW goes under the mine-yard fence and returns carrying something warm and heavy and faintly pink. It is a heart-shaped lump of halite. It is a salt-golem's heart, and she is very pleased with herself." }
     ],
-    restPoints: [{ x: 12, y: 4, flag: "bigboy_sat_winsford" }],
+    restPoints: [{ x: 12, y: 4, flag: "meadow_sat_winsford" }],
     npcs: [
       { id: "npc_winsford_rhona", x: 40, y: 17, dir: "up", sprite: "npc_miner", behaviour: "still", script: "sw_rhona" },
       { id: "npc_winsford_gethin", x: 38, y: 15, dir: "down", sprite: "npc_miner", behaviour: "look", radius: 3, trainer: "tr_winsford_1", sight: 3 },

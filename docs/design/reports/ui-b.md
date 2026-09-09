@@ -100,7 +100,7 @@ map and anything else may borrow these.
 The card: portrait (`MQ.PeopleArt` when present, else the GRINMALKIN grin), name,
 rank, ID, trainer level with XP bar, playtime, credits/marks/chips, dex seen and
 caught, the eight badges with town names (**relabelled SIGNED after
-`pippin_found`**), MEADOW and BIGBOY with trust pips and a word for each level, and
+`pippin_found`**), MEADOW with trust pips and a word for each level, and
 your titles. Page two, **Records**: all 27 `MQ.Trainer.stats` counters in plain
 English, trinkets, ribbons pulled off the party, award count and perk points.
 

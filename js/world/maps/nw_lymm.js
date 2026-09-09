@@ -112,7 +112,7 @@
       { x: 19, y: 20, item: "cat_token_11", n: 1, flag: "catgap_lymm_1",
         say: "MEADOW gets in behind the stocks, where nobody has swept since the seventeenth century, and comes out with a token and a great deal of dust." }
     ],
-    restPoints: [{ x: 25, y: 20, flag: "bigboy_sat_lymm" }],
+    restPoints: [{ x: 25, y: 20, flag: "meadow_sat_lymm" }],
     npcs: [
       { id: "npc_lymm_bryn", x: 12, y: 28, dir: "down", sprite: "npc_ranger", behaviour: "still", trainer: "tr_lymm_1", sight: 0, script: "nw_lymm_bryn" },
       { id: "npc_lymm_rhian", x: 27, y: 18, dir: "down", sprite: "npc_historian", behaviour: "still", trainer: "tr_lymm_2", sight: 0, script: "nw_lymm_rhian" },

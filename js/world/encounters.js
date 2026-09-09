@@ -199,7 +199,7 @@
   E.clearRepel = function () { E.state.repel = 0; };
   E.afterBattle = function () { E.state.grace = E.GRACE_STEPS; };
 
-  // ---- inspection (Tracker perk, BIGBOY's nose) ---------------------------
+  // ---- inspection (Tracker perk, MEADOW's nose) ---------------------------
   // Returns the rows that can appear on this tile right now, with percentages.
   E.preview = function (map, x, y) {
     const zone = MQ.World.zoneAt(map, x, y);

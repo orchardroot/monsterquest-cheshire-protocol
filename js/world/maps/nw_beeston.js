@@ -129,7 +129,7 @@
       { x: 11, y: 35, item: "collectible_25", n: 1, flag: "catgap_beeston_1",
         say: "MEADOW squeezes under the slab, is gone for four entirely silent seconds, and comes back with a cat collar tag, corroded, engraved with a name and a Frodsham telephone number." }
     ],
-    restPoints: [{ x: 25, y: 26, flag: "bigboy_sat_beeston" }],
+    restPoints: [{ x: 25, y: 26, flag: "meadow_sat_beeston" }],
     npcs: [
       { id: "npc_beeston_roz", x: 24, y: 21, dir: "left", sprite: "npc_historian", behaviour: "still", script: "nw_beeston_roz" },
       { id: "npc_beeston_ranger", x: 15, y: 16, dir: "down", sprite: "npc_ranger", behaviour: "still", trainer: "tr_beeston_castle_2", sight: 4, cond: "chapter >= 8" },

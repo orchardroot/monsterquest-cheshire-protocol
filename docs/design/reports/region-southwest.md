@@ -24,7 +24,7 @@ the ENGINE §5.2 format. Nothing in these files runs game logic.
 | `sw_yberllan.js` | Y Berllan, the Cambrian halt, Mam-gu's house, the elm-press shed, the brewing cellar, the pond, Coed y Berllan, the lane to the sea, Aberaeron + care/shop/2 cottages |
 | `sw_routes.js` | R16 Weaver Valley, the Hack Green lane, R31 Croxton flashes, R19 Rudheath, R18 Vale Royal Locks, R33 Weaver towpath, R34 Marbury avenues, R20 Arley & the Bollin |
 
-**~180 NPCs, 80 signs, 75 pickups, 5 cat gaps, 12 BIGBOY rest points,
+**~180 NPCs, 80 signs, 75 pickups, 5 cat gaps, 12 rest points,
 82 trainer placements**, and roughly **1,100 bespoke lines**.
 
 **Data** — `js/data/encounters_sw.js` (73 tables: grass/water/cave with
@@ -54,7 +54,7 @@ the lido, the Weaver, the Y Berllan pond and Aberaeron),
   `MQ.Trainer.respecAgents()` or 3 perk points) or `feed`
   (→ `agents_fed`, `oracle_fed_map`).
 - **The vet story**, in Welsh, with the answer the game has withheld
-  since Chapter 1 — `vet_story_told`, `bigboy_shield`,
+  since Chapter 1 — `vet_story_told`,
   `welsh_word_learned`; then `brewing_open` and `aberaeron_open`.
 - **Middlewich** — AMOS in Alder's face on the towpath: `amos_alder_face`.
 - **The cage and the galleries** — `mine_descended`, `checkpoints_seen`
@@ -96,7 +96,7 @@ is registered and is a generator; the chapter table and CUTOVER; **the
 Ch.6 opening run to completion under `MQ.Dialog.auto`** (and replayed);
 the Ch.7 opening ticking CUTOVER to 17; the lido and both halves of the
 Kellan decision; the three lane keepers gating Nell's gates; the drive
-and **both branches of Wipe/Feed**; the vet story and BIGBOY's upgrade;
+and **both branches of Wipe/Feed**; the vet story and MEADOW's full trust;
 the descent, the checkpoints and TERRATAUR; the licence, DAEMON and the
 lift pass; **the boat-lift silence resolving differently per choice**;
 the four-panel switchboard gating the Ops Room; case 25 opening,
@@ -128,7 +128,7 @@ advancing and closing; and the Welsh lines unlocking what English does not.
   `bell_ringing`. All degrade to prose today.
 - **content**: `MQ.Trainer.respecAgents()` (Wipe refunds the agent perk
   nodes; falls back to 3 perk points), `MQ.Trainer.addBadge(id)`,
-  `MQ.Cats.upgrade('bigboy','shield')`.
+  `MQ.Cats.setTrust('meadow',5)`.
 - **battle**: `boss_terrataur` is passed `phases: 2` when the player
   returned the SALTLING pup — the engine currently reads the trainer's own
   phase list, so the mercy discount is cosmetic until that opt is honoured.
@@ -166,7 +166,7 @@ Flags (beyond DESIGN-INDEX §6): `gym5_lanes`, `gym5_gates`,
 `agents_kept_talking`, `oracle_fed_map`, `oracle_pays_in_compute`,
 `oracle_is_pippin`, `thirteen_minutes`, `terrataur_one_less_phase`,
 `brithyll_named`, `coed_guardian`, `marbury_lady_seen`,
-`lido_free_healing`, `anderton_ferry`, `bigboy_sat_*` (10 rest points).
+`lido_free_healing`, `anderton_ferry`, `meadow_sat_*` (10 rest points).
 
 ## Known gaps
 

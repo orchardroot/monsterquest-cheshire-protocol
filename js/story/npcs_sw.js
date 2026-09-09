@@ -345,8 +345,8 @@
       "One shower is running. It has been running for some time. There is nobody in it and the water is warm."
     ]);
     yield C.say([
-      "BIGBOY walks into the cubicle, sits down just outside the spray, and looks at it.",
-      "MEADOW does not come in at all."
+      "MEADOW stops at the doorway, looks at the running water, and does not come in at all.",
+      "She waits in the corridor instead, which is the first sensible decision anybody has made down here."
     ]);
     yield C.setFlag("bunker_shower", true);
     yield C.freeze(false);
@@ -644,8 +644,8 @@
     ]);
     yield C.wait(500);
     yield C.say([
-      "BIGBOY sits down on the harbour wall, facing out, and stays there.",
-      "MEADOW, who refuses water, sits down beside him, facing out, and stays there.",
+      "MEADOW, who refuses water, gets up on the harbour wall, faces out, and stays there.",
+      "You sit down beside her, facing out, and stay there.",
       "Nobody says anything for a while and the county does not phone."
     ]);
     yield C.setFlag("aberaeron_sea", true);

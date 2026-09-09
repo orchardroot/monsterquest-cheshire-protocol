@@ -32,11 +32,11 @@
     const C = ctx.S;
     yield C.say([
       "Mrs Bobbin looks you up and down the way she has since you were nine.",
-      "You're off, then. With the contract and the coat and the two cats you swear are staying in.",
-      "They are not staying in. MEADOW has been out since six and BIGBOY has been out since he decided the doorframe was a personal insult."
+      "You're off, then. With the contract and the coat and the cat you swear is staying in.",
+      "She is not staying in. MEADOW has been out since six, and the doorframe has been taken as a personal insult."
     ], { name: "Mrs Bobbin" });
     if (!flag("cats_joined")) {
-      yield C.say(["Go on. Take them. They'll only follow, and then I'll have to explain it to your mother."], { name: "Mrs Bobbin" });
+      yield C.say(["Go on. Take her. She'll only follow, and then I'll have to explain it to your mother."], { name: "Mrs Bobbin" });
       return;
     }
     if (!flag("bobbin_key")) {

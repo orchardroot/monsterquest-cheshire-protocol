@@ -131,7 +131,7 @@
       { x: 3, y: 21, item: "cat_token_8", n: 1, flag: "catgap_lindow_1",
         say: "MEADOW crosses the wire and walks out onto the moss with her tail up, on peat that will not hold you. She comes back with a fragment of something woven, and very, very old." }
     ],
-    restPoints: [{ x: 34, y: 20, flag: "bigboy_sat_lindow" }],
+    restPoints: [{ x: 34, y: 20, flag: "meadow_sat_lindow" }],
     npcs: [
       { id: "npc_lindow_bill", x: 42, y: 20, dir: "left", sprite: "npc_historian", behaviour: "still", script: "east_lindow_bill" },
       { id: "npc_lindow_stuffer_1", x: 11, y: 17, dir: "down", sprite: "npc_stuffer", behaviour: "look", radius: 4, trainer: "tr_lindow_moss_1", sight: 4 },
@@ -208,6 +208,6 @@
       { id: "npc_lindow_preserved", x: 20, y: 14, dir: "down", sprite: "npc_ghost_trainer", behaviour: "still",
         trainer: "boss_preserved_one", sight: 0, script: "east_lindow_preserved" }
     ],
-    restPoints: [{ x: 19, y: 19, flag: "bigboy_sat_lindow_deep" }]
+    restPoints: [{ x: 19, y: 19, flag: "meadow_sat_lindow_deep" }]
   });
 })();

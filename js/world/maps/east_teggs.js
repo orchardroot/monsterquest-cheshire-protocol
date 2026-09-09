@@ -152,7 +152,7 @@
       { x: 12, y: 27, item: "cat_token_5", n: 1, flag: "catgap_teggs_1",
         say: "MEADOW walks the dam parapet at a height you would rather not think about, sits down halfway, and washes." }
     ],
-    restPoints: [{ x: 27, y: 10, flag: "bigboy_sat_teggs" }],
+    restPoints: [{ x: 27, y: 10, flag: "meadow_sat_teggs" }],
     npcs: [
       { id: "npc_teggs_ceri", x: 24, y: 29, dir: "left", sprite: "npc_fellrunner", behaviour: "look", radius: 4, trainer: "tr_teggs_nose_1", sight: 4, script: "east_teggs_ceri" },
       { id: "npc_teggs_sowerby", x: 8, y: 5, dir: "right", sprite: "npc_miner", behaviour: "still", trainer: "tr_teggs_nose_2", sight: 3, script: "east_teggs_sowerby" },
@@ -322,7 +322,7 @@
       { id: "npc_shut_moorcock", x: 27, y: 21, dir: "left", sprite: "animal", behaviour: "wander", radius: 3,
         say: ["Something explodes out of the heather at knee height, swears at you in bird, and is gone.", "Your heart takes a full minute to agree it was a bird."] }
     ],
-    restPoints: [{ x: 9, y: 12, flag: "bigboy_sat_shutlingsloe" }],
+    restPoints: [{ x: 9, y: 12, flag: "meadow_sat_shutlingsloe" }],
     triggers: [
       { x: 16, y: 3, w: 2, h: 1, script: "east_shutlingsloe_top", once: "shutlingsloe_top", cond: "!shutlingsloe_top" }
     ]

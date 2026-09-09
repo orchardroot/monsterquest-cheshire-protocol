@@ -7,7 +7,6 @@ module.exports = function (t, assert) {
   const C = MQ.Cats, D = MQ.Daycare, Party = MQ.Party, Inv = MQ.Inventory, Tr = MQ.Trainer;
 
   MQ.Data.define("species", "meadow", { name: "MEADOW", types: ["normal"], habitat: "town", growth: "medium", base: { hp: 50, atk: 55, def: 40, spa: 40, spd: 45, spe: 95 }, abilities: ["slipstream"], learnset: [[1, "tackle"]] });
-  MQ.Data.define("species", "bigboy", { name: "BIGBOY", types: ["normal"], habitat: "town", growth: "medium", base: { hp: 90, atk: 70, def: 70, spa: 40, spd: 60, spe: 25 }, abilities: ["back_from_the_brink"], learnset: [[1, "tackle"]] });
   MQ.Data.define("species", "silkin", { name: "SILKIN", types: ["bug", "grass"], habitat: "silk", growth: "medium", base: { hp: 45, atk: 40, def: 40, spa: 50, spd: 45, spe: 35 }, abilities: ["silk_weave"], learnset: [[1, "tackle"], [7, "silk_wrapper"], [9, "gust"]] });
   MQ.Data.define("moves", "tackle", { name: "Tackle", type: "normal", cat: "phys", power: 40, acc: 100, pp: 30 });
   MQ.Data.define("moves", "silk_wrapper", { name: "Silk Wrapper", type: "bug", cat: "status", pp: 20 });
@@ -32,22 +31,22 @@ module.exports = function (t, assert) {
     MQ.Flags.reset();
   }
 
-  t("unlocking the cats puts both in the party and grants squeeze", function () {
+  t("unlocking the cat puts her in the party and grants squeeze", function () {
     fresh();
     assert.strictEqual(C.unlocked(), false);
-    assert.strictEqual(C.follow("meadow"), false, "cannot follow before they join");
+    assert.strictEqual(C.follow("meadow"), false, "cannot follow before she joins");
     assert.strictEqual(C.unlock(), true);
     assert.strictEqual(MQ.Flags.get("cats_joined"), true);
     assert.strictEqual(Party.has("meadow"), true);
-    assert.strictEqual(Party.has("bigboy"), true);
     assert.strictEqual(C.following, "meadow");
     assert.strictEqual(C.unlock(), false, "only once");
   });
 
-  t("whistling swaps which cat is walking with you", function () {
-    assert.strictEqual(C.whistle(), "bigboy");
-    assert.strictEqual(C.follower().name, "BIGBOY");
+  t("whistling calls her in and lets her go again", function () {
+    assert.strictEqual(C.whistle(), null, "she was already walking with you");
+    assert.strictEqual(C.following, null);
     assert.strictEqual(C.whistle(), "meadow");
+    assert.strictEqual(C.follower().name, "MEADOW");
     C.stopFollowing();
     assert.strictEqual(C.following, null);
     C.follow("meadow");
@@ -68,29 +67,28 @@ module.exports = function (t, assert) {
     assert.strictEqual(C.canHoldItem("meadow"), true);
     assert.strictEqual(C.canDispatch("meadow"), true);
     assert.strictEqual(C.allowedInGyms("meadow"), true);
-    assert.strictEqual(C.trust("bigboy"), 0, "trust is per cat");
+    assert.strictEqual(C.trust("nobody"), 0, "an unknown cat has no trust");
   });
 
   t("Cat Handler multiplies trust gain", function () {
     fresh(); C.unlock();
-    C.addTrust("bigboy", 4, "test");
-    assert.strictEqual(C.points("bigboy"), 4);
+    C.addTrust("meadow", 4, "test");
+    assert.strictEqual(C.points("meadow"), 4);
     Tr.level = 45; Tr.perkPoints = 20;
     for (let i = 0; i < 8; i++) Tr.buyPerk(MQ.Progression.branch("escalate")[i].id);
     assert.strictEqual(MQ.Progression.trustGainMult(), 1.5);
-    C.addTrust("bigboy", 4, "test");
-    assert.strictEqual(C.points("bigboy"), 10, "4 + round(4 * 1.5)");
+    C.addTrust("meadow", 4, "test");
+    assert.strictEqual(C.points("meadow"), 10, "4 + round(4 * 1.5)");
   });
 
   t("winning with a cat in the fight builds trust", function () {
     fresh(); C.unlock();
-    const cat = C.monster("bigboy");
+    const cat = C.monster("meadow");
     assert.ok(cat);
     MQ.Events.emit("battle:end", { outcome: "win", participants: [cat] });
-    assert.strictEqual(C.points("bigboy"), 2);
-    assert.strictEqual(C.points("meadow"), 0);
+    assert.strictEqual(C.points("meadow"), 2);
     MQ.Events.emit("battle:end", { outcome: "lose", participants: [cat] });
-    assert.strictEqual(C.points("bigboy"), 2, "losing teaches nothing");
+    assert.strictEqual(C.points("meadow"), 2, "losing teaches nothing");
   });
 
   t("a Cat's Cup counts once a day", function () {
@@ -120,11 +118,14 @@ module.exports = function (t, assert) {
     fresh(); C.unlock(); C.follow("meadow");
     MQ.Flags.set("item_test_field_1");
     MQ.Flags.set("item_test_field_2");
-    assert.strictEqual(C.scan("test_field", 0, 0), null);
+    const hit = C.scan("test_field", 0, 0);
+    assert.ok(!hit || hit.kind === "creature", "nothing left to dig up here");
   });
 
-  t("BIGBOY reads the grass instead, and tapping him reveals it", function () {
-    fresh(); C.unlock(); C.follow("bigboy");
+  t("with nothing to dig up she reads the grass instead, and tapping her reveals it", function () {
+    fresh(); C.unlock(); C.follow("meadow");
+    MQ.Flags.set("item_test_field_1");
+    MQ.Flags.set("item_test_field_2");
     const hit = C.scan("test_field", 1, 1);
     assert.ok(hit);
     assert.strictEqual(hit.kind, "creature");
@@ -132,7 +133,7 @@ module.exports = function (t, assert) {
     assert.strictEqual(hit.chances[0].species, "silkin");
     const revealed = C.reveal();
     assert.strictEqual(revealed, hit);
-    assert.strictEqual(C.points("bigboy"), 1, "a reveal is worth a point");
+    assert.strictEqual(C.points("meadow"), 1, "a reveal is worth a point");
   });
 
   // C.sendThrough({battle:true}) rolls Math.random() against a trust-scaled
@@ -183,16 +184,16 @@ module.exports = function (t, assert) {
   });
 
   t("rest points fire once and are worth real trust", function () {
-    fresh(); C.unlock(); C.follow("bigboy");
+    fresh(); C.unlock(); C.follow("meadow");
     const rp = C.rest("kerridge_hill");
     assert.ok(rp);
-    assert.strictEqual(MQ.Flags.get("bigboy_sat_kerridge"), true);
-    assert.strictEqual(C.points("bigboy"), 4);
+    assert.strictEqual(MQ.Flags.get("meadow_sat_kerridge"), true);
+    assert.strictEqual(C.points("meadow"), 4);
     assert.strictEqual(C.rest("kerridge_hill"), null, "only the first time");
     assert.strictEqual(C.rest("tatton_park") !== null, true);
     assert.strictEqual(C.restsFound(), 2);
-    C.follow("meadow");
-    assert.strictEqual(C.rest("frodsham_hill"), null, "it is BIGBOY's bench");
+    C.stopFollowing();
+    assert.strictEqual(C.rest("frodsham_hill"), null, "no cat, no bench");
   });
 
   t("daily gifts arrive once per real day", function () {
@@ -203,7 +204,7 @@ module.exports = function (t, assert) {
     assert.strictEqual(Inv.count(got), 1);
     assert.strictEqual(C.giftReady("meadow"), false);
     assert.strictEqual(C.collectGift("meadow"), null);
-    assert.strictEqual(C.giftReady("bigboy"), true, "the other cat has its own day");
+    assert.ok(!C.giftReady("nobody"), "and nobody else is handing anything over");
   });
 
   t("collars unlock from flags and tokens", function () {
@@ -220,25 +221,18 @@ module.exports = function (t, assert) {
 
   t("battleData carries everything the battle engine needs", function () {
     fresh(); C.unlock();
-    let d = C.battleData("bigboy");
-    assert.strictEqual(d.species, "bigboy");
-    assert.strictEqual(d.ability, "back_from_the_brink");
-    assert.strictEqual(d.overdrive, "brink_roar");
-    assert.strictEqual(d.extraMove, null);
-    assert.strictEqual(d.brinkHeals, 0);
-    assert.strictEqual(d.brinkUses, 1);
-    C.setTrust("bigboy", 5);
-    MQ.Flags.set("bigboy_shield");
-    d = C.battleData("bigboy");
-    assert.strictEqual(d.extraMove, "big_sit");
-    assert.strictEqual(d.brinkHeals, 0.25);
-    assert.strictEqual(d.brinkShield, true);
     const m = C.battleData("meadow");
+    assert.strictEqual(m.species, "meadow");
+    assert.strictEqual(m.ability, "slipstream");
     assert.strictEqual(m.overdrive, "zoomies");
+    assert.strictEqual(m.extraMove, null);
     assert.strictEqual(m.dodgeFirstHit, false);
+    assert.strictEqual(C.battleData("nobody"), null, "and nobody else has battle data");
     C.setTrust("meadow", 3);
     assert.strictEqual(C.battleData("meadow").dodgeFirstHit, true);
     assert.strictEqual(C.battleData("meadow").extraMove, null, "Skitter waits for trust 5");
+    C.setTrust("meadow", 5);
+    assert.strictEqual(C.battleData("meadow").extraMove, "skitter");
   });
 
   t("dispatching a cat runs on a real-time timer", function () {
@@ -247,7 +241,7 @@ module.exports = function (t, assert) {
     C.setTrust("meadow", 4);
     const r = C.dispatch("meadow", "gather", 10);
     assert.strictEqual(r.ok, true);
-    assert.strictEqual(C.following, "bigboy", "the other cat takes over the walk");
+    assert.strictEqual(C.following, null, "she is off doing it, not walking with you");
     assert.strictEqual(C.collectDispatch("meadow").ok, false, "still out");
     C.state.meadow.dispatched.until = Date.now() - 1;
     const out = C.collectDispatch("meadow");
@@ -257,17 +251,17 @@ module.exports = function (t, assert) {
 
   t("cats save provider round-trips trust, collars and follow state", function () {
     fresh(); C.unlock();
-    C.setTrust("bigboy", 3);
-    C.follow("bigboy");
+    C.setTrust("meadow", 3);
+    C.follow("meadow");
     MQ.Flags.set("pippin_found");
-    C.setCollar("bigboy", "collar_signed");
+    C.setCollar("meadow", "collar_signed");
     const snap = C.saveProvider.save();
     C.saveProvider.load(null);
-    assert.strictEqual(C.trust("bigboy"), 0);
+    assert.strictEqual(C.trust("meadow"), 0);
     C.saveProvider.load(snap);
-    assert.strictEqual(C.trust("bigboy"), 3);
-    assert.strictEqual(C.following, "bigboy");
-    assert.strictEqual(C.collar("bigboy"), "collar_signed");
+    assert.strictEqual(C.trust("meadow"), 3);
+    assert.strictEqual(C.following, "meadow");
+    assert.strictEqual(C.collar("meadow"), "collar_signed");
   });
 
   // ---- daycare -------------------------------------------------------

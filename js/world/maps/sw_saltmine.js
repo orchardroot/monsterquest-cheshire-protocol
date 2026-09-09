@@ -146,7 +146,7 @@
     triggers: [
       { x: 36, y: 16, w: 6, h: 1, script: "sw_checkpoints", once: "checkpoints_scene", cond: "!checkpoints_seen", kind: "step" }
     ],
-    restPoints: [{ x: 25, y: 30, flag: "bigboy_sat_galleries" }]
+    restPoints: [{ x: 25, y: 30, flag: "meadow_sat_galleries" }]
   }, c);
 
   // ================================================== the cold tier =======
@@ -338,7 +338,7 @@
     triggers: [
       { x: 35, y: 33, w: 4, h: 1, script: "sw_terrataur", once: "terrataur_scene", cond: "!terrataur_woken", kind: "step" }
     ],
-    restPoints: [{ x: 8, y: 10, flag: "bigboy_sat_brine_lake" }]
+    restPoints: [{ x: 8, y: 10, flag: "meadow_sat_brine_lake" }]
   }, c);
 
   // ================================ Marston B3 — post-game depth three ====

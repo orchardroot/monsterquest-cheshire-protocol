@@ -200,7 +200,7 @@ MQ.World.defineMap('macclesfield', {
 ### 5.3 Overworld — `MQ.Overworld`
 - Player: pixel position (`px,py` in logical px), free 8-way movement from `MQ.Input.axis()`; walk 4.2 tiles/s, run 7.0 tiles/s (run when `held('run')` or `axis.mag>0.85`), sliding collision against a feet box 20×14 px; facing quantised to 4 dirs for interaction; `tileX/tileY` = feet centre. Tile-enter events (encounters, triggers, ledges — auto-hop down only). Water needs `boat` ability; cliffs `climb`; tall grass slows to 85%.
 - Camera: follows with soft lerp and lookahead in facing dir; clamps to map; sub-pixel drawing rounded to integers to keep pixel art crisp.
-- NPCs from `MQ.NPC`: grid-aware wander/paths, avoid player, look-at on interact, cats follow the player (MEADOW/BIGBOY when unlocked).
+- NPCs from `MQ.NPC`: grid-aware wander/paths, avoid player, look-at on interact, the cat follows the player (MEADOW when unlocked).
 - Rendering order: ground → deco → items → entities (y-sorted) → over → weather/lighting (`MQ.FX`) → HUD (location banner, quest tracker, mini-map toggle).
 - `MQ.Overworld.warp(mapId, x, y, dir, {fade:true})`, `spawn()`, `getNpc(id)`, `freeze(bool)` for cutscenes.
 - Public: `MQ.Overworld.state = {map, px, py, dir, abilities:Set, steps}` (save provider `'overworld'`).

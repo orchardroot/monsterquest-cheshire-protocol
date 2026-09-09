@@ -111,7 +111,7 @@
     bounties: "Bounties", warrants: "Warrants", casesClosed: "Cases closed", fish: "Fish landed",
     itemsUsed: "Items used", moneyEarned: "Earned", moneySpent: "Spent", healsLido: "Lido dips",
     puppetsBeaten: "Puppets beaten", amosExposed: "Impostors exposed", luresRefused: "Lures refused",
-    brinkSaves: "Brink saves", gymsBeaten: "Gyms beaten", arenaClears: "Arena clears"
+    gymsBeaten: "Gyms beaten", arenaClears: "Arena clears"
   };
   const TRUST_WORDS = ["Wary", "Tolerant", "Fond", "Attached", "Devoted", "Yours"];
 
@@ -258,9 +258,9 @@
 
     // cats
     const cy2 = by + bs + 40;
-    const cw = (w - pad * 2) / 2 - 8;
-    for (let i = 0; i < 2; i++) {
-      const id = i === 0 ? "meadow" : "bigboy";
+    const cw = w - pad * 2;
+    for (let i = 0; i < 1; i++) {
+      const id = "meadow";
       const def = (MQ.Cats && MQ.Cats.DEFS) ? MQ.Cats.DEFS[id] : null;
       const cxx = x + pad + i * (cw + 16);
       ctx.fillStyle = "rgba(255,255,255,0.04)";

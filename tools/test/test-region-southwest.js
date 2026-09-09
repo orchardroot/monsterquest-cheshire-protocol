@@ -298,7 +298,7 @@ module.exports = function (t, assert) {
     assert.ok(signs >= 60, "only " + signs + " signs");
     assert.ok(items >= 60, "only " + items + " pickups");
     assert.ok(gaps >= 4, "only " + gaps + " cat gaps");
-    assert.ok(rests >= 8, "only " + rests + " BIGBOY rest points");
+    assert.ok(rests >= 8, "only " + rests + " rest points");
     assert.ok(placements >= 45, "only " + placements + " trainer placements");
     const tables = Object.keys(MQ.Data.encounters).filter(function (id) {
       return /^(nantwich|middlewich|winsford|northwich|anderton|marbury|great_budworth|hack_green|salt_mine|y_berllan|aberaeron|fish_(nantwich|middlewich|winsford|northwich|anderton|y_berllan|aberaeron|route_(nantwich|winsford)))/.test(id);

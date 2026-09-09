@@ -67,7 +67,7 @@
       yield C.say([
         "You sit down on the wall with your legs over the drop, next to them, and say nothing at all.",
         "After about a minute VEX sits down too. The arm comes in. The capsule goes in a pocket.",
-        "BIGBOY arrives at his own speed and sits on both your feet, which settles the matter."
+        "MEADOW arrives, looks at the pair of you, and sits on both your feet, which settles the matter."
       ]);
     }
     yield C.setFlag("vex_release_stopped", true);

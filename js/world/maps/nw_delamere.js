@@ -151,7 +151,7 @@
       { x: 23, y: 8, item: "timber_oak", n: 1, flag: "catgap_delamere_1",
         say: "MEADOW goes flat and disappears under the deer fence, and comes back dragging a length of seasoned oak nearly her own length." }
     ],
-    restPoints: [{ x: 24, y: 19, flag: "bigboy_sat_delamere" }],
+    restPoints: [{ x: 24, y: 19, flag: "meadow_sat_delamere" }],
     npcs: [
       { id: "npc_delamere_owain", x: 31, y: 24, dir: "down", sprite: "npc_ranger", behaviour: "still", script: "nw_delamere_owain" },
       { id: "npc_delamere_ivy", x: 35, y: 19, dir: "down", sprite: "npc_ranger", behaviour: "path", path: [[35, 19], [43, 19], [43, 17], [35, 17]], pathMode: "loop", trainer: "tr_delamere_forest_2", sight: 3 },
@@ -263,7 +263,7 @@
       { x: 4, y: 4, item: "viewpoint_delamere_old_pale", n: 1, flag: "item_delamere_old_pale_1" },
       { x: 34, y: 27, item: "elixir", n: 2, hidden: true, flag: "item_delamere_old_pale_2" }
     ],
-    restPoints: [{ x: 22, y: 23, flag: "bigboy_sat_old_pale" }],
+    restPoints: [{ x: 22, y: 23, flag: "meadow_sat_old_pale" }],
     npcs: [
       { id: "npc_delamere_plaque_reader", x: 17, y: 15, dir: "up", sprite: "npc_tourist", behaviour: "still",
         say: ["I can see Liverpool. I can see Beeston. I can see the dish at Jodrell.", "The dish has moved. Since Tuesday. It's pointing at Cheshire."] }

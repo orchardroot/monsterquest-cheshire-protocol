@@ -82,12 +82,12 @@
   a("18", "small_black_fast", "Small Black Fast",
     "MEADOW trusts you completely. She still gets there first.",
     5, "cats.trust:meadow", { tier: "silver", group: "cats" });
-  a("19", "back_from_the_brink", "Back From The Brink",
-    "BIGBOY survives at 1 HP twenty-five times. He knows exactly what he is doing.",
-    25, "trainer.stat:brinkSaves", { tier: "silver", group: "cats" });
-  a("20", "big_boy_energy", "Big Boy Energy",
-    "BIGBOY trusts you completely. He still sits down when he likes.",
-    5, "cats.trust:bigboy", { tier: "silver", group: "cats" });
+  a("19", "every_stopping_place", "Every Stopping Place",
+    "MEADOW sits down in all six places that are worth stopping in.",
+    6, "cats.rests", { tier: "silver", group: "cats" });
+  a("20", "best_dressed", "Best Dressed",
+    "Every collar in the county, and she will wear the plain one anyway.",
+    10, "cats.collars", { tier: "silver", group: "cats" });
   a("21", "first_press", "First Press",
     "Brew something at the elm press. It tastes of the orchard and of waiting.",
     1, "trainer.stat:brews", { how: "Finish one brew.", group: "brewing" });
@@ -183,7 +183,7 @@
     name: "Cat's Cup", tier: 1, output: "brew_cats_cup", n: 1, minutes: 10,
     ingredients: [{ id: "cream", n: 1 }, { id: "catmint", n: 1 }],
     effect: "One cat's trust +1. Once a day, and they know when it's the same day.",
-    tip: "\"Cream and catmint. Bigboy will hear the lid come off from the next field.\"",
+    tip: "\"Cream and catmint. She will hear the lid come off from the next field.\"",
     note: "Meadow drinks it in four seconds and then looks betrayed."
   });
   r("damson_fire", {

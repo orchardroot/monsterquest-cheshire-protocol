@@ -22,7 +22,7 @@
     { n: 1, title: "Silk and Static", where: "Macclesfield · Bollington", pins: [
       { f: "contract_signed", t: "The contract", x: "Alder Labs. One page, one signature, a lanyard that is somehow already warm." },
       { f: "starter_chosen", t: "First on the team", x: "Dr Alder let me pick. She watched which one I picked far too closely." },
-      { f: "cats_joined", t: "MEADOW & BIGBOY", x: "They let themselves out of the flat and into the job. No notice given." },
+      { f: "cats_joined", t: "MEADOW", x: "She let herself out of the flat and into the job. No notice given." },
       { f: "white_nancy_seen", t: "White Nancy", x: "Whitewashed folly on Kerridge. Somebody repaints it at night and it is not the council." },
       { f: "vex_battle_1", t: "VEX, on the towpath", x: "Nineteen, furious, better than me. Says Alder Labs is a shop, not a lab." },
       { f: "agent_sleet", t: "SLEET online", x: "Triage agent. Calm voice, terrible timing, three-turn cooldown." }

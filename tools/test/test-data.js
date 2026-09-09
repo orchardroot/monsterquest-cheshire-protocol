@@ -13,7 +13,7 @@ module.exports = function (t, assert) {
     assert.ok(D.count("moves") >= 165, "moves: " + D.count("moves"));
     assert.strictEqual(D.count("abilities"), 30, "30 abilities");
     assert.ok(D.count("items") >= 140, "items: " + D.count("items"));
-    assert.strictEqual(D.dexCount, 172, "172 dex entries");
+    assert.strictEqual(D.dexCount, 171, "171 dex entries");
     assert.ok(D.count("species") > D.dexCount, "boss forms are registered but dex-hidden");
     assert.ok(D.chatterLineCount() >= 300, "dialogue lines: " + D.chatterLineCount());
   });
@@ -40,10 +40,10 @@ module.exports = function (t, assert) {
   t("dex numbering is complete and contiguous", function () {
     const seen = {};
     D.each("species", function (s) { if (!s.dexHidden) seen[s.num] = s.id; });
-    for (let n = 1; n <= 172; n++) assert.ok(seen[n], "missing dex number " + n);
-    assert.strictEqual(D.dexOrder.length, 172);
+    for (let n = 1; n <= 171; n++) assert.ok(seen[n], "missing dex number " + n);
+    assert.strictEqual(D.dexOrder.length, 171);
     assert.strictEqual(D.dexOrder[0], "silkin");
-    assert.strictEqual(D.speciesByNum(11).id, "bigboy");
+    assert.strictEqual(D.speciesByNum(11).id, "nibbit");
   });
 
   // ---- types ------------------------------------------------------
@@ -96,7 +96,7 @@ module.exports = function (t, assert) {
 
   t("overdrive signatures exist for every species and never appear in learnsets", function () {
     const od = D.overdriveMoves();
-    assert.ok(od.length >= 26, "26 signatures, found " + od.length);
+    assert.ok(od.length >= 25, "25 signatures, found " + od.length);
     od.forEach(function (m) {
       assert.strictEqual(m.pp, 0, m.id + " must have no PP");
       assert.strictEqual(m.acc, null, m.id + " must never miss");
@@ -110,7 +110,6 @@ module.exports = function (t, assert) {
       });
     });
     assert.strictEqual(D.species.meadow.overdrive, "zoomies");
-    assert.strictEqual(D.species.bigboy.overdrive, "brink_roar");
     assert.strictEqual(D.species.loomoth.overdrive, "jacquard_weave");
   });
 
@@ -143,7 +142,6 @@ module.exports = function (t, assert) {
     D.each("species", function (s, id) {
       s.abilities.forEach(function (a) { assert.ok(D.abilities[a], id + ": unknown ability " + a); });
     });
-    assert.strictEqual(D.species.bigboy.abilities[0], "back_from_the_brink");
     assert.strictEqual(D.species.meadow.abilities[0], "slipstream");
     assert.strictEqual(D.species.silkin.abilities[0], "silk_weave");
     assert.strictEqual(D.species.brinewt.abilities[0], "brine_body");

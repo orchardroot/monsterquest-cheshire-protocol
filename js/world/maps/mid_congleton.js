@@ -145,7 +145,7 @@
       { x: 16, y: 26, item: "cat_token_11", n: 1, flag: "catgap_congleton_1",
         say: "MEADOW goes through the market-hall railings, sits between the paws of the middle bear, and is photographed by nine separate people before she has finished washing." }
     ],
-    restPoints: [{ x: 21, y: 30, flag: "bigboy_sat_congleton" }],
+    restPoints: [{ x: 21, y: 30, flag: "meadow_sat_congleton" }],
     npcs: [
       { id: "npc_congleton_otis_pre", x: 11, y: 28, dir: "up", sprite: "otis", behaviour: "still", script: "mid_congleton_otis_pre" },
       { id: "npc_congleton_meg", x: 31, y: 29, dir: "left", sprite: "npc_historian", behaviour: "look", radius: 3, trainer: "tr_congleton_1", sight: 3, script: "mid_congleton_meg" },

@@ -24,7 +24,7 @@ these files runs game logic).
 | `east_alderley.js` | Alderley Edge (village, Castle Rock, Stormy Point, Beacon, Wizard's Well) + Edge Caverns B1/B2/B3 and the rope slide |
 | `east_routes.js` | R1–R7, R32 and the Lindow approach, plus the Rope Island and Middlewood Tunnel |
 
-282 NPCs, 133 signs, 144 pickups, 63 trainer placements, cat gaps and BIGBOY
+282 NPCs, 133 signs, 144 pickups, 63 trainer placements, cat gaps and
 rest points throughout.
 
 **Data** — `js/data/encounters_east.js` (80 tables: grass/water/cave with
